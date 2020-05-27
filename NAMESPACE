@@ -1,0 +1,5 @@
+import(Rcpp)
+import(methods)
+importFrom(rstan,sampling)
+useDynLib(ImperialCovidModel, .registration = TRUE)
+export(regional_state)
