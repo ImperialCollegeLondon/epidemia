@@ -2,6 +2,9 @@
 .Rhistory
 .Rapp.history
 
+*.icloud
+*.DS_store
+
 # Session Data files
 .RData
 
@@ -37,3 +40,15 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# R markdown files
+man/*.Rd
+
+# C++ object files
+inst/include/*.o
+src/*.o
+src/*.cc
+*.so
+
+
+
