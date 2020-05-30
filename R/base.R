@@ -50,6 +50,7 @@ rstanarmPart <-
            prior_aux = rstanarm::exponential(),
            prior_covariance = rstanarm::decov(),
            prior_PD = FALSE,
+           mean_PPD = !prior_PD,
            algorithm = c("sampling", "meanfield", "fullrank"),
            adapt_delta = NULL,
            QR = FALSE,
@@ -284,10 +285,42 @@ rstanarmPart <-
   standata$prior_scale_for_aux <- prior_scale_for_aux %ORifINF% 0
   standata$prior_df_for_aux <- c(prior_df_for_aux)
   standata$prior_mean_for_aux <- c(prior_mean_for_aux)
-  standata$len_y <- length(y)
   return(standata)
 }
 
+# @param Ztlist ranef indicator matrices
+# @param cnms group$cnms
+# @param flist group$flist
+pad_reTrms <- function(Ztlist, cnms, flist) {
+  stopifnot(is.list(Ztlist))
+  l <- sapply(attr(flist, "assign"), function(i) nlevels(flist[[i]]))
+  p <- sapply(cnms, FUN = length)
+  n <- ncol(Ztlist[[1]])
+  for (i in attr(flist, "assign")) {
+    levels(flist[[i]]) <- c(gsub(" ", "_", levels(flist[[i]])), 
+                            paste0("_NEW_", names(flist)[i]))
+  }
+  for (i in 1:length(p)) {
+    Ztlist[[i]] <- rbind(Ztlist[[i]], Matrix(0, nrow = p[i], ncol = n, sparse = TRUE))
+  }
+  Z <- t(do.call(rbind, args = Ztlist))
+  return(nlist(Z, cnms, flist))
+}
 
-
-
+make_b_nms <- function(group, m = NULL, stub = "Long") {
+  group_nms <- names(group$cnms)
+  b_nms <- character()
+  m_stub <- if (!is.null(m)) get_m_stub(m, stub = stub) else NULL
+  for (i in seq_along(group$cnms)) {
+    nm <- group_nms[i]
+    nms_i <- paste(group$cnms[[i]], nm)
+    levels(group$flist[[nm]]) <- gsub(" ", "_", levels(group$flist[[nm]]))
+    if (length(nms_i) == 1) {
+      b_nms <- c(b_nms, paste0(m_stub, nms_i, ":", levels(group$flist[[nm]])))
+    } else {
+      b_nms <- c(b_nms, c(t(sapply(paste0(m_stub, nms_i), paste0, ":", 
+                                   levels(group$flist[[nm]])))))
+    }
+  }
+  return(b_nms)  
+}
