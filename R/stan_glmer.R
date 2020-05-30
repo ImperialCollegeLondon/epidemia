@@ -41,15 +41,6 @@ stan_glmer <-
          call. = FALSE)
   }
   
-  if (prior_PD && !has_outcome_variable(formula)) {
-    y <- NULL
-  } else {
-    y <- glmod$fr[, as.character(glmod$formula[2L])]  
-    if (is.matrix(y) && ncol(y) == 1L) {
-      y <- as.vector(y)
-    }
-  }
-
   offset <- model.offset(glmod$fr) %ORifNULL% double(0)
   weights <- validate_weights(as.vector(model.weights(glmod$fr)))
 
@@ -64,6 +55,7 @@ stan_glmer <-
   group <- glmod$reTrms
   group$decov <- prior_covariance
   algorithm <- match.arg(algorithm)
+
   stanfit <- stan_glm.fit(x = X, y = y, weights = weights,
                           offset = offset, link = link,
                           prior = prior, prior_intercept = prior_intercept,
