@@ -1,11 +1,11 @@
-#' The 'ImperialCovidModel' package.
+#' The 'EpiBayes' package.
 #'
 #' @description A DESCRIPTION OF THE PACKAGE
 #'
 #' @docType package
-#' @name ImperialCovidModel-package
-#' @aliases ImperialCovidModel
-#' @useDynLib ImperialCovidModel, .registration = TRUE
+#' @name EpiBayes-package
+#' @aliases EpiBayes
+#' @useDynLib EpiBayes, .registration = TRUE
 #' @import methods
 #' @import Rcpp
 #' @importFrom rstan sampling

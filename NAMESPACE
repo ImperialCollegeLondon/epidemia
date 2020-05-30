@@ -1,7 +1,7 @@
 import(Rcpp)
 import(methods)
 importFrom(rstan,sampling)
-useDynLib(ImperialCovidModel, .registration = TRUE)
+useDynLib(EpiBayes, .registration = TRUE)
 export(genStanData)
 export(stanmodels)
 

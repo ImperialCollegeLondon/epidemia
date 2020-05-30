@@ -20,7 +20,7 @@ stan_glm.fit <-
            keep_every = algorithm != "sampling") {
 
     algorithm <- match.arg(algorithm)
-
+    
     linkstr <- link
     supported_links <- c("logit", "probit", "cauchit", "log", "cloglog")
     link <- which(supported_links == link)
