@@ -26,8 +26,14 @@ genStanData <-
   obs_type = match.arg(obs_type)
   dots <- list(...)
 
-  # validate arguments
+  formula <- as.formula(formula)
   data = checkData(data)
+
+  lhs = formula[[2]]
+  y = getResponses(formula, data)
+
+  checkLevels(levels(y$group), data)
+
   if (!length(obs_type))
     stop("'obs_type' must be one of ", paste(obs_types, collapse = ", "))
   if (seed_days < 1)
@@ -35,9 +41,37 @@ genStanData <-
   if (days < 1)
     stop("'days' must be greater than zero")
 
-
+  # get all stan data relating to data$covariates
   standata <- getCovariatesStanData(formula, data$covariates, ...)
+
   return(standata)
+} 
+
+
+
+# Get the two vectors referred to in the LHS of 'formula' argument of genStanData
+#
+# @param lhs The left hand side of 'formula' object.
+# @param data Named list. See [genStanData]
+getResponses <- function(lhs, data) {
+  if (lhs[[1]] != "cbind")
+    stop("Left hand side of 'formula' must be of the form 'cbind(y1,y2)'")
+
+  env <- if (is.null(data$covariates))  environment(formula) else  data$covariates
+
+  groups <- env[[lhs[[2]]]]
+  dates  <- env[[lhs[[3]]]]
+
+  if(is.null(groups)) 
+    stop(paste0("cannot find ", lhs[[2]], "in " env, call.=FALSE)
+  if(is.null(dates)) 
+    stop(paste0("cannot find ", lhs[[3]], "in " env, call.=FALSE)
+  
+  groups <- as.factor(groups)
+  dates <- as.Date(dates)
+
+  return(nlist(groups, dates))
 }
+
 
 

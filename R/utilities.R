@@ -150,6 +150,18 @@ checkSV <- function(vec, name) {
 }
 
 
+# Checks that we can find populations and ifrs for all groups
+#
+# @param levels The levels of the response group membership vector
+# @param data see [genStanData]
+# @param left hand side of the formula (see [genStanData])
+checkLevels <- function(levels, data, lhs) {
+  if (!all(levels(y$groups) %in% data$pops[,1]))
+    stop(paste0("Levels in ", lhs[[2]], " missing in data$pops")
+  if (!all(levels(y$groups) %in% data$ifr[,1])))
+    stop(paste0("Levels in ", lhs[[3]], " missing in data$ifr"))
+}
+
 
 checkCovariates <- function(data, if_missing = NULL) {
   if (missing(data) || is.null(data)) {
