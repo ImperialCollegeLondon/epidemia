@@ -25,11 +25,14 @@ functions {
    * @param mu Current estimate of R0 for each group
    * @return A real-valued vector
    */
-  vector r0(int[] NC, int len, int M, real[] mu) {
+   vector r0(int[] NC, int len, int M, real[] mu) {
+    int i = 1;
     vector[len] vec;
-      vec[1:NC[1]] = rep_vector(mu[1],NC[1]);
+    vec[i:NC[1]] = rep_vector(mu[1],NC[1]);
+    i += NC[1];
     for (m in 2:M) {
-      vec[(NC[m-1]+1):NC[m]] = rep_vector(mu[m], NC[m] - NC[m-1]);
+      vec[i:(i+NC[m]-1)] = rep_vector(mu[m], NC[m]);
+      i += NC[m];
     }
     return vec;
   }

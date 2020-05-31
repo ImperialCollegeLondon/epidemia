@@ -11,7 +11,7 @@
 #' * covariates: An optional (but recommended) list element containing a dataframe. This dataframe must include a column corresponding to each term in 'formula'. If not included, then the terms will be looked for in the environment corresponding to 'formula'.
 #' @param obs_type Currently either "Incidence" or "Deaths" are supported.
 #' @param seed_days Number of days for which to seed infections.
-#' @param days 
+#' @param forecast Number of days to continue the simulation after the final date in data$obs 
 #' @param ... Arguments allowed in rstanarm::stan_glmer(). For example one can control the prior distribution of the covariates.
 #' @examples
 #' @return A list with required data to pass to rstan::sampling.
@@ -20,30 +20,39 @@ genStanData <-
            data, 
            obs_type = c("Incidence", "Deaths"),  
            seed_days = 6, 
-           days = 100, 
+           forecast = 7, 
            ...) {
 
-  obs_type = match.arg(obs_type)
-  dots <- list(...)
+  obs_type <- match.arg(obs_type)
+  dots     <- list(...)
 
   formula <- as.formula(formula)
-  data = checkData(data)
 
-  lhs = formula[[2]]
-  y = getResponses(formula, data)
+  # get groups and dates (responses in the formula)
+  lhs <- formula[[2]]
+  y   <- getResponses(lhs, data)
 
-  checkLevels(levels(y$group), data)
+  # check and manipulate data argument
+  data <- checkData(data, levels(y$group))
 
   if (!length(obs_type))
     stop("'obs_type' must be one of ", paste(obs_types, collapse = ", "))
   if (seed_days < 1)
     stop("'seed_days' must be greater than zero")
-  if (days < 1)
-    stop("'days' must be greater than zero")
+  if (forecast < 1)
+    stop("'forecast' must be greater than zero")
 
   # get all stan data relating to data$covariates
-  standata <- getCovariatesStanData(formula, data$covariates, ...)
-
+  standata <- genCovariatesStanData(formula, 
+                                    data$covariates, 
+                                    ...)
+  standata <- c(standata,
+                genModelStanData(levels(y$group), 
+                                 data, 
+                                 obs_type, 
+                                 seed_days, 
+                                 forecast))
+                                
   return(standata)
 } 
 
@@ -63,12 +72,12 @@ getResponses <- function(lhs, data) {
   dates  <- env[[lhs[[3]]]]
 
   if(is.null(groups)) 
-    stop(paste0("cannot find ", lhs[[2]], "in " env, call.=FALSE)
+    stop(paste0("cannot find ", lhs[[2]], "in ", env, call.=FALSE))
   if(is.null(dates)) 
-    stop(paste0("cannot find ", lhs[[3]], "in " env, call.=FALSE)
+    stop(paste0("cannot find ", lhs[[3]], "in ", env, call.=FALSE))
   
-  groups <- as.factor(groups)
-  dates <- as.Date(dates)
+  groups  <- as.factor(groups)
+  dates   <- as.Date(dates)
 
   return(nlist(groups, dates))
 }

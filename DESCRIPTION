@@ -18,8 +18,12 @@ Biarch: true
 Depends: 
     R (>= 3.4.0)
 Imports: 
+    data.table (>= 1.12.8),
+    dplyr (>= 0.8.5),
+    loo (>= 2.2.0),
     methods,
     Rcpp (>= 0.12.0),
+    rlist (>= 0.4.6.1),
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0)
 LinkingTo: 

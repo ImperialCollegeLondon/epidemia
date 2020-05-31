@@ -1,20 +1,24 @@
 
 # Checks pertaining to data argument of getStanData
 #
+# Checks each component of data to ensure all required information exists.
+# Also reformats the components (changing column names, removing redundant columns etc.)
+#
 # @param data See [genStanData]
-checkData <- function(data) {
+# @param levels The levels of the response group membership vector
+checkData <- function(data, levels) {
   for(name in names(data))
     assign(name, data[[name]])
   
   # Look for required columns
-  required_cols <- c("obs","pops","ifr","si","dto")
+  required_cols <- c("obs", "pops", "ifr", "si", "dto")
   for (col in required_cols)
-    if(!exists(col)) stop(paste0("data$", col, " not found"))
+    if(!exists(col)) stop(paste0("data$", col, " not found"), call. = FALSE)
   
   # check each component individually
-  obs <- checkObs(obs)
-  pops <- checkPops(pops)
-  ifr <- checkIFR(ifr)
+  obs <- checkObs(obs, levels)
+  pops <- checkPops(pops, levels)
+  ifr <- checkIFR(ifr, levels)
   si <- checkSV(si, "data$si")
   dto <- checkSV(dto, "data$dto")
   
@@ -40,25 +44,25 @@ checkDF <- function(df, name, nc) {
   if(ncol(df) < nc)
     stop(paste0("Not enough columns in ", name))
   
-  as.data.frame(df)
+  as.data.frame(df[,1:nc])
 }
 
 # Check the data$obs argument of genStanData
 #
+# Removes levels not in response group vector
+#
 # @param obs See [genStanData]
-checkObs <- function(obs) {
+checkObs <- function(obs, levels) {
   obs <- checkDF(obs, "data$obs", 3)
-  
-  if(any(duplicated(obs[,1:2])))
-    stop("Observations for a given group and date must be unique. Please check 'data$obs'.", call. = FALSE)
+  names(obs) <- c("group", "date", "obs")
   
   # check if columns are coercible
-  out <- tryCatch(
+  obs <- tryCatch(
     {
-      obs[,1] <- as.factor(obs[,1])
-      obs[,2] <- as.Date(obs[,2])
-      obs[,3] <- as.numeric(obs[,3])
-      return(obs)
+      obs$group <- as.factor(obs$group)
+      obs$date <- as.Date(obs$date)
+      obs$obs <- as.numeric(obs$obs)
+      obs
     },
     error = function(cond) {
       message("Columns of 'data$obs' are not coercible to required classes [factor, Date, numeric]")
@@ -67,23 +71,35 @@ checkObs <- function(obs) {
       return(NULL)
     }
   )
-  return(out)
+
+  # removing rows not represented in response groups
+  obs <- obs[obs$group %in% levels,]
+
+  # requiring all levels have an associated population
+  if (!all(levels %in% obs$group))
+    stop(paste0("Levels in 'formula' response missing in data$obs"))
+  
+  if(any(duplicated(obs[,1:2])))
+    stop("Observations for a given group and date must be unique. Please check 'data$obs'.", call. = FALSE)
+
+  # sort by group, then by date
+  obs <- obs[with(obs, order(group, date)),]
+
+  return(obs)
 }
 
 # Check the data$pops argument of genStanData
 #
 # @param pops See [genStanData]
-checkPops <- function(pops) {
+checkPops <- function(pops, levels) {
   pops <- checkDF(pops, "data$pops", 2)
-  
-  if(any(duplicated(pops[,1])))
-    stop("Populations for a given group must be unique. Please check 'data$pops'.", call. = FALSE)
+  names(pops) <- c("group", "pop")
   
   # check if columns are coercible
-  out <- tryCatch(
+  pops <- tryCatch(
     {
-      pops[,1] <- as.factor(pops[,1])
-      pops[,2] <- as.integer(pops[,2])
+      pops$group <- as.factor(pops$group)
+      pops$pop <- as.integer(pops$pop)
       pops
     },
     error = function(cond) {
@@ -93,24 +109,38 @@ checkPops <- function(pops) {
       return(NULL)
     }
   )
-  if(any(out[,2] < 0))
+
+  # removing rows not represented in response groups
+  pops <- pops[pops$group %in% levels,]
+
+  # requiring all levels have an associated population
+  if (!all(levels %in% pops$group))
+    stop(paste0("Levels in 'formula' response missing in data$pops"))
+
+  if(any(duplicated(pops$group)))
+    stop("Populations for a given group must be unique. Please check 'data$pops'.", call. = FALSE)
+
+  if(any(pops$pop < 0))
     stop("Populations must take nonnegative. Plase check data$pops", call. = FALSE)
+
+  # sort by group
+  pops <- pops[order(pops$group),]
+
+  return(pops)
 }
 
 # Check the data$ifr argument of genStanData
 #
 # @param ifr See [genStanData]
-checkIFR <- function(ifr) {
+checkIFR <- function(ifr, levels) {
   ifr <- checkDF(ifr, "data$ifr", 2)
-  
-  if(any(duplicated(ifr[,1])))
-    stop("IFR values for a given group must be unique. Please check 'data$ifr'.", call. = FALSE)
+  names(ifr) <- c("group","ifr")
   
   # check if columns are coercible
-  out <- tryCatch(
+  ifr <- tryCatch(
     {
-      ifr[,1] <- as.factor(ifr[,1])
-      ifr[,2] <- as.numeric(ifr[,2])
+      ifr$group <- as.factor(ifr$group)
+      ifr$ifr <- as.numeric(ifr$ifr)
       ifr
     },
     error = function(cond) {
@@ -118,12 +148,26 @@ checkIFR <- function(ifr) {
       message("Original message:")
       message(cond)
       return(NULL)
-    })
+    }
+  )
+
+  # removing rows not represented in response groups
+  ifr <- ifr[ifr$group %in% levels,]
+
+  # requiring all levels have an associated population
+  if (!all(levels %in% ifr$group))
+    stop(paste0("Levels in 'formula' response missing in data$ifr"))
+
+  if(any(duplicated(ifr$group)))
+    stop("IFR values for a given group must be unique. Please check 'data$ifr'.", call. = FALSE)
   
-  if(any((out[,2] > 1) + (out[,2] < 0)))
+  if(any((ifr$ifr > 1) + (ifr$ifr < 0)))
     stop("IFR must take values in [0,1]. Plase check data$ifr", call. = FALSE)
   
-  return(out)
+  # sort by group
+  ifr <- ifr[order(ifr$group),]
+  
+  return(ifr)
 }
 
 # Simple check of a simplex vector
@@ -148,20 +192,6 @@ checkSV <- function(vec, name) {
   
   return(vec/sum(vec))
 }
-
-
-# Checks that we can find populations and ifrs for all groups
-#
-# @param levels The levels of the response group membership vector
-# @param data see [genStanData]
-# @param left hand side of the formula (see [genStanData])
-checkLevels <- function(levels, data, lhs) {
-  if (!all(levels(y$groups) %in% data$pops[,1]))
-    stop(paste0("Levels in ", lhs[[2]], " missing in data$pops")
-  if (!all(levels(y$groups) %in% data$ifr[,1])))
-    stop(paste0("Levels in ", lhs[[3]], " missing in data$ifr"))
-}
-
 
 checkCovariates <- function(data, if_missing = NULL) {
   if (missing(data) || is.null(data)) {

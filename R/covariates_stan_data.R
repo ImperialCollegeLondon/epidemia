@@ -1,6 +1,6 @@
 
 # Modified from rstanarm::stan_glm and rstanarm::stan_glmer
-getCovariatesStanData <- 
+genCovariatesStanData <- 
   function(formula,
            data = NULL,
            link = "logit",
@@ -245,6 +245,24 @@ getCovariatesStanData <-
     standata$len_concentration <- 0L
     standata$len_regularization <- 0L
   }
+
+  if (sparse) {
+    parts <- extract_sparse_parts(xtemp)
+    standata$nnz_X <- length(parts$w)
+    standata$w_X <- parts$w
+    standata$v_X <- parts$v - 1L
+    standata$u_X <- parts$u - 1L
+    standata$X <- array(0, dim = c(0L, dim(xtemp)))
+  } else {
+    standata$X <- array(xtemp, dim = c(1L, dim(xtemp)))
+    standata$nnz_X <- 0L
+    standata$w_X <- double(0)
+    standata$v_X <- integer(0)
+    standata$u_X <- integer(0)
+  }
+  standata$weights <- weights
+  standata$offset_ <- offset
+  
 
   # call stan() to draw from posterior distribution
   standata$prior_scale_for_aux <- prior_scale_for_aux %ORifINF% 0
