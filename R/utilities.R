@@ -1,7 +1,7 @@
 
 
 checkFormula <- function(formula) {
-  if(!is.formula(formula))
+  if(!inherits(formula,"formula"))
     stop("'formula' must have class formula.", call. = FALSE)
   vars <- all.vars(update(formula, ".~0"))
   if(length(vars) != 2)
@@ -68,19 +68,19 @@ checkObs <- function(data, obs) {
   if (!is.list(obs))
     stop("'obs' must be a list.")
 
-  for (name in names(data))
-    assign(name, data[[name]])
+  for (name in names(obs))
+    assign(name, obs[[name]])
 
   # Check for required data.
   if (!exists("deaths"))
-    warning("'obs$deaths' not found. No death data will be used.")
-  else if (!exists(dtd))
-    stop("Found 'obs$deaths' but not 'obs$dtd'. Please specify 'dtd'.")
+    warning("'obs$deaths' not found. No death data will be used.", call.=FALSE)
+  else if (!exists("dtd"))
+    stop("Found 'obs$deaths' but not 'obs$dtd'. Please specify 'dtd'.", call.=FALSE)
 
   if (!exists("incidence"))
-    warning("'obs$incidence' not found. No incidence data will be used.")
-  else if (!exists(dti))
-    stop("Found 'obs$incidence' but not 'obs$dti'. Please specify 'dti'.")
+    warning("'obs$incidence' not found. No incidence data will be used.", call.=FALSE)
+  else if (!exists("dti"))
+    stop("Found 'obs$incidence' but not 'obs$dti'. Please specify 'dti'.", call.=FALSE)
 
   if (exists("deaths")) {
     deaths    <- checkObsDF(data, deaths, "obs$deaths")
@@ -136,7 +136,7 @@ checkObsDF <- function(data, df, name) {
 
   # throw error if duplicated
   if(any(duplicated(df[,1:2])))
-    stop(paste0("Observations for a given group and date must be unique. Please check '", name, "'.", call. = FALSE)
+    stop(paste0("Observations for a given group and date must be unique. Please check '", name, "'.", call. = FALSE))
 
   # remove incomplete cases
   v <- !complete.cases(df)
@@ -161,7 +161,7 @@ checkObsDF <- function(data, df, name) {
       dates_df    <- df[df$group == group, "date"]
       
       if(min(dates_df) < start_date || max(dates_df > stop_date))
-        warning(paste0("Group: ", group, ", found dates in ", name, " outside of ", range, ". Trimming..."))
+        warning(paste0("Group: ", group, ", found dates in ", name, " outside of ", range, ". Trimming..."), call.=FALSE)
     }
   }
 

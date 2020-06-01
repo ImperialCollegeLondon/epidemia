@@ -23,7 +23,7 @@ genStanData <-
            pops,
            ifr,
            si,
-           seed_days = 6
+           seed_days = 6,
            ...) {
 
   dots     <- list(...)
@@ -40,34 +40,32 @@ genStanData <-
 
   if (seed_days < 1)
     stop("'seed_days' must be greater than zero", call. = FALSE)
-  if (forecast < 1)
-    stop("'forecast' must be greater than zero", call. = FALSE)
 
-  standata <- genModelStanData(levels(covariates$group), 
-                               data, 
-                               obs_type, 
-                               seed_days, 
-                               forecast
-  )
+  # standata <- genModelStanData(levels(covariates$group), 
+  #                              data, 
+  #                              obs_type, 
+  #                              seed_days, 
+  #                              forecast
+  # )
   
-  # use only covariates within the simulation range
-  obs           <- standata$obs
-  f             <- function(x) cbind(x, idx = seq.int(nrow(x)))
-  obs           <- data.table::rbindlist(Map(f, split(obs, obs$group)))
-  covariates    <- dplyr::left_join(obs, covariates, by = c("group", "date"))
-  covariates    <- covariates[complete.cases(covariates),]
-  standata$memb <- as.numeric(covariates$group)
-  standata$idx  <- covariates$idx
+  # # use only covariates within the simulation range
+  # obs           <- standata$obs
+  # f             <- function(x) cbind(x, idx = seq.int(nrow(x)))
+  # obs           <- data.table::rbindlist(Map(f, split(obs, obs$group)))
+  # covariates    <- dplyr::left_join(obs, covariates, by = c("group", "date"))
+  # covariates    <- covariates[complete.cases(covariates),]
+  # standata$memb <- as.numeric(covariates$group)
+  # standata$idx  <- covariates$idx
 
-  # get all stan data relating to data$covariates
-  standata <- c(standata, 
-                genCovariatesStanData(formula, 
-                                      covariates, 
-                                      ...
-                )
-  )
+  # # get all stan data relating to data$covariates
+  # standata <- c(standata, 
+  #               genCovariatesStanData(formula, 
+  #                                     covariates, 
+  #                                     ...
+  #               )
+  # )
                                 
-  return(standata)
+  return(nlist(data, obs))
 } 
 
 
