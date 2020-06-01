@@ -1,42 +1,4 @@
 functions {
-   /*
-   * Return matrix formed by data vector.
-   *
-   * @param NC Number of observations in each group
-   * @param N2 Total number of observed days + # of days to forecast
-   * @param M Number of groups
-   * @return A real-valued matrix parsed from `vec'
-   */
-  matrix vec_to_mat(int[] NC, int N2, int M, vector vec) {
-    matrix[N2, M] mat = rep_matrix(0,N2,M);
-    mat[1:NC[1],1] = vec[1:NC[1]];
-    for (m in 2:M) {
-       mat[m:NC[m],m] = vec[(NC[m-1]+1):NC[m]];
-    }
-    return mat;
-  }
-
-   /*
-   * Returns vector of R0 for each observation
-   *
-   * @param NC Number of observations in each group
-   * @param len Total number of observations
-   * @param M Number of groups
-   * @param mu Current estimate of R0 for each group
-   * @return A real-valued vector
-   */
-   vector r0(int[] NC, int len, int M, real[] mu) {
-    int i = 1;
-    vector[len] vec;
-    vec[i:NC[1]] = rep_vector(mu[1],NC[1]);
-    i += NC[1];
-    for (m in 2:M) {
-      vec[i:(i+NC[m]-1)] = rep_vector(mu[m], NC[m]);
-      i += NC[m];
-    }
-    return vec;
-  }
-
 #include /functions/common_functions.stan
 #include /functions/continuous_likelihoods.stan
 
@@ -57,6 +19,8 @@ data {
   real pop[M];
   real SI[N2]; // fixed SI using empirical data
 #include /data/NKX.stan
+  int memb[N]; // membership relating to each covariate observation
+  int idx[N];
 #include /data/data_glm.stan
 #include /data/weights_offset.stan
 #include /data/hyperparameters.stan
@@ -94,12 +58,13 @@ parameters {
 }
 
 transformed parameters {
-  vector[len] Rt_vec = rep_vector(0, len);
+  vector[N] Rt_vec;
   matrix[N2, M] prediction = rep_matrix(0,N2,M);
   matrix[N2, M] E_deaths  = rep_matrix(0,N2,M);
   matrix[N2, M] Rt = rep_matrix(0,N2,M);
   matrix[N2, M] Rt_adj = Rt;
   vector[N] eta;  // linear predictor
+  vector[N] R0_vec;
 
   // aux has to be defined first in the hs case
   real aux = prior_dist_for_aux == 0 ? aux_unscaled : (prior_dist_for_aux <= 2 ?
@@ -108,6 +73,10 @@ transformed parameters {
 
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
+
+  for (i in 1:N) {
+    R0_vec[i] = mu[memb[i]];
+  }
 
   if (prior_dist_for_aux == 0) // none
     aux = aux_unscaled;
@@ -147,9 +116,18 @@ transformed parameters {
 
   # Todo: Add branching logic for different link functions.
   # Todo: Add branching logic for different weights.
-  Rt_vec = r0(NC, len, M, mu) * 2 .* inv_logit(-eta);
-  Rt = vec_to_mat(NC, N2, M, Rt_vec);
+  Rt_vec = R0_vec * 2 .* inv_logit(-eta);
 
+  for (i in 1:N2) {
+    for (m in 1:M) {
+      Rt[i,m] = mu[m];
+    }
+  }
+
+  for (i in 1:N) {
+    Rt[idx[i],memb[i]] = Rt_vec[i];
+  }
+  
   {
     matrix[N2,M] cumm_sum = rep_matrix(0,N2,M);
     for (m in 1:M){

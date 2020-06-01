@@ -64,6 +64,7 @@ genModelStanData <- function(levels,
          EpidemicStart  = rep(31,M),
          pop            = pops$pop,
          f              = fmat,
+         obs            = obs,
          deaths         = rlist::list.cbind(split(obs$obs, obs$group)),
          N2             = num_days_sim,
          NC              = as.numeric(last_obs_dates - start_dates + 1)))

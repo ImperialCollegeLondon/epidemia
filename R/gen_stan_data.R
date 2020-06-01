@@ -28,12 +28,14 @@ genStanData <-
 
   formula <- as.formula(formula)
 
-  # get groups and dates (responses in the formula)
   lhs <- formula[[2]]
-  y   <- getResponses(lhs, data)
+  # y   <- getResponses(lhs, data)
+  # Assuming for now that data$covariates is not null
+  # Todo: allow data$covariates to be null
+  covariates <- processCovariates(lhs, data$covariates)
 
   # check and manipulate data argument
-  data <- checkData(data, levels(y$group))
+  data <- checkData(data, levels(covariates$group))
 
   if (!length(obs_type))
     stop("'obs_type' must be one of ", paste(obs_types, collapse = ", "))
@@ -42,45 +44,77 @@ genStanData <-
   if (forecast < 1)
     stop("'forecast' must be greater than zero")
 
+  standata <- genModelStanData(levels(covariates$group), 
+                               data, 
+                               obs_type, 
+                               seed_days, 
+                               forecast
+  )
+  
+  # use only covariates within the simulation range
+  obs           <- standata$obs
+  f             <- function(x) cbind(x, idx = seq.int(nrow(x)))
+  obs           <- data.table::rbindlist(Map(f, split(obs, obs$group)))
+  covariates    <- dplyr::left_join(obs, covariates, by = c("group", "date"))
+  covariates    <- covariates[complete.cases(covariates),]
+  standata$memb <- as.numeric(covariates$group)
+  standata$idx  <- covariates$idx
+
   # get all stan data relating to data$covariates
-  standata <- genCovariatesStanData(formula, 
-                                    data$covariates, 
-                                    ...)
-  standata <- c(standata,
-                genModelStanData(levels(y$group), 
-                                 data, 
-                                 obs_type, 
-                                 seed_days, 
-                                 forecast))
+  standata <- c(standata, 
+                genCovariatesStanData(formula, 
+                                      covariates, 
+                                      ...
+                )
+  )
                                 
   return(standata)
 } 
+
+
+processCovariates <- function(lhs, covariates) {
+  if (lhs[[1]] != "cbind")
+    stop("Left hand side of 'formula' must be of the form 'cbind(y1,y2)'")
+
+  covariates$group <- covariates[[lhs[[2]]]]
+  covariates$dates  <- covariates[[lhs[[3]]]]
+
+  if(is.null(covariates$group)) 
+    stop(paste0("cannot find ", lhs[[2]], "in ", env, call.=FALSE))
+  if(is.null(covariates$dates)) 
+    stop(paste0("cannot find ", lhs[[3]], "in ", env, call.=FALSE))
+  
+  covariates$group  <- as.factor(covariates$group)
+  covariates$dates   <- as.Date(covariates$dates)
+
+  return(covariates)
+}
 
 
 
 # Get the two vectors referred to in the LHS of 'formula' argument of genStanData
 #
 # @param lhs The left hand side of 'formula' object.
-# @param data Named list. See [genStanData]
-getResponses <- function(lhs, data) {
-  if (lhs[[1]] != "cbind")
-    stop("Left hand side of 'formula' must be of the form 'cbind(y1,y2)'")
+# # @param data Named list. See [genStanData]
+# getResponses <- function(lhs, data) {
+#   if (lhs[[1]] != "cbind")
+#     stop("Left hand side of 'formula' must be of the form 'cbind(y1,y2)'")
 
-  env <- if (is.null(data$covariates))  environment(formula) else  data$covariates
+#   env <- if (is.null(data$covariates))  environment(formula) else  data$covariates
 
-  groups <- env[[lhs[[2]]]]
-  dates  <- env[[lhs[[3]]]]
+#   groups <- env[[lhs[[2]]]]
+#   dates  <- env[[lhs[[3]]]]
 
-  if(is.null(groups)) 
-    stop(paste0("cannot find ", lhs[[2]], "in ", env, call.=FALSE))
-  if(is.null(dates)) 
-    stop(paste0("cannot find ", lhs[[3]], "in ", env, call.=FALSE))
+#   if(is.null(groups)) 
+#     stop(paste0("cannot find ", lhs[[2]], "in ", env, call.=FALSE))
+#   if(is.null(dates)) 
+#     stop(paste0("cannot find ", lhs[[3]], "in ", env, call.=FALSE))
   
-  groups  <- as.factor(groups)
-  dates   <- as.Date(dates)
+#   groups  <- as.factor(groups)
+#   dates   <- as.Date(dates)
 
-  return(nlist(groups, dates))
-}
+#   return(nlist(groups, dates))
+# }
 
 
 
