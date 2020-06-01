@@ -32,6 +32,20 @@ checkData <- function(formula, data) {
   data[,vars]               <- NULL
   data[,c("group", "date")] <- df
 
+  # check if columns are coercible
+  data <- tryCatch(
+    {
+      data$group <- as.factor(data$group)
+      data$date <- as.Date(data$date)
+      data
+    },
+    error = function(cond) {
+      message(paste0(vars[1], " and ", vars[2], " are not coercible to Factor and Date Respectively."))
+      message("Original message:")
+      message(cond)
+      return(NULL)
+    }
+  )
 
   # check for missing data
   v <- !complete.cases(data)
@@ -50,82 +64,151 @@ checkData <- function(formula, data) {
   return(data)
 }
 
+checkObs <- function(data, obs) {
+  if (!is.list(obs))
+    stop("'obs' must be a list.")
 
-checkData <- function(formula, data) {
-
-  # check existence of the response terms in 'formula'
-  vars <- all.vars(update(formula, ".~0"))
-
-  for(i in 1:2)
-    if(!(vars[i] %in% colnames(data)))
-      stop(paste0("Cannot find column '", vars[i], "' in 'data'"), call. = FALSE)
-
-  df <- data[,vars]
-  data[,vars] <- NULL
-  data[,c("group", "date")] <- df
-
-  data$groups <- as.factor(data$groups)
-  data$
-
-  # check consecutive date entries
-
-  return(data)
-  
-
-}
-
-processCovariates <- function(lhs, covariates) {
-  if (lhs[[1]] != "cbind")
-    stop("Left hand side of 'formula' must be of the form 'cbind(y1,y2)'")
-
-  covariates$group <- covariates[[lhs[[2]]]]
-  covariates$dates  <- covariates[[lhs[[3]]]]
-
-  if(is.null(covariates$group)) 
-    stop(paste0("cannot find ", lhs[[2]], "in ", env, call.=FALSE))
-  if(is.null(covariates$dates)) 
-    stop(paste0("cannot find ", lhs[[3]], "in ", env, call.=FALSE))
-  
-  covariates$group  <- as.factor(covariates$group)
-  covariates$dates   <- as.Date(covariates$dates)
-
-  return(covariates)
-}
-
-
-
-
-
-
-# Checks pertaining to data argument of getStanData
-#
-# Checks each component of data to ensure all required information exists.
-# Also reformats the components (changing column names, removing redundant columns etc.)
-#
-# @param data See [genStanData]
-# @param levels The levels of the response group membership vector
-checkData <- function(data, levels) {
-  for(name in names(data))
+  for (name in names(data))
     assign(name, data[[name]])
-  
-  # Look for required columns
-  required_cols <- c("obs", "pops", "ifr", "si", "dto")
-  for (col in required_cols)
-    if(!exists(col)) stop(paste0("data$", col, " not found"), call. = FALSE)
-  
-  # check each component individually
-  obs <- checkObs(obs, levels)
-  pops <- checkPops(pops, levels)
-  ifr <- checkIFR(ifr, levels)
-  si <- checkSV(si, "data$si")
-  dto <- checkSV(dto, "data$dto")
-  
-  data <- nlist(obs, pops, ifr, si, dto)
-  if(exists("covariates"))
-    data$covariates <- covariates
-  
-  return(data)
+
+  # Check for required data.
+  if (!exists("deaths"))
+    warning("'obs$deaths' not found. No death data will be used.")
+  else if (!exists(dtd))
+    stop("Found 'obs$deaths' but not 'obs$dtd'. Please specify 'dtd'.")
+
+  if (!exists("incidence"))
+    warning("'obs$incidence' not found. No incidence data will be used.")
+  else if (!exists(dti))
+    stop("Found 'obs$incidence' but not 'obs$dti'. Please specify 'dti'.")
+
+  if (exists("deaths")) {
+    deaths    <- checkObsDF(data, deaths, "obs$deaths")
+    dtd       <- checkSV(dtd)
+  } else {
+    deaths <- dtd <- NULL
+  }
+
+  if (exists("incidence")) {
+    incidence <- checkObsDF(data, incidence, "obs$incidence")
+    dti       <- checkSV(dti)
+  } else {
+    incidence <- dti <- NULL
+  }
+
+  return(nlist(deaths, incidence, dtd, dti))
+
 }
+
+# Series of checks on dataframe df
+#
+# These include
+# * formatting (column names, removing redundant columns)
+# * throwing errors if duplicated data exists
+# * removing incomplete cases
+# * warning if unmodelled groups exists
+# * warning if dates must be trimmed
+# @param data The result of [checkData]
+# @param df The dataframe to consider (obs$deaths or obs$incidence)
+# @param name Name of dataframe to output in warnings
+checkObsDF <- function(data, df, name) {
+  df <- checkDF(df, "obs$deaths", 3)
+
+  # format correctly
+  names(df) <- c("group", "date", "obs")
+  # check if columns are coercible
+  df <- tryCatch(
+    {
+      df$group <- as.factor(df$group)
+      df$date <- as.Date(df$date)
+      df$obs <- as.numeric(df$obs)
+      df
+    },
+    error = function(cond) {
+      message(paste0("Columns of '", name,"' are not coercible to required classes [factor, Date, numeric]"))
+      message("Original message:")
+      message(cond)
+      return(NULL)
+    }
+  )
+
+  groups <- levels(as.factor(data$group))
+
+  # throw error if duplicated
+  if(any(duplicated(df[,1:2])))
+    stop(paste0("Observations for a given group and date must be unique. Please check '", name, "'.", call. = FALSE)
+
+  # remove incomplete cases
+  v <- !complete.cases(df)
+  if(any(v)) {
+    df <- df[!v,]
+    warning(paste(c("Have removed missing data on rows", which(v), " of", name), collapse=" "), call.=FALSE)
+  }
+
+  # warn if there are unmodelled groups
+  v <- setdiff(levels(df$group), groups)
+  if(length(v))
+    warning(paste(c("Levels ", v, " in", name, "were not found in 'data'. Removing."), collapse = " "), call.=FALSE)
+
+
+  # warn if we have to trim the data.
+  for (group in groups) {
+    if(group %in% df$group) {
+      dates_data  <- data[data$group == group, "date"]
+      start_date  <- min(dates_data)
+      stop_date   <- max(dates_data)
+      range       <- paste0(start_date," : ", stop_date)
+      dates_df    <- df[df$group == group, "date"]
+      
+      if(min(dates_df) < start_date || max(dates_df > stop_date))
+        warning(paste0("Group: ", group, ", found dates in ", name, " outside of ", range, ". Trimming..."))
+    }
+  }
+
+  # trim the data
+  data$group <- as.factor(data$group)
+  df <- dplyr::left_join(data[,c("group", "date")], df, by = c("group", "date"))
+  df <- df[complete.cases(df),]
+
+
+  # warning if some groups do not have data
+  v <- setdiff(groups, df$group)
+  if(length(v))
+    warning(paste(c("No data for group(s) ", v, " found in", name), collapse=" "), call. = FALSE)
+
+
+  return(df)
+}
+
+# # Checks pertaining to data argument of getStanData
+# #
+# # Checks each component of data to ensure all required information exists.
+# # Also reformats the components (changing column names, removing redundant columns etc.)
+# #
+# # @param data See [genStanData]
+# # @param levels The levels of the response group membership vector
+# checkData <- function(data, levels) {
+#   for(name in names(data))
+#     assign(name, data[[name]])
+  
+#   # Look for required columns
+#   required_cols <- c("obs", "pops", "ifr", "si", "dto")
+#   for (col in required_cols)
+#     if(!exists(col)) stop(paste0("data$", col, " not found"), call. = FALSE)
+  
+#   # check each component individually
+#   obs <- checkObs(obs, levels)
+#   pops <- checkPops(pops, levels)
+#   ifr <- checkIFR(ifr, levels)
+#   si <- checkSV(si, "data$si")
+#   dto <- checkSV(dto, "data$dto")
+  
+#   data <- nlist(obs, pops, ifr, si, dto)
+#   if(exists("covariates"))
+#     data$covariates <- covariates
+  
+#   return(data)
+# }
 
 # Generic checking of a dataframe
 #
@@ -145,52 +228,52 @@ checkDF <- function(df, name, nc) {
   as.data.frame(df[,1:nc])
 }
 
-# Check the data$obs argument of genStanData
-#
-# Removes levels not in response group vector
-#
-# @param obs See [genStanData]
-checkObs <- function(obs, levels) {
-  obs <- checkDF(obs, "data$obs", 3)
-  names(obs) <- c("group", "date", "obs")
+# # Check the data$obs argument of genStanData
+# #
+# # Removes levels not in response group vector
+# #
+# # @param obs See [genStanData]
+# checkObs <- function(obs, levels) {
+#   obs <- checkDF(obs, "data$obs", 3)
+#   names(obs) <- c("group", "date", "obs")
   
-  # check if columns are coercible
-  obs <- tryCatch(
-    {
-      obs$group <- as.factor(obs$group)
-      obs$date <- as.Date(obs$date)
-      obs$obs <- as.numeric(obs$obs)
-      obs
-    },
-    error = function(cond) {
-      message("Columns of 'data$obs' are not coercible to required classes [factor, Date, numeric]")
-      message("Original message:")
-      message(cond)
-      return(NULL)
-    }
-  )
+#   # check if columns are coercible
+#   obs <- tryCatch(
+#     {
+#       obs$group <- as.factor(obs$group)
+#       obs$date <- as.Date(obs$date)
+#       obs$obs <- as.numeric(obs$obs)
+#       obs
+#     },
+#     error = function(cond) {
+#       message("Columns of 'data$obs' are not coercible to required classes [factor, Date, numeric]")
+#       message("Original message:")
+#       message(cond)
+#       return(NULL)
+#     }
+#   )
 
-  # removing rows not represented in response groups
-  obs <- obs[obs$group %in% levels,]
+#   # removing rows not represented in response groups
+#   obs <- obs[obs$group %in% levels,]
 
-  # requiring all levels have an associated population
-  if (!all(levels %in% obs$group))
-    stop(paste0("Levels in 'formula' response missing in data$obs"))
+#   # requiring all levels have an associated population
+#   if (!all(levels %in% obs$group))
+#     stop(paste0("Levels in 'formula' response missing in data$obs"))
   
-  if(any(duplicated(obs[,1:2])))
-    stop("Observations for a given group and date must be unique. Please check 'data$obs'.", call. = FALSE)
+#   if(any(duplicated(obs[,1:2])))
+#     stop("Observations for a given group and date must be unique. Please check 'data$obs'.", call. = FALSE)
 
-  # sort by group, then by date
-  obs <- obs[with(obs, order(group, date)),]
+#   # sort by group, then by date
+#   obs <- obs[with(obs, order(group, date)),]
 
-  return(obs)
-}
+#   return(obs)
+# }
 
 # Check the data$pops argument of genStanData
 #
 # @param pops See [genStanData]
 checkPops <- function(pops, levels) {
-  pops <- checkDF(pops, "data$pops", 2)
+  pops <- checkDF(pops, "pops", 2)
   names(pops) <- c("group", "pop")
   
   # check if columns are coercible
@@ -201,7 +284,7 @@ checkPops <- function(pops, levels) {
       pops
     },
     error = function(cond) {
-      message("Columns of 'data$pops' are not coercible to required classes [factor, integer]", call. = FALSE)
+      message("Columns of 'pops' are not coercible to required classes [factor, integer]", call. = FALSE)
       message("Original message:")
       message(cond)
       return(NULL)
@@ -213,13 +296,13 @@ checkPops <- function(pops, levels) {
 
   # requiring all levels have an associated population
   if (!all(levels %in% pops$group))
-    stop(paste0("Levels in 'formula' response missing in data$pops"))
+    stop(paste0("Levels in 'formula' response missing in 'pops'"))
 
   if(any(duplicated(pops$group)))
-    stop("Populations for a given group must be unique. Please check 'data$pops'.", call. = FALSE)
+    stop("Populations for a given group must be unique. Please check 'pops'.", call. = FALSE)
 
   if(any(pops$pop < 0))
-    stop("Populations must take nonnegative. Plase check data$pops", call. = FALSE)
+    stop("Populations must take nonnegative. Plase check 'pops'", call. = FALSE)
 
   # sort by group
   pops <- pops[order(pops$group),]
@@ -231,7 +314,7 @@ checkPops <- function(pops, levels) {
 #
 # @param ifr See [genStanData]
 checkIFR <- function(ifr, levels) {
-  ifr <- checkDF(ifr, "data$ifr", 2)
+  ifr <- checkDF(ifr, "ifr", 2)
   names(ifr) <- c("group","ifr")
   
   # check if columns are coercible
@@ -242,7 +325,7 @@ checkIFR <- function(ifr, levels) {
       ifr
     },
     error = function(cond) {
-      message("Columns of 'data$ifr' are not coercible to required classes [factor, numeric]")
+      message("Columns of 'ifr' are not coercible to required classes [factor, numeric]")
       message("Original message:")
       message(cond)
       return(NULL)
@@ -254,13 +337,13 @@ checkIFR <- function(ifr, levels) {
 
   # requiring all levels have an associated population
   if (!all(levels %in% ifr$group))
-    stop(paste0("Levels in 'formula' response missing in data$ifr"))
+    stop(paste0("Levels in 'formula' response missing in 'ifr'"))
 
   if(any(duplicated(ifr$group)))
-    stop("IFR values for a given group must be unique. Please check 'data$ifr'.", call. = FALSE)
+    stop("IFR values for a given group must be unique. Please check 'ifr'.", call. = FALSE)
   
   if(any((ifr$ifr > 1) + (ifr$ifr < 0)))
-    stop("IFR must take values in [0,1]. Plase check data$ifr", call. = FALSE)
+    stop("IFR must take values in [0,1]. Plase check 'ifr'", call. = FALSE)
   
   # sort by group
   ifr <- ifr[order(ifr$group),]
