@@ -15,12 +15,9 @@ data {
   int<lower=1> N2; // days of observed data + # of days to forecast
   int deaths[N2, M];
   matrix[N2, M] f; // ifr
-  int EpidemicStart[M];
   real pop[M];
   real SI[N2]; // fixed SI using empirical data
 #include /data/NKX.stan
-  int memb[N]; // membership relating to each covariate observation
-  int idx[N];
 #include /data/data_glm.stan
 #include /data/weights_offset.stan
 #include /data/hyperparameters.stan
@@ -29,10 +26,9 @@ data {
 }
 
 transformed data {
-  int<lower=1> len = sum(NC); //total data observations
   vector[N2] SI_rev; // SI in reverse order
   vector[N2] f_rev[M]; // f in reversed order
-  int<lower=1> V[special_case ? t : 0, len] = make_V(len, special_case ? t : 0, v);
+  int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
 #include /tdata/tdata_glm.stan
 
   for(i in 1:N2)
@@ -65,6 +61,7 @@ transformed parameters {
   matrix[N2, M] Rt_adj = Rt;
   vector[N] eta;  // linear predictor
   vector[N] R0_vec;
+  int idx = 0;
 
   // aux has to be defined first in the hs case
   real aux = prior_dist_for_aux == 0 ? aux_unscaled : (prior_dist_for_aux <= 2 ?
@@ -74,9 +71,13 @@ transformed parameters {
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
 
-  for (i in 1:N) {
-    R0_vec[i] = mu[memb[i]];
+  R0_vec[1:NC[1]] = rep_vector(mu[1], NC[1]);
+  idx = NC[1]+1;
+  for (m in 2:M) {
+    R0_vec[idx:(idx+NC[m]-1)] = rep_vector(mu[m], NC[m]);
+    idx += NC[m];
   }
+
 
   if (prior_dist_for_aux == 0) // none
     aux = aux_unscaled;
@@ -117,17 +118,12 @@ transformed parameters {
   # Todo: Add branching logic for different link functions.
   # Todo: Add branching logic for different weights.
   Rt_vec = R0_vec * 2 .* inv_logit(-eta);
-
-  for (i in 1:N2) {
-    for (m in 1:M) {
-      Rt[i,m] = mu[m];
-    }
+  idx = 1
+  for (m in 1:M) {
+    Rt[1:NC[m],m] = Rt_vec[idx:(idx+NC[m]-1)];
+    idx += NC[m];
   }
 
-  for (i in 1:N) {
-    Rt[idx[i],memb[i]] = Rt_vec[i];
-  }
-  
   {
     matrix[N2,M] cumm_sum = rep_matrix(0,N2,M);
     for (m in 1:M){
@@ -180,7 +176,11 @@ model {
 
   if (prior_PD == 0) {
     for(m in 1:M){
-      deaths[EpidemicStart[m]:NC[m], m] ~ neg_binomial_2(E_deaths[EpidemicStart[m]:NC[m], m], phi);
+      for (i in 1:NC[m]) {
+        if (deaths[i,m] != -1) {
+          deaths[i,m] ~ neg_binomial_2(E_deaths[i,m], phi);
+        }
+      }
     }
   }
 }

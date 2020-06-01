@@ -29,7 +29,6 @@ checkData <- function(formula, data) {
   # change name of response vars
   vars                      <- all.vars(update(formula, ".~0"))
   df                        <- data[,vars]
-  data[,vars]               <- NULL
   data[,c("group", "date")] <- df
 
   # check if columns are coercible

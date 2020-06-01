@@ -25,47 +25,56 @@ genStanData <-
            si,
            seed_days = 6,
            ...) {
-
-  dots     <- list(...)
-
+  
+  # argument checking
   formula <- checkFormula(formula)
   data    <- checkData(formula, data)
-
-  groups <- levels(data$group)
-
-  obs   <- checkObs(data, obs)
-  pops  <- checkPops(pops, groups)
-  ifr   <- checkIFR(ifr, groups)
-  si    <- checkSV(si)
+  groups  <- levels(data$group)
+  obs     <- checkObs(data, obs)
+  pops    <- checkPops(pops, groups)
+  ifr     <- checkIFR(ifr, groups)
+  si      <- checkSV(si)
 
   if (seed_days < 1)
     stop("'seed_days' must be greater than zero", call. = FALSE)
 
-  # standata <- genModelStanData(levels(covariates$group), 
-  #                              data, 
-  #                              obs_type, 
-  #                              seed_days, 
-  #                              forecast
-  # )
-  
-  # # use only covariates within the simulation range
-  # obs           <- standata$obs
-  # f             <- function(x) cbind(x, idx = seq.int(nrow(x)))
-  # obs           <- data.table::rbindlist(Map(f, split(obs, obs$group)))
-  # covariates    <- dplyr::left_join(obs, covariates, by = c("group", "date"))
-  # covariates    <- covariates[complete.cases(covariates),]
-  # standata$memb <- as.numeric(covariates$group)
-  # standata$idx  <- covariates$idx
+  for(name in names(obs))
+    assign(name, obs[[name]])
 
-  # # get all stan data relating to data$covariates
-  # standata <- c(standata, 
-  #               genCovariatesStanData(formula, 
-  #                                     covariates, 
-  #                                     ...
-  #               )
-  # )
+  M <- length(levels(data$group))
+
+  # simulation periods required for each group
+  NC <- table(data$group) + 1
+  # longest simulation period required for any group
+  num_days_sim <- max(NC)
+  si <- padSV(si, num_days_sim, 1e-17)
+
+  # matrix fmat: each column is ifr * prob death for a group
+  dtd   <- padSV(dtd, num_days_sim, 1e-17)
+  fmat  <- dtd %*% t(ifr$ifr)
+
+  # missing death data takes value -1 and will be ignored
+  deaths       <- dplyr::left_join(data[,c("group", "date")], deaths, by = c("group", "date"))
+  deaths$obs[is.na(deaths$obs)] <- -1
+
+  standata <- list(M      = M,
+                   N0     = seed_days,
+                   SI     = si,
+                   pop    = pops$pop,
+                   f      = fmat,
+                   deaths = rlist::list.cbind(split(deaths$obs, deaths$group)),
+                   N2     = num_days_sim,
+                   NC     = NC)
+  
+  # get all stan data relating to data$covariates
+  standata <- c(standata, 
+                genCovariatesStanData(formula, 
+                                      data, 
+                                      ...
+                )
+  )
                                 
-  return(nlist(data, obs))
+  return(standata)
 } 
 
 
