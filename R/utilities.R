@@ -1,4 +1,102 @@
 
+
+checkFormula <- function(formula) {
+  if(!is.formula(formula))
+    stop("'formula' must have class formula.", call. = FALSE)
+  vars <- all.vars(update(formula, ".~0"))
+  if(length(vars) != 2)
+    stop("Left hand side of 'formula' must have form 'Rt(code,date)'.")
+  return(formula)
+}
+
+# Performs a series of checks on the 'data' argument of genStanData
+#
+# @param formula See [genStanData]
+# @param data See [genStanData] 
+checkData <- function(formula, data) {
+  if(!is.data.frame(data))
+    stop("'data' must be a data frame", call. = FALSE)
+
+  vars      <- all.vars(formula)
+  not_in_df <- !(vars %in% colnames(data))
+
+  if (any(not_in_df))
+    stop(paste(c("Could not find column(s) ", vars[not_in_df], " in 'data'"), collapse=" "), call.=FALSE)
+
+  # remove redundant columns
+  data <- data[,vars]
+
+  # change name of response vars
+  vars                      <- all.vars(update(formula, ".~0"))
+  df                        <- data[,vars]
+  data[,vars]               <- NULL
+  data[,c("group", "date")] <- df
+
+
+  # check for missing data
+  v <- !complete.cases(data)
+  if(any(v))
+    stop(paste(c("Missing data found on rows", which(v), " of 'data'"), collapse=" "))
+
+  # sort by group, then by date
+  data <- data[with(data, order(group, date)),]
+
+  # check for consecutive dates
+  f <- function(x) return(all(diff(x$date) == 1))
+  v <- !unlist(Map(f, split(data, data$group)))
+  if(any(v))
+    stop(paste(c("Dates corresponding to groups ", names(v[v]), " are not consecutive"), collapse=" "), call.=FALSE)
+
+  return(data)
+}
+
+
+checkData <- function(formula, data) {
+
+  # check existence of the response terms in 'formula'
+  vars <- all.vars(update(formula, ".~0"))
+
+  for(i in 1:2)
+    if(!(vars[i] %in% colnames(data)))
+      stop(paste0("Cannot find column '", vars[i], "' in 'data'"), call. = FALSE)
+
+  df <- data[,vars]
+  data[,vars] <- NULL
+  data[,c("group", "date")] <- df
+
+  data$groups <- as.factor(data$groups)
+  data$
+
+  # check consecutive date entries
+
+  return(data)
+  
+
+}
+
+processCovariates <- function(lhs, covariates) {
+  if (lhs[[1]] != "cbind")
+    stop("Left hand side of 'formula' must be of the form 'cbind(y1,y2)'")
+
+  covariates$group <- covariates[[lhs[[2]]]]
+  covariates$dates  <- covariates[[lhs[[3]]]]
+
+  if(is.null(covariates$group)) 
+    stop(paste0("cannot find ", lhs[[2]], "in ", env, call.=FALSE))
+  if(is.null(covariates$dates)) 
+    stop(paste0("cannot find ", lhs[[3]], "in ", env, call.=FALSE))
+  
+  covariates$group  <- as.factor(covariates$group)
+  covariates$dates   <- as.Date(covariates$dates)
+
+  return(covariates)
+}
+
+
+
+
+
+
 # Checks pertaining to data argument of getStanData
 #
 # Checks each component of data to ensure all required information exists.

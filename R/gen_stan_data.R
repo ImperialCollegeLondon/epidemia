@@ -1,4 +1,96 @@
 
+
+#' Generates data to pass to rstan::sampling
+#' 
+#' @param formula An R object of class `formula`. The left hand side must take the form `Rt(group,date)', with 'group' representing a factor vector indicating group membership (i.e. country, state, age cohort), and 'code' being a vector of Date objects.
+#' @param data A dataframe with columns corresponding to the terms appearing in 'formula'. See [lm].
+#' @param obs A named list giving available observations
+#' * deaths: A three column dataframe representing death data. The first column represents group membership and must be coercible to class 'factor'. The second column indicates the observation date and must be coercible to class `Date'.
+#' * incidence: Same as 'deaths', although giving incidence data.
+#' * dtd: A vector representing 'days to observation'. Like si, this is a probability vector. The nth element giving the probability that the observation event (incidence/death) occurs n days after an individual is infected.
+#' * dti: same as 'dtd', but representing time until an incidence is recorded after onset of infection.
+#' @param pops  A two column dataframe giving the total population of each group. First column represents the group, while the second the corresponding population.
+#' @param ifr A two column dataframe giving the infection fatality rate in each group. First column represents the group, while the second the corresponding IFR.
+#' @param si A vector representing the serial interval of the disease (a probability vector).
+#' @param seed_days Number of days for which to seed infections.
+#' @param ... Arguments allowed in rstanarm::stan_glmer(). For example one can control the prior distribution of the covariates.
+#' @examples
+#' @return A list with required data to pass to rstan::sampling.
+genStanData <- 
+  function(formula, 
+           data = NULL,
+           obs,
+           pops,
+           ifr,
+           si,
+           seed_days = 6
+           ...) {
+
+  dots     <- list(...)
+
+  formula <- checkFormula(formula)
+  data    <- checkData(formula, data)
+
+  levels <- levels(data$group)
+
+  covariates <- processCovariates(lhs, data$covariates)
+
+  # check and manipulate data argument
+  data <- checkData(data, levels(covariates$group))
+
+  if (!length(obs_type))
+    stop("'obs_type' must be one of ", paste(obs_types, collapse = ", "))
+  if (seed_days < 1)
+    stop("'seed_days' must be greater than zero")
+  if (forecast < 1)
+    stop("'forecast' must be greater than zero")
+
+  standata <- genModelStanData(levels(covariates$group), 
+                               data, 
+                               obs_type, 
+                               seed_days, 
+                               forecast
+  )
+  
+  # use only covariates within the simulation range
+  obs           <- standata$obs
+  f             <- function(x) cbind(x, idx = seq.int(nrow(x)))
+  obs           <- data.table::rbindlist(Map(f, split(obs, obs$group)))
+  covariates    <- dplyr::left_join(obs, covariates, by = c("group", "date"))
+  covariates    <- covariates[complete.cases(covariates),]
+  standata$memb <- as.numeric(covariates$group)
+  standata$idx  <- covariates$idx
+
+  # get all stan data relating to data$covariates
+  standata <- c(standata, 
+                genCovariatesStanData(formula, 
+                                      covariates, 
+                                      ...
+                )
+  )
+                                
+  return(standata)
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #' Generates data to pass to rstan::sampling
 #' 
 #' @param formula An R object of class `formula`. The left hand side must take the form `cbind(y1,y2)', with 'y1' representing a factor vector indicating group membership (i.e. country, state, age cohort), and 'y2' being a vector of Date objects.
