@@ -70,6 +70,7 @@ transformed parameters {
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
 
+
   {
     int idx = NC[1]+1;
     R0_vec[1:NC[1]] = rep_vector(mu[1], NC[1]);
@@ -78,6 +79,7 @@ transformed parameters {
       idx += NC[m];
     }
   }
+
 
 
   if (prior_dist_for_aux == 0) // none
@@ -139,7 +141,7 @@ transformed parameters {
         real convolution = dot_product(sub_col(prediction, 1, m, i-1), tail(SI_rev, i-1));
         cumm_sum[i,m] = cumm_sum[i-1,m] + prediction[i-1,m];
         Rt_adj[i,m] = ((pop[m]-cumm_sum[i,m]) / pop[m]) * Rt[i,m];
-        prediction[i, m] = prediction[i, m] + Rt_adj[i,m] * convolution;
+        prediction[i, m] = fmin(pop[m] - cumm_sum[i,m], prediction[i, m] + Rt_adj[i,m] * convolution);
       }
 
       E_deaths[1, m]= 1e-15 * prediction[1,m];

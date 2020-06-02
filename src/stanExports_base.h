@@ -89,11 +89,11 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(784, 0, "start", "/model/eta_no_intercept.stan");
     reader.add_event(786, 2, "end", "/model/eta_no_intercept.stan");
     reader.add_event(786, 116, "restart", "model_base");
-    reader.add_event(843, 173, "include", "/model/priors_glm.stan");
-    reader.add_event(843, 0, "start", "/model/priors_glm.stan");
-    reader.add_event(892, 49, "end", "/model/priors_glm.stan");
-    reader.add_event(892, 174, "restart", "model_base");
-    reader.add_event(909, 189, "end", "model_base");
+    reader.add_event(847, 177, "include", "/model/priors_glm.stan");
+    reader.add_event(847, 0, "start", "/model/priors_glm.stan");
+    reader.add_event(896, 49, "end", "/model/priors_glm.stan");
+    reader.add_event(896, 178, "restart", "model_base");
+    reader.add_event(913, 193, "end", "model_base");
     return reader;
 }
 template <typename T2__, typename T3__, typename T4__, typename T5__, typename T6__, typename T7__>
@@ -3315,6 +3315,20 @@ public:
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
                                 (get_base1(ifr_noise, m, "ifr_noise", 1) * dot_product(sub_col(prediction, 1, m, (i - 1)), tail(get_base1(f_rev, m, "f_rev", 1), (i - 1)))), 
                                 "assigning variable E_deaths");
+                    current_statement_begin__ = 818;
+                    if (as_bool(logical_lt(get_base1(E_deaths, i, m, "E_deaths", 1), 0))) {
+                        current_statement_begin__ = 819;
+                        if (pstream__) {
+                            stan_print(pstream__,"i: ");
+                            stan_print(pstream__,i);
+                            *pstream__ << std::endl;
+                        }
+                        current_statement_begin__ = 820;
+                        if (pstream__) {
+                            stan_print(pstream__,sub_col(prediction, 1, m, (i - 1)));
+                            *pstream__ << std::endl;
+                        }
+                    }
                 }
             }
             }
@@ -3430,127 +3444,127 @@ public:
                 }
             }
             // model body
-            current_statement_begin__ = 824;
+            current_statement_begin__ = 828;
             lp_accum__.add(exponential_log<propto__>(tau2, 0.03));
-            current_statement_begin__ = 825;
+            current_statement_begin__ = 829;
             for (int m = 1; m <= M; ++m) {
-                current_statement_begin__ = 826;
+                current_statement_begin__ = 830;
                 lp_accum__.add(exponential_log<propto__>(get_base1(y, m, "y", 1), (1 / tau2)));
             }
-            current_statement_begin__ = 828;
+            current_statement_begin__ = 832;
             lp_accum__.add(normal_log<propto__>(phi, 0, 5));
-            current_statement_begin__ = 829;
+            current_statement_begin__ = 833;
             lp_accum__.add(normal_log<propto__>(kappa, 0, 0.5));
-            current_statement_begin__ = 830;
-            lp_accum__.add(normal_log<propto__>(mu, 3.28, kappa));
-            current_statement_begin__ = 831;
-            lp_accum__.add(normal_log<propto__>(ifr_noise, 1, 0.1));
             current_statement_begin__ = 834;
+            lp_accum__.add(normal_log<propto__>(mu, 3.28, kappa));
+            current_statement_begin__ = 835;
+            lp_accum__.add(normal_log<propto__>(ifr_noise, 1, 0.1));
+            current_statement_begin__ = 838;
             if (as_bool((primitive_value(logical_gt(prior_dist_for_aux, 0)) && primitive_value(logical_gt(prior_scale_for_aux, 0))))) {
                 {
-                current_statement_begin__ = 835;
+                current_statement_begin__ = 839;
                 local_scalar_t__ log_half(DUMMY_VAR__);
                 (void) log_half;  // dummy to suppress unused var warning
                 stan::math::initialize(log_half, DUMMY_VAR__);
                 stan::math::fill(log_half, DUMMY_VAR__);
                 stan::math::assign(log_half,-(0.693147180559945286));
-                current_statement_begin__ = 836;
+                current_statement_begin__ = 840;
                 if (as_bool(logical_eq(prior_dist_for_aux, 1))) {
-                    current_statement_begin__ = 837;
+                    current_statement_begin__ = 841;
                     lp_accum__.add((normal_log(aux_unscaled, 0, 1) - log_half));
                 } else if (as_bool(logical_eq(prior_dist_for_aux, 2))) {
-                    current_statement_begin__ = 839;
+                    current_statement_begin__ = 843;
                     lp_accum__.add((student_t_log(aux_unscaled, prior_df_for_aux, 0, 1) - log_half));
                 } else {
-                    current_statement_begin__ = 841;
+                    current_statement_begin__ = 845;
                     lp_accum__.add(exponential_log(aux_unscaled, 1));
                 }
                 }
             }
-            current_statement_begin__ = 846;
+            current_statement_begin__ = 850;
             if (as_bool(logical_eq(prior_dist, 1))) {
-                current_statement_begin__ = 846;
+                current_statement_begin__ = 850;
                 lp_accum__.add(normal_log(z_beta, 0, 1));
             } else if (as_bool(logical_eq(prior_dist, 2))) {
-                current_statement_begin__ = 847;
+                current_statement_begin__ = 851;
                 lp_accum__.add(normal_log(z_beta, 0, 1));
             } else if (as_bool(logical_eq(prior_dist, 3))) {
                 {
-                current_statement_begin__ = 849;
+                current_statement_begin__ = 853;
                 local_scalar_t__ log_half(DUMMY_VAR__);
                 (void) log_half;  // dummy to suppress unused var warning
                 stan::math::initialize(log_half, DUMMY_VAR__);
                 stan::math::fill(log_half, DUMMY_VAR__);
                 stan::math::assign(log_half,-(0.693147180559945286));
-                current_statement_begin__ = 850;
-                lp_accum__.add(normal_log(z_beta, 0, 1));
-                current_statement_begin__ = 851;
-                lp_accum__.add((normal_log(get_base1(local, 1, "local", 1), 0, 1) - log_half));
-                current_statement_begin__ = 852;
-                lp_accum__.add(inv_gamma_log(get_base1(local, 2, "local", 1), multiply(0.5, prior_df), multiply(0.5, prior_df)));
-                current_statement_begin__ = 853;
-                lp_accum__.add((normal_log(get_base1(global, 1, "global", 1), 0, 1) - log_half));
                 current_statement_begin__ = 854;
-                lp_accum__.add(inv_gamma_log(get_base1(global, 2, "global", 1), (0.5 * global_prior_df), (0.5 * global_prior_df)));
+                lp_accum__.add(normal_log(z_beta, 0, 1));
                 current_statement_begin__ = 855;
+                lp_accum__.add((normal_log(get_base1(local, 1, "local", 1), 0, 1) - log_half));
+                current_statement_begin__ = 856;
+                lp_accum__.add(inv_gamma_log(get_base1(local, 2, "local", 1), multiply(0.5, prior_df), multiply(0.5, prior_df)));
+                current_statement_begin__ = 857;
+                lp_accum__.add((normal_log(get_base1(global, 1, "global", 1), 0, 1) - log_half));
+                current_statement_begin__ = 858;
+                lp_accum__.add(inv_gamma_log(get_base1(global, 2, "global", 1), (0.5 * global_prior_df), (0.5 * global_prior_df)));
+                current_statement_begin__ = 859;
                 lp_accum__.add(inv_gamma_log(caux, (0.5 * slab_df), (0.5 * slab_df)));
                 }
             } else if (as_bool(logical_eq(prior_dist, 4))) {
                 {
-                current_statement_begin__ = 858;
+                current_statement_begin__ = 862;
                 local_scalar_t__ log_half(DUMMY_VAR__);
                 (void) log_half;  // dummy to suppress unused var warning
                 stan::math::initialize(log_half, DUMMY_VAR__);
                 stan::math::fill(log_half, DUMMY_VAR__);
                 stan::math::assign(log_half,-(0.693147180559945286));
-                current_statement_begin__ = 859;
+                current_statement_begin__ = 863;
                 lp_accum__.add(normal_log(z_beta, 0, 1));
-                current_statement_begin__ = 860;
-                lp_accum__.add((normal_log(get_base1(local, 1, "local", 1), 0, 1) - log_half));
-                current_statement_begin__ = 861;
-                lp_accum__.add(inv_gamma_log(get_base1(local, 2, "local", 1), multiply(0.5, prior_df), multiply(0.5, prior_df)));
-                current_statement_begin__ = 862;
-                lp_accum__.add((normal_log(get_base1(local, 3, "local", 1), 0, 1) - log_half));
                 current_statement_begin__ = 864;
-                lp_accum__.add(inv_gamma_log(get_base1(local, 4, "local", 1), multiply(0.5, prior_scale), multiply(0.5, prior_scale)));
+                lp_accum__.add((normal_log(get_base1(local, 1, "local", 1), 0, 1) - log_half));
                 current_statement_begin__ = 865;
-                lp_accum__.add((normal_log(get_base1(global, 1, "global", 1), 0, 1) - log_half));
+                lp_accum__.add(inv_gamma_log(get_base1(local, 2, "local", 1), multiply(0.5, prior_df), multiply(0.5, prior_df)));
                 current_statement_begin__ = 866;
+                lp_accum__.add((normal_log(get_base1(local, 3, "local", 1), 0, 1) - log_half));
+                current_statement_begin__ = 868;
+                lp_accum__.add(inv_gamma_log(get_base1(local, 4, "local", 1), multiply(0.5, prior_scale), multiply(0.5, prior_scale)));
+                current_statement_begin__ = 869;
+                lp_accum__.add((normal_log(get_base1(global, 1, "global", 1), 0, 1) - log_half));
+                current_statement_begin__ = 870;
                 lp_accum__.add(inv_gamma_log(get_base1(global, 2, "global", 1), (0.5 * global_prior_df), (0.5 * global_prior_df)));
-                current_statement_begin__ = 867;
+                current_statement_begin__ = 871;
                 lp_accum__.add(inv_gamma_log(caux, (0.5 * slab_df), (0.5 * slab_df)));
                 }
             } else if (as_bool(logical_eq(prior_dist, 5))) {
-                current_statement_begin__ = 870;
-                lp_accum__.add(normal_log(z_beta, 0, 1));
-                current_statement_begin__ = 871;
-                lp_accum__.add(exponential_log(get_base1(mix, 1, "mix", 1), 1));
-            } else if (as_bool(logical_eq(prior_dist, 6))) {
                 current_statement_begin__ = 874;
                 lp_accum__.add(normal_log(z_beta, 0, 1));
                 current_statement_begin__ = 875;
                 lp_accum__.add(exponential_log(get_base1(mix, 1, "mix", 1), 1));
-                current_statement_begin__ = 876;
+            } else if (as_bool(logical_eq(prior_dist, 6))) {
+                current_statement_begin__ = 878;
+                lp_accum__.add(normal_log(z_beta, 0, 1));
+                current_statement_begin__ = 879;
+                lp_accum__.add(exponential_log(get_base1(mix, 1, "mix", 1), 1));
+                current_statement_begin__ = 880;
                 lp_accum__.add(chi_square_log(get_base1(one_over_lambda, 1, "one_over_lambda", 1), get_base1(prior_df, 1, "prior_df", 1)));
             } else if (as_bool(logical_eq(prior_dist, 7))) {
-                current_statement_begin__ = 879;
+                current_statement_begin__ = 883;
                 lp_accum__.add(normal_log(z_beta, 0, 1));
             }
-            current_statement_begin__ = 884;
+            current_statement_begin__ = 888;
             if (as_bool(logical_eq(has_intercept, 1))) {
-                current_statement_begin__ = 885;
+                current_statement_begin__ = 889;
                 if (as_bool(logical_eq(prior_dist_for_intercept, 1))) {
-                    current_statement_begin__ = 886;
+                    current_statement_begin__ = 890;
                     lp_accum__.add(normal_log(gamma, prior_mean_for_intercept, prior_scale_for_intercept));
                 } else if (as_bool(logical_eq(prior_dist_for_intercept, 2))) {
-                    current_statement_begin__ = 888;
+                    current_statement_begin__ = 892;
                     lp_accum__.add(student_t_log(gamma, prior_df_for_intercept, prior_mean_for_intercept, prior_scale_for_intercept));
                 }
             }
-            current_statement_begin__ = 893;
+            current_statement_begin__ = 897;
             if (as_bool(logical_gt(t, 0))) {
                 {
-                current_statement_begin__ = 894;
+                current_statement_begin__ = 898;
                 local_scalar_t__ dummy(DUMMY_VAR__);
                 (void) dummy;  // dummy to suppress unused var warning
                 stan::math::initialize(dummy, DUMMY_VAR__);
@@ -3558,15 +3572,15 @@ public:
                 stan::math::assign(dummy,decov_lp(z_b, z_T, rho, zeta, tau, regularization, delta, shape, t, p, lp__, lp_accum__, pstream__));
                 }
             }
-            current_statement_begin__ = 898;
+            current_statement_begin__ = 902;
             if (as_bool(logical_eq(prior_PD, 0))) {
-                current_statement_begin__ = 899;
+                current_statement_begin__ = 903;
                 for (int m = 1; m <= M; ++m) {
-                    current_statement_begin__ = 900;
+                    current_statement_begin__ = 904;
                     for (int i = 1; i <= get_base1(NC, m, "NC", 1); ++i) {
-                        current_statement_begin__ = 901;
+                        current_statement_begin__ = 905;
                         if (as_bool(logical_neq(get_base1(get_base1(deaths, i, "deaths", 1), m, "deaths", 2), -(1)))) {
-                            current_statement_begin__ = 902;
+                            current_statement_begin__ = 906;
                             lp_accum__.add(neg_binomial_2_log<propto__>(get_base1(get_base1(deaths, i, "deaths", 1), m, "deaths", 2), get_base1(E_deaths, i, m, "E_deaths", 1), phi));
                         }
                     }
@@ -4223,6 +4237,20 @@ public:
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
                                 (get_base1(ifr_noise, m, "ifr_noise", 1) * dot_product(sub_col(prediction, 1, m, (i - 1)), tail(get_base1(f_rev, m, "f_rev", 1), (i - 1)))), 
                                 "assigning variable E_deaths");
+                    current_statement_begin__ = 818;
+                    if (as_bool(logical_lt(get_base1(E_deaths, i, m, "E_deaths", 1), 0))) {
+                        current_statement_begin__ = 819;
+                        if (pstream__) {
+                            stan_print(pstream__,"i: ");
+                            stan_print(pstream__,i);
+                            *pstream__ << std::endl;
+                        }
+                        current_statement_begin__ = 820;
+                        if (pstream__) {
+                            stan_print(pstream__,sub_col(prediction, 1, m, (i - 1)));
+                            *pstream__ << std::endl;
+                        }
+                    }
                 }
             }
             }

@@ -76,3 +76,18 @@ genStanData <-
                                 
   return(standata)
 } 
+
+
+# Takes a simplex vector and extends to required length
+#
+# @param vec The vector to pad
+# @param len The exact required length
+# @param tol The value to impute for extended entries
+padSV <- function(vec, len, tol) {
+  nimpute <- len - length(vec)
+
+  if (nimpute > 0) 
+    vec <- c(vec, rep(tol, nimpute))
+  
+  return(vec[1:len])
+}
