@@ -61,21 +61,22 @@ transformed parameters {
   matrix[N2, M] Rt_adj = Rt;
   vector[N] eta;  // linear predictor
   vector[N] R0_vec;
-  int idx = 0;
 
   // aux has to be defined first in the hs case
   real aux = prior_dist_for_aux == 0 ? aux_unscaled : (prior_dist_for_aux <= 2 ?
              prior_scale_for_aux * aux_unscaled + prior_mean_for_aux :
              prior_scale_for_aux * aux_unscaled);
-
+  
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
 
-  R0_vec[1:NC[1]] = rep_vector(mu[1], NC[1]);
-  idx = NC[1]+1;
-  for (m in 2:M) {
-    R0_vec[idx:(idx+NC[m]-1)] = rep_vector(mu[m], NC[m]);
-    idx += NC[m];
+  {
+    int idx = NC[1]+1;
+    R0_vec[1:NC[1]] = rep_vector(mu[1], NC[1]);
+    for (m in 2:M) {
+      R0_vec[idx:(idx+NC[m]-1)] = rep_vector(mu[m], NC[m]);
+      idx += NC[m];
+    }
   }
 
 
@@ -118,10 +119,12 @@ transformed parameters {
   # Todo: Add branching logic for different link functions.
   # Todo: Add branching logic for different weights.
   Rt_vec = R0_vec * 2 .* inv_logit(-eta);
-  idx = 1
-  for (m in 1:M) {
-    Rt[1:NC[m],m] = Rt_vec[idx:(idx+NC[m]-1)];
-    idx += NC[m];
+  {
+    int idx = 1;
+    for (m in 1:M) {
+      Rt[1:NC[m],m] = Rt_vec[idx:(idx+NC[m]-1)];
+      idx += NC[m];
+    }
   }
 
   {

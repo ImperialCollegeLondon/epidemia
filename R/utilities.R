@@ -179,36 +179,6 @@ checkObsDF <- function(data, df, name) {
   return(df)
 }
 
-# # Checks pertaining to data argument of getStanData
-# #
-# # Checks each component of data to ensure all required information exists.
-# # Also reformats the components (changing column names, removing redundant columns etc.)
-# #
-# # @param data See [genStanData]
-# # @param levels The levels of the response group membership vector
-# checkData <- function(data, levels) {
-#   for(name in names(data))
-#     assign(name, data[[name]])
-  
-#   # Look for required columns
-#   required_cols <- c("obs", "pops", "ifr", "si", "dto")
-#   for (col in required_cols)
-#     if(!exists(col)) stop(paste0("data$", col, " not found"), call. = FALSE)
-  
-#   # check each component individually
-#   obs <- checkObs(obs, levels)
-#   pops <- checkPops(pops, levels)
-#   ifr <- checkIFR(ifr, levels)
-#   si <- checkSV(si, "data$si")
-#   dto <- checkSV(dto, "data$dto")
-  
-#   data <- nlist(obs, pops, ifr, si, dto)
-#   if(exists("covariates"))
-#     data$covariates <- covariates
-  
-#   return(data)
-# }
-
 # Generic checking of a dataframe
 #
 # @param df The Data.Frame to be checked
@@ -226,47 +196,6 @@ checkDF <- function(df, name, nc) {
   
   as.data.frame(df[,1:nc])
 }
-
-# # Check the data$obs argument of genStanData
-# #
-# # Removes levels not in response group vector
-# #
-# # @param obs See [genStanData]
-# checkObs <- function(obs, levels) {
-#   obs <- checkDF(obs, "data$obs", 3)
-#   names(obs) <- c("group", "date", "obs")
-  
-#   # check if columns are coercible
-#   obs <- tryCatch(
-#     {
-#       obs$group <- as.factor(obs$group)
-#       obs$date <- as.Date(obs$date)
-#       obs$obs <- as.numeric(obs$obs)
-#       obs
-#     },
-#     error = function(cond) {
-#       message("Columns of 'data$obs' are not coercible to required classes [factor, Date, numeric]")
-#       message("Original message:")
-#       message(cond)
-#       return(NULL)
-#     }
-#   )
-
-#   # removing rows not represented in response groups
-#   obs <- obs[obs$group %in% levels,]
-
-#   # requiring all levels have an associated population
-#   if (!all(levels %in% obs$group))
-#     stop(paste0("Levels in 'formula' response missing in data$obs"))
-  
-#   if(any(duplicated(obs[,1:2])))
-#     stop("Observations for a given group and date must be unique. Please check 'data$obs'.", call. = FALSE)
-
-#   # sort by group, then by date
-#   obs <- obs[with(obs, order(group, date)),]
-
-#   return(obs)
-# }
 
 # Check the data$pops argument of genStanData
 #
