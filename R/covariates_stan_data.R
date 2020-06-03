@@ -27,13 +27,7 @@ genCovariatesStanData <-
   if (!length(link))
     stop("'link' must be one of ", paste(supported_links, collapse = ", "))
 
-  print("x: ")
-  print(x)
-
   x_stuff <- center_x(x, sparse)
-
-  print("x_sutff: ")
-  print(x_stuff)
 
   for (i in names(x_stuff)) # xtemp, xbar, has_intercept
     assign(i, x_stuff[[i]])

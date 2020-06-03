@@ -56,7 +56,6 @@ epim <-
     mc$data     <- data
     glmod       <- eval(mc, parent.frame())
     x           <- glmod$X
-    return(x)
 
     if ("b" %in% colnames(x)) {
       stop("stan_glmer does not allow the name 'b' for predictor variables.", 
@@ -100,8 +99,6 @@ epim <-
   algorithm <- match.arg(algorithm)
 
   # parameters to keep track of
-  print(paste0("has intercept: ", standata$has_intercept))
-
   pars <- c(if (standata$has_intercept) "alpha", 
             "beta",
             if (length(group)) "b",
