@@ -25,7 +25,8 @@ Imports:
     Rcpp (>= 0.12.0),
     rlist (>= 0.4.6.1),
     rstan (>= 2.18.1),
-    rstantools (>= 2.0.0)
+    rstantools (>= 2.0.0),
+    rstanarm (>= 2.19.2)
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
