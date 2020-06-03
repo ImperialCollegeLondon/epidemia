@@ -2,7 +2,6 @@
 
 #' Generates data to pass to rstan::sampling
 #' 
-#' @param formula An R object of class `formula`. The left hand side must take the form `Rt(group,date)', with 'group' representing a factor vector indicating group membership (i.e. country, state, age cohort), and 'code' being a vector of Date objects.
 #' @param data A dataframe with columns corresponding to the terms appearing in 'formula'. See [lm].
 #' @param obs A named list giving available observations
 #' * deaths: A three column dataframe representing death data. The first column represents group membership and must be coercible to class 'factor'. The second column indicates the observation date and must be coercible to class `Date'.
@@ -13,30 +12,15 @@
 #' @param ifr A two column dataframe giving the infection fatality rate in each group. First column represents the group, while the second the corresponding IFR.
 #' @param si A vector representing the serial interval of the disease (a probability vector).
 #' @param seed_days Number of days for which to seed infections.
-#' @param ... Arguments allowed in rstanarm::stan_glmer(). For example one can control the prior distribution of the covariates.
 #' @examples
 #' @return A list with required data to pass to rstan::sampling.
-genStanData <- 
-  function(formula, 
-           data = NULL,
+genModelStanData <- 
+  function(data,
            obs,
            pops,
            ifr,
            si,
-           seed_days = 6,
-           ...) {
-  
-  # argument checking
-  formula <- checkFormula(formula)
-  data    <- checkData(formula, data)
-  groups  <- levels(data$group)
-  obs     <- checkObs(data, obs)
-  pops    <- checkPops(pops, groups)
-  ifr     <- checkIFR(ifr, groups)
-  si      <- checkSV(si)
-
-  if (seed_days < 1)
-    stop("'seed_days' must be greater than zero", call. = FALSE)
+           seed_days = 6) {
 
   for(name in names(obs))
     assign(name, obs[[name]])
@@ -65,12 +49,8 @@ genStanData <-
                    deaths = rlist::list.cbind(split(deaths$obs, deaths$group)),
                    N2     = num_days_sim,
                    NC     = NC)
-  
-  # get all stan data relating to data$covariates
-  out <- genCovariatesStanData(formula, data, ...)
-  out$standata <- c(standata, out$standata)
 
-  return(out)
+  return(standata)
 } 
 
 

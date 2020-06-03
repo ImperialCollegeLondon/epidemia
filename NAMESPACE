@@ -1,7 +1,9 @@
 import(Rcpp)
 import(methods)
 importFrom(rstan,sampling)
+importFrom(rstan,vb)
 importFrom(rstan,extract_sparse_parts)
+importFrom(lme4, mkVarCorr)
 importFrom(Matrix,Matrix)
 importFrom(Matrix,t)
 importFrom(loo, nlist)
@@ -9,7 +11,7 @@ importFrom(dplyr, left_join)
 importFrom(rlist, list.cbind)
 importFrom(data.table, rbindlist)
 useDynLib(EpiBayes, .registration = TRUE)
-export(genStanData)
+export(epim)
 export(stanmodels)
 
 

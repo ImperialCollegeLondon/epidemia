@@ -29,7 +29,11 @@ stan_glm.fit <-
 
     # Todo: add incidence data validation here.
 
+    print("x:")
+    print(x)
     x_stuff <- center_x(x, sparse)
+    print("x_stuff")
+    print(x_stuff)
 
     for (i in names(x_stuff)) # xtemp, xbar, has_intercept
       assign(i, x_stuff[[i]])
@@ -132,6 +136,7 @@ stan_glm.fit <-
 
     # create entries in the data block of the .stan file
     standata <- nlist(
+      beta_nms <- colnames(xtemp),
       N = nrow(xtemp),
       K = ncol(xtemp),
       xbar = as.array(xbar),
@@ -141,7 +146,6 @@ stan_glm.fit <-
       has_offset = length(offset) > 0,
       has_intercept,
       prior_PD,
-      compute_mean_PPD = mean_PPD,
       prior_dist,
       prior_mean,
       prior_scale,
@@ -152,7 +156,6 @@ stan_glm.fit <-
       prior_df_for_intercept = c(prior_df_for_intercept),
       global_prior_df, global_prior_scale, slab_df, slab_scale, # for hs priors
       prior_df_for_intercept = c(prior_df_for_intercept),
-      prior_dist_for_aux = prior_dist_for_aux,
       num_normals = if(prior_dist == 7) as.integer(prior_df) else integer(0),
       num_normals_z = integer(0),
       clogit = 0L, J = 0L, strata = integer()

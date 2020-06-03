@@ -2,11 +2,12 @@
 # Modified from rstanarm::stan_glm and rstanarm::stan_glmer
 genCovariatesStanData <- 
   function(formula,
-          x,
+           x,
            link = "logit",
            subset,
            na.action = getOption("na.action", "na.omit"),
            contrasts = NULL,
+           group =  NULL,
            ...,
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
@@ -15,13 +16,24 @@ genCovariatesStanData <-
            algorithm = c("sampling", "meanfield", "fullrank"),
            sparse = FALSE) {
 
+  if (is.null(prior)) 
+    prior <- list()
+  if (is.null(prior_intercept)) 
+    prior_intercept <- list()
+
   linkstr <- link
   supported_links <- c("logit", "probit", "cauchit", "log", "cloglog")
   link <- which(supported_links == link)
   if (!length(link))
     stop("'link' must be one of ", paste(supported_links, collapse = ", "))
 
+  print("x: ")
+  print(x)
+
   x_stuff <- center_x(x, sparse)
+
+  print("x_sutff: ")
+  print(x_stuff)
 
   for (i in names(x_stuff)) # xtemp, xbar, has_intercept
     assign(i, x_stuff[[i]])
@@ -100,11 +112,15 @@ genCovariatesStanData <-
 
   # make a copy of user specification before modifying 'group' (used for keeping
   # track of priors)
-  user_covariance <- if (!length(group)) NULL else group[["decov"]]
+  user_covariance <- if (!length(group)) NULL else prior_covariance
 
   if (length(group) && length(group$flist)) {
+
+    if (is.null(prior_covariance))
+      stop("'prior_covariance' can't be NULL.", call. = FALSE)
+
     check_reTrms(group)
-    decov <- group$decov
+    decov <- prior_covariance
     
     Z <- t(group$Zt)
     group <-
@@ -177,7 +193,7 @@ genCovariatesStanData <-
     standata$u_X <- integer(0)
   }
   
-  return(nlist(standata, glmod))
+  return(standata)
 }
 
 # @param Ztlist ranef indicator matrices

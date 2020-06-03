@@ -16,151 +16,196 @@
 #' @return A list with required data to pass to rstan::sampling.
 epim <- 
   function(formula, 
-           data = NULL,
+           data,
            obs,
            pops,
            ifr,
            si,
            seed_days = 6,
            algorithm = c("sampling", "meanfield", "fullrank"),
+           stan_data = FALSE,
            ...) {
   
+  # argument checking
   formula <- checkFormula(formula)
-  data <- checkData(data)
-  
+  data    <- checkData(formula, data)
+  groups  <- levels(data$group)
+  obs     <- checkObs(data, obs)
+  pops    <- checkPops(pops, groups)
+  ifr     <- checkIFR(ifr, groups)
+  si      <- checkSV(si)
+
+  if (seed_days < 1)
+    stop("'seed_days' must be greater than zero", call. = FALSE)
+
+  # check if formula contain terms for partial pooling
   mixed <- is_mixed(formula)
   
   if (mixed) {
+
     # use lme4::glformula
-    call <- match.call(expand.dots = TRUE)
-    mc <- match.call(expand.dots = FALSE)
-    mc$formula <- update(formula, NULL ~ .)
-    mc[[1]] <- quote(lme4::glFormula)
-    mc$control <- make_glmerControl(
+    call        <- match.call(expand.dots = TRUE)
+    mc          <- match.call(expand.dots = FALSE)
+    mc$formula  <- formula(delete.response(terms(formula)))
+    mc[[1]]     <- quote(lme4::glFormula)
+    mc$control  <- make_glmerControl(
       ignore_lhs = TRUE,  
-      ignore_x_scale = prior$autoscale %ORifNULL% FALSE
+      ignore_x_scale = FALSE
     )
-    mc$prior <- NULL
-    mc$data <- data
-    glmod <- eval(mc, parent.frame())
-    X <- glmod$X
-    if ("b" %in% colnames(X)) {
+    mc$prior    <- NULL
+    mc$data     <- data
+    glmod       <- eval(mc, parent.frame())
+    x           <- glmod$X
+    return(x)
+
+    if ("b" %in% colnames(x)) {
       stop("stan_glmer does not allow the name 'b' for predictor variables.", 
            call. = FALSE)
     }
-    if (is.null(prior)) 
-      prior <- list()
-    if (is.null(prior_intercept)) 
-      prior_intercept <- list()
-    if (is.null(prior_covariance))
-      stop("'prior_covariance' can't be NULL.", call. = FALSE)
     group <- glmod$reTrms
-    group$decov <- prior_covariance
-    algorithm <- match.arg(algorithm)
     
   } else {
     # create model frame
-    mf_args <- list()
-    mf_args$formula <- update(formula, NULL ~ .)
-    mf_args$data <- data
-    mf_args$drop.unused.levels <- TRUE
-    mf <- eval("model.frame", parent.frame())
+    mfargs <- list()
+    mfargs$formula <- formula(delete.response(terms(formula)))
+    mfargs$data <- data
+    mfargs$drop.unused.levels <- TRUE
+    mf <- do.call("model.frame", args = mfargs)
     
     # create model matrix
     mt <- attr(mf, "terms")
-    X <- model.matrix(object = mt, data = mf)
+    x <- model.matrix(object = mt, data = mf)
   }
-  
-  
-  
-}
+
+  # generate stan data 
+  margs <- list()
+  margs$data <- data
+  margs$obs <- obs
+  margs$pops <- pops
+  margs$ifr <- ifr
+  margs$si <- si
+  margs$seed_days <- seed_days
+  standata <- do.call("genModelStanData", args=margs)
+
+  cargs <- list(...)
+  cargs$formula <- formula
+  cargs$x <- x
+  if (exists("group"))
+    cargs$group <-  group 
+  standata <- c(standata,
+                do.call("genCovariatesStanData", args=cargs))
 
 
+  if (stan_data) return(standata)
+  algorithm <- match.arg(algorithm)
 
+  # parameters to keep track of
+  print(paste0("has intercept: ", standata$has_intercept))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-epim <- 
-  function(formula, 
-           data = NULL,
-           obs,
-           pops,
-           ifr,
-           si,
-           seed_days = 6,
-           algorithm = c("sampling", "meanfield", "fullrank"),
-           ...) {
-  
-  # parse input to create stan data
-  mc <- match.call(expand.dots = FALSE)
-  mc[[1]] <- quote(genStanData)
-  res <- eval(mc, parent.frame)
-
-  standata      <- res$standata
-  glmod         <- res$glmod
-  nms           <- colnames(glmod$X)
-  has_intercept <- grepl("(Intercept)", nms, fixed = TRUE)
-  nms           <- setdiff(nms, "(Intercept)")
-  groups        <- glmod$reTrms
-
-  pars <- c(if (has_intercept) "alpha", 
+  pars <- c(if (standata$has_intercept) "alpha", 
             "beta",
             if (length(group)) "b",
-            if (standata$len_theta_L) "theta_L")
+            if (standata$len_theta_L) "theta_L",
+            "y",
+            "mu",
+            "tau2",
+            "phi",
+            "kappa",
+            "ifr_noise")
 
-  args = list(...)
-  if (algorithm == "sampling") {
-    out <- rstan::sampling(object = stanmodels$base,
-                           args)
+  args <- list(...)
+  args$pars <- pars
+  args$object <- stanmodels$base
+  args$data <- standata
+
+  if (algorithm == "sampling") 
+    out <- do.call("sampling", args)
+  else 
+    out <- do.call("vb", args)
+
+  if (standata$len_theta_L) {
+      cnms <- group$cnms
+      out <- transformTheta_L(out, cnms)
+
+      # names
+      Sigma_nms <- lapply(cnms, FUN = function(grp) {
+        nm <- outer(grp, grp, FUN = paste, sep = ",")
+        nm[lower.tri(nm, diag = TRUE)]
+      })
+
+      nms <- names(cnms)
+      for (j in seq_along(Sigma_nms)) {
+        Sigma_nms[[j]] <- paste0(nms[j], ":", Sigma_nms[[j]])
+      }
+
+      Sigma_nms <- unlist(Sigma_nms)
   }
-  else {
-    out <- rstan::vb(object = stanmodels$base,
-                     args)
-  }
 
-  new_names <- c(if (has_intercept) "(Intercept)", 
-                   colnames(xtemp),
-                   if (length(group) && length(group$flist)) c(paste0("b[", b_nms, "]")),
-                   if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
-                   "log-posterior")
+  # replace 'pars' with descriptive names
+  new_names <- c(if (standata$has_intercept) "(Intercept)", 
+                 standata$beta_nms,
+                 if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
+                 if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
+                 c(paste0("y[", 1:standata$M, "]")),
+                 c(paste0("mu[", 1:standata$M, "]")),
+                 "tau",
+                 "phi",
+                 "kappa",
+                 c(paste0("Ifr_noise[", 1:standata$M, "]")),
+                 "log-posterior")
 
+  out@sim$fnames_oi <- new_names
 
-  stanfit@sim$fnames_oi <- new_names
-
-
-  }
+  return(out)
 }
+
+
+
+is_mixed <- function(formula) {
+  !is.null(lme4::findbars(formula))
+}
+
 
 transformTheta_L <- function(stanfit, cnms) {
 
+
   thetas <- extract(stanfit, pars = "theta_L", inc_warmup = TRUE, 
-                        permuted = FALSE)
-      nc <- sapply(cnms, FUN = length)
-      nms <- names(cnms)
-      Sigma <- apply(thetas, 1:2, FUN = function(theta) {
-        Sigma <- mkVarCorr(sc = 1, cnms, nc, theta, nms)
-        unlist(sapply(Sigma, simplify = FALSE, 
-                      FUN = function(x) x[lower.tri(x, TRUE)]))
-      })
-      l <- length(dim(Sigma))
-      end <- tail(dim(Sigma), 1L)
-      shift <- grep("^theta_L", names(stanfit@sim$samples[[1]]))[1] - 1L
-      if (l == 3) for (chain in 1:end) for (param in 1:nrow(Sigma)) {
-        stanfit@sim$samples[[chain]][[shift + param]] <- Sigma[param, , chain] 
-      } else for (chain in 1:end) {
-        stanfit@sim$samples[[chain]][[shift + 1]] <- Sigma[, chain]
-      }
-    return(stanfit)
+                      permuted = FALSE)
+
+  nc <- sapply(cnms, FUN = length)
+  nms <- names(cnms)
+  Sigma <- apply(thetas, 1:2, FUN = function(theta) {
+    Sigma <- mkVarCorr(sc = 1, cnms, nc, theta, nms)
+    unlist(sapply(Sigma, simplify = FALSE, 
+                  FUN = function(x) x[lower.tri(x, TRUE)]))
+  })
+  l <- length(dim(Sigma))
+  end <- tail(dim(Sigma), 1L)
+  shift <- grep("^theta_L", names(stanfit@sim$samples[[1]]))[1] - 1L
+  if (l == 3) for (chain in 1:end) for (param in 1:nrow(Sigma)) {
+    stanfit@sim$samples[[chain]][[shift + param]] <- Sigma[param, , chain] 
+  } else for (chain in 1:end) {
+    stanfit@sim$samples[[chain]][[shift + 1]] <- Sigma[, chain]
+  }
+
+  return(stanfit)
+}
+
+
+make_b_nms <- function(group, m = NULL, stub = "Long") {
+  group_nms <- names(group$cnms)
+  b_nms <- character()
+  m_stub <- if (!is.null(m)) get_m_stub(m, stub = stub) else NULL
+  for (i in seq_along(group$cnms)) {
+    nm <- group_nms[i]
+    nms_i <- paste(group$cnms[[i]], nm)
+    levels(group$flist[[nm]]) <- gsub(" ", "_", levels(group$flist[[nm]]))
+    if (length(nms_i) == 1) {
+      b_nms <- c(b_nms, paste0(m_stub, nms_i, ":", levels(group$flist[[nm]])))
+    } else {
+      b_nms <- c(b_nms, c(t(sapply(paste0(m_stub, nms_i), paste0, ":", 
+                                   levels(group$flist[[nm]])))))
+    }
+  }
+  return(b_nms)  
 }

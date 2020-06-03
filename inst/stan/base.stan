@@ -19,7 +19,6 @@ data {
   real SI[N2]; // fixed SI using empirical data
 #include /data/NKX.stan
 #include /data/data_glm.stan
-#include /data/weights_offset.stan
 #include /data/hyperparameters.stan
 #include /data/glmer_stuff.stan
 #include /data/glmer_stuff2.stan
@@ -104,7 +103,6 @@ transformed parameters {
   }
 
   # Todo: Add branching logic for different link functions.
-  # Todo: Add branching logic for different weights.
   Rt_vec = R0_vec * 2 .* inv_logit(-eta);
   {
     int idx = 1;
