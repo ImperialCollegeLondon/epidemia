@@ -139,19 +139,19 @@ epim <-
   }
 
   # replace 'pars' with descriptive names
-  new_names <- c(if (standata$has_intercept) "(Intercept)", 
-                 standata$beta_nms,
-                 if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
-                 if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
-                 c(paste0("y[", 1:standata$M, "]")),
-                 c(paste0("mu[", 1:standata$M, "]")),
-                 "tau",
-                 "phi",
-                 "kappa",
-                 c(paste0("Ifr_noise[", 1:standata$M, "]")),
-                 "log-posterior")
+  # new_names <- c(if (standata$has_intercept) "(Intercept)", 
+  #                standata$beta_nms,
+  #                if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
+  #                if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
+  #                c(paste0("y[", 1:standata$M, "]")),
+  #                c(paste0("mu[", 1:standata$M, "]")),
+  #                "tau",
+  #                "phi",
+  #                "kappa",
+  #                c(paste0("Ifr_noise[", 1:standata$M, "]")),
+  #                "log-posterior")
 
-  out@sim$fnames_oi <- new_names
+  #out@sim$fnames_oi <- new_names
 
   return(out)
 }
