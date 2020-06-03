@@ -16,6 +16,7 @@ checkFormula <- function(formula) {
 # @param formula See [genStanData]
 # @param data See [genStanData] 
 checkData <- function(formula, data) {
+
   if(!is.data.frame(data))
     stop("'data' must be a data frame", call. = FALSE)
 

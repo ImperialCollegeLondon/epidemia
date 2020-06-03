@@ -25,6 +25,84 @@ epim <-
            algorithm = c("sampling", "meanfield", "fullrank"),
            ...) {
   
+  formula <- checkFormula(formula)
+  data <- checkData(data)
+  
+  mixed <- is_mixed(formula)
+  
+  if (mixed) {
+    # use lme4::glformula
+    call <- match.call(expand.dots = TRUE)
+    mc <- match.call(expand.dots = FALSE)
+    mc$formula <- update(formula, NULL ~ .)
+    mc[[1]] <- quote(lme4::glFormula)
+    mc$control <- make_glmerControl(
+      ignore_lhs = TRUE,  
+      ignore_x_scale = prior$autoscale %ORifNULL% FALSE
+    )
+    mc$prior <- NULL
+    mc$data <- data
+    glmod <- eval(mc, parent.frame())
+    X <- glmod$X
+    if ("b" %in% colnames(X)) {
+      stop("stan_glmer does not allow the name 'b' for predictor variables.", 
+           call. = FALSE)
+    }
+    if (is.null(prior)) 
+      prior <- list()
+    if (is.null(prior_intercept)) 
+      prior_intercept <- list()
+    if (is.null(prior_covariance))
+      stop("'prior_covariance' can't be NULL.", call. = FALSE)
+    group <- glmod$reTrms
+    group$decov <- prior_covariance
+    algorithm <- match.arg(algorithm)
+    
+  } else {
+    # create model frame
+    mf_args <- list()
+    mf_args$formula <- update(formula, NULL ~ .)
+    mf_args$data <- data
+    mf_args$drop.unused.levels <- TRUE
+    mf <- eval("model.frame", parent.frame())
+    
+    # create model matrix
+    mt <- attr(mf, "terms")
+    X <- model.matrix(object = mt, data = mf)
+  }
+  
+  
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+epim <- 
+  function(formula, 
+           data = NULL,
+           obs,
+           pops,
+           ifr,
+           si,
+           seed_days = 6,
+           algorithm = c("sampling", "meanfield", "fullrank"),
+           ...) {
+  
   # parse input to create stan data
   mc <- match.call(expand.dots = FALSE)
   mc[[1]] <- quote(genStanData)
@@ -33,7 +111,7 @@ epim <-
   standata      <- res$standata
   glmod         <- res$glmod
   nms           <- colnames(glmod$X)
-  has_interecpt <- grepl("(Intercept)", nms, fixed = TRUE)
+  has_intercept <- grepl("(Intercept)", nms, fixed = TRUE)
   nms           <- setdiff(nms, "(Intercept)")
   groups        <- glmod$reTrms
 

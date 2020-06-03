@@ -2,12 +2,10 @@
 # Modified from rstanarm::stan_glm and rstanarm::stan_glmer
 genCovariatesStanData <- 
   function(formula,
-           data = NULL,
+          x,
            link = "logit",
            subset,
-           weights,
            na.action = getOption("na.action", "na.omit"),
-           offset,
            contrasts = NULL,
            ...,
            prior = rstanarm::normal(),
@@ -15,49 +13,13 @@ genCovariatesStanData <-
            prior_covariance = rstanarm::decov(),
            prior_PD = FALSE,
            algorithm = c("sampling", "meanfield", "fullrank"),
-           adapt_delta = NULL,
            sparse = FALSE) {
 
-  call <- match.call(expand.dots = TRUE)
-  mc <- match.call(expand.dots = FALSE)
-  mc$formula <- formula
-  rlang::f_lhs(mc$formula) <- NULL
-  data <- checkCovariates(data)
-  mc[[1]] <- quote(lme4::glFormula)
-  mc$control <- make_glmerControl(
-    ignore_lhs = TRUE,  
-    ignore_x_scale = prior$autoscale %ORifNULL% FALSE
-  )
-  mc$prior <- NULL
-  mc$data <- data
-  glmod <- eval(mc, parent.frame())
-  X <- glmod$X
-  if ("b" %in% colnames(X)) {
-    stop("stan_glmer does not allow the name 'b' for predictor variables.", 
-         call. = FALSE)
-  }
-  offset <- model.offset(glmod$fr) %ORifNULL% double(0)
-  weights <- validate_weights(as.vector(model.weights(glmod$fr)))
-
-  if (is.null(prior)) 
-    prior <- list()
-  if (is.null(prior_intercept)) 
-    prior_intercept <- list()
-  if (is.null(prior_covariance))
-    stop("'prior_covariance' can't be NULL.", call. = FALSE)
-
-  group <- glmod$reTrms
-  group$decov <- prior_covariance
-  algorithm <- match.arg(algorithm)
-
-  x = X 
   linkstr <- link
   supported_links <- c("logit", "probit", "cauchit", "log", "cloglog")
   link <- which(supported_links == link)
   if (!length(link))
     stop("'link' must be one of ", paste(supported_links, collapse = ", "))
-
-  # Todo: add incidence data validation here.
 
   x_stuff <- center_x(x, sparse)
 
@@ -114,9 +76,6 @@ genCovariatesStanData <-
   prior_scale_for_intercept <-
     min(.Machine$double.xmax, prior_scale_for_intercept)
 
-  if (length(weights) > 0 && all(weights == 1)) weights <- double()
-  if (length(offset)  > 0 && all(offset  == 0)) offset  <- double()
-
   # create entries in the data block of the .stan file
   standata <- nlist(
     N = nrow(xtemp),
@@ -124,8 +83,6 @@ genCovariatesStanData <-
     xbar = as.array(xbar),
     dense_X = !sparse,
     link,
-    has_weights = length(weights) > 0,
-    has_offset = length(offset) > 0,
     has_intercept,
     prior_PD,
     prior_dist,
@@ -219,8 +176,6 @@ genCovariatesStanData <-
     standata$v_X <- integer(0)
     standata$u_X <- integer(0)
   }
-  standata$weights <- weights
-  standata$offset_ <- offset
   
   return(nlist(standata, glmod))
 }
