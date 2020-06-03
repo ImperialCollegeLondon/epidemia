@@ -22,12 +22,92 @@ epim <-
            ifr,
            si,
            seed_days = 6,
+           algorithm = c("sampling", "meanfield", "fullrank"),
            ...) {
-
-
   
+  # parse input to create stan data
+  mc <- match.call(expand.dots = FALSE)
+  mc[[1]] <- quote(genStanData)
+  res <- eval(mc, parent.frame)
+
+  standata      <- res$standata
+  glmod         <- res$glmod
+  nms           <- colnames(glmod$X)
+  has_interecpt <- grepl("(Intercept)", nms, fixed = TRUE)
+  nms           <- setdiff(nms, "(Intercept)")
+  groups        <- glmod$reTrms
+
+  pars <- c(if (has_intercept) "alpha", 
+            "beta",
+            if (length(group)) "b",
+            if (standata$len_theta_L) "theta_L")
+
+  args = list(...)
+  QR = if (is.null(args$QR)) FALSE else args$QR
+
+  if (algorithm == "sampling") {
+    out <- rstan::sampling(object = stanmodels$base,
+                           args)
+  }
+  else {
+    out <- rstan::vb(object = stanmodels$base,
+                     args)
+    if (!QR) 
+        recommend_QR_for_vb()
+  }
+
+  new_names <- c(if (has_intercept) "(Intercept)", 
+                   colnames(xtemp),
+                   if (length(group) && length(group$flist)) c(paste0("b[", b_nms, "]")),
+                   if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
+                   "log-posterior")
 
 
+  stanfit@sim$fnames_oi <- new_names
 
 
+  }
+}
+
+# Message to issue when fitting model with ADVI but 'QR=FALSE'. 
+recommend_QR_for_vb <- function() {
+  message(
+    "Setting 'QR' to TRUE can often be helpful when using ", 
+    "one of the variational inference algorithms. ", 
+    "See the documentation for the 'QR' argument."
+  )
+}
+
+# ff QR then transform beta parameters
+transformBeta <- function(stanfit) {
+      thetas <- extract(stanfit, pars = "beta", inc_warmup = TRUE, 
+                        permuted = FALSE)
+      betas <- apply(thetas, 1:2, FUN = function(theta) R_inv %*% theta)
+      end <- tail(dim(betas), 1L)
+      for (chain in 1:end) for (param in 1:nrow(betas)) {
+        stanfit@sim$samples[[chain]][[has_intercept + param]] <-
+          if (ncol(xtemp) > 1) betas[param, , chain] else betas[param, chain]
+      }
+}
+
+transformTheta_L <- function(stanfit, cnms) {
+
+  thetas <- extract(stanfit, pars = "theta_L", inc_warmup = TRUE, 
+                        permuted = FALSE)
+      nc <- sapply(cnms, FUN = length)
+      nms <- names(cnms)
+      Sigma <- apply(thetas, 1:2, FUN = function(theta) {
+        Sigma <- mkVarCorr(sc = 1, cnms, nc, theta, nms)
+        unlist(sapply(Sigma, simplify = FALSE, 
+                      FUN = function(x) x[lower.tri(x, TRUE)]))
+      })
+      l <- length(dim(Sigma))
+      end <- tail(dim(Sigma), 1L)
+      shift <- grep("^theta_L", names(stanfit@sim$samples[[1]]))[1] - 1L
+      if (l == 3) for (chain in 1:end) for (param in 1:nrow(Sigma)) {
+        stanfit@sim$samples[[chain]][[shift + param]] <- Sigma[param, , chain] 
+      } else for (chain in 1:end) {
+        stanfit@sim$samples[[chain]][[shift + 1]] <- Sigma[, chain]
+      }
+    return(stanfit)
 }

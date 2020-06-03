@@ -67,14 +67,10 @@ genStanData <-
                    NC     = NC)
   
   # get all stan data relating to data$covariates
-  standata <- c(standata, 
-                genCovariatesStanData(formula, 
-                                      data, 
-                                      ...
-                )
-  )
-                                
-  return(standata)
+  out <- genCovariatesStanData(formula, data, ...)
+  out$standata <- c(standata, out$standata)
+
+  return(out)
 } 
 
 

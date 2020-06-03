@@ -93,7 +93,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(845, 0, "start", "/model/priors_glm.stan");
     reader.add_event(894, 49, "end", "/model/priors_glm.stan");
     reader.add_event(894, 176, "restart", "model_base");
-    reader.add_event(911, 191, "end", "model_base");
+    reader.add_event(922, 202, "end", "model_base");
     return reader;
 }
 template <typename T2__, typename T3__, typename T4__, typename T5__, typename T6__, typename T7__>
@@ -3622,6 +3622,8 @@ public:
         names__.push_back("beta");
         names__.push_back("b");
         names__.push_back("theta_L");
+        names__.push_back("mean_PPD");
+        names__.push_back("alpha");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -3716,6 +3718,11 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(len_theta_L);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(has_intercept);
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -4287,6 +4294,44 @@ public:
                 }
             }
             if (!include_gqs__) return;
+            // declare and define generated quantities
+            current_statement_begin__ = 912;
+            double mean_PPD;
+            (void) mean_PPD;  // dummy to suppress unused var warning
+            stan::math::initialize(mean_PPD, DUMMY_VAR__);
+            stan::math::fill(mean_PPD, DUMMY_VAR__);
+            stan::math::assign(mean_PPD,(compute_mean_PPD ? stan::math::promote_scalar<double>(0) : stan::math::promote_scalar<double>(stan::math::negative_infinity()) ));
+            current_statement_begin__ = 913;
+            validate_non_negative_index("alpha", "has_intercept", has_intercept);
+            std::vector<double> alpha(has_intercept, double(0));
+            stan::math::initialize(alpha, DUMMY_VAR__);
+            stan::math::fill(alpha, DUMMY_VAR__);
+            // generated quantities statements
+            current_statement_begin__ = 915;
+            if (as_bool(logical_eq(has_intercept, 1))) {
+                current_statement_begin__ = 916;
+                if (as_bool(dense_X)) {
+                    current_statement_begin__ = 916;
+                    stan::model::assign(alpha, 
+                                stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
+                                (get_base1(gamma, 1, "gamma", 1) - dot_product(xbar, beta)), 
+                                "assigning variable alpha");
+                } else {
+                    current_statement_begin__ = 917;
+                    stan::model::assign(alpha, 
+                                stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
+                                get_base1(gamma, 1, "gamma", 1), 
+                                "assigning variable alpha");
+                }
+            }
+            // validate, write generated quantities
+            current_statement_begin__ = 912;
+            vars__.push_back(mean_PPD);
+            current_statement_begin__ = 913;
+            size_t alpha_k_0_max__ = has_intercept;
+            for (size_t k_0__ = 0; k_0__ < alpha_k_0_max__; ++k_0__) {
+                vars__.push_back(alpha[k_0__]);
+            }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -4504,6 +4549,15 @@ public:
             }
         }
         if (!include_gqs__) return;
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "mean_PPD";
+        param_names__.push_back(param_name_stream__.str());
+        size_t alpha_k_0_max__ = has_intercept;
+        for (size_t k_0__ = 0; k_0__ < alpha_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "alpha" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -4696,6 +4750,15 @@ public:
             }
         }
         if (!include_gqs__) return;
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "mean_PPD";
+        param_names__.push_back(param_name_stream__.str());
+        size_t alpha_k_0_max__ = has_intercept;
+        for (size_t k_0__ = 0; k_0__ < alpha_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "alpha" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
     }
 }; // model
 }  // namespace

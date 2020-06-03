@@ -12,10 +12,8 @@ genCovariatesStanData <-
            ...,
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
-           prior_aux = rstanarm::exponential(),
            prior_covariance = rstanarm::decov(),
            prior_PD = FALSE,
-           mean_PPD = !prior_PD,
            algorithm = c("sampling", "meanfield", "fullrank"),
            adapt_delta = NULL,
            QR = FALSE,
@@ -46,8 +44,6 @@ genCovariatesStanData <-
     prior <- list()
   if (is.null(prior_intercept)) 
     prior_intercept <- list()
-  if (is.null(prior_aux)) 
-    prior_aux <- list()
   if (is.null(prior_covariance))
     stop("'prior_covariance' can't be NULL.", call. = FALSE)
 
@@ -100,24 +96,6 @@ genCovariatesStanData <-
   for (i in names(prior_intercept_stuff))
     assign(i, prior_intercept_stuff[[i]])
 
-  prior_aux_stuff <-
-    handle_glm_prior(
-      prior_aux,
-      nvars = 1,
-      default_scale = 1,
-      link = NULL, # don't need to adjust scale based on logit vs probit
-      ok_dists = ok_aux_dists
-    )
-  # prior_{dist, mean, scale, df, dist_name, autoscale}_for_aux
-  names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_aux")
-  if (is.null(prior_aux)) {
-    if (prior_PD)
-      stop("'prior_aux' cannot be NULL if 'prior_PD' is TRUE.")
-    prior_aux_stuff$prior_scale_for_aux <- Inf
-  }
-  for (i in names(prior_aux_stuff))
-    assign(i, prior_aux_stuff[[i]])
-
   if (!QR && prior_dist > 0L && prior_autoscale) {
     min_prior_scale <- 1e-12
     prior_scale <- pmax(min_prior_scale, prior_scale /
@@ -167,7 +145,6 @@ genCovariatesStanData <-
     has_offset = length(offset) > 0,
     has_intercept,
     prior_PD,
-    compute_mean_PPD = mean_PPD,
     prior_dist,
     prior_mean,
     prior_scale,
@@ -178,7 +155,6 @@ genCovariatesStanData <-
     prior_df_for_intercept = c(prior_df_for_intercept),
     global_prior_df, global_prior_scale, slab_df, slab_scale, # for hs priors
     prior_df_for_intercept = c(prior_df_for_intercept),
-    prior_dist_for_aux = prior_dist_for_aux,
     num_normals = if(prior_dist == 7) as.integer(prior_df) else integer(0)
   )
 
@@ -263,12 +239,7 @@ genCovariatesStanData <-
   standata$weights <- weights
   standata$offset_ <- offset
   
-
-  # call stan() to draw from posterior distribution
-  standata$prior_scale_for_aux <- prior_scale_for_aux %ORifINF% 0
-  standata$prior_df_for_aux <- c(prior_df_for_aux)
-  standata$prior_mean_for_aux <- c(prior_mean_for_aux)
-  return(standata)
+  return(nlist(standata, glmod))
 }
 
 # @param Ztlist ranef indicator matrices

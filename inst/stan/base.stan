@@ -26,6 +26,7 @@ data {
 }
 
 transformed data {
+  real aux = not_a_number();
   vector[N2] SI_rev; // SI in reverse order
   vector[N2] f_rev[M]; // f in reversed order
   int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
@@ -44,7 +45,6 @@ transformed data {
 parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
-  real<lower=0> aux_unscaled;
   real<lower=0> mu[M];
   real<lower=0> kappa;
   real<lower=0> y[M];
@@ -61,11 +61,6 @@ transformed parameters {
   matrix[N2, M] Rt_adj = Rt;
   vector[N] eta;  // linear predictor
   vector[N] R0_vec;
-
-  // aux has to be defined first in the hs case
-  real aux = prior_dist_for_aux == 0 ? aux_unscaled : (prior_dist_for_aux <= 2 ?
-             prior_scale_for_aux * aux_unscaled + prior_mean_for_aux :
-             prior_scale_for_aux * aux_unscaled);
   
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
@@ -80,20 +75,10 @@ transformed parameters {
     }
   }
 
-
-
-  if (prior_dist_for_aux == 0) // none
-    aux = aux_unscaled;
-  else {
-    aux = prior_scale_for_aux * aux_unscaled;
-    if (prior_dist_for_aux <= 2) // normal or student_t
-      aux += prior_mean_for_aux;
-  }
-
   if (t > 0) {
     if (special_case == 1) {
       int start = 1;
-      theta_L = scale .* tau * aux;
+      theta_L = scale .* tau;
       if (t == 1) b = theta_L[1] * z_b;
       else for (i in 1:t) {
         int end = start + l[i] - 1;
@@ -103,7 +88,7 @@ transformed parameters {
     }
     else {
       theta_L = make_theta_L(len_theta_L, p,
-                             aux, tau, scale, zeta, rho, z_T);
+                             1.0, tau, scale, zeta, rho, z_T);
       b = make_b(z_b, theta_L, p, l);
     }
   }
@@ -162,17 +147,6 @@ model {
   mu ~ normal(3.28, kappa);
   ifr_noise ~ normal(1,0.1);
 
-  // Log-priors
-  if (prior_dist_for_aux > 0 && prior_scale_for_aux > 0) {
-    real log_half = -0.693147180559945286;
-    if (prior_dist_for_aux == 1)
-      target += normal_lpdf(aux_unscaled | 0, 1) - log_half;
-    else if (prior_dist_for_aux == 2)
-      target += student_t_lpdf(aux_unscaled | prior_df_for_aux, 0, 1) - log_half;
-    else
-     target += exponential_lpdf(aux_unscaled | 1);
-  }
-
 #include /model/priors_glm.stan
   if (t > 0) {
     real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
@@ -191,7 +165,6 @@ model {
 }
 
 generated quantities {
-  real mean_PPD = compute_mean_PPD ? 0 : negative_infinity();
   real alpha[has_intercept];
   
   if (has_intercept == 1) {
