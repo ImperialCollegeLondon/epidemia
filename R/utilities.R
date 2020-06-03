@@ -1,4 +1,6 @@
 
+# syntactic sugar for the formula
+Rt <- function(group, date) {}
 
 checkFormula <- function(formula) {
   if(!inherits(formula,"formula"))

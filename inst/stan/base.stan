@@ -189,3 +189,14 @@ model {
     }
   }
 }
+
+generated quantities {
+  real mean_PPD = compute_mean_PPD ? 0 : negative_infinity();
+  real alpha[has_intercept];
+  
+  if (has_intercept == 1) {
+    if (dense_X) alpha[1] = gamma[1] - dot_product(xbar, beta);
+    else alpha[1] = gamma[1];
+  }
+  
+}
