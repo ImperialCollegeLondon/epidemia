@@ -43,8 +43,6 @@ epim <-
             if (standata$len_theta_L) "theta_L")
 
   args = list(...)
-  QR = if (is.null(args$QR)) FALSE else args$QR
-
   if (algorithm == "sampling") {
     out <- rstan::sampling(object = stanmodels$base,
                            args)
@@ -52,8 +50,6 @@ epim <-
   else {
     out <- rstan::vb(object = stanmodels$base,
                      args)
-    if (!QR) 
-        recommend_QR_for_vb()
   }
 
   new_names <- c(if (has_intercept) "(Intercept)", 
@@ -67,27 +63,6 @@ epim <-
 
 
   }
-}
-
-# Message to issue when fitting model with ADVI but 'QR=FALSE'. 
-recommend_QR_for_vb <- function() {
-  message(
-    "Setting 'QR' to TRUE can often be helpful when using ", 
-    "one of the variational inference algorithms. ", 
-    "See the documentation for the 'QR' argument."
-  )
-}
-
-# ff QR then transform beta parameters
-transformBeta <- function(stanfit) {
-      thetas <- extract(stanfit, pars = "beta", inc_warmup = TRUE, 
-                        permuted = FALSE)
-      betas <- apply(thetas, 1:2, FUN = function(theta) R_inv %*% theta)
-      end <- tail(dim(betas), 1L)
-      for (chain in 1:end) for (param in 1:nrow(betas)) {
-        stanfit@sim$samples[[chain]][[has_intercept + param]] <-
-          if (ncol(xtemp) > 1) betas[param, , chain] else betas[param, chain]
-      }
 }
 
 transformTheta_L <- function(stanfit, cnms) {

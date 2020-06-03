@@ -16,7 +16,6 @@ genCovariatesStanData <-
            prior_PD = FALSE,
            algorithm = c("sampling", "meanfield", "fullrank"),
            adapt_delta = NULL,
-           QR = FALSE,
            sparse = FALSE) {
 
   call <- match.call(expand.dots = TRUE)
@@ -96,7 +95,7 @@ genCovariatesStanData <-
   for (i in names(prior_intercept_stuff))
     assign(i, prior_intercept_stuff[[i]])
 
-  if (!QR && prior_dist > 0L && prior_autoscale) {
+  if (prior_dist > 0L && prior_autoscale) {
     min_prior_scale <- 1e-12
     prior_scale <- pmax(min_prior_scale, prior_scale /
                           apply(xtemp, 2L, FUN = function(x) {
@@ -114,22 +113,6 @@ genCovariatesStanData <-
     as.array(pmin(.Machine$double.xmax, prior_scale))
   prior_scale_for_intercept <-
     min(.Machine$double.xmax, prior_scale_for_intercept)
-
-  if (QR) {
-    if (ncol(xtemp) <= 1)
-      stop("'QR' can only be specified when there are multiple predictors.")
-    if (sparse)
-      stop("'QR' and 'sparse' cannot both be TRUE.")
-    cn <- colnames(xtemp)
-    decomposition <- qr(xtemp)
-    Q <- qr.Q(decomposition)
-    if (prior_autoscale) scale_factor <- sqrt(nrow(xtemp) - 1L)
-    else scale_factor <- diag(qr.R(decomposition))[ncol(xtemp)]
-    R_inv <- qr.solve(decomposition, Q) * scale_factor
-    xtemp <- Q * scale_factor
-    colnames(xtemp) <- cn
-    xbar <- c(xbar %*% R_inv)
-  }
 
   if (length(weights) > 0 && all(weights == 1)) weights <- double()
   if (length(offset)  > 0 && all(offset  == 0)) offset  <- double()
