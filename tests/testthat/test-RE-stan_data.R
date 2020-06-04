@@ -75,3 +75,27 @@ test_that("CSR matrix vectors for random slope model", {
   expect_equal(sdat$num_non_zero, 0)
 
 })
+
+test_that("Correct usage of special_case flag in stan data", {
+  
+  load(file = "../data/NYWA.RData")
+  args <- NYWA
+  # No sampling, just return stan data
+  args$stan_data <- TRUE
+
+  # Only FE
+  args$formula <- Rt(code, date) ~ 1
+  sdat <- do.call("epim", args=args)
+  expect_equal(sdat$special_case, 0)
+
+  # Only random intercept (special case == TRUE)
+  args$formula <- Rt(code, date) ~ (1 | code)
+  sdat <- do.call("epim", args=args)
+  expect_true(sdat$special_case) 
+
+  # Random slopes (special_case == FALSE)
+  args$formula <- Rt(code, date) ~ (av_mobility | code)
+  sdat <- do.call("epim", args=args)
+  expect_false(sdat$special_case)
+
+})
