@@ -1,11 +1,11 @@
 context("Random effects stan data")
 
+load(file = "../data/NYWA.RData")
+args <- NYWA
+# No sampling, just return stan data
+args$stan_data <- TRUE
+
 test_that("Correct dimensions and values for quantities t, p, q and l in the stan data", {
-  
-  load(file = "../data/NYWA.RData")
-  args <- NYWA
-  # No sampling, just return stan data
-  args$stan_data <- TRUE
   
   # check terms for random effects are null if there are none
   args$formula <- Rt(code, date) ~ 1 + av_mobility 
@@ -49,12 +49,6 @@ test_that("Correct dimensions and values for quantities t, p, q and l in the sta
 
 test_that("CSR matrix vectors for random slope model", {
 
-  load(file = "../data/NYWA.RData")
-  args <- NYWA
-  # No sampling, just return stan data
-  args$stan_data <- TRUE
-  
-
   # test CSR storage vectors on intercept example
   args$formula <- Rt(code, date) ~  (1 | code)
   sdat <- do.call("epim", args = args)
@@ -78,11 +72,6 @@ test_that("CSR matrix vectors for random slope model", {
 
 test_that("Correct usage of special_case flag in stan data", {
   
-  load(file = "../data/NYWA.RData")
-  args <- NYWA
-  # No sampling, just return stan data
-  args$stan_data <- TRUE
-
   # Only FE
   args$formula <- Rt(code, date) ~ 1
   sdat <- do.call("epim", args=args)
