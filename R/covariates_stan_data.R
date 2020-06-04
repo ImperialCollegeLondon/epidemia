@@ -13,8 +13,7 @@ genCovariatesStanData <-
            prior_intercept = rstanarm::normal(),
            prior_covariance = rstanarm::decov(),
            prior_PD = FALSE,
-           algorithm = c("sampling", "meanfield", "fullrank"),
-           sparse = FALSE) {
+           algorithm = c("sampling", "meanfield", "fullrank")) {
 
   if (is.null(prior)) 
     prior <- list()
@@ -27,7 +26,7 @@ genCovariatesStanData <-
   if (!length(link))
     stop("'link' must be one of ", paste(supported_links, collapse = ", "))
 
-  x_stuff <- center_x(x, sparse)
+  x_stuff <- center_x(x, FALSE)
 
   for (i in names(x_stuff)) # xtemp, xbar, has_intercept
     assign(i, x_stuff[[i]])
@@ -87,7 +86,6 @@ genCovariatesStanData <-
     N = nrow(xtemp),
     K = ncol(xtemp),
     xbar = as.array(xbar),
-    dense_X = !sparse,
     link,
     has_intercept,
     prior_PD,
@@ -172,20 +170,8 @@ genCovariatesStanData <-
     standata$len_regularization <- 0L
   }
 
-  if (sparse) {
-    parts <- extract_sparse_parts(xtemp)
-    standata$nnz_X <- length(parts$w)
-    standata$w_X <- parts$w
-    standata$v_X <- parts$v - 1L
-    standata$u_X <- parts$u - 1L
-    standata$X <- array(0, dim = c(0L, dim(xtemp)))
-  } else {
-    standata$X <- array(xtemp, dim = c(1L, dim(xtemp)))
-    standata$nnz_X <- 0L
-    standata$w_X <- double(0)
-    standata$v_X <- integer(0)
-    standata$u_X <- integer(0)
-  }
+
+  standata$X <- array(xtemp, dim = c(1L, dim(xtemp)))
   
   return(standata)
 }
