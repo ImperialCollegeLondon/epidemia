@@ -74,6 +74,7 @@ epim <-
     # create model matrix
     mt <- attr(mf, "terms")
     x <- model.matrix(object = mt, data = mf)
+    group <- NULL
   }
 
   # generate stan data 
@@ -89,8 +90,7 @@ epim <-
   cargs <- list(...)
   cargs$formula <- formula
   cargs$x <- x
-  if (exists("group"))
-    cargs$group <-  group 
+  cargs$group <-  group 
   standata <- c(standata,
                 do.call("genCovariatesStanData", args=cargs))
 

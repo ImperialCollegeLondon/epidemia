@@ -13,5 +13,7 @@ importFrom(data.table, rbindlist)
 useDynLib(EpiBayes, .registration = TRUE)
 export(epim)
 export(stanmodels)
+export(genModelStanData)
+export(genCovariatesStanData)
 
 

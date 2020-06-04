@@ -12,3 +12,4 @@
   int<lower=0,upper=7> prior_dist;
   int<lower=0,upper=2> prior_dist_for_intercept;
   
+  
