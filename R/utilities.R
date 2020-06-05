@@ -66,41 +66,31 @@ checkData <- function(formula, data) {
   return(data)
 }
 
+
+
 checkObs <- function(data, obs) {
-  if (!is.list(obs))
-    stop("'obs' must be a list.")
 
-  for (name in names(obs))
-    assign(name, obs[[name]])
+  if(!is.list(obs))
+  stop("'obs' must be a list.", call.=FALSE)
 
-  # Check for required data.
-  if (!exists("deaths"))
-    warning("'obs$deaths' not found. No death data will be used.", call.=FALSE)
-  else if (!exists("dtd"))
-    stop("Found 'obs$deaths' but not 'obs$dtd'. Please specify 'dtd'.", call.=FALSE)
-
-  if (!exists("incidence"))
-    warning("'obs$incidence' not found. No incidence data will be used.", call.=FALSE)
-  else if (!exists("dti"))
-    stop("Found 'obs$incidence' but not 'obs$dti'. Please specify 'dti'.", call.=FALSE)
-
-  if (exists("deaths")) {
-    deaths    <- checkObsDF(data, deaths, "obs$deaths")
-    dtd       <- checkSV(dtd)
-  } else {
-    deaths <- dtd <- NULL
+  for (i in seq_along(obs)) {
+    
+    nme         <- names(obs)[[i]] 
+    elem        <- obs[[i]]
+    elem_names  <- names(elem)
+    
+    if (length(elem)  < 3)
+      stop("Each list in 'obs' must have length at least 3.")
+    
+    df    <- checkObsDF(data, elem[[1]], paste0(nme, "$", elem_name[1]))
+    prop  <- checkIFR(data, elem[[2]], paste0(nme, "$", elem_name[2]))
+    p     <- checkSV(elem[[3]], paste0(nme, "$", elem_name[3]))
+    
+    obs[[i]] <- nlist(df, prop, p)
   }
-
-  if (exists("incidence")) {
-    incidence <- checkObsDF(data, incidence, "obs$incidence")
-    dti       <- checkSV(dti)
-  } else {
-    incidence <- dti <- NULL
-  }
-
-  return(nlist(deaths, incidence, dtd, dti))
-
+  return(obs)
 }
+
 
 # Series of checks on dataframe df
 #
