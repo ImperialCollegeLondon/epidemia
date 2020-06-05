@@ -231,22 +231,24 @@ checkPops <- function(pops, levels) {
   return(pops)
 }
 
-# Check the data$ifr argument of genStanData
+# Check that a 'rate' is provided correctly for each observation
 #
-# @param ifr See [genStanData]
-checkIFR <- function(ifr, levels) {
-  ifr <- checkDF(ifr, "ifr", 2)
-  names(ifr) <- c("group","ifr")
+# @param rates Second argument of each element in 'obs' see [epim]
+# @param levels Unique levels found in the 'data' argument of [epim]
+# @param name The name to print in case of an error
+checkRates <- function(rates, levels, name) {
+  rates <- checkDF(rates, name, 2)
+  names(rates) <- c("group", "rate")
   
   # check if columns are coercible
-  ifr <- tryCatch(
+  rates <- tryCatch(
     {
-      ifr$group <- as.factor(ifr$group)
-      ifr$ifr <- as.numeric(ifr$ifr)
-      ifr
+      rates$group <- as.factor(rates$group)
+      rates$rate <- as.numeric(rates$rate)
+      rates
     },
     error = function(cond) {
-      message("Columns of 'ifr' are not coercible to required classes [factor, numeric]")
+      message(paste0("Columns of ", name ,"are not coercible to required classes [factor, numeric]"))
       message("Original message:")
       message(cond)
       return(NULL)
@@ -254,22 +256,22 @@ checkIFR <- function(ifr, levels) {
   )
 
   # removing rows not represented in response groups
-  ifr <- ifr[ifr$group %in% levels,]
+  rates <- rates[rate$group %in% levels,]
 
   # requiring all levels have an associated population
-  if (!all(levels %in% ifr$group))
-    stop(paste0("Levels in 'formula' response missing in 'ifr'"))
+  if (!all(levels %in% rates$group))
+    stop(paste0("Levels in 'formula' response missing in ", name))
 
-  if(any(duplicated(ifr$group)))
-    stop("IFR values for a given group must be unique. Please check 'ifr'.", call. = FALSE)
+  if(any(duplicated(rates$group)))
+    stop(paste0("Values for a given group must be unique. Please check ", name), call. = FALSE)
   
-  if(any((ifr$ifr > 1) + (ifr$ifr < 0)))
-    stop("IFR must take values in [0,1]. Plase check 'ifr'", call. = FALSE)
+  if(any((rates$rate > 1) + (rates$rate < 0)))
+    stop(paste0("Values must be in [0,1]. Plase check ", name), call. = FALSE)
   
   # sort by group
-  ifr <- ifr[order(ifr$group),]
+  rates <- rates[order(rates$group),]
   
-  return(ifr)
+  return(rates)
 }
 
 # Simple check of a simplex vector
