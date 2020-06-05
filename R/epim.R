@@ -83,7 +83,6 @@ epim <-
   margs$data <- data
   margs$obs <- obs
   margs$pops <- pops
-  margs$ifr <- ifr
   margs$si <- si
   margs$seed_days <- seed_days
   standata <- do.call("genModelStanData", args=margs)
@@ -170,7 +169,6 @@ epim <-
                obs,
                si,
                pops,
-               ifr,
                call,
                algorithm, 
                glmod)
