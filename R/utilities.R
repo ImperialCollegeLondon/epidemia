@@ -77,16 +77,16 @@ checkObs <- function(data, obs) {
     
     nme         <- names(obs)[[i]] 
     elem        <- obs[[i]]
-    elem_names  <- names(elem)
+    elnms  <- names(elem)
     
     if (length(elem)  < 3)
       stop("Each list in 'obs' must have length at least 3.")
     
-    df    <- checkObsDF(data, elem[[1]], paste0(nme, "$", elem_name[1]))
-    prop  <- checkIFR(data, elem[[2]], paste0(nme, "$", elem_name[2]))
-    p     <- checkSV(elem[[3]], paste0(nme, "$", elem_name[3]))
+    df    <- checkObsDF(data, elem[[1]], paste0(nme, "$", elnms[1]))
+    rates  <- checkRates(levels(data$group), elem[[2]], paste0(nme, "$", elnms[2]))
+    p     <- checkSV(elem[[3]], paste0(nme, "$", elnms[3]))
     
-    obs[[i]] <- nlist(df, prop, p)
+    obs[[i]] <- nlist(obs = df, rates, p)
   }
   return(obs)
 }
@@ -233,10 +233,10 @@ checkPops <- function(pops, levels) {
 
 # Check that a 'rate' is provided correctly for each observation
 #
-# @param rates Second argument of each element in 'obs' see [epim]
 # @param levels Unique levels found in the 'data' argument of [epim]
+# @param rates Second argument of each element in 'obs' see [epim]
 # @param name The name to print in case of an error
-checkRates <- function(rates, levels, name) {
+checkRates <- function(levels, rates, name) {
   rates <- checkDF(rates, name, 2)
   names(rates) <- c("group", "rate")
   
@@ -256,7 +256,7 @@ checkRates <- function(rates, levels, name) {
   )
 
   # removing rows not represented in response groups
-  rates <- rates[rate$group %in% levels,]
+  rates <- rates[rates$group %in% levels,]
 
   # requiring all levels have an associated population
   if (!all(levels %in% rates$group))

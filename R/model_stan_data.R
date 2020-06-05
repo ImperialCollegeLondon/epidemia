@@ -2,7 +2,7 @@ genModelStanData <-
   function(data,
            obs,
            pops,
-           ifr,
+           si,
            seed_days = 6) {
 
   M <- length(levels(data$group))
@@ -34,7 +34,7 @@ genModelStanData <-
   # create matrix of observations for stan
   f <- function(x, i) {
     df <- x$obs
-    df$code <- as.numeric(as.factor(df$group))
+    df$group <- as.numeric(as.factor(df$group))
     df$date <- as.numeric(df$date - begin + 1)
     df$type <- i
     df
