@@ -1,6 +1,6 @@
 
 # syntactic sugar for the formula
-Rt <- function(group, date) {}
+R <- function(group, date) {}
 
 checkFormula <- function(formula) {
   if(!inherits(formula,"formula"))
@@ -67,28 +67,45 @@ checkData <- function(formula, data) {
 }
 
 
-
 checkObs <- function(data, obs) {
 
-  if(!is.list(obs))
-  stop("'obs' must be a list.", call.=FALSE)
+  lst <- obs
+  if(!is.list(lst))
+  stop(" Argument 'obs' must be a list.", call.=FALSE)
 
-  for (i in seq_along(obs)) {
+  for (i in seq_along(lst)) {
     
-    nme         <- names(obs)[[i]] 
-    elem        <- obs[[i]]
-    elnms  <- names(elem)
+    nme   <- names(lst)[[i]] 
+    elem  <- lst[[i]]
+
+    for (name in names(elem))
+      assign(name, elem[[names]])
+
+    # check required components exist
+    req_cols <- c("obs", "rates", "pvec")
+    for (col in req_cols)
+      if (!exists(col))
+        stop(paste0("Could not find obs$", nme, "$", col), call. = FALSE)
+
+    obs   <- checkObsDF(data, 
+                        obs, 
+                        paste0("obs$", nme, "$obs"))
+
+    rates <- checkRates(levels(data$group),
+                        rates, 
+                        paste0("obs$", nme, "$rates"))
+
+    pvec  <- checkSV(pvec, 
+                     paste0("obs$", nme, "$pvec"))
     
-    if (length(elem)  < 3)
-      stop("Each list in 'obs' must have length at least 3.")
-    
-    df    <- checkObsDF(data, elem[[1]], paste0(nme, "$", elnms[1]))
-    rates  <- checkRates(levels(data$group), elem[[2]], paste0(nme, "$", elnms[2]))
-    p     <- checkSV(elem[[3]], paste0(nme, "$", elnms[3]))
-    
-    obs[[i]] <- nlist(obs = df, rates, p)
+    if (nrow(obs))
+      lst[[i]] <- nlist(obs, rates, pvec)
+    else {
+      warning(paste0("No relevant data found in obs$", nme, ". Removing..."), call. = FALSE)
+      lst[[i]] <- NULL
+    }
   }
-  return(obs)
+  return(lst)
 }
 
 
@@ -234,21 +251,37 @@ checkPops <- function(pops, levels) {
 # Check that a 'rate' is provided correctly for each observation
 #
 # @param levels Unique levels found in the 'data' argument of [epim]
-# @param rates Second argument of each element in 'obs' see [epim]
+# @param rates An element of each element of 'obs' see [epim]
 # @param name The name to print in case of an error
 checkRates <- function(levels, rates, name) {
-  rates <- checkDF(rates, name, 2)
-  names(rates) <- c("group", "rate")
+
+  if (!is.list(rates))
+    stop(paste0(name," must be a list.", call.=FALSE))
+  
+  if(is.null(rates$means))
+    stop(paste0(name,"$means not found. "))
+  
+  means <- rates$means
+
+  if(is.null(rates$scale))
+    scale = 0.1
+  else if(!is.numeric(rates$scale) || length(rates$scale) != 1)
+    stop(paste0(name, "$scale must be a numeric of length 1."))
+  else
+    scale = rates$scale
+
+  means        <- checkDF(rates, paste0(name, "$means"), 2)
+  names(means) <- c("group", "mean")
   
   # check if columns are coercible
-  rates <- tryCatch(
+  means <- tryCatch(
     {
       rates$group <- as.factor(rates$group)
-      rates$rate <- as.numeric(rates$rate)
-      rates
+      means$mean <- as.numeric(means$mean)
+      means
     },
     error = function(cond) {
-      message(paste0("Columns of ", name ,"are not coercible to required classes [factor, numeric]"))
+      message(paste0("Columns of ", name, "$means are not coercible to required classes [factor, numeric]"))
       message("Original message:")
       message(cond)
       return(NULL)
@@ -256,22 +289,22 @@ checkRates <- function(levels, rates, name) {
   )
 
   # removing rows not represented in response groups
-  rates <- rates[rates$group %in% levels,]
+  means <- means[means$group %in% levels,]
 
   # requiring all levels have an associated population
-  if (!all(levels %in% rates$group))
-    stop(paste0("Levels in 'formula' response missing in ", name))
+  if (!all(levels %in% means$group))
+    stop(paste0("Levels in 'formula' response missing in ", name, "$means"))
 
-  if(any(duplicated(rates$group)))
-    stop(paste0("Values for a given group must be unique. Please check ", name), call. = FALSE)
+  if(any(duplicated(means$group)))
+    stop(paste0("Values for a given group must be unique. Please check ", name, "$means"), call. = FALSE)
   
-  if(any((rates$rate > 1) + (rates$rate < 0)))
-    stop(paste0("Values must be in [0,1]. Plase check ", name), call. = FALSE)
+  if(any((means$mean > 1) + (means$mean < 0)))
+    stop(paste0("Mean values must be in [0,1]. Plase check ", name, "$means"), call. = FALSE)
   
   # sort by group
-  rates <- rates[order(rates$group),]
+  means <- means[order(means$group),]
   
-  return(rates)
+  return(nlist(means, scale))
 }
 
 # Simple check of a simplex vector

@@ -23,23 +23,29 @@ genModelStanData <-
 
   # create matrix P
   r <- length(obs)
-  f <- function(x) padSV(x$p, max_sim, 1e-15)
-  P <- sapply(obs, f)
 
-  # matrix of rates for each observation type
-  f <- function(x) x$rates$rate
-  props <- lapply(obs, f)
-  props <- do.call("cbind", args=props)
+  if (r) {
+    f <- function(x) padSV(x$p, max_sim, 1e-15)
+    P <- sapply(obs, f)
+
+    # matrix of rates for each observation type
+    f <- function(x) x$rates$rate
+    props <- lapply(obs, f)
+    props <- do.call("cbind", args=props)
 
   # create matrix of observations for stan
-  f <- function(x, i) {
-    df <- x$obs
-    df$group <- as.numeric(as.factor(df$group))
-    df$date <- as.numeric(df$date - begin + 1)
-    df$type <- i
-    df
+    f <- function(x, i) {
+      df <- x$obs
+      df$group <- as.numeric(as.factor(df$group))
+      df$date <- as.numeric(df$date - begin + 1)
+      df$type <- i
+      df
+    }
+    obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
+  } else {
+    P <- matrix(NA, max_sim, r)
+    props <- matrix(NA, M, r)
   }
-  obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
 
   standata <- list(M      = M,
                    N0     = seed_days,
@@ -50,7 +56,8 @@ genModelStanData <-
                    NC     = NC,
                    r      = r,
                    P      = P,
-                   props  = props)
+                   props  = props,
+                   NS     = max_sim)
 
   return(standata)
 }

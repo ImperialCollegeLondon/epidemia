@@ -1,17 +1,19 @@
-#' Generates data to pass to rstan::sampling
+#' Fits an Epidemiological Model
 #' 
-#' @param formula An R object of class `formula`. The left hand side must take the form `Rt(group,date)', with 'group' representing a factor vector indicating group membership (i.e. country, state, age cohort), and 'code' being a vector of Date objects.
+#' @param formula An R object of class `formula`. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector indicating group membership (i.e. country, state, age cohort), and `code` being a vector of Date objects.
 #' @param data A dataframe with columns corresponding to the terms appearing in 'formula'. See [lm].
-#' @param obs A list of lists giving available observations. Each element of 'obs' must be a list containing three elements
-#' * First element: A three column dataframe representing some type of observed data. Examples include recorded incidence, deaths or hospitalisations. The first column represents group membership and must be coercible to class 'factor'. The second column indicates the observation date and must be coercible to class `Date'. The third column contain the actual data.
-#' * Second element: A two column dataframe giving the estimated proportion of infected individuals recorded as an observation. For example, if recording deaths, this would be some estimate of each groups infection fatality ratio (IFR). First column represents the group, while the second the corresponding proportion.
-#' * Third Element: A probability vector. Conditional on an observation 'event' (i.e. a single death or hospitalisation etc.), the nth element represents the probability that the individual was infected n days prior to this.
-#' @param pops  A two column dataframe giving the total population of each group. First column represents the group, while the second the corresponding population.
+#' @param obs A list of lists giving available observations. Each element of 'obs' must itself be a names list containing the following four elements
+#' * `obs`: A three column dataframe representing some type of observed data that is a function of the true number of infections. Examples include recorded incidence, deaths or hospitalisations. The first column represents group membership and must be coercible to class `factor`. The second column indicates the observation date and must be coercible to class `Date`. The third column contain the data.
+#' * `rates`: A named list specifying the prior for the proportion of infected individuals recorded as an observation. For example if recording deaths this would be some estimate of each groups infection fatality ratio (IFR). The priors are assumed normal. Contains:
+#'    + `means`: A two column dataframe giving the estimated mean proportion of infected individuals recorded as an observation. First column represents the group, while the second the corresponding proportion.
+#'    + `scale`: The standard deviation around the mean values. Default value is 0.1.
+#' * `pvec`: A probability vector with the following interpretation. Conditional on an observation "event" (i.e. a single death or hospitalisation etc.), the nth element represents the probability that the individual was infected exactly n days prior to this.
+#' @param pops  A two column dataframe giving the total population of each group. First column represents the group, with the second giving the corresponding population.
 #' @param si A vector representing the serial interval of the disease (a probability vector).
 #' @param seed_days Number of days for which to seed infections.
 #' @param ... Arguments allowed in rstanarm::stan_glmer(). For example one can control the prior distribution of the covariates.
 #' @examples
-#' @return A list with required data to pass to rstan::sampling.
+#' @return A stanfit object.
 epim <- 
   function(formula, 
            data,
