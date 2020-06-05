@@ -45,7 +45,9 @@ genModelStanData <-
       df
     }
     obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
+    obs <- as.matrix(obs)
   } else {
+    obs           <- matrix(NA, 0, 0)
     P             <- matrix(NA, max_sim, r)
     props         <- matrix(NA, M, r)
     noise_scales  <- numeric()
@@ -55,8 +57,10 @@ genModelStanData <-
                    N0           = seed_days,
                    SI           = si,
                    pop          = as.array(pops$pop),
-                   obs          = as.matrix(obs),
+                   obs          = obs,
+                   N_obs        = nrow(obs),
                    N2           = max(starts + NC - 1),
+                   starts       = starts,
                    NC           = NC,
                    r            = r,
                    P            = P,
