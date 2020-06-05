@@ -113,12 +113,6 @@ genCovariatesStanData <-
 
     check_reTrms(group)
     decov <- prior_covariance
-    
-    Z <- t(group$Zt)
-    group <-
-      pad_reTrms(Ztlist = group$Ztlist,
-                cnms = group$cnms,
-                flist = group$flist)
     Z <- group$Z
     p <- sapply(group$cnms, FUN = length)
     l <- sapply(attr(group$flist, "assign"), function(i)

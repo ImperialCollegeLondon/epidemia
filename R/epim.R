@@ -26,6 +26,7 @@ epim <-
            stan_data = FALSE,
            ...) {
   
+  call <- match.call(expand.dots = TRUE)
   # argument checking
   formula <- checkFormula(formula)
   data    <- checkData(formula, data)
@@ -62,6 +63,10 @@ epim <-
            call. = FALSE)
     }
     group <- glmod$reTrms
+    group <-
+      pad_reTrms(Ztlist = group$Ztlist,
+                cnms = group$cnms,
+                flist = group$flist)
     
   } else {
     # create model frame
@@ -74,7 +79,7 @@ epim <-
     # create model matrix
     mt <- attr(mf, "terms")
     x <- model.matrix(object = mt, data = mf)
-    group <- NULL
+    glmod <- group <- NULL
   }
 
   # generate stan data 
@@ -108,7 +113,10 @@ epim <-
             "tau2",
             "phi",
             "kappa",
-            "ifr_noise")
+            "ifr_noise",
+            "prediction",
+            "E_deaths",
+            "Rt_adj")
 
   args <- list(...)
   args$pars <- pars
@@ -116,13 +124,13 @@ epim <-
   args$data <- standata
 
   if (algorithm == "sampling") 
-    out <- do.call("sampling", args)
+    fit <- do.call("sampling", args)
   else 
-    out <- do.call("vb", args)
+    fit <- do.call("vb", args)
 
   if (standata$len_theta_L) {
       cnms <- group$cnms
-      out <- transformTheta_L(out, cnms)
+      fit <- transformTheta_L(fit, cnms)
 
       # names
       Sigma_nms <- lapply(cnms, FUN = function(grp) {
@@ -138,24 +146,41 @@ epim <-
       Sigma_nms <- unlist(Sigma_nms)
   }
 
-  # replace 'pars' with descriptive names
-  # new_names <- c(if (standata$has_intercept) "(Intercept)", 
-  #                standata$beta_nms,
-  #                if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
-  #                if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
-  #                c(paste0("y[", 1:standata$M, "]")),
-  #                c(paste0("mu[", 1:standata$M, "]")),
-  #                "tau",
-  #                "phi",
-  #                "kappa",
-  #                c(paste0("Ifr_noise[", 1:standata$M, "]")),
-  #                "log-posterior")
+  #replace 'pars' with descriptive names
+  new_names <- c(if (standata$has_intercept) "(Intercept)", 
+                 standata$beta_nms,
+                 if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
+                 if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
+                 c(paste0("y[", 1:standata$M, "]")),
+                 c(paste0("mu[", 1:standata$M, "]")),
+                 "tau",
+                 "phi",
+                 "kappa",
+                 c(paste0("Ifr_noise[", 1:standata$M, "]")),
+                 "log-posterior")
 
-  #out@sim$fnames_oi <- new_names
+  fit@sim$fnames_oi <- new_names
+
+
+  sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
+  x <- x[ , !sel, drop = FALSE]
+  z <- group$Z
+  colnames(z) <- b_names(names(fit), value = TRUE)
+  
+  out <- nlist(fit, 
+               formula,
+               x = cbind(x, z),
+               data,
+               obs,
+               si,
+               pops,
+               ifr,
+               call,
+               algorithm, 
+               glmod)
 
   return(out)
 }
-
 
 
 is_mixed <- function(formula) {

@@ -89,7 +89,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(797, 0, "start", "/model/priors_glm.stan");
     reader.add_event(846, 49, "end", "/model/priors_glm.stan");
     reader.add_event(846, 148, "restart", "model_base");
-    reader.add_event(872, 172, "end", "model_base");
+    reader.add_event(876, 176, "end", "model_base");
     return reader;
 }
 template <typename T2__, typename T3__, typename T4__, typename T5__, typename T6__, typename T7__>
@@ -3400,6 +3400,9 @@ public:
         names__.push_back("b");
         names__.push_back("theta_L");
         names__.push_back("alpha");
+        names__.push_back("prediction_out");
+        names__.push_back("E_deaths_out");
+        names__.push_back("Rt_adj_out");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -3493,6 +3496,18 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(has_intercept);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N2);
+        dims__.push_back(M);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N2);
+        dims__.push_back(M);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(N2);
+        dims__.push_back(M);
         dimss__.push_back(dims__);
     }
     template <typename RNG>
@@ -4037,10 +4052,31 @@ public:
             std::vector<double> alpha(has_intercept, double(0));
             stan::math::initialize(alpha, DUMMY_VAR__);
             stan::math::fill(alpha, DUMMY_VAR__);
-            // generated quantities statements
             current_statement_begin__ = 865;
+            validate_non_negative_index("prediction_out", "N2", N2);
+            validate_non_negative_index("prediction_out", "M", M);
+            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> prediction_out(N2, M);
+            stan::math::initialize(prediction_out, DUMMY_VAR__);
+            stan::math::fill(prediction_out, DUMMY_VAR__);
+            stan::math::assign(prediction_out,prediction);
+            current_statement_begin__ = 866;
+            validate_non_negative_index("E_deaths_out", "N2", N2);
+            validate_non_negative_index("E_deaths_out", "M", M);
+            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> E_deaths_out(N2, M);
+            stan::math::initialize(E_deaths_out, DUMMY_VAR__);
+            stan::math::fill(E_deaths_out, DUMMY_VAR__);
+            stan::math::assign(E_deaths_out,E_deaths);
+            current_statement_begin__ = 867;
+            validate_non_negative_index("Rt_adj_out", "N2", N2);
+            validate_non_negative_index("Rt_adj_out", "M", M);
+            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Rt_adj_out(N2, M);
+            stan::math::initialize(Rt_adj_out, DUMMY_VAR__);
+            stan::math::fill(Rt_adj_out, DUMMY_VAR__);
+            stan::math::assign(Rt_adj_out,Rt_adj);
+            // generated quantities statements
+            current_statement_begin__ = 869;
             if (as_bool(logical_eq(has_intercept, 1))) {
-                current_statement_begin__ = 866;
+                current_statement_begin__ = 870;
                 stan::model::assign(alpha, 
                             stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
                             (get_base1(gamma, 1, "gamma", 1) - dot_product(xbar, beta)), 
@@ -4051,6 +4087,30 @@ public:
             size_t alpha_k_0_max__ = has_intercept;
             for (size_t k_0__ = 0; k_0__ < alpha_k_0_max__; ++k_0__) {
                 vars__.push_back(alpha[k_0__]);
+            }
+            current_statement_begin__ = 865;
+            size_t prediction_out_j_2_max__ = M;
+            size_t prediction_out_j_1_max__ = N2;
+            for (size_t j_2__ = 0; j_2__ < prediction_out_j_2_max__; ++j_2__) {
+                for (size_t j_1__ = 0; j_1__ < prediction_out_j_1_max__; ++j_1__) {
+                    vars__.push_back(prediction_out(j_1__, j_2__));
+                }
+            }
+            current_statement_begin__ = 866;
+            size_t E_deaths_out_j_2_max__ = M;
+            size_t E_deaths_out_j_1_max__ = N2;
+            for (size_t j_2__ = 0; j_2__ < E_deaths_out_j_2_max__; ++j_2__) {
+                for (size_t j_1__ = 0; j_1__ < E_deaths_out_j_1_max__; ++j_1__) {
+                    vars__.push_back(E_deaths_out(j_1__, j_2__));
+                }
+            }
+            current_statement_begin__ = 867;
+            size_t Rt_adj_out_j_2_max__ = M;
+            size_t Rt_adj_out_j_1_max__ = N2;
+            for (size_t j_2__ = 0; j_2__ < Rt_adj_out_j_2_max__; ++j_2__) {
+                for (size_t j_1__ = 0; j_1__ < Rt_adj_out_j_1_max__; ++j_1__) {
+                    vars__.push_back(Rt_adj_out(j_1__, j_2__));
+                }
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -4269,6 +4329,33 @@ public:
             param_name_stream__ << "alpha" << '.' << k_0__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
+        size_t prediction_out_j_2_max__ = M;
+        size_t prediction_out_j_1_max__ = N2;
+        for (size_t j_2__ = 0; j_2__ < prediction_out_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < prediction_out_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "prediction_out" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        size_t E_deaths_out_j_2_max__ = M;
+        size_t E_deaths_out_j_1_max__ = N2;
+        for (size_t j_2__ = 0; j_2__ < E_deaths_out_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < E_deaths_out_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "E_deaths_out" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        size_t Rt_adj_out_j_2_max__ = M;
+        size_t Rt_adj_out_j_1_max__ = N2;
+        for (size_t j_2__ = 0; j_2__ < Rt_adj_out_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < Rt_adj_out_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "Rt_adj_out" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
     }
     void unconstrained_param_names(std::vector<std::string>& param_names__,
                                    bool include_tparams__ = true,
@@ -4460,6 +4547,33 @@ public:
             param_name_stream__.str(std::string());
             param_name_stream__ << "alpha" << '.' << k_0__ + 1;
             param_names__.push_back(param_name_stream__.str());
+        }
+        size_t prediction_out_j_2_max__ = M;
+        size_t prediction_out_j_1_max__ = N2;
+        for (size_t j_2__ = 0; j_2__ < prediction_out_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < prediction_out_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "prediction_out" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        size_t E_deaths_out_j_2_max__ = M;
+        size_t E_deaths_out_j_1_max__ = N2;
+        for (size_t j_2__ = 0; j_2__ < E_deaths_out_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < E_deaths_out_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "E_deaths_out" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        size_t Rt_adj_out_j_2_max__ = M;
+        size_t Rt_adj_out_j_1_max__ = N2;
+        for (size_t j_2__ = 0; j_2__ < Rt_adj_out_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < Rt_adj_out_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "Rt_adj_out" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
         }
     }
 }; // model

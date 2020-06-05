@@ -43,7 +43,7 @@ genModelStanData <-
   standata <- list(M      = M,
                    N0     = seed_days,
                    SI     = si,
-                   pop    = pops$pop,
+                   pop    = as.array(pops$pop),
                    f      = fmat,
                    deaths = rlist::list.cbind(split(deaths$obs, deaths$group)),
                    N2     = num_days_sim,

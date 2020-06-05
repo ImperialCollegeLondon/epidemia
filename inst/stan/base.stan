@@ -164,6 +164,10 @@ model {
 
 generated quantities {
   real alpha[has_intercept];
+
+  matrix[N2,M] prediction_out = prediction;
+  matrix[N2,M]  E_deaths_out = E_deaths;
+  matrix[N2,M] Rt_adj_out = Rt_adj;
   
   if (has_intercept == 1) {
     alpha[1] = gamma[1] - dot_product(xbar, beta);
