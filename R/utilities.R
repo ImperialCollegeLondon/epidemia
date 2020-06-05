@@ -79,7 +79,7 @@ checkObs <- function(data, obs) {
     elem  <- lst[[i]]
 
     for (name in names(elem))
-      assign(name, elem[[names]])
+      assign(name, elem[[name]])
 
     # check required components exist
     req_cols <- c("obs", "rates", "pvec")
@@ -270,13 +270,13 @@ checkRates <- function(levels, rates, name) {
   else
     scale = rates$scale
 
-  means        <- checkDF(rates, paste0(name, "$means"), 2)
+  means        <- checkDF(means, paste0(name, "$means"), 2)
   names(means) <- c("group", "mean")
   
   # check if columns are coercible
   means <- tryCatch(
     {
-      rates$group <- as.factor(rates$group)
+      means$group <- as.factor(means$group)
       means$mean <- as.numeric(means$mean)
       means
     },
