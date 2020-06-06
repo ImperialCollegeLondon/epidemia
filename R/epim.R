@@ -110,10 +110,7 @@ epim <-
             "tau2",
             "phi",
             "kappa",
-            "ifr_noise",
-            "prediction",
-            "E_deaths",
-            "Rt_adj")
+            "noise")
 
   args <- list(...)
   args$pars <- pars
@@ -143,26 +140,28 @@ epim <-
       Sigma_nms <- unlist(Sigma_nms)
   }
 
-  #replace 'pars' with descriptive names
+  trms <- expand.grid(paste0("group:",1:standata$M), paste0(" obstype:",1:standata$R))
+  trms <- do.call("paste0", trms)
+
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
-                 standata$beta_nms,
-                 if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
-                 if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
-                 c(paste0("y[", 1:standata$M, "]")),
-                 c(paste0("mu[", 1:standata$M, "]")),
-                 "tau",
-                 "phi",
-                 "kappa",
-                 c(paste0("Ifr_noise[", 1:standata$M, "]")),
-                 "log-posterior")
+                colnames(standata$X),
+                if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
+                if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
+                c(paste0("y[", 1:standata$M, "]")),
+                c(paste0("mu[", 1:standata$M, "]")),
+                "tau",
+                "phi",
+                "kappa",
+                if (standata$R > 0) c(paste0("noise[",trms,"]")),
+                "log-posterior")
 
   fit@sim$fnames_oi <- new_names
-
 
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[ , !sel, drop = FALSE]
   z <- group$Z
-  colnames(z) <- b_names(names(fit), value = TRUE)
+  if (length(z))
+    colnames(z) <- b_names(names(fit), value = TRUE)
   
   out <- nlist(fit, 
                formula,
@@ -173,7 +172,8 @@ epim <-
                pops,
                call,
                algorithm, 
-               glmod)
+               glmod,
+               standata)
 
   return(out)
 }
@@ -187,7 +187,7 @@ is_mixed <- function(formula) {
 transformTheta_L <- function(stanfit, cnms) {
 
 
-  thetas <- extract(stanfit, pars = "theta_L", inc_warmup = TRUE, 
+  thetas <- rstan::extract(stanfit, pars = "theta_L", inc_warmup = TRUE, 
                       permuted = FALSE)
 
   nc <- sapply(cnms, FUN = length)

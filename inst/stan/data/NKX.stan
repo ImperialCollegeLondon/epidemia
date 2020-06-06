@@ -3,7 +3,7 @@
   int<lower=0> K;  // number of predictors
   
   // data
-  vector[K] xbar;               // predictor means
-  matrix[N,K] X[1];       // centered predictor matrix in the dense case
+  vector[K] xbar;      // predictor means
+  matrix[N,K] X;       // centered predictor matrix in the dense case
 
   

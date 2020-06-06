@@ -44,6 +44,6 @@ test_that("Parsing of model matrix (centering, predictor means)", {
 
   # check centered matrix
   x_cent <- sweep(as.matrix(df), 2, colMeans(df), FUN = "-")
-  expect_equal(as.numeric(sdat$X[1,,]), as.numeric(x_cent))
+  expect_equal(as.numeric(sdat$X), as.numeric(x_cent))
 })
 

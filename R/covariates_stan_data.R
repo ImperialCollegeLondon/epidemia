@@ -165,7 +165,7 @@ genCovariatesStanData <-
   }
 
 
-  standata$X <- array(xtemp, dim = c(1L, dim(xtemp)))
+  standata$X <- xtemp
   
   return(standata)
 }

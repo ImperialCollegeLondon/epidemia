@@ -20,16 +20,16 @@ genModelStanData <-
   si <- padSV(si, max_sim, 1e-15)
 
   # create matrix P
-  r <- length(obs)
+  R <- length(obs)
 
-  if (r) {
+  if (R) {
     f <- function(x) padSV(x$p, max_sim, 1e-15)
     P <- sapply(obs, f)
 
-    # matrix of rates for each observation type
+    # matrix of mean rates for each observation type
     f     <- function(x) x$rates$means$mean
-    props <- lapply(obs, f)
-    props <- do.call("cbind", args=props)
+    means <- lapply(obs, f)
+    means <- do.call("cbind", args=means)
 
     # matrix of rates for each observation type
     f             <- function(x) x$rates$scale
@@ -45,26 +45,28 @@ genModelStanData <-
       df
     }
     obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
-    obs <- as.matrix(obs)
   } else {
-    obs           <- matrix(NA, 0, 0)
-    P             <- matrix(NA, max_sim, r)
-    props         <- matrix(NA, M, r)
+    obs           <- data.frame()
+    P             <- matrix(NA, max_sim, 0)
+    means         <- matrix(NA, M, 0)
     noise_scales  <- numeric()
   }
 
   standata <- list(M            = M,
                    N0           = seed_days,
                    SI           = si,
-                   pop          = as.array(pops$pop),
-                   obs          = obs,
+                   pop          = as.numeric(pops$pop),
+                   obs_group    = as.numeric(obs$group),
+                   obs_date     = as.numeric(obs$date),
+                   obs_type     = as.numeric(obs$type),
+                   obs          = as.numeric(obs$obs),
                    N_obs        = nrow(obs),
                    N2           = max(starts + NC - 1),
                    starts       = starts,
                    NC           = NC,
-                   r            = r,
+                   R            = R,
                    P            = P,
-                   props        = props,
+                   means        = means,
                    noise_scales = noise_scales,
                    NS           = max_sim)
 

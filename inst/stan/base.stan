@@ -17,7 +17,7 @@ data {
   int<lower=1> NS; // maximum number of simulation days for any given group
   int<lower=0> N_obs; // total size of the observation vector
   int<lower=0> R; // number of different observation types
-  real<lower=0> noise_scale[R];
+  real<lower=0> noise_scales[R];
   int obs[N_obs]; // vector of observations
   int obs_group[N_obs]; // group (1 to M) to which each observation belongs
   int obs_type[N_obs]; // type of observation (1 to r). 
@@ -114,13 +114,13 @@ transformed parameters {
   Rt_vec = R0_vec * 2 .* inv_logit(-eta);
 
   { // predict cases over time
-    int idx=1, n0, n1, n2;
+    int idx=1;
     matrix[N2,M] cumm_sum = rep_matrix(0,N2,M);
     for (m in 1:M){
       // time indices for group m: start date, final seed date, final date
-      n0 = starts[m];
-      n1 = n0 + N0 - 1;
-      n2 = n0 + NC[m] - 1;
+      int n0 = starts[m];
+      int n1 = n0 + N0 - 1;
+      int n2 = n0 + NC[m] - 1;
 
       // impute unadjusted Rt from the linear predictor
       Rt[n0:n2,m] = Rt_vec[idx:(idx+NC[m]-1)];
@@ -131,20 +131,18 @@ transformed parameters {
 
       for(i in (n1+1):n2) {
         real convolution = dot_product(sub_col(prediction, n0, m, i-n0), tail(SI_rev, i-n0));
-        prediction[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(-Rt[i,m] * convolution / pop[m])) 
+        prediction[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(-Rt[i,m] * convolution / pop[m]));
         cumm_sum[i,m] = cumm_sum[i-1,m] + prediction[i,m];
       }
     }
   }
 
-  {
-    // compute expected values of the observations
-    int m, dt, tp, n0;
+  {  // compute expected values of the observations
     for (i in 1:N_obs) {
-      m = obs_group[i];
-      dt = obs_date[i];
-      tp = obs_type[i];
-      n0 = starts[m];
+      int m = obs_group[i];
+      int dt = obs_date[i];
+      int tp = obs_type[i];
+      int n0 = starts[m];
       if (dt == 1)
         E_obs[i] = 1e-15 * prediction[1,m];
       else
@@ -164,7 +162,7 @@ model {
   mu ~ normal(3.28, kappa);
 
   for (r in 1:R)
-    noise[,r] ~ normal(1, noise_scale[r]);
+    noise[,r] ~ normal(1, noise_scales[r]);
 
 #include /model/priors_glm.stan
   if (t > 0) {
@@ -174,15 +172,13 @@ model {
 
   if (prior_PD == 0) {
     for (i in 1:N_obs)
-      obs[i] ~ neg_binomial_2(E_obs[i], phi);
+      obs[i] ~ neg_binomial_2(E_obs[i] + 1e-15, phi);
   }
 }
 
 generated quantities {
   real alpha[has_intercept];
-
   matrix[N2,M] prediction_out = prediction;
-  matrix[N2,M] Rt_adj_out = Rt_adj;
   
   if (has_intercept == 1) {
     alpha[1] = gamma[1] - dot_product(xbar, beta);
