@@ -23,6 +23,7 @@ data {
   int obs_type[N_obs]; // type of observation (1 to r). 
   int obs_date[N_obs]; // observation date (1 to N2)
   matrix[NS, R] P; // the 'pvec' for each type of observation.
+  matrix[M, R] means; // mean values for observed events / total cases (for example, IFR)
   real pop[M];
   real SI[NS]; // fixed SI using empirical data
 #include /data/NKX.stan
@@ -61,19 +62,18 @@ parameters {
 }
 
 transformed parameters {
-  vector[N] Rt_vec;
-  matrix[N2, M] prediction = rep_matrix(0,N2,M);
   real E_obs[N_obs]; // expected values of the observations 
-  matrix[N2, M] Rt = rep_matrix(0,N2,M);
-  matrix[N2, M] Rt_adj = Rt;
-  vector[N] eta;  // linear predictor
   vector[N] R0_vec;
+  vector[N] Rt_vec;
+  matrix[N2, M] Rt = rep_matrix(0,N2,M);
+  matrix[N2, M] prediction = rep_matrix(0,N2,M);
+  vector[N] eta;  // linear predictor
   
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
 
 
-  {
+  { // generate vector of R0s from group means
     int idx = NC[1]+1;
     R0_vec[1:NC[1]] = rep_vector(mu[1], NC[1]);
     for (m in 2:M) {
@@ -110,14 +110,14 @@ transformed parameters {
 #include /model/eta_no_intercept.stan
   }
 
-  # Todo: Add branching logic for different link functions.
+  // todo: Add branching logic for different link functions.
   Rt_vec = R0_vec * 2 .* inv_logit(-eta);
 
-  {
+  { // predict cases over time
     int idx=1, n0, n1, n2;
     matrix[N2,M] cumm_sum = rep_matrix(0,N2,M);
     for (m in 1:M){
-      # time indices for group m: start date, final seed date, final date
+      // time indices for group m: start date, final seed date, final date
       n0 = starts[m];
       n1 = n0 + N0 - 1;
       n2 = n0 + NC[m] - 1;
@@ -127,31 +127,31 @@ transformed parameters {
       idx += NC[m];
 
       prediction[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
-      cumm_sum[(n0+1):n1,m] = cumulative_sum(prediction[(n0+1):n1,m]);
-      Rt_adj[n0:n1,m] = Rt[n0:n1,m];
+      cumm_sum[n0:n1,m] = cumulative_sum(prediction[n0:n1,m]);
 
       for(i in (n1+1):n2) {
-        real convolution = dot_product(sub_col(prediction, k, m, i-n0), tail(SI_rev, i-n0));
-        cumm_sum[i,m] = cumm_sum[i-1,m] + prediction[i-1,m];
-        Rt_adj[i,m] = (pop[m] - cumm_sum[i,m]) / pop[m]) * Rt[i,m];
-        prediction[i, m] = fmin(pop[m] - cumm_sum[i,m], prediction[i, m] + Rt_adj[i,m] * convolution);
-      }
-    }
-
-    {
-      // compute expected values of the observations
-      int m, dt, tp;
-      for (i in 1:N_obs) {
-        m  = obs_group[i];
-        dt = obs_date[i];
-        tp = obs_type[i];
-        if (dt == 1)
-          E_obs[i] = 1e-15 * prediction[1,m];
-        else
-          E_obs[i] = noise[m, tp] * prop[m, tp] * dot_product(sub_col(prediction, starts[m], m, dt-starts[m]), tail(P_rev[tp], dt-starts[m]));
+        real convolution = dot_product(sub_col(prediction, n0, m, i-n0), tail(SI_rev, i-n0));
+        prediction[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(-Rt[i,m] * convolution / pop[m])) 
+        cumm_sum[i,m] = cumm_sum[i-1,m] + prediction[i,m];
       }
     }
   }
+
+  {
+    // compute expected values of the observations
+    int m, dt, tp, n0;
+    for (i in 1:N_obs) {
+      m = obs_group[i];
+      dt = obs_date[i];
+      tp = obs_type[i];
+      n0 = starts[m];
+      if (dt == 1)
+        E_obs[i] = 1e-15 * prediction[1,m];
+      else
+        E_obs[i] = noise[m, tp] * means[m, tp] * dot_product(sub_col(prediction, n0, m, dt-n0), tail(P_rev[tp], dt-n0));
+    }
+  }
+  
 }
 
 model {
@@ -173,13 +173,8 @@ model {
   }
 
   if (prior_PD == 0) {
-    for(m in 1:M){
-      for (i in 1:NC[m]) {
-        if (deaths[i,m] != -1) {
-          deaths[i,m] ~ neg_binomial_2(E_deaths[i,m], phi);
-        }
-      }
-    }
+    for (i in 1:N_obs)
+      obs[i] ~ neg_binomial_2(E_obs[i], phi);
   }
 }
 
@@ -187,7 +182,6 @@ generated quantities {
   real alpha[has_intercept];
 
   matrix[N2,M] prediction_out = prediction;
-  matrix[N2,M]  E_deaths_out = E_deaths;
   matrix[N2,M] Rt_adj_out = Rt_adj;
   
   if (has_intercept == 1) {
