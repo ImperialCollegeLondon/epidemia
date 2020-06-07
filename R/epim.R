@@ -163,7 +163,7 @@ epim <-
   if (length(z))
     colnames(z) <- b_names(names(fit), value = TRUE)
   
-  out <- nlist(fit, 
+  out <- nlist(stanfit = fit, 
                formula,
                x = cbind(x, z),
                data,
@@ -175,6 +175,8 @@ epim <-
                glmod,
                standata)
 
+  out <- epimodel(out)
+  class(out) <- c(class(out), "mixed")
   return(out)
 }
 
