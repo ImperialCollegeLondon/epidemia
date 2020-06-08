@@ -12,7 +12,7 @@ genModelStanData <-
   max_sim <- max(NC)
 
   # compute first date
-  starts  <- aggregate(date ~ code, data = data, FUN = min)$date
+  starts  <- aggregate(date ~ group, data = data, FUN = min)$date
   begin   <- min(starts)
   # integer index of start (1 being 'begin')
   starts  <- as.numeric(starts - begin + 1)
@@ -67,7 +67,7 @@ genModelStanData <-
                    R            = R,
                    P            = P,
                    means        = means,
-                   noise_scales = noise_scales,
+                   noise_scales = as.numeric(noise_scales),
                    NS           = max_sim)
 
   return(standata)

@@ -11,7 +11,7 @@ epimodel <- function(object) {
   
   if (length(coefs) == 1L) # ensures that if only a single coef it still gets a name
     names(coefs) <- rownames(stan_summary)[1L]
-  
+
   stanmat <- as.matrix(stanfit)[,1:nvars, drop=FALSE]
   colnames(stanmat) <- colnames(x)
   ses <- apply(stanmat, 2L, mad)
@@ -37,7 +37,10 @@ epimodel <- function(object) {
     stan_summary,  
     stanfit = stanfit,
     call = object$call, 
-    stan_function = object$stan_function
+    stan_function = object$stan_function,
+    rep_number = object$rep_number,
+    cases = object$cases,
+    pred = object$pred
   )
   
   if (mer) 

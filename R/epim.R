@@ -1,6 +1,6 @@
 #' Fits an Epidemiological Model
 #' 
-#' @param formula An R object of class `formula`. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector indicating group membership (i.e. country, state, age cohort), and `code` being a vector of Date objects.
+#' @param formula An R object of class `formula`. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector indicating group membership (i.e. country, state, age cohort), and `date` being a vector of Date objects.
 #' @param data A dataframe with columns corresponding to the terms appearing in 'formula'. See [lm].
 #' @param obs A list of lists giving available observations. Each element of 'obs' must itself be a names list containing the following four elements
 #' * `obs`: A three column dataframe representing some type of observed data that is a function of the true number of infections. Examples include recorded incidence, deaths or hospitalisations. The first column represents group membership and must be coercible to class `factor`. The second column indicates the observation date and must be coercible to class `Date`. The third column contain the data.
@@ -140,9 +140,6 @@ epim <-
       Sigma_nms <- unlist(Sigma_nms)
   }
 
-  trms <- expand.grid(paste0("group:",1:standata$M), paste0(" obstype:",1:standata$R))
-  trms <- do.call("paste0", trms)
-
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
                 colnames(standata$X),
                 if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
@@ -152,20 +149,27 @@ epim <-
                 "tau",
                 "phi",
                 "kappa",
-                if (standata$R > 0) c(paste0("noise[",trms,"]")),
+                if (standata$R > 0) "noise",
                 "log-posterior")
 
-  fit@sim$fnames_oi <- new_names
+  #fit@sim$fnames_oi <- new_names
 
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[ , !sel, drop = FALSE]
   z <- group$Z
   if (length(z))
     colnames(z) <- b_names(names(fit), value = TRUE)
+
+  x = cbind(x, z)
+  stanmat <- as.matrix(fit)
+  eta <- stanmat[,1:ncol(x), drop=FALSE]  %*% t(x)
+  colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
+  stanmat <- cbind(stanmat, eta)
+  res <- rstan::gqs(stanmodels$pp_base, data = standata, draws=stanmat)
   
   out <- nlist(stanfit = fit, 
                formula,
-               x = cbind(x, z),
+               x,
                data,
                obs,
                si,
@@ -173,7 +177,10 @@ epim <-
                call,
                algorithm, 
                glmod,
-               standata)
+               standata,
+               rep_number =  rstan::extract(res, "Rt")[[1]], 
+               cases = rstan::extract(res, "prediction")[[1]],
+               pred = rstan::extract(res, "E_obs")[[1]])
 
   out <- epimodel(out)
   class(out) <- c(class(out), "mixed")
