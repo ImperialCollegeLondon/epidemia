@@ -65,7 +65,7 @@ genModelStanData <-
                    starts       = starts,
                    NC           = NC,
                    R            = R,
-                   P            = P,
+                   pvecs        = pvecs,
                    means        = means,
                    noise_scales = as.numeric(noise_scales),
                    NS           = max_sim)
