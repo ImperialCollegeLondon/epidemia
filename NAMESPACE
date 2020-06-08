@@ -15,5 +15,6 @@ export(epim)
 export(stanmodels)
 export(genModelStanData)
 export(genCovariatesStanData)
+export(underlyings)
 
 
