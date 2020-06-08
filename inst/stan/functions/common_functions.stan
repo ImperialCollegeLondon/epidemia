@@ -297,3 +297,4 @@
     if (family == 4 && link == 5) return 0;
     return positive_infinity();
   }
+  

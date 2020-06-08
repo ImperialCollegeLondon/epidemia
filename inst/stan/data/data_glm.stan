@@ -13,3 +13,4 @@
   int<lower=0,upper=2> prior_dist_for_intercept;
   
   
+  

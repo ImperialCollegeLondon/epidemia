@@ -1,4 +1,5 @@
 functions {
+#include /functions/reverse.stan
 #include /functions/common_functions.stan
 #include /functions/continuous_likelihoods.stan
 
@@ -9,23 +10,11 @@ functions {
 }
 
 data {
-  int <lower=1> M; // number of countries
-  int <lower=1> N0; // number of time points for which to impute infections
-  int <lower=1> starts[M]; // the start index of each group
-  int<lower=1> NC[M]; // days of observed data for each group.
-  int<lower=1> N2; // total period for the simulation
-  int<lower=1> NS; // maximum number of simulation days for any given group
-  int<lower=0> N_obs; // total size of the observation vector
-  int<lower=0> R; // number of different observation types
-  real<lower=0> noise_scales[R];
-  int obs[N_obs]; // vector of observations
-  int obs_group[N_obs]; // group (1 to M) to which each observation belongs
-  int obs_type[N_obs]; // type of observation (1 to r). 
-  int obs_date[N_obs]; // observation date (1 to N2)
-  matrix[NS, R] P; // the 'pvec' for each type of observation.
-  matrix[M, R] means; // mean values for observed events / total cases (for example, IFR)
-  real pop[M];
-  real SI[NS]; // fixed SI using empirical data
+#include /data/data_obs.stan
+#include /data/data_indices.stan
+#include /data/data_model.stan
+matrix<lower=0,upper=1>[M, R] means; // mean values for observed events / total cases (for example, IFR)
+vector<lower=0>[R] noise_scales;
 #include /data/NKX.stan
 #include /data/data_glm.stan
 #include /data/hyperparameters.stan
@@ -35,19 +24,12 @@ data {
 
 transformed data {
   real aux = not_a_number();
-  vector[NS] SI_rev; // SI in reverse order
-  vector[NS] P_rev[M]; // P in reversed order
   int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
+#include /tdata/tdata_reverse.stan
 #include /tdata/tdata_glm.stan
 
-  for(i in 1:NS)
-    SI_rev[i] = SI[NS-i+1];
-
-  for(m in 1:M){
-    for(i in 1:NS) {
-      P_rev[m, i] = P[N2-i+1,m];
-    }
-  }
+for(r in 1:R)
+      pvecs_rev[r] = reverse(pvecs[r]);
 }
 
 parameters {
@@ -62,11 +44,10 @@ parameters {
 }
 
 transformed parameters {
-  real E_obs[N_obs]; // expected values of the observations 
-  matrix[N2, M] Rt = rep_matrix(0,N2,M);
-  matrix[N2, M] prediction = rep_matrix(0,N2,M);
+  vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
-  
+
+#include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
 
@@ -98,29 +79,7 @@ transformed parameters {
 #include /model/eta_no_intercept.stan
   }
 
-  { // predict cases over time
-    int idx=1;
-    matrix[N2,M] cumm_sum = rep_matrix(0,N2,M);
-    for (m in 1:M){
-      // time indices for group m: start date, final seed date, final date
-      int n0 = starts[m];
-      int n1 = n0 + N0 - 1;
-      int n2 = n0 + NC[m] - 1;
-
-      // impute unadjusted Rt from the linear predictor
-      Rt[n0:n2,m] = mu[m] * 2 .* inv_logit(-eta[idx:(idx+NC[m]-1)]);
-      idx += NC[m];
-
-      prediction[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
-      cumm_sum[n0:n1,m] = cumulative_sum(prediction[n0:n1,m]);
-
-      for(i in (n1+1):n2) {
-        real convolution = dot_product(sub_col(prediction, n0, m, i-n0), tail(SI_rev, i-n0));
-        prediction[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(-Rt[i,m] * convolution / pop[m]));
-        cumm_sum[i,m] = cumm_sum[i-1,m] + prediction[i,m];
-      }
-    }
-  }
+#include /tparameters/gen_infections.stan
 
   {  // compute expected values of the observations
     for (i in 1:N_obs) {
@@ -129,9 +88,9 @@ transformed parameters {
       int tp = obs_type[i];
       int n0 = starts[m];
       if (dt == 1)
-        E_obs[i] = 1e-15 * prediction[1,m];
+        E_obs[i] = 1e-15 * infections[1,m];
       else
-        E_obs[i] = noise[m, tp] * means[m, tp] * dot_product(sub_col(prediction, n0, m, dt-n0), tail(P_rev[tp], dt-n0));
+        E_obs[i] = noise[m, tp] * means[m, tp] * dot_product(sub_col(infections, n0, m, dt-n0), tail(pvecs_rev[tp], dt-n0));
     }
   }
 }
@@ -162,10 +121,8 @@ model {
 
 generated quantities {
   real alpha[has_intercept];
-  matrix[N2,M] prediction_out = prediction;
   
   if (has_intercept == 1) {
     alpha[1] = gamma[1] - dot_product(xbar, beta);
   }
-  
 }
