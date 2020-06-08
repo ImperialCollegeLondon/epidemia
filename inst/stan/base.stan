@@ -35,12 +35,12 @@ for(r in 1:R)
 parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
-  real<lower=0> mu[M];
+  vector<lower=0>[M] mu;
   real<lower=0> kappa;
-  real<lower=0> y[M];
+  vector<lower=0>[M] y;
   real<lower=0> phi;
   real<lower=0> tau2;
-  real<lower=0> noise[M, R];
+  matrix<lower=0>[M,R] noise;
 }
 
 transformed parameters {

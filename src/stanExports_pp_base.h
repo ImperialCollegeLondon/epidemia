@@ -311,17 +311,17 @@ public:
             num_params_r__ = 0U;
             param_ranges_i__.clear();
             current_statement_begin__ = 46;
-            validate_non_negative_index("mu", "M", M);
-            num_params_r__ += (1 * M);
+            validate_non_negative_index("mu", "(M + 1)", (M + 1));
+            num_params_r__ += (M + 1);
             current_statement_begin__ = 47;
-            validate_non_negative_index("y", "M", M);
-            num_params_r__ += (1 * M);
+            validate_non_negative_index("y", "(M + 1)", (M + 1));
+            num_params_r__ += (M + 1);
             current_statement_begin__ = 48;
             num_params_r__ += 1;
             current_statement_begin__ = 49;
-            validate_non_negative_index("noise", "M", M);
+            validate_non_negative_index("noise", "(M + 1)", (M + 1));
             validate_non_negative_index("noise", "R", R);
-            num_params_r__ += ((1 * M) * R);
+            num_params_r__ += ((M + 1) * R);
             current_statement_begin__ = 50;
             validate_non_negative_index("eta", "N", N);
             num_params_r__ += N;
@@ -347,40 +347,34 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable mu missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("mu");
         pos__ = 0U;
-        validate_non_negative_index("mu", "M", M);
-        context__.validate_dims("parameter initialization", "mu", "double", context__.to_vec(M));
-        std::vector<double> mu(M, double(0));
-        size_t mu_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
-            mu[k_0__] = vals_r__[pos__++];
+        validate_non_negative_index("mu", "(M + 1)", (M + 1));
+        context__.validate_dims("parameter initialization", "mu", "vector_d", context__.to_vec((M + 1)));
+        Eigen::Matrix<double, Eigen::Dynamic, 1> mu((M + 1));
+        size_t mu_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < mu_j_1_max__; ++j_1__) {
+            mu(j_1__) = vals_r__[pos__++];
         }
-        size_t mu_i_0_max__ = M;
-        for (size_t i_0__ = 0; i_0__ < mu_i_0_max__; ++i_0__) {
-            try {
-                writer__.scalar_lb_unconstrain(0, mu[i_0__]);
-            } catch (const std::exception& e) {
-                stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable mu: ") + e.what()), current_statement_begin__, prog_reader__());
-            }
+        try {
+            writer__.vector_lb_unconstrain(0, mu);
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable mu: ") + e.what()), current_statement_begin__, prog_reader__());
         }
         current_statement_begin__ = 47;
         if (!(context__.contains_r("y")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable y missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("y");
         pos__ = 0U;
-        validate_non_negative_index("y", "M", M);
-        context__.validate_dims("parameter initialization", "y", "double", context__.to_vec(M));
-        std::vector<double> y(M, double(0));
-        size_t y_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < y_k_0_max__; ++k_0__) {
-            y[k_0__] = vals_r__[pos__++];
+        validate_non_negative_index("y", "(M + 1)", (M + 1));
+        context__.validate_dims("parameter initialization", "y", "vector_d", context__.to_vec((M + 1)));
+        Eigen::Matrix<double, Eigen::Dynamic, 1> y((M + 1));
+        size_t y_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < y_j_1_max__; ++j_1__) {
+            y(j_1__) = vals_r__[pos__++];
         }
-        size_t y_i_0_max__ = M;
-        for (size_t i_0__ = 0; i_0__ < y_i_0_max__; ++i_0__) {
-            try {
-                writer__.scalar_lb_unconstrain(0, y[i_0__]);
-            } catch (const std::exception& e) {
-                stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable y: ") + e.what()), current_statement_begin__, prog_reader__());
-            }
+        try {
+            writer__.vector_lb_unconstrain(0, y);
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable y: ") + e.what()), current_statement_begin__, prog_reader__());
         }
         current_statement_begin__ = 48;
         if (!(context__.contains_r("phi")))
@@ -400,27 +394,21 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable noise missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("noise");
         pos__ = 0U;
-        validate_non_negative_index("noise", "M", M);
+        validate_non_negative_index("noise", "(M + 1)", (M + 1));
         validate_non_negative_index("noise", "R", R);
-        context__.validate_dims("parameter initialization", "noise", "double", context__.to_vec(M,R));
-        std::vector<std::vector<double> > noise(M, std::vector<double>(R, double(0)));
-        size_t noise_k_0_max__ = M;
-        size_t noise_k_1_max__ = R;
-        for (size_t k_1__ = 0; k_1__ < noise_k_1_max__; ++k_1__) {
-            for (size_t k_0__ = 0; k_0__ < noise_k_0_max__; ++k_0__) {
-                noise[k_0__][k_1__] = vals_r__[pos__++];
+        context__.validate_dims("parameter initialization", "noise", "matrix_d", context__.to_vec((M + 1),R));
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> noise((M + 1), R);
+        size_t noise_j_2_max__ = R;
+        size_t noise_j_1_max__ = (M + 1);
+        for (size_t j_2__ = 0; j_2__ < noise_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < noise_j_1_max__; ++j_1__) {
+                noise(j_1__, j_2__) = vals_r__[pos__++];
             }
         }
-        size_t noise_i_0_max__ = M;
-        size_t noise_i_1_max__ = R;
-        for (size_t i_0__ = 0; i_0__ < noise_i_0_max__; ++i_0__) {
-            for (size_t i_1__ = 0; i_1__ < noise_i_1_max__; ++i_1__) {
-                try {
-                    writer__.scalar_lb_unconstrain(0, noise[i_0__][i_1__]);
-                } catch (const std::exception& e) {
-                    stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable noise: ") + e.what()), current_statement_begin__, prog_reader__());
-                }
-            }
+        try {
+            writer__.matrix_lb_unconstrain(0, noise);
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable noise: ") + e.what()), current_statement_begin__, prog_reader__());
         }
         current_statement_begin__ = 50;
         if (!(context__.contains_r("eta")))
@@ -465,25 +453,19 @@ public:
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
             current_statement_begin__ = 46;
-            std::vector<local_scalar_t__> mu;
-            size_t mu_d_0_max__ = M;
-            mu.reserve(mu_d_0_max__);
-            for (size_t d_0__ = 0; d_0__ < mu_d_0_max__; ++d_0__) {
-                if (jacobian__)
-                    mu.push_back(in__.scalar_lb_constrain(0, lp__));
-                else
-                    mu.push_back(in__.scalar_lb_constrain(0));
-            }
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> mu;
+            (void) mu;  // dummy to suppress unused var warning
+            if (jacobian__)
+                mu = in__.vector_lb_constrain(0, (M + 1), lp__);
+            else
+                mu = in__.vector_lb_constrain(0, (M + 1));
             current_statement_begin__ = 47;
-            std::vector<local_scalar_t__> y;
-            size_t y_d_0_max__ = M;
-            y.reserve(y_d_0_max__);
-            for (size_t d_0__ = 0; d_0__ < y_d_0_max__; ++d_0__) {
-                if (jacobian__)
-                    y.push_back(in__.scalar_lb_constrain(0, lp__));
-                else
-                    y.push_back(in__.scalar_lb_constrain(0));
-            }
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> y;
+            (void) y;  // dummy to suppress unused var warning
+            if (jacobian__)
+                y = in__.vector_lb_constrain(0, (M + 1), lp__);
+            else
+                y = in__.vector_lb_constrain(0, (M + 1));
             current_statement_begin__ = 48;
             local_scalar_t__ phi;
             (void) phi;  // dummy to suppress unused var warning
@@ -492,19 +474,12 @@ public:
             else
                 phi = in__.scalar_lb_constrain(0);
             current_statement_begin__ = 49;
-            std::vector<std::vector<local_scalar_t__> > noise;
-            size_t noise_d_0_max__ = M;
-            size_t noise_d_1_max__ = R;
-            noise.resize(noise_d_0_max__);
-            for (size_t d_0__ = 0; d_0__ < noise_d_0_max__; ++d_0__) {
-                noise[d_0__].reserve(noise_d_1_max__);
-                for (size_t d_1__ = 0; d_1__ < noise_d_1_max__; ++d_1__) {
-                    if (jacobian__)
-                        noise[d_0__].push_back(in__.scalar_lb_constrain(0, lp__));
-                    else
-                        noise[d_0__].push_back(in__.scalar_lb_constrain(0));
-                }
-            }
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> noise;
+            (void) noise;  // dummy to suppress unused var warning
+            if (jacobian__)
+                noise = in__.matrix_lb_constrain(0, (M + 1), R, lp__);
+            else
+                noise = in__.matrix_lb_constrain(0, (M + 1), R);
             current_statement_begin__ = 50;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta;
             (void) eta;  // dummy to suppress unused var warning
@@ -547,15 +522,15 @@ public:
         dimss__.resize(0);
         std::vector<size_t> dims__;
         dims__.resize(0);
-        dims__.push_back(M);
+        dims__.push_back((M + 1));
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(M);
+        dims__.push_back((M + 1));
         dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(M);
+        dims__.push_back((M + 1));
         dims__.push_back(R);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -593,43 +568,24 @@ public:
         static const char* function__ = "model_pp_base_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        std::vector<double> mu;
-        size_t mu_d_0_max__ = M;
-        mu.reserve(mu_d_0_max__);
-        for (size_t d_0__ = 0; d_0__ < mu_d_0_max__; ++d_0__) {
-            mu.push_back(in__.scalar_lb_constrain(0));
+        Eigen::Matrix<double, Eigen::Dynamic, 1> mu = in__.vector_lb_constrain(0, (M + 1));
+        size_t mu_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < mu_j_1_max__; ++j_1__) {
+            vars__.push_back(mu(j_1__));
         }
-        size_t mu_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
-            vars__.push_back(mu[k_0__]);
-        }
-        std::vector<double> y;
-        size_t y_d_0_max__ = M;
-        y.reserve(y_d_0_max__);
-        for (size_t d_0__ = 0; d_0__ < y_d_0_max__; ++d_0__) {
-            y.push_back(in__.scalar_lb_constrain(0));
-        }
-        size_t y_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < y_k_0_max__; ++k_0__) {
-            vars__.push_back(y[k_0__]);
+        Eigen::Matrix<double, Eigen::Dynamic, 1> y = in__.vector_lb_constrain(0, (M + 1));
+        size_t y_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < y_j_1_max__; ++j_1__) {
+            vars__.push_back(y(j_1__));
         }
         double phi = in__.scalar_lb_constrain(0);
         vars__.push_back(phi);
-        std::vector<std::vector<double> > noise;
-        size_t noise_d_0_max__ = M;
-        size_t noise_d_1_max__ = R;
-        noise.resize(noise_d_0_max__);
-        for (size_t d_0__ = 0; d_0__ < noise_d_0_max__; ++d_0__) {
-            noise[d_0__].reserve(noise_d_1_max__);
-            for (size_t d_1__ = 0; d_1__ < noise_d_1_max__; ++d_1__) {
-                noise[d_0__].push_back(in__.scalar_lb_constrain(0));
-            }
-        }
-        size_t noise_k_0_max__ = M;
-        size_t noise_k_1_max__ = R;
-        for (size_t k_1__ = 0; k_1__ < noise_k_1_max__; ++k_1__) {
-            for (size_t k_0__ = 0; k_0__ < noise_k_0_max__; ++k_0__) {
-                vars__.push_back(noise[k_0__][k_1__]);
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> noise = in__.matrix_lb_constrain(0, (M + 1), R);
+        size_t noise_j_2_max__ = R;
+        size_t noise_j_1_max__ = (M + 1);
+        for (size_t j_2__ = 0; j_2__ < noise_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < noise_j_1_max__; ++j_1__) {
+                vars__.push_back(noise(j_1__, j_2__));
             }
         }
         Eigen::Matrix<double, Eigen::Dynamic, 1> eta = in__.vector_constrain(N);
@@ -791,7 +747,7 @@ public:
                         current_statement_begin__ = 95;
                         stan::model::assign(pred, 
                                     stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
-                                    ((get_base1(get_base1(noise, m, "noise", 1), r, "noise", 2) * get_base1(means, m, r, "means", 1)) * dot_product(sub_col(infections, n0, m, (i - n0)), tail(get_base1(pvecs_rev, r, "pvecs_rev", 1), (i - n0)))), 
+                                    ((get_base1(noise, m, r, "noise", 1) * get_base1(means, m, r, "means", 1)) * dot_product(sub_col(infections, n0, m, (i - n0)), tail(get_base1(pvecs_rev, r, "pvecs_rev", 1), (i - n0)))), 
                                     "assigning variable pred");
                     }
                     }
@@ -866,27 +822,27 @@ public:
                                  bool include_tparams__ = true,
                                  bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
-        size_t mu_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
+        size_t mu_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < mu_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "mu" << '.' << k_0__ + 1;
+            param_name_stream__ << "mu" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t y_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < y_k_0_max__; ++k_0__) {
+        size_t y_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < y_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "y" << '.' << k_0__ + 1;
+            param_name_stream__ << "y" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
         param_name_stream__ << "phi";
         param_names__.push_back(param_name_stream__.str());
-        size_t noise_k_0_max__ = M;
-        size_t noise_k_1_max__ = R;
-        for (size_t k_1__ = 0; k_1__ < noise_k_1_max__; ++k_1__) {
-            for (size_t k_0__ = 0; k_0__ < noise_k_0_max__; ++k_0__) {
+        size_t noise_j_2_max__ = R;
+        size_t noise_j_1_max__ = (M + 1);
+        for (size_t j_2__ = 0; j_2__ < noise_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < noise_j_1_max__; ++j_1__) {
                 param_name_stream__.str(std::string());
-                param_name_stream__ << "noise" << '.' << k_0__ + 1 << '.' << k_1__ + 1;
+                param_name_stream__ << "noise" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
                 param_names__.push_back(param_name_stream__.str());
             }
         }
@@ -944,27 +900,27 @@ public:
                                    bool include_tparams__ = true,
                                    bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
-        size_t mu_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < mu_k_0_max__; ++k_0__) {
+        size_t mu_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < mu_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "mu" << '.' << k_0__ + 1;
+            param_name_stream__ << "mu" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t y_k_0_max__ = M;
-        for (size_t k_0__ = 0; k_0__ < y_k_0_max__; ++k_0__) {
+        size_t y_j_1_max__ = (M + 1);
+        for (size_t j_1__ = 0; j_1__ < y_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "y" << '.' << k_0__ + 1;
+            param_name_stream__ << "y" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
         param_name_stream__ << "phi";
         param_names__.push_back(param_name_stream__.str());
-        size_t noise_k_0_max__ = M;
-        size_t noise_k_1_max__ = R;
-        for (size_t k_1__ = 0; k_1__ < noise_k_1_max__; ++k_1__) {
-            for (size_t k_0__ = 0; k_0__ < noise_k_0_max__; ++k_0__) {
+        size_t noise_j_2_max__ = R;
+        size_t noise_j_1_max__ = (M + 1);
+        for (size_t j_2__ = 0; j_2__ < noise_j_2_max__; ++j_2__) {
+            for (size_t j_1__ = 0; j_1__ < noise_j_1_max__; ++j_1__) {
                 param_name_stream__.str(std::string());
-                param_name_stream__ << "noise" << '.' << k_0__ + 1 << '.' << k_1__ + 1;
+                param_name_stream__ << "noise" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
                 param_names__.push_back(param_name_stream__.str());
             }
         }

@@ -152,6 +152,7 @@ epim <-
                 if (standata$R > 0) "noise",
                 "log-posterior")
 
+  orig_names <- fit@sim$fnames_oi
   #fit@sim$fnames_oi <- new_names
 
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
@@ -160,20 +161,9 @@ epim <-
   if (length(z))
     colnames(z) <- b_names(names(fit), value = TRUE)
 
-  x = cbind(x, z)
-  stanmat <- as.matrix(fit)
-  if (length(x))
-    eta <- stanmat[,1:ncol(x), drop=FALSE]  %*% t(x)
-  else
-    eta <- matrix(0, nrow(stanmat), standata$N_obs)
-
-  colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
-  stanmat <- cbind(stanmat, eta)
-  res <- rstan::gqs(stanmodels$pp_base, data = standata, draws=stanmat)
-  
   out <- nlist(stanfit = fit, 
                formula,
-               x,
+               x = cbind(x,z),
                data,
                obs,
                si,
@@ -181,10 +171,7 @@ epim <-
                call,
                algorithm, 
                glmod,
-               standata,
-               rep_number =  rstan::extract(res, "Rt")[[1]], 
-               infections = rstan::extract(res, "infections")[[1]],
-               pred = rstan::extract(res, "pred")[[1]])
+               standata)
 
   out <- epimodel(out)
   class(out) <- c(class(out), "mixed")

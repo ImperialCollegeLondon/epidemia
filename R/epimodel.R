@@ -38,9 +38,7 @@ epimodel <- function(object) {
     stanfit = stanfit,
     call = object$call, 
     stan_function = object$stan_function,
-    rep_number = object$rep_number,
-    cases = object$cases,
-    pred = object$pred
+    standata = object$standata
   )
   
   if (mer) 

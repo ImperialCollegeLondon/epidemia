@@ -17,10 +17,10 @@ for(r in 1:R)
 }
 
 parameters {
-  real<lower=0> mu[M];
-  real<lower=0> y[M];
+  vector<lower=0>[M+1] mu;
+  vector<lower=0>[M+1] y;
   real<lower=0> phi;
-  real<lower=0> noise[M, R];
+  matrix<lower=0>[M+1,R] noise;
   vector[N] eta;
 }
 

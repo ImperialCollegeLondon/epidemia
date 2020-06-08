@@ -37,7 +37,7 @@ checkData <- function(formula, data) {
   # check if columns are coercible
   data <- tryCatch(
     {
-      data$group <- as.factor(data$group)
+      data$group <- droplevels(as.factor(data$group))
       data$date <- as.Date(data$date)
       data
     },
@@ -128,7 +128,7 @@ checkObsDF <- function(data, df, name) {
   # check if columns are coercible
   df <- tryCatch(
     {
-      df$group <- as.factor(df$group)
+      df$group <- droplevels(as.factor(df$group))
       df$date <- as.Date(df$date)
       df$obs <- as.numeric(df$obs)
       df
@@ -141,7 +141,7 @@ checkObsDF <- function(data, df, name) {
     }
   )
 
-  groups <- levels(as.factor(data$group))
+  groups <- levels(data$group)
 
   # throw error if duplicated
   if(any(duplicated(df[,1:2])))
@@ -217,7 +217,7 @@ checkPops <- function(pops, levels) {
   # check if columns are coercible
   pops <- tryCatch(
     {
-      pops$group <- as.factor(pops$group)
+      pops$group <- droplevels(as.factor(pops$group))
       pops$pop <- as.integer(pops$pop)
       pops
     },
@@ -276,7 +276,7 @@ checkRates <- function(levels, rates, name) {
   # check if columns are coercible
   means <- tryCatch(
     {
-      means$group <- as.factor(means$group)
+      means$group <- droplevels(as.factor(means$group))
       means$mean <- as.numeric(means$mean)
       means
     },
