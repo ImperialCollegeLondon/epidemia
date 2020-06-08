@@ -10,7 +10,7 @@ functions {
 
 data {
   int <lower=1> M; // number of countries
-  int <lower=1> N0; // number of days for which to impute infections
+  int <lower=1> N0; // number of time points for which to impute infections
   int <lower=1> starts[M]; // the start index of each group
   int<lower=1> NC[M]; // days of observed data for each group.
   int<lower=1> N2; // total period for the simulation
@@ -63,24 +63,12 @@ parameters {
 
 transformed parameters {
   real E_obs[N_obs]; // expected values of the observations 
-  vector[N] R0_vec;
-  vector[N] Rt_vec;
   matrix[N2, M] Rt = rep_matrix(0,N2,M);
   matrix[N2, M] prediction = rep_matrix(0,N2,M);
   vector[N] eta;  // linear predictor
   
 #include /tparameters/tparameters_glm.stan
 #include /model/make_eta.stan
-
-
-  { // generate vector of R0s from group means
-    int idx = NC[1]+1;
-    R0_vec[1:NC[1]] = rep_vector(mu[1], NC[1]);
-    for (m in 2:M) {
-      R0_vec[idx:(idx+NC[m]-1)] = rep_vector(mu[m], NC[m]);
-      idx += NC[m];
-    }
-  }
 
   if (t > 0) {
     if (special_case == 1) {
@@ -110,9 +98,6 @@ transformed parameters {
 #include /model/eta_no_intercept.stan
   }
 
-  // todo: Add branching logic for different link functions.
-  Rt_vec = R0_vec * 2 .* inv_logit(-eta);
-
   { // predict cases over time
     int idx=1;
     matrix[N2,M] cumm_sum = rep_matrix(0,N2,M);
@@ -123,7 +108,7 @@ transformed parameters {
       int n2 = n0 + NC[m] - 1;
 
       // impute unadjusted Rt from the linear predictor
-      Rt[n0:n2,m] = Rt_vec[idx:(idx+NC[m]-1)];
+      Rt[n0:n2,m] = mu[m] * 2 .* inv_logit(-eta[idx:(idx+NC[m]-1)]);
       idx += NC[m];
 
       prediction[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
@@ -149,7 +134,6 @@ transformed parameters {
         E_obs[i] = noise[m, tp] * means[m, tp] * dot_product(sub_col(prediction, n0, m, dt-n0), tail(P_rev[tp], dt-n0));
     }
   }
-  
 }
 
 model {

@@ -36,8 +36,6 @@ parameters {
 }
 
 generated quantities {
-  vector[N] R0_vec;
-  vector[N] Rt_vec;
   matrix[N2, M] Rt = rep_matrix(0,N2,M);
   matrix[N2, M] prediction = rep_matrix(0,N2,M);
   matrix[N2, M] E_obs[R];
@@ -45,18 +43,6 @@ generated quantities {
   // initialise to 0
   for (r in 1:R)
     E_obs[r] = rep_matrix(0, N2, M);
-
-  { // generate vector of R0s from group means
-    int idx = NC[1]+1;
-    R0_vec[1:NC[1]] = rep_vector(mu[1], NC[1]);
-    for (m in 2:M) {
-      R0_vec[idx:(idx+NC[m]-1)] = rep_vector(mu[m], NC[m]);
-      idx += NC[m];
-    }
-  }
-
-  // todo: Add branching logic for different link functions.
-  Rt_vec = R0_vec * 2 .* inv_logit(-eta);
 
   { // predict cases over time
     int idx=1;
@@ -68,7 +54,7 @@ generated quantities {
       int n2 = n0 + NC[m] - 1;
 
       // impute unadjusted Rt from the linear predictor
-      Rt[n0:n2,m] = Rt_vec[idx:(idx+NC[m]-1)];
+      Rt[n0:n2,m] = mu[m] * 2 .* inv_logit(-eta[idx:(idx+NC[m]-1)]);
       idx += NC[m];
 
       prediction[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
