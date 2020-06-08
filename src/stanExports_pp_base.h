@@ -55,9 +55,9 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(57, 29, "restart", "model_pp_base");
     reader.add_event(62, 34, "include", "/tparameters/gen_infections.stan");
     reader.add_event(62, 0, "start", "/tparameters/gen_infections.stan");
-    reader.add_event(86, 24, "end", "/tparameters/gen_infections.stan");
-    reader.add_event(86, 35, "restart", "model_pp_base");
-    reader.add_event(101, 48, "end", "model_pp_base");
+    reader.add_event(87, 25, "end", "/tparameters/gen_infections.stan");
+    reader.add_event(87, 35, "restart", "model_pp_base");
+    reader.add_event(102, 48, "end", "model_pp_base");
     return reader;
 }
 template <typename T0__>
@@ -721,37 +721,42 @@ public:
                             multiply((get_base1(mu, m, "mu", 1) * 2), inv_logit(minus(stan::model::rvalue(eta, stan::model::cons_list(stan::model::index_min_max(idx, ((idx + get_base1(NC, m, "NC", 1)) - 1)), stan::model::nil_index_list()), "eta")))), 
                             "assigning variable Rt_unadj");
                 current_statement_begin__ = 74;
+                stan::model::assign(Rt, 
+                            stan::model::cons_list(stan::model::index_min_max(n0, n1), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
+                            stan::model::rvalue(Rt_unadj, stan::model::cons_list(stan::model::index_min_max(n0, n1), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), "Rt_unadj"), 
+                            "assigning variable Rt");
+                current_statement_begin__ = 75;
                 stan::math::assign(idx, (idx + get_base1(NC, m, "NC", 1)));
-                current_statement_begin__ = 76;
+                current_statement_begin__ = 77;
                 stan::model::assign(infections, 
                             stan::model::cons_list(stan::model::index_min_max(n0, n1), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
                             rep_vector(get_base1(y, m, "y", 1), N0), 
                             "assigning variable infections");
-                current_statement_begin__ = 77;
+                current_statement_begin__ = 78;
                 stan::model::assign(cumm_sum, 
                             stan::model::cons_list(stan::model::index_min_max(n0, n1), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
                             cumulative_sum(stan::model::rvalue(infections, stan::model::cons_list(stan::model::index_min_max(n0, n1), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), "infections")), 
                             "assigning variable cumm_sum");
-                current_statement_begin__ = 79;
+                current_statement_begin__ = 80;
                 for (int i = (n1 + 1); i <= n2; ++i) {
                     {
-                    current_statement_begin__ = 80;
+                    current_statement_begin__ = 81;
                     local_scalar_t__ convolution(DUMMY_VAR__);
                     (void) convolution;  // dummy to suppress unused var warning
                     stan::math::initialize(convolution, DUMMY_VAR__);
                     stan::math::fill(convolution, DUMMY_VAR__);
                     stan::math::assign(convolution,dot_product(sub_col(infections, n0, m, (i - n0)), tail(si_rev, (i - n0))));
-                    current_statement_begin__ = 81;
+                    current_statement_begin__ = 82;
                     stan::model::assign(infections, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
                                 ((get_base1(pop, m, "pop", 1) - get_base1(cumm_sum, (i - 1), m, "cumm_sum", 1)) * (1 - stan::math::exp(((-(get_base1(Rt_unadj, i, m, "Rt_unadj", 1)) * convolution) / get_base1(pop, m, "pop", 1))))), 
                                 "assigning variable infections");
-                    current_statement_begin__ = 82;
+                    current_statement_begin__ = 83;
                     stan::model::assign(Rt, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
                                 (((get_base1(pop, m, "pop", 1) - get_base1(cumm_sum, (i - 1), m, "cumm_sum", 1)) * get_base1(Rt_unadj, i, m, "Rt_unadj", 1)) / get_base1(pop, m, "pop", 1)), 
                                 "assigning variable Rt");
-                    current_statement_begin__ = 83;
+                    current_statement_begin__ = 84;
                     stan::model::assign(cumm_sum, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), 
                                 (get_base1(cumm_sum, (i - 1), m, "cumm_sum", 1) + get_base1(infections, i, m, "infections", 1)), 
@@ -761,29 +766,29 @@ public:
                 }
             }
             }
-            current_statement_begin__ = 88;
+            current_statement_begin__ = 89;
             for (int r = 1; r <= R; ++r) {
-                current_statement_begin__ = 89;
+                current_statement_begin__ = 90;
                 for (int m = 1; m <= M; ++m) {
                     {
-                    current_statement_begin__ = 90;
+                    current_statement_begin__ = 91;
                     int n0(0);
                     (void) n0;  // dummy to suppress unused var warning
                     stan::math::fill(n0, std::numeric_limits<int>::min());
                     stan::math::assign(n0,get_base1(starts, m, "starts", 1));
-                    current_statement_begin__ = 91;
+                    current_statement_begin__ = 92;
                     int n1(0);
                     (void) n1;  // dummy to suppress unused var warning
                     stan::math::fill(n1, std::numeric_limits<int>::min());
                     stan::math::assign(n1,((n0 + get_base1(NC, m, "NC", 1)) - 1));
-                    current_statement_begin__ = 92;
+                    current_statement_begin__ = 93;
                     stan::model::assign(pred, 
                                 stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(n0), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
                                 (1e-15 * get_base1(infections, n0, m, "infections", 1)), 
                                 "assigning variable pred");
-                    current_statement_begin__ = 93;
+                    current_statement_begin__ = 94;
                     for (int i = (n0 + 1); i <= n1; ++i) {
-                        current_statement_begin__ = 94;
+                        current_statement_begin__ = 95;
                         stan::model::assign(pred, 
                                     stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
                                     ((get_base1(get_base1(noise, m, "noise", 1), r, "noise", 2) * get_base1(means, m, r, "means", 1)) * dot_product(sub_col(infections, n0, m, (i - n0)), tail(get_base1(pvecs_rev, r, "pvecs_rev", 1), (i - n0)))), 

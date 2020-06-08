@@ -162,7 +162,11 @@ epim <-
 
   x = cbind(x, z)
   stanmat <- as.matrix(fit)
-  eta <- stanmat[,1:ncol(x), drop=FALSE]  %*% t(x)
+  if (length(x))
+    eta <- stanmat[,1:ncol(x), drop=FALSE]  %*% t(x)
+  else
+    eta <- matrix(0, nrow(stanmat), standata$N_obs)
+
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
   stanmat <- cbind(stanmat, eta)
   res <- rstan::gqs(stanmodels$pp_base, data = standata, draws=stanmat)
@@ -179,8 +183,8 @@ epim <-
                glmod,
                standata,
                rep_number =  rstan::extract(res, "Rt")[[1]], 
-               cases = rstan::extract(res, "prediction")[[1]],
-               pred = rstan::extract(res, "E_obs")[[1]])
+               infections = rstan::extract(res, "infections")[[1]],
+               pred = rstan::extract(res, "pred")[[1]])
 
   out <- epimodel(out)
   class(out) <- c(class(out), "mixed")

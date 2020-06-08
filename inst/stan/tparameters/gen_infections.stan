@@ -9,6 +9,7 @@ for (m in 1:M){
 
     // impute unadjusted Rt from the linear predictor
     Rt_unadj[n0:n2,m] = mu[m] * 2 * inv_logit(-eta[idx:(idx+NC[m]-1)]);
+    Rt[n0:n1,m] = Rt_unadj[n0:n1,m]; 
     idx += NC[m];
 
     infections[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days

@@ -17,14 +17,14 @@ genModelStanData <-
   # integer index of start (1 being 'begin')
   starts  <- as.numeric(starts - begin + 1)
 
-  si <- padSV(si, max_sim, 1e-15)
+  si <- padSV(si, max_sim, 0)
 
   # create matrix P
   R <- length(obs)
 
   if (R) {
-    f <- function(x) padSV(x$p, max_sim, 1e-15)
-    P <- sapply(obs, f)
+    f <- function(x) padSV(x$p, max_sim, 0)
+    pvecs <- as.array(lapply(obs, f))
 
     # matrix of mean rates for each observation type
     f     <- function(x) x$rates$means$mean
@@ -47,14 +47,14 @@ genModelStanData <-
     obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
   } else {
     obs           <- data.frame()
-    P             <- matrix(NA, max_sim, 0)
+    pvecs         <- array(NA, dim=0)
     means         <- matrix(NA, M, 0)
     noise_scales  <- numeric()
   }
 
   standata <- list(M            = M,
                    N0           = seed_days,
-                   SI           = si,
+                   si           = si,
                    pop          = as.numeric(pops$pop),
                    obs_group    = as.numeric(obs$group),
                    obs_date     = as.numeric(obs$date),
@@ -67,7 +67,7 @@ genModelStanData <-
                    R            = R,
                    pvecs        = pvecs,
                    means        = means,
-                   noise_scales = as.numeric(noise_scales),
+                   noise_scales = as.array(noise_scales),
                    NS           = max_sim)
 
   return(standata)
@@ -85,7 +85,7 @@ padSV <- function(vec, len, tol) {
   if (nimpute > 0) 
     vec <- c(vec, rep(tol, nimpute))
   
-  return(vec[1:len])
+  return(vec[1:len]/sum(vec[1:len]))
 }
 
 
