@@ -1,7 +1,8 @@
+
 ---
 title: "Introduction to EpiBayes"
 output: 
-  html_document:
+  github_document:
     fig_width: 10
     fig_height: 4
 vignette: >
