@@ -16,5 +16,7 @@ export(stanmodels)
 export(genModelStanData)
 export(genCovariatesStanData)
 export(underlyings)
+export(rep_number)
+export(rep_number.epimodel)
 
 
