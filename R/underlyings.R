@@ -12,6 +12,7 @@ underlyings.epimodel <- function(object, ...) {
 
   M <- object$standata$M
   N <- object$standata$N
+  R <- object$standata$R
   draws <- nrow(stanmat)
 
   if (length(x))
@@ -22,14 +23,13 @@ underlyings.epimodel <- function(object, ...) {
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
   stanmat <- cbind(stanmat, eta)
 
-  print(colnames(stanmat))
+  # bug in rstan::gqs means we have to pad parameters if M=1...
+  mat <- matrix(0, nrow=draws, ncol= 2 + R)
+  colnames(mat) <- c(paste0("mu[",M+1,"]"),
+                     paste0("y[",M+1,"]"),
+                     paste0("noise[",M+1,",",1:R,"]"))
 
-  if (M == 1) {
-    # bug in rstan::gqs means we have to pad parameters if M=1...
-    mat <- matrix(0, nrow=draws, ncol=3)
-    colnames(mat) <- c("mu[2]", "y[2]", "noise[2,1]")
-    stanmat <- cbind(stanmat, mat)
-  }
+  stanmat <- cbind(stanmat, mat)
 
   return(rstan::gqs(stanmodels$pp_base, 
                     data = object$standata, 
