@@ -1,7 +1,7 @@
 
 # create an object of class epimodel. Heavily based on 'stanreg' in rstanarm
 epimodel <- function(object) {
-  mer <- !is.null(object$glmod)
+  mixed <- !is.null(object$glmod)
   stanfit <- object$stanfit
   x <- object$x
   nvars <- ncol(x)
@@ -16,7 +16,7 @@ epimodel <- function(object) {
   colnames(stanmat) <- colnames(x)
   ses <- apply(stanmat, 2L, mad)
   
-  if (mer) {
+  if (mixed) {
     mark <- sum(sapply(object$stanfit@par_dims[c("alpha", "beta")], prod))
     stanmat <- stanmat[,1:mark, drop = FALSE]
   }
@@ -38,13 +38,15 @@ epimodel <- function(object) {
     stanfit = stanfit,
     call = object$call, 
     stan_function = object$stan_function,
-    standata = object$standata
+    standata = object$standata,
+    orig_names = object$orig_names
   )
   
-  if (mer) 
+  if (mixed) {
     out$glmod <- object$glmod
-  
-  structure(out, class = c("epimodel"))
+    return(structure(out, class = c("epimodel", "mixed")))
+  }
+  return(structure(out, class = c("epimodel")))
 }
 
 

@@ -140,26 +140,28 @@ epim <-
       Sigma_nms <- unlist(Sigma_nms)
   }
 
+  combs <- expand.grid(groups,names(obs))
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
                 colnames(standata$X),
                 if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
                 if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
-                c(paste0("y[", 1:standata$M, "]")),
-                c(paste0("mu[", 1:standata$M, "]")),
+                c(paste0("seeds[", groups, "]")),
+                c(paste0("R0[", groups, "]")),
                 "tau",
                 "phi",
                 "kappa",
-                if (standata$R > 0) "noise",
+                if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
                 "log-posterior")
 
   orig_names <- fit@sim$fnames_oi
-  #fit@sim$fnames_oi <- new_names
+  fit@sim$fnames_oi <- new_names
 
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[ , !sel, drop = FALSE]
   z <- group$Z
   if (length(z))
     colnames(z) <- b_names(names(fit), value = TRUE)
+
 
   out <- nlist(stanfit = fit, 
                formula,
@@ -171,11 +173,10 @@ epim <-
                call,
                algorithm, 
                glmod,
-               standata)
+               standata,
+               orig_names)
 
-  out <- epimodel(out)
-  class(out) <- c(class(out), "mixed")
-  return(out)
+  return(epimodel(out))
 }
 
 
