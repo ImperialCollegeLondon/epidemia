@@ -38,7 +38,8 @@ epimodel <- function(object) {
     stanfit = stanfit,
     call = object$call, 
     stan_function = object$stan_function,
-    standata = object$standata
+    standata = object$standata,
+    orig_names = object$orig_names
   )
   
   if (mer) 
