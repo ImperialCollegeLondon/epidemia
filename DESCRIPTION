@@ -4,26 +4,25 @@ Version: 0.0.0.9000
 Authors@R: c(
     person(given = "James",
            family = "Scott",
-           role = c("aut", "cre"),
+           role = c("aut","cre"),
            email = "james.scott15@imperial.ac.uk",
-           comment = c(ORCID = "YOUR-ORCID-ID"),
+           comment = c(ORCID = "YOUR-ORCID-ID")
 	   ),
     person(given = "Axel",
            family = "Gandy",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "a.gandy@imperial.ac.uk",
-           comment = c(ORCID = "0000-0002-6777-0451"),
+           comment = c(ORCID = "0000-0002-6777-0451")
 	   ),
     person(given = "Swapnil",
            family = "Mishra",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "swapnilmishra.anu@gmail.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"),
-	   ),
-    )
-	   
+           comment = c(ORCID = "YOUR-ORCID-ID")
+	   )
+	   )
 Description: What the package does (one paragraph).
-License: use_gpl3_license()
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
