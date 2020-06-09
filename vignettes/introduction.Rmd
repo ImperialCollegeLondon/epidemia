@@ -1,0 +1,108 @@
+---
+title: "Introduction to EpiBayes"
+output: 
+  html_document:
+    fig_width: 10
+    fig_height: 4
+vignette: >
+  %\VignetteIndexEntry{Introduction to EpiBayes}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+This vignette is very much a work in progress, and will be regularly updated. It aims to demonstrate basis usage of the **EpiBayes** package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
+
+## Europe Data
+
+The package contains the dataset used in the Nature paper. Load with 
+```{r}
+library(EpiBayes)
+data("EuropeCovid")
+```
+`EuropeCovid` is a list containing most of the information required for `epim`. These fields are named as follows.
+```{r}
+names(EuropeCovid)
+```
+We start by discussing the 'data' argument. This is a dataframe with columns referring to possible covariates for modelling $R_{tm}$. It contains one column which will specify the 'groups' to be modelled, and an additonal column giving the dates corresponding to the covariate data. Note that the covariates included here will not be used unless specified in the formula argument of `epim` -- more on this below.
+
+```{r}
+args <- EuropeCovid
+data <- args$data
+head(data)
+```
+
+The `obs` argument is itself a list of lists. Each element of `obs` is a type of observation. This could for example be death, incidence, or hospitalisation counts. Following the Nature paper, we only consider death counts here. 
+
+```{r}
+deaths <- args$obs$deaths
+names(deaths)
+```
+
+`epim` requires a formula, which specifies the model that will be fit. At the moment, the terms in the formula must correspond to the names of columns in `data`. This will be relaxed in future versions (in line with other model fitting functions like `lm`, `glm`).
+
+For simplicity, we will only consider a single country - specifically the UK. 
+```{r}
+w <- data$country %in% "United_Kingdom"
+data <- data[w,]
+args$data <- data
+```
+
+
+### Model 1
+
+We start by fitting a simple model with the only covariate being the indicator for lockdown. This is intuitively specified as
+```{r}
+args$formula <- R(country, date) ~ 0 + lockdown 
+```
+The LHS of the formula always takes the form `R(x,y)` for some columns `x` and `y` in `data`. Epim will always use the factor levels found in `data$x` as the groups to model, and will use `data$y` to specify the modeled dates for each group. Since we removed all countries other than `United_Kingdom` from `data$country`, `epim` will only model the UK. The dates must be a consecutive range, and there must be no missing covariate data in the columns specified on the R.H.S. of the above formula. The first date found for each group is assumed to be the beginning of the epidemic, and seeding of infections begins from this date.
+
+
+We fit this model using variational bayes as it is quick. For a full analysis, MCMC sampling should be used.
+
+```{r}
+# can switch out for "sampling" if desired
+args$algorithm <- "meanfield"
+fit <- do.call("epim", args)
+```
+
+
+We can quickly plot the estimated $R_{tm}$ with the `plot_rt` function, as follows:
+
+```{r}
+plot_rt(fit, group = "United_Kingdom")
+```
+
+### Model 2
+
+We also demonstrate how to use random effects terms in the formula. We will fit a simple model replacing the lockdown covariate with a 'week specific' effect. To do this, we augment `data` to store the week as a covariate, and update the formula
+
+```{r}
+data$week <- as.factor(format(data$date, "%V"))
+args$data <- data
+args$formula <- R(country,date) ~ 0  + (1 | week)
+```
+
+Fitting the model
+```{r}
+fit <- do.call("epim", args)
+```
+and plotting
+```{r}
+plot_rt(fit, "United_Kingdom")
+```
+
+
+### Model 3
+
+We can mix fixed effects and random effects...
+
+```{r}
+args$formula <- R(country,date) ~ 0 + lockdown  + (1 | week)
+fit <- do.call("epim", args)
+plot_rt(fit, "United_Kingdom")
+```
+
+
+
+
+
