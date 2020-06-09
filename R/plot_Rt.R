@@ -1,5 +1,5 @@
 # generic function
-plot_rt <- function(object) UseMethod("plot_rt", object)
+plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
 # method
 plot_rt.epimodel <- function(object, group, levels = c(50,95)) {
@@ -13,6 +13,7 @@ plot_rt.epimodel <- function(object, group, levels = c(50,95)) {
     stop(paste0("'",group,"' is not a modeled group."))
 
   rt <- rep_number(fit)[[group]]
+  dates <- rt$date
   # remove date column and transpose
   w <- !(colnames(rt) %in% "date")
   rt <- t(rt[,w])
