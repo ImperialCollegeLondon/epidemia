@@ -38,8 +38,7 @@ Authors@R: c(
            email = "Your email",
            comment = c(ORCID = "Your email")
 	   )
-	   )
-       
+	   )  
 Description: What the package does (one paragraph).
 License: GPL-3
 Encoding: UTF-8
@@ -59,7 +58,10 @@ Imports:
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0),
     rstanarm (>= 2.19.2),
-    lme4
+    lme4,
+    ggplot2,
+    ggpubr,
+    scales
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),

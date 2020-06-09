@@ -5,8 +5,6 @@
 
 underlyings <- function(object, ...) UseMethod("underlyings", object)
 
-
-
 underlyings.epimodel <- function(object, ...) {
   stanmat <- as.matrix(object$stanfit)
   x <- object$x
