@@ -1,15 +1,29 @@
 Package: EpiBayes
-Title: What the Package Does (One Line, Title Case)
+Title: Modeling of Epidemics using Hierarchical Bayesian Models
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
+Authors@R: c(
+    person(given = "James",
+           family = "Scott",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "james.scott15@imperial.ac.uk",
+           comment = c(ORCID = "YOUR-ORCID-ID"),
+	   ),
+    person(given = "Axel",
+           family = "Gandy",
+           role = c("aut", "cre"),
+           email = "a.gandy@imperial.ac.uk",
+           comment = c(ORCID = "0000-0002-6777-0451"),
+	   ),
+    person(given = "Swapnil",
+           family = "Mishra",
+           role = c("aut", "cre"),
+           email = "swapnilmishra.anu@gmail.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"),
+	   ),
+    )
+	   
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+License: use_gpl3_license()
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
