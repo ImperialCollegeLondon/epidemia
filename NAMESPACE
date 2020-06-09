@@ -32,5 +32,8 @@ export(rep_number)
 S3method(rep_number,epimodel)
 export(plot_rt)
 S3method(plot_rt, epimodel)
+S3method(as.matrix, epimodel)
+S3method(as.array, epimodel)
+S3method(as.data.frame, epimodel)
 
 

@@ -13,10 +13,20 @@ array1D_check <- function(y) {
 }
 
 
-# @param x An epimodel object.
+is.epimodel <- function(x) inherits(x, "epimodel")
+
+# @param x A stanreg object.
 is.mixed <- function(x) {
   stopifnot(is.epimodel(x))
   check1 <- inherits(x, "mixed")
+  check2 <- !is.null(x$glmod)
+  if (check1 && !check2) {
+    stop("Bug found. 'x' has class 'mixed' but no 'glmod' component.")
+  } else if (!check1 && check2) {
+    stop("Bug found. 'x' has 'glmod' component but not class 'mixed'.")
+  }
+  isTRUE(check1 && check2)
+}
 
 # Check if any variables in a model frame are constants
 #

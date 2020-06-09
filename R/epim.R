@@ -176,9 +176,7 @@ epim <-
                standata,
                orig_names)
 
-  out <- epimodel(out)
-  class(out) <- c(class(out), "mixed")
-  return(out)
+  return(epimodel(out))
 }
 
 
