@@ -7,6 +7,7 @@ underlyings <- function(object, ...) UseMethod("underlyings", object)
 
 underlyings.epimodel <- function(object, ...) {
   stanmat <- as.matrix(object$stanfit)
+  colnames(stanmat) <-  object$orig_names
   x <- object$x
 
   M <- object$standata$M
@@ -20,6 +21,8 @@ underlyings.epimodel <- function(object, ...) {
 
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
   stanmat <- cbind(stanmat, eta)
+
+  print(colnames(stanmat))
 
   if (M == 1) {
     # bug in rstan::gqs means we have to pad parameters if M=1...
