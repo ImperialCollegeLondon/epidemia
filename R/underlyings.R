@@ -3,11 +3,11 @@
 # includes Rt, underlying infections, and expected observations
 
 
-underlyings <- function(object) UseMethod("underlyings")
+underlyings <- function(object, ...) UseMethod("underlyings", object)
 
 
 
-underlyings.epimodel <- function(object) {
+underlyings.epimodel <- function(object, ...) {
   stanmat <- as.matrix(object$stanfit)
   x <- object$x
 
@@ -37,10 +37,10 @@ underlyings.epimodel <- function(object) {
 }
 
 
-rep_number <- function(object) UseMethod("rep_number")
+rep_number <- function(object, ...) UseMethod("rep_number", object)
 
 
-rep_number.epimodel <- function(object) {
+rep_number.epimodel <- function(object, ...) {
 
   groups <- object$groups
   res <- underlyings(object)
@@ -54,13 +54,20 @@ rep_number.epimodel <- function(object) {
   ends    <- starts + object$standata$NC - 1
 
   out <- list()
-  for (i in seq_along(groups))
-    mat <- t(Rt[,starts[i]:ends[i],i])
+  for (i in seq_along(groups)) {
+    t <- starts[i]:ends[i]
+    df <- t(Rt[,t,i])
+    df <- as.data.frame(df)
 
     # attach corresponding dates
     w <- object$data$country %in% groups[i]
-    mat <- cbind(data$date[w],mat)
-    out[[groups[i]]] <- mat
+    df <- do.call("cbind.data.frame", 
+                  args = list(date = data$date[w], 
+                              df))
+
+    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
+    out[[groups[i]]] <- df
+  }
 
   return(out)
 }

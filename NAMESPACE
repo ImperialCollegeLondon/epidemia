@@ -17,6 +17,6 @@ export(genModelStanData)
 export(genCovariatesStanData)
 export(underlyings)
 export(rep_number)
-export(rep_number.epimodel)
+S3method(rep_number,epimodel)
 
 
