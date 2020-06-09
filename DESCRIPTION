@@ -37,7 +37,7 @@ Authors@R: c(
            role = c("aut"),
            email = "Your email",
            comment = c(ORCID = "Your email")
-	   ),
+	   )
 	   )
        
 Description: What the package does (one paragraph).
