@@ -59,7 +59,7 @@ rep_number.epimodel <- function(object) {
 
     # attach corresponding dates
     w <- object$data$country %in% groups[i]
-    mat <- cbind(data$date[w,],mat)
+    mat <- cbind(data$date[w],mat)
     out[[groups[i]]] <- mat
 
   return(out)
