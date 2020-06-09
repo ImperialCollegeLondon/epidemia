@@ -74,3 +74,4 @@ Suggests:
     knitr
 VignetteBuilder:
     knitr
+    
