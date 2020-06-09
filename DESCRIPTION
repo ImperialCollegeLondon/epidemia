@@ -70,4 +70,7 @@ LinkingTo:
     StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
 Suggests: 
-    testthat
+    testthat,
+    knitr
+VignetteBuilder:
+    knitr
