@@ -1,0 +1,92 @@
+
+---
+title: "Time-dependent Modelling of R"
+output: 
+  github_document:
+    fig_width: 10
+    fig_height: 4
+vignette: >
+  %\VignetteIndexEntry{Introduction to EpiBayes}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+## Data
+
+```{r}
+library(EpiBayes)
+data("EuropeCovid")
+args <- EuropeCovid
+```
+
+Pick out two countries as example
+```{r}
+w <- data$country %in% c("United_Kingdom","Germany")
+data <- data[w,]
+args$data <- data
+```
+
+Add days to the covariates
+```{r}
+args$data$day <- as.integer(args$data$date-min(args$data$date))
+```
+
+Set sampling parameters.
+```{r}
+args$algorithm <- "sampling"
+options(mc.cores = parallel::detectCores())
+args$iter=100
+```
+
+### Piecewise constant
+
+```{r}
+args$formula <- R(country,date) ~ 0 +  (cut(day,c(-1,30,45,60,100))|country)
+```
+
+```{r,results='hide'}
+fit <- do.call("epim", args)
+```
+
+```{r}
+plot_rt(fit, "United_Kingdom")
+```
+
+
+
+### Piecewise Linear
+
+
+```{r}
+args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1,intercept=TRUE)|country)
+```
+
+```{r,results='hide'}
+fit <- do.call("epim", args)
+```
+
+```{r}
+plot_rt(fit, "United_Kingdom")
+```
+
+
+### Quadratic
+
+
+```{r}
+args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=2)|country)
+```
+
+```{r,results='hide'}
+fit <- do.call("epim", args)
+```
+
+```{r}
+plot_rt(fit, "United_Kingdom")
+```
+
+
+
+
+
+
