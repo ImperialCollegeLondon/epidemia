@@ -1,0 +1,96 @@
+
+---
+title: "Time-dependent Modelling of R"
+output: 
+  github_document:
+    fig_width: 10
+    fig_height: 4
+vignette: >
+  %\VignetteIndexEntry{Introduction to EpiBayes}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+This vignette is very much a work in progress, and will be regularly updated. It aims to demonstrate basis usage of the **EpiBayes** package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
+
+## Europe Data
+
+The package contains the dataset used in the Nature paper. Load with 
+```{r}
+library(EpiBayes)
+data("EuropeCovid")
+```
+`EuropeCovid` is a list containing most of the information required for `epim`. These fields are named as follows.
+```{r}
+names(EuropeCovid)
+```
+We start by discussing the 'data' argument. This is a dataframe with columns referring to possible covariates for modelling $R_{tm}$. It contains one column which will specify the 'groups' to be modelled, and an additonal column giving the dates corresponding to the covariate data. Note that the covariates included here will not be used unless specified in the formula argument of `epim` -- more on this below.
+
+```{r}
+args <- EuropeCovid
+w <- data$country %in% c("United_Kingdom","Germany")
+data <- data[w,]
+args$data <- data
+args$data$day <- as.integer(args$data$date-min(args$data$date))
+args$algorithm <- "sampling"
+options(mc.cores = parallel::detectCores())
+args$iter=100
+```
+
+### Piecewise constant
+
+
+
+```{r}
+args$formula <- R(country,date) ~ 0 +  (cut(day,c(-1,30,45,60,100))|country)
+```
+
+
+
+```{r}
+fit <- do.call("epim", args)
+plot_rt(fit, "United_Kingdom")
+```
+
+
+
+### Piecewise Linear
+
+We start by fitting a simple model with the only covariate being the indicator for lockdown. This is intuitively specified as
+```{r}
+args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1)|country)
+```
+
+```{r}
+args$algorithm <- "sampling"
+options(mc.cores = parallel::detectCores())
+args$iter=100
+fit <- do.call("epim", args)
+plot_rt(fit, "United_Kingdom")
+```
+
+
+### Piecewise Linear
+
+We start by fitting a simple model with the only covariate being the indicator for lockdown. This is intuitively specified as
+```{r}
+args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1)|country)
+
+```
+
+
+### Quadratic
+
+```{r}
+args$algorithm <- "sampling"
+options(mc.cores = parallel::detectCores())
+args$iter=100
+fit <- do.call("epim", args)
+plot_rt(fit, "United_Kingdom")
+```
+
+
+
+
+
+
