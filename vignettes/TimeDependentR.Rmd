@@ -56,15 +56,12 @@ plot_rt(fit, "United_Kingdom")
 
 ### Piecewise Linear
 
-We start by fitting a simple model with the only covariate being the indicator for lockdown. This is intuitively specified as
+
 ```{r}
-args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1)|country)
+args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1,intercept=TRUE)|country)
 ```
 
 ```{r}
-args$algorithm <- "sampling"
-options(mc.cores = parallel::detectCores())
-args$iter=100
 fit <- do.call("epim", args)
 plot_rt(fit, "United_Kingdom")
 ```
@@ -75,16 +72,20 @@ plot_rt(fit, "United_Kingdom")
 We start by fitting a simple model with the only covariate being the indicator for lockdown. This is intuitively specified as
 ```{r}
 args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1)|country)
-
 ```
+
+```{r}
+fit <- do.call("epim", args)
+plot_rt(fit, "United_Kingdom")
+```
+
 
 
 ### Quadratic
 
 ```{r}
-args$algorithm <- "sampling"
-options(mc.cores = parallel::detectCores())
 args$iter=100
+args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=2)|country)
 fit <- do.call("epim", args)
 plot_rt(fit, "United_Kingdom")
 ```
