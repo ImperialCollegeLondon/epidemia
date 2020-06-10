@@ -24,6 +24,16 @@ run.with.obs <- function(obs) {
   return(do.call("epim", args=test.args))
 }
 
+test_that("epim throws error if formula not in data", {
+  broken.args <- working.args
+  broken.args$formula <- R(country, date) ~ 0 + wrongname
+  expect_error(do.call("epim", args=broken.args))
+  
+  broken.args <- working.args
+  broken.args$formula <- R(wrongname, date) ~ 0 + lockdown
+  expect_error(do.call("epim", args=broken.args))
+})
+
 test_that("non-consecutive dates throws error", {
   expect_error(run.with.data(data[data$country=="Austria",][-4,]),
                regexp = "Dates corresponding to groups  Austria  are not consecutive") #  single group which is missing date somewhere in the middle of the range
@@ -35,6 +45,12 @@ test_that("non-consecutive dates throws error", {
                regexp = "Dates corresponding to groups  Austria Denmark  are not consecutive") #  two groups, both missing date
   expect_error(run.with.data(data[data$country %in% c("Austria", "Denmark", "Germany"),][-c(4,124),]),
                regexp = "Dates corresponding to groups  Austria Denmark  are not consecutive") #  three groups, two missing date
+})
+
+test_that("NA in data throws error", {
+  broken.data <- working.args$data
+  broken.data[1,1] <- NA
+  expect_error(run.with.data(broken.data))
 })
 
 test_that("NA in obs throws error", {
@@ -73,7 +89,7 @@ test_that("wrong item names in obs throws error", {
   expect_error(run.with.obs(broken.obs))
 })
 
-test_that("wrong column types in obs£deaths$obs throws error", {
+test_that("wrong column types in obs$deaths$obs throws error", {
   
   # passing "hello" as the date column in obs
   broken.obs <- working.args$obs
@@ -144,4 +160,21 @@ test_that("error if arguments are missing columns", {
   expect_error(run.with.obs(broken.obs))
 })
 
+test_that("NA in si throws error", {
+  broken.args <- working.args
+  broken.args$si[1] <- NA
+  expect_error(do.call("epim", args=broken.args), regexp = "NAs exist in si")
+})
+
+test_that("throws error if NA in pops", {
+  broken.args <- working.args
+  broken.args$pops[1,1] <- NA
+  expect_error(do.call("epim", args=broken.args), regexp = "NAs exist in pops")
+})
+
+test_that("error if group missing from pops", {
+  broken.args <- working.args
+  broken.args$pops <- broken.args$pops[-1,]
+  expect_error(do.call("epim", args=broken.args), regexp = "Levels in 'formula' response missing in 'pops': Denmark")
+})
 
