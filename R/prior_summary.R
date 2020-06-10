@@ -154,16 +154,17 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
 }
 
 
-
 .print_vector_prior <- function(p, txt = "Coefficients", formatters = list()) {
   stopifnot(length(formatters) == 2)
   .f1 <- formatters[[1]]
   .f2 <- formatters[[2]]
   
   if (!(p$dist %in% c("R2", NA))) {
-    if (p$dist %in% c("normal", "student_t", "cauchy", "laplace", "lasso", "product_normal")) {
+    if (p$dist %in% c("normal", "student_t", "cauchy", "laplace", "lasso", "product_normal", "gamma")) {
       p$location <- .format_pars(p$location, .f1)
       p$scale <- .format_pars(p$scale, .f1)
+      if (!is.null(p$scale))
+        p$scale <- .format_pars(p$scale, .f1)
       if (!is.null(p$df))
         p$df <- .format_pars(p$df, .f1)
       if (!is.null(p$adjusted_scale))
@@ -185,10 +186,15 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
         if (is.na(p$dist)) {
           "flat"
         } else if (p$dist %in% c("normal", "student_t", "cauchy", 
-                                 "laplace", "lasso", "product_normal")) {
+                                 "laplace", "lasso", "product_normal", "gamma")) {
           if (is.null(p$df)) {
+            if (p$dist == "gamma") {
+              paste0(p$dist, "(location = ", .f1(p$location), 
+                   ", scale = ", .f1(p$scale), ", shift = ", .f1(p$shift), ")")
+            } else {
             paste0(p$dist, "(location = ", .f1(p$location), 
                    ", scale = ", .f1(p$scale), ")")
+            }
           } else {
             paste0(p$dist, "(df = ", .f1(p$df), 
                    ", location = ", .f1(p$location), 
