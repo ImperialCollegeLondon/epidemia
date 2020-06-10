@@ -6,7 +6,7 @@ output:
     fig_width: 10
     fig_height: 4
 vignette: >
-  %\VignetteIndexEntry{Introduction to EpiBayes}
+  %\VignetteIndexEntry{Time-dpendent Modelling of R}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -22,6 +22,7 @@ args <- EuropeCovid
 Pick out two countries as example
 ```{r}
 countries <- c("United_Kingdom","Germany")
+data <- args$data
 w <- data$country %in% countries
 data <- droplevels(data[w,])
 args$obs$deaths$obs <- droplevels(args$obs$deaths$obs[args$obs$deaths$obs$country %in% countries,])
