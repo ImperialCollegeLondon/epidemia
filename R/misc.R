@@ -15,7 +15,7 @@ array1D_check <- function(y) {
 
 is.epimodel <- function(x) inherits(x, "epimodel")
 
-# @param x A stanreg object.
+# @param x An epimodel object.
 is.mixed <- function(x) {
   stopifnot(is.epimodel(x))
   check1 <- inherits(x, "mixed")
