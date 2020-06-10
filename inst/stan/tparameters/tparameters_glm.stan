@@ -30,6 +30,5 @@
       beta[k] *= prior_scale[k] ^ num_normals[k];
       beta[k] += prior_mean[k];
     }
-  else if(prior_dis == 8) beta = z_beta + prior_shift; // shifted gamma
-  
   }
+  else if(prior_dist == 8) beta = z_beta + prior_shift; // shifted gamma

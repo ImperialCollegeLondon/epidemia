@@ -58,6 +58,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   if (!length(prior))
     return(list(prior_dist = 0L, prior_mean = as.array(rep(0, nvars)),
                 prior_scale = as.array(rep(1, nvars)),
+                prior_shift = as.array(rep(0, nvars)),
+                prior_shape = as.array(rep(1, nvars)),
                 prior_df = as.array(rep(1, nvars)), prior_dist_name = NA,
                 global_prior_scale = 0, global_prior_df = 0,
                 slab_df = 0, slab_scale = 0,
@@ -74,6 +76,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_df <- prior$df
   prior_mean[is.na(prior_mean)] <- 0
   prior_df[is.na(prior_df)] <- 1
+  prior_shape[is.na(prior_shape)] <- prior$shape 
+  prior_shift[is.na(prior_shift)] <- prior$shift
   global_prior_scale <- 0
   global_prior_df <- 0
   slab_df <- 0
@@ -106,8 +110,11 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_mean <- maybe_broadcast(prior_mean, nvars)
   prior_mean <- as.array(prior_mean)
   prior_scale <- maybe_broadcast(prior_scale, nvars)
+  prior_scale <- as.array(prior_scale)
   prior_shape <- maybe_broadcast(prior_shape, nvars)
+  prior_shape <- as.array(prior_shape)
   prior_shift <- maybe_broadcast(prior_shift, nvars)
+  prior_shift <- as.array(prior_shift)
 
   nlist(prior_dist, 
         prior_mean, 

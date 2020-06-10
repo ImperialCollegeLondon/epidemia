@@ -23,9 +23,14 @@ epim <-
            seed_days = 6,
            algorithm = c("sampling", "meanfield", "fullrank"),
            stan_data = FALSE,
+           prior = rstanarm::normal(),
+           prior_intercept = rstanarm::normal(),
+           prior_covariance = rstanarm::decov(),
+           prior_PD = FALSE,
+           sampling_args = list(),
            ...) {
   
-  call <- match.call(expand.dots = TRUE)
+  call    <- match.call(expand.dots = TRUE)
   # argument checking
   formula <- checkFormula(formula)
   data    <- checkData(formula, data)
@@ -89,10 +94,14 @@ epim <-
   margs$seed_days <- seed_days
   standata <- do.call("genModelStanData", args=margs)
 
-  cargs <- list(...)
+  cargs <- list()
   cargs$formula <- formula
   cargs$x <- x
-  cargs$group <-  group 
+  cargs$group <- group 
+  cargs$prior <- prior
+  cargs$prior_intercept <- prior_intercept
+  cargs$prior_covariacne <- prior_covariance
+  cargs$prior_PD <- prior_PD
   standata <- c(standata,
                 do.call("genCovariatesStanData", args=cargs))
 
@@ -112,7 +121,7 @@ epim <-
             "kappa",
             "noise")
 
-  args <- list(...)
+  args <- sampling_args
   args$pars <- pars
   args$object <- stanmodels$base
   args$data <- standata
@@ -161,7 +170,6 @@ epim <-
   z <- group$Z
   if (length(z))
     colnames(z) <- b_names(names(fit), value = TRUE)
-
 
   out <- nlist(stanfit = fit, 
                formula,

@@ -163,8 +163,10 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
     if (p$dist %in% c("normal", "student_t", "cauchy", "laplace", "lasso", "product_normal", "gamma")) {
       p$location <- .format_pars(p$location, .f1)
       p$scale <- .format_pars(p$scale, .f1)
-      if (!is.null(p$scale))
-        p$scale <- .format_pars(p$scale, .f1)
+      if (!is.null(p$shape))
+        p$shape <- .format_pars(p$shape, .f1)
+      if (!is.null(p$shift))
+        p$shift <- .format_pars(p$shift, .f1)
       if (!is.null(p$df))
         p$df <- .format_pars(p$df, .f1)
       if (!is.null(p$adjusted_scale))

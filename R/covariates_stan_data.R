@@ -4,16 +4,12 @@ genCovariatesStanData <-
   function(formula,
            x,
            link = "logit",
-           subset,
-           na.action = getOption("na.action", "na.omit"),
-           contrasts = NULL,
            group =  NULL,
-           ...,
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
            prior_covariance = rstanarm::decov(),
            prior_PD = FALSE,
-           algorithm = c("sampling", "meanfield", "fullrank")) {
+           ...) {
 
   if (is.null(prior)) 
     prior <- list()
@@ -308,7 +304,7 @@ summarize_glm_prior <-
         if (!has_predictors) NULL else with(user_prior, list(
           dist = prior_dist_name,
           location = prior_mean,
-          shape = shape,
+          shape = prior_shape,
           scale = prior_scale,
           shift = prior_shift,
           adjusted_scale = if (rescaled_coef)

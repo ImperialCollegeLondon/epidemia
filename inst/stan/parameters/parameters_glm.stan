@@ -1,8 +1,4 @@
-if (prior_dist == 8) { // shifted gamma
-  vector<lower=0>[K] z_beta;
-} else {
-  vector[prior_dist == 7 ? sum(num_normals) : K] z_beta;
-}
+vector<lower=(prior_dist == 8 ? 0 : negative_infinity())>[prior_dist == 7 ? sum(num_normals) : K] z_beta;
 real<lower=0> global[hs];
 vector<lower=0>[K] local[hs];
 real<lower=0> caux[hs > 0];
