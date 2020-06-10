@@ -45,6 +45,7 @@ genCovariatesStanData <-
     default_scale = 2.5,
     ok_dists = ok_dists
   )
+
   # prior_{dist, mean, scale, df, dist_name, autoscale},
   # global_prior_df, global_prior_scale, slab_df, slab_scale
   for (i in names(prior_stuff))
@@ -164,7 +165,16 @@ genCovariatesStanData <-
     standata$len_regularization <- 0L
   }
 
+  prior_info <- summarize_glm_prior(
+    user_prior = prior_stuff,
+    user_prior_intercept = prior_intercept_stuff,
+    user_prior_covariance = user_covariance,
+    has_intercept = has_intercept,
+    has_predictors = nvars > 0,
+    adjusted_prior_scale = prior_scale,
+    adjusted_prior_intercept_scale = prior_scale_for_intercept)
 
+  standata$prior.info <- prior_info
   standata$X <- xtemp
   
   return(standata)
@@ -238,3 +248,87 @@ unpad_reTrms.array <- function(x, columns = TRUE, ...) {
   }
   return(x_keep)
 }
+
+
+
+# Create "prior.info" attribute needed for prior_summary()
+#
+# @param user_* The user's prior, prior_intercept and prior_covariance specifications. 
+#   For prior and prior_intercept these should be
+#   passed in after broadcasting the df/location/scale arguments if necessary.
+# @param has_intercept T/F, does model have an intercept?
+# @param has_predictors T/F, does model have predictors?
+# @param adjusted_prior_*_scale adjusted scales computed if using autoscaled priors
+# @param family Family object.
+# @return A named list with components 'prior', 'prior_intercept', and possibly 
+#   'prior_covariance' each of which itself is a list
+#   containing the needed values for prior_summary.
+summarize_glm_prior <-
+  function(user_prior,
+           user_prior_intercept,
+           user_prior_covariance,
+           has_intercept, 
+           has_predictors,
+           adjusted_prior_scale,
+           adjusted_prior_intercept_scale) {
+
+    # check if coefficients and intercept have been rescaled
+    rescaled_coef <-
+      user_prior$prior_autoscale && 
+      has_predictors &&
+      !is.na(user_prior$prior_dist_name) &&
+      !all(user_prior$prior_scale == adjusted_prior_scale)
+
+    rescaled_int <-
+      user_prior_intercept$prior_autoscale_for_intercept &&
+      has_intercept &&
+      !is.na(user_prior_intercept$prior_dist_name_for_intercept) &&
+      (user_prior_intercept$prior_scale_for_intercept != adjusted_prior_intercept_scale)
+
+    
+    if (has_predictors && user_prior$prior_dist_name %in% "t") {
+      if (all(user_prior$prior_df == 1)) {
+        user_prior$prior_dist_name <- "cauchy"
+      } else {
+        user_prior$prior_dist_name <- "student_t"
+      }
+    }
+
+    if (has_intercept &&
+        user_prior_intercept$prior_dist_name_for_intercept %in% "t") {
+      if (all(user_prior_intercept$prior_df_for_intercept == 1)) {
+        user_prior_intercept$prior_dist_name_for_intercept <- "cauchy"
+      } else {
+        user_prior_intercept$prior_dist_name_for_intercept <- "student_t"
+      }
+    }
+
+    prior_list <- list(
+      prior = 
+        if (!has_predictors) NULL else with(user_prior, list(
+          dist = prior_dist_name,
+          location = prior_mean,
+          scale = prior_scale,
+          adjusted_scale = if (rescaled_coef)
+            adjusted_prior_scale else NULL,
+          df = if (prior_dist_name %in% c
+                   ("student_t", "hs", "hs_plus", "lasso", "product_normal"))
+            prior_df else NULL
+        )),
+      prior_intercept = 
+        if (!has_intercept) NULL else with(user_prior_intercept, list(
+          dist = prior_dist_name_for_intercept,
+          location = prior_mean_for_intercept,
+          scale = prior_scale_for_intercept,
+          adjusted_scale = if (rescaled_int)
+            adjusted_prior_intercept_scale else NULL,
+          df = if (prior_dist_name_for_intercept %in% "student_t")
+            prior_df_for_intercept else NULL
+        ))
+    )
+
+    if (length(user_prior_covariance))
+      prior_list$prior_covariance <- user_prior_covariance
+      
+    return(prior_list)
+  }

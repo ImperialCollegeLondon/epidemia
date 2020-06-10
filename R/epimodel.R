@@ -39,7 +39,8 @@ epimodel <- function(object) {
     call = object$call, 
     stan_function = object$stan_function,
     standata = object$standata,
-    orig_names = object$orig_names
+    orig_names = object$orig_names,
+    prior.info = object$standata$prior.info
   )
   
   if (mixed) {
