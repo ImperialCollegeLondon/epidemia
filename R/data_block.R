@@ -69,7 +69,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_dist_name <- prior$dist
   prior_scale <- prior$scale
   prior_mean <- prior$location
-  prior_shift <- prior$shift %ORifNULL% 0
+  prior_shape <- prior$shape 
+  prior_shift <- prior$shift
   prior_df <- prior$df
   prior_mean[is.na(prior_mean)] <- 0
   prior_df[is.na(prior_df)] <- 1
@@ -105,10 +106,13 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_mean <- maybe_broadcast(prior_mean, nvars)
   prior_mean <- as.array(prior_mean)
   prior_scale <- maybe_broadcast(prior_scale, nvars)
+  prior_shape <- maybe_broadcast(prior_shape, nvars)
+  prior_shift <- maybe_broadcast(prior_shift, nvars)
 
   nlist(prior_dist, 
         prior_mean, 
         prior_scale,
+        prior_shape,
         prior_shift, 
         prior_df, 
         prior_dist_name, 

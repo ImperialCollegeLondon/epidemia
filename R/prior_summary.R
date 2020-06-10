@@ -189,7 +189,7 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
                                  "laplace", "lasso", "product_normal", "gamma")) {
           if (is.null(p$df)) {
             if (p$dist == "gamma") {
-              paste0(p$dist, "(location = ", .f1(p$location), 
+              paste0(p$dist, "(shape = ", .f1(p$shape), 
                    ", scale = ", .f1(p$scale), ", shift = ", .f1(p$shift), ")")
             } else {
             paste0(p$dist, "(location = ", .f1(p$location), 

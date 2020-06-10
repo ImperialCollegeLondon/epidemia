@@ -91,6 +91,7 @@ genCovariatesStanData <-
     prior_dist,
     prior_mean,
     prior_scale,
+    prior_shape,
     prior_shift,
     prior_df,
     prior_dist_for_intercept,
@@ -307,6 +308,7 @@ summarize_glm_prior <-
         if (!has_predictors) NULL else with(user_prior, list(
           dist = prior_dist_name,
           location = prior_mean,
+          shape = shape,
           scale = prior_scale,
           shift = prior_shift,
           adjusted_scale = if (rescaled_coef)
