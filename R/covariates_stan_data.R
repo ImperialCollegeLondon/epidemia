@@ -4,16 +4,12 @@ genCovariatesStanData <-
   function(formula,
            x,
            link = "logit",
-           subset,
-           na.action = getOption("na.action", "na.omit"),
-           contrasts = NULL,
            group =  NULL,
-           ...,
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
            prior_covariance = rstanarm::decov(),
            prior_PD = FALSE,
-           algorithm = c("sampling", "meanfield", "fullrank")) {
+           ...) {
 
   if (is.null(prior)) 
     prior <- list()
@@ -33,10 +29,8 @@ genCovariatesStanData <-
   nvars <- ncol(xtemp)
 
   ok_dists <- nlist("normal", student_t = "t", "cauchy", "hs", "hs_plus",
-                    "laplace", "lasso", "product_normal")
+                    "laplace", "lasso", "product_normal", "gamma")
   ok_intercept_dists <- ok_dists[1:3]
-  ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
-
   # prior distributions
   prior_stuff <- handle_glm_prior(
     prior,
@@ -93,6 +87,8 @@ genCovariatesStanData <-
     prior_dist,
     prior_mean,
     prior_scale,
+    prior_shape,
+    prior_shift,
     prior_df,
     prior_dist_for_intercept,
     prior_scale_for_intercept = c(prior_scale_for_intercept),
@@ -308,7 +304,9 @@ summarize_glm_prior <-
         if (!has_predictors) NULL else with(user_prior, list(
           dist = prior_dist_name,
           location = prior_mean,
+          shape = prior_shape,
           scale = prior_scale,
+          shift = prior_shift,
           adjusted_scale = if (rescaled_coef)
             adjusted_prior_scale else NULL,
           df = if (prior_dist_name %in% c

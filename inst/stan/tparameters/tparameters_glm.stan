@@ -31,3 +31,4 @@
       beta[k] += prior_mean[k];
     }
   }
+  else if(prior_dist == 8) beta = z_beta + prior_shift; // shifted gamma
