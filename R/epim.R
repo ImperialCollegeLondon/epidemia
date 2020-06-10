@@ -179,11 +179,9 @@ epim <-
   return(epimodel(out))
 }
 
-
 is_mixed <- function(formula) {
   !is.null(lme4::findbars(formula))
 }
-
 
 transformTheta_L <- function(stanfit, cnms) {
 

@@ -33,10 +33,8 @@ genCovariatesStanData <-
   nvars <- ncol(xtemp)
 
   ok_dists <- nlist("normal", student_t = "t", "cauchy", "hs", "hs_plus",
-                    "laplace", "lasso", "product_normal")
+                    "laplace", "lasso", "product_normal", "gamma")
   ok_intercept_dists <- ok_dists[1:3]
-  ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
-
   # prior distributions
   prior_stuff <- handle_glm_prior(
     prior,
@@ -93,6 +91,7 @@ genCovariatesStanData <-
     prior_dist,
     prior_mean,
     prior_scale,
+    prior_shift,
     prior_df,
     prior_dist_for_intercept,
     prior_scale_for_intercept = c(prior_scale_for_intercept),
