@@ -28,6 +28,12 @@ is.mixed <- function(x) {
   isTRUE(check1 && check2)
 }
 
+# If a is NULL (and Inf, respectively) return b, otherwise just return a
+# @param a,b Objects
+`%ORifNULL%` <- function(a, b) {
+  if (is.null(a)) b else a
+}
+
 # Check if any variables in a model frame are constants
 #
 # exceptions: constant variable of all 1's is allowed and outcomes with all 0s
