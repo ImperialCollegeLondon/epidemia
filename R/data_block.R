@@ -52,7 +52,7 @@ center_x <- function(x, sparse) {
 # @param link String naming the link function.
 # @param ok_dists A list of admissible distributions.
 handle_glm_prior <- function(prior, nvars, default_scale, link,
-                             ok_dists = nlist("normal", student_t = "t", 
+                             ok_dists = nlist("gamma", "normal", student_t = "t", 
                                               "cauchy", "hs", "hs_plus", 
                                               "laplace", "lasso", "product_normal")) {
   if (!length(prior))
@@ -69,6 +69,7 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_dist_name <- prior$dist
   prior_scale <- prior$scale
   prior_mean <- prior$location
+  prior_shift <- prior$shift %ORifNULL% 0
   prior_df <- prior$df
   prior_mean[is.na(prior_mean)] <- 0
   prior_df[is.na(prior_df)] <- 1
@@ -80,12 +81,13 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
     stop("The prior distribution should be one of ",
          paste(names(ok_dists), collapse = ", "))
   } else if (prior_dist_name %in% 
-             c("normal", "t", "cauchy", "laplace", "lasso", "product_normal")) {
+             c("normal", "t", "cauchy", "laplace", "lasso", "product_normal", "gamma")) {
     if (prior_dist_name == "normal") prior_dist <- 1L
     else if (prior_dist_name == "t") prior_dist <- 2L
     else if (prior_dist_name == "laplace") prior_dist <- 5L
     else if (prior_dist_name == "lasso") prior_dist <- 6L
     else if (prior_dist_name == "product_normal") prior_dist <- 7L
+    else if (prior_dist_name == "gamma") prior_dist <- 8L
     prior_scale <- set_prior_scale(prior_scale, default = default_scale, 
                                    link = link)
   } else if (prior_dist_name %in% c("hs", "hs_plus")) {
@@ -106,7 +108,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
 
   nlist(prior_dist, 
         prior_mean, 
-        prior_scale, 
+        prior_scale,
+        prior_shift, 
         prior_df, 
         prior_dist_name, 
         global_prior_scale,
