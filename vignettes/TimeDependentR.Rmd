@@ -48,7 +48,7 @@ args$formula <- R(country,date) ~ 0 +  (cut(day,c(-1,30,45,60,100))|country)
 fit <- do.call("epim", args)
 ```
 
-```{r}
+```{r plotpiecewisecontantUK}
 plot_rt(fit, "United_Kingdom")
 ```
 
@@ -65,7 +65,7 @@ args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1,interc
 fit <- do.call("epim", args)
 ```
 
-```{r}
+```{r plotlinearUK}
 plot_rt(fit, "United_Kingdom")
 ```
 
@@ -81,7 +81,7 @@ args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=2)|count
 fit <- do.call("epim", args)
 ```
 
-```{r}
+```{r plotquadraticUK}
 plot_rt(fit, "United_Kingdom")
 ```
 
