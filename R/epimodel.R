@@ -30,6 +30,7 @@ epimodel <- function(object) {
     ses = unpad_reTrms(ses),
     covmat,
     x,
+    obs = object$obs,
     data = object$data, 
     formula = object$formula, 
     terms = object$terms,
