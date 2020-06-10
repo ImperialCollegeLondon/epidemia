@@ -308,6 +308,7 @@ summarize_glm_prior <-
           dist = prior_dist_name,
           location = prior_mean,
           scale = prior_scale,
+          shift = prior_shift,
           adjusted_scale = if (rescaled_coef)
             adjusted_prior_scale else NULL,
           df = if (prior_dist_name %in% c
