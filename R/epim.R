@@ -2,7 +2,13 @@
 
 #' Fits an Epidemiological Model
 #' 
-#' @param formula An R object of class `formula`. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector indicating group membership (i.e. country, state, age cohort), and `date` being a vector of Date objects.
+#' Fits a Bayesian epidemiological model specified by the \code{formula} argument.
+#' 
+#' \code{epim} is the primary model fitting function in \pkg{EpiBayes}. The function fits models 
+#' in the style of \insertCite{Flaxman2020;textual}{EpiBayes}. Multiple groups (countries/states/age cohorts) 
+#' can be modeled simultaneously using multilevel models. 
+#' 
+#' @param formula An R object of class \code{"formula"}. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector indicating group membership (i.e. country, state, age cohort), and `date` being a vector of Date objects.
 #' @param data A dataframe with columns corresponding to the terms appearing in 'formula'. See [lm].
 #' @param obs A list of lists giving available observations. Each element of 'obs' must itself be a names list containing the following four elements
 #' * `obs`: A three column dataframe representing some type of observed data that is a function of the true number of infections. Examples include recorded incidence, deaths or hospitalisations. The first column represents group membership and must be coercible to class `factor`. The second column indicates the observation date and must be coercible to class `Date`. The third column contain the data.
@@ -15,7 +21,9 @@
 #' @param seed_days Number of days for which to seed infections.
 #' @param ... Arguments allowed in rstanarm::stan_glmer(). For example one can control the prior distribution of the covariates.
 #' @examples
-#' @return A stanfit object.
+#' @return An object of class \code{\link{epimodel}}. 
+#' @references 
+#' \insertAllCited{}
 epim <- 
   function(formula, 
            data,
@@ -104,6 +112,7 @@ epim <-
   cargs$prior_intercept <- prior_intercept
   cargs$prior_covariacne <- prior_covariance
   cargs$prior_PD <- prior_PD
+  cargs$link <- "logit"
   standata <- c(standata,
                 do.call("gen_covariates_sdat", args=cargs))
 
