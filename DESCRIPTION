@@ -1,6 +1,6 @@
 Package: epidemia
 Title: Modeling of Epidemics using Hierarchical Bayesian Models
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: c(
     person(given = "James",
            family = "Scott",
@@ -39,7 +39,8 @@ Authors@R: c(
            comment = c(ORCID = "Your email")
 	   )
 	   )  
-Description: What the package does (one paragraph).
+Description: Tools for a Bayesian hierarchial modelling approach for epidemics. Based on the methodology introduced in 
+Flaxman, S., Mishra, S., Gandy, A. et al. <doi:10.1038/s41586-020-2405-7>.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
