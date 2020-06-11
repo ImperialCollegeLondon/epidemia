@@ -18,18 +18,42 @@ to use the package.
 
 ``` r
 library(EpiBayes)
-data("EuropeCovid")
+data(EuropeCovid)
 
-# collect arguments for epim
+# Collect args for epim
 args <- EuropeCovid
-args$formula <- R(country, date) ~ 0 + lockdown
+args$formula <- R(country, date) ~  0 + schools_universities + self_isolating_if_ill +
+  public_events + lockdown + social_distancing_encouraged
 args$algorithm <- "sampling"
-args$prior <- shifted_gamma(shape=1/6, scale=1, shift = -0.2)
-args$group_subset <- c("United_Kingdom")
+args$prior <- shifted_gamma(shape = 1/6, scale = 1, shift = -log(1.05)/6)
+args$group_subset <- c("Germany", "United_Kingdom")
 
+#sample
+options(mc.cores=parallel::detectCores())
 fit <- do.call("epim", args)
-plot_rt(fit, group = "United_Kingdom")
 ```
+
+    ## Warning: Column `group` joining factors with different levels, coercing to
+    ## character vector
+
+    ## Warning: There were 3396 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+    ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
+
+    ## Warning: Examine the pairs() plot to diagnose sampling problems
+
+``` r
+# Inspect Rt
+plot_rt(fit, group = "United_Kingdom", levels = c(25,50,75,95))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+
+``` r
+# And deaths
+plot_obs(fit, type = "deaths", group = "United_Kingdom", levels = c(25,50,75,95))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->
 
 # References
 
