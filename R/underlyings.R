@@ -123,7 +123,7 @@ get_infections.epimodel <- function(object, ...) {
   # get indices for each group
   starts  <- object$standata$starts
   ends    <- starts + object$standata$NC - 1
-
+  
   out <- list()
   for (i in seq_along(groups)) {
     t <- starts[i]:ends[i]
