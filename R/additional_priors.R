@@ -6,12 +6,12 @@
 #' can be used for the priors on regression parameters. Intuitively, non-pharmaceutical interventions are 
 #' unlikely to a-priori cause a large increase in the reproduction number. A shifted gamma prior can 
 #' be used to model this idea, and has been used in 
-#' \insertCite{Flaxman2020;textual}{EpiBayes}.  \code{shifted_gamma} can be used as the \code{prior} argument 
+#' \insertCite{Flaxman2020;textual}{epidemia}.  \code{shifted_gamma} can be used as the \code{prior} argument 
 #' to \code{epim}.
 #' 
 #' @examples
 #' 
-#' library(EpiBayes)
+#' library(epidemia)
 #' data(EuropeCovid)
 #' args <- EuropeCovid
 #' args$prior = shifted_gamma(shape=1, scale = 1, shift = -0.5)

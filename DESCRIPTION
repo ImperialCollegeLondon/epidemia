@@ -1,4 +1,4 @@
-Package: EpiBayes
+Package: epidemia
 Title: Modeling of Epidemics using Hierarchical Bayesian Models
 Version: 0.0.0.9000
 Authors@R: c(

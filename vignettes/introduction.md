@@ -1,8 +1,8 @@
-Introduction to EpiBayes
+Introduction to epidemia
 ================
 
 This vignette is very much a work in progress, and will be regularly
-updated. It aims to demonstrate basis usage of the **EpiBayes** package.
+updated. It aims to demonstrate basis usage of the **epidemia** package.
 The main work is done in the `epim` function. Before continuing, please
 read the documentation for a more detailed description of this function.
 
@@ -11,7 +11,7 @@ read the documentation for a more detailed description of this function.
 The package contains the dataset used in the Nature paper. Load with
 
 ``` r
-library(EpiBayes)
+library(epidemia)
 data("EuropeCovid")
 ```
 

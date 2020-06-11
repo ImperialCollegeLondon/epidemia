@@ -1,4 +1,4 @@
-^EpiBayes\.Rproj$
+^epidemia\.Rproj$
 ^doc$
 ^Meta$
 ^\.travis\.yml$     # Used for continuous integration testing with travis

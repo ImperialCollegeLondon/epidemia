@@ -1,5 +1,5 @@
 ## -----------------------------------------------------------------------------
-library(EpiBayes)
+library(epidemia)
 data("EuropeCovid")
 args <- EuropeCovid
 

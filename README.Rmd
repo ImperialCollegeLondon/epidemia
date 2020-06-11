@@ -1,6 +1,6 @@
 
 ---
-title: "Flexible Epidemic Modeling with EpiBayes"
+title: "Flexible Epidemic Modeling with epidemia"
 output: 
   github_document:
     fig_width: 10
@@ -12,20 +12,20 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-The EpiBayes package allows researchers to flexibly 
+The epidemia package allows researchers to flexibly 
 specify and fit Bayesian epidemiological models in the style of 
 @Flaxman2020. The package leverages R's formula interface to paramaterize the time-varying reproduction rate 
 in terms of arbitrary covariates. Multiple countries/states can be modelled simultaneously with 
 multilevel models. The design of the package has been inspired by, and has borrowed from, the rstanarm
-package [@rstanarm]. EpiBayes uses rstan [@rstan] as the backend for fitting models.
-The primary model fitting function in EpiBayes is `epim`.
+package [@rstanarm]. epidemia uses rstan [@rstan] as the backend for fitting models.
+The primary model fitting function in epidemia is `epim`.
 
 Please see [here](/vignettes/introduction.md) for a demonstration on how to use the package. 
 
 # Example Usage
 
 ```{r, eval = T}
-library(EpiBayes)
+library(epidemia)
 data(EuropeCovid)
 
 # Collect args for epim

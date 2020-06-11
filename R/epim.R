@@ -3,8 +3,8 @@
 #' 
 #' Fits a Bayesian epidemiological model specified by the \code{formula} argument.
 #' 
-#' \code{epim} is the primary model fitting function in \pkg{EpiBayes}, and fits models 
-#' in the style of \insertCite{Flaxman2020;textual}{EpiBayes}. Multiple groups (countries/states/age cohorts) 
+#' \code{epim} is the primary model fitting function in \pkg{epidemia}, and fits models 
+#' in the style of \insertCite{Flaxman2020;textual}{epidemia}. Multiple groups (countries/states/age cohorts) 
 #' can be modeled simultaneously using multilevel models. The time-varying reproduction number can be 
 #' paramterised by a number of covariates through the \code{formula} argument. This is reasonably flexible. For example, 
 #' random effects terms in the style of the \pkg{lme4} package can be included. 
@@ -40,7 +40,7 @@
 #' @param group_subset An optional vector specifying a subset of groups to model. Elements should correspond to the group levels 
 #'        specified through the \code{data} argument.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. In addition to the \pkg{rstanarm} provided \link[rstanarm]{priors},
-#'         a \link[EpiBayes]{shifted_gamma} can be used.
+#'         a \link[epidemia]{shifted_gamma} can be used.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for the regression intercept (if it exists).
 #' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only used if the \code{formula} argument specifies a 
 #' @param prior_PD Same as in \code{\link[rstanarm]{glm}}. If \code{TRUE}, samples parameters from the prior disribution. 
@@ -50,7 +50,7 @@
 #' @param ... 
 #' @examples
 #' \dontrun{
-#' library(EpiBayes)
+#' library(epidemia)
 #' data("EuropeCovid")
 #'
 #' args <- EuropeCovid

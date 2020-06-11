@@ -1,23 +1,23 @@
 
 ---
-title: "Introduction to EpiBayes"
+title: "Introduction to epidemia"
 output: 
   github_document:
     fig_width: 10
     fig_height: 4
 vignette: >
-  %\VignetteIndexEntry{Introduction to EpiBayes}
+  %\VignetteIndexEntry{Introduction to epidemia}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
 
-This vignette is very much a work in progress, and will be regularly updated. It aims to demonstrate basis usage of the **EpiBayes** package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
+This vignette is very much a work in progress, and will be regularly updated. It aims to demonstrate basis usage of the **epidemia** package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
 
 ## Europe Data
 
 The package contains the dataset used in the Nature paper. Load with 
 ```{r}
-library(EpiBayes)
+library(epidemia)
 data("EuropeCovid")
 ```
 `EuropeCovid` is a list containing most of the information required for `epim`. These fields are named as follows.

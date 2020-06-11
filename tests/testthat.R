@@ -1,4 +1,4 @@
 library(testthat)
-library(EpiBayes)
+library(epidemia)
 
-test_check("EpiBayes")
+test_check("epidemia")
