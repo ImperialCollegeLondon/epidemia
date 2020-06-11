@@ -14,10 +14,10 @@ vignette: >
 
 The EpiBayes package allows researchers to flexibly 
 specify and fit Bayesian epidemiological models in the style of 
-@Flaxman2020. The package leverages R's formula interface to paramterise the reproduction rate 
-in terms of arbitrary covariates, and easily allows pooling of parameters. 
-The design of the package has been inspired by, and has borrowed from, the rstanarm
-package [@rstanarm]. EpiBayes uses rstan [@rstan] as the backend for fitting the models.
+@Flaxman2020. The package leverages R's formula interface to paramaterize the time-varying reproduction rate 
+in terms of arbitrary covariates. Multiple countries/states can be modelled simultaneously with 
+multilevel models. The design of the package has been inspired by, and has borrowed from, the rstanarm
+package [@rstanarm]. EpiBayes uses rstan [@rstan] as the backend for fitting models.
 The primary model fitting function in EpiBayes is `epim`.
 
 Please see [here](/vignettes/introduction.md) for a demonstration on how to use the package. 
