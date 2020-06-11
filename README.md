@@ -20,13 +20,15 @@ to use the package.
 library(EpiBayes)
 data("EuropeCovid")
 
+# collect arguments for epim
 args <- EuropeCovid
+args$formula <- R(country, date) ~ 0 + lockdown
 args$algorithm <- "sampling"
-args$formula <- R(country,date) ~ 0 + lockdown
-args$prior <- shifted_gamma(shape = 1/6, scale = 1, shift = -log(1.05)/6)
+args$prior <- shifted_gamma(shape=1/6, scale=1, shift = -0.2)
+args$group_subset <- c("United_Kingdom")
 
 fit <- do.call("epim", args)
-plot_rt(fit, group = "Germany")
+plot_rt(fit, group = "United_Kingdom")
 ```
 
 # References
