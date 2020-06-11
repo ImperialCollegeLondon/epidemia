@@ -72,7 +72,7 @@ get_rt.epimodel <- function(object, ...) {
 
 get_obs <- function(object, ...) UseMethod("get_obs", object)
 
-get_obs.epimodel <- function(object, type) {
+get_obs.epimodel <- function(object, type, ...) {
   
   types <- names(object$obs)
   if (!(type %in% types))
