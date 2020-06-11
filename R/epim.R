@@ -105,7 +105,7 @@ epim <-
   cargs$prior_covariacne <- prior_covariance
   cargs$prior_PD <- prior_PD
   standata <- c(standata,
-                do.call("genCovariatesStanData", args=cargs))
+                do.call("gen_covariates_sdat", args=cargs))
 
 
   if (stan_data) return(standata)

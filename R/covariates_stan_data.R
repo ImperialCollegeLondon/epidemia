@@ -1,15 +1,15 @@
-
-# Modified from rstanarm::stan_glm and rstanarm::stan_glmer
-genCovariatesStanData <- 
-  function(formula,
-           x,
-           link = "logit",
-           group =  NULL,
-           prior = rstanarm::normal(),
-           prior_intercept = rstanarm::normal(),
-           prior_covariance = rstanarm::decov(),
-           prior_PD = FALSE,
-           ...) {
+# Stan data relating to Rt regression
+#
+# Collates data relating to covariates in the regression for Rt.
+#
+# Constructs the data to pass to rstan::sampling or rstan::vb. 
+# Code adapted from rstanarm::stan_glm.fit to fit our purposes.
+# This function is called inside \code{epim}, and is internal.
+#
+# @returns A named list
+gen_covariates_sdat <- 
+  function(formula, x, link, group, prior, prior_intercept, 
+           prior_covariance, prior_PD, ...) {
 
   if (is.null(prior)) 
     prior <- list()
@@ -176,9 +176,9 @@ genCovariatesStanData <-
   return(standata)
 }
 
-# @param Ztlist ranef indicator matrices
-# @param cnms group$cnms
-# @param flist group$flist
+
+#------- helpers from rstanarm package -------#
+
 pad_reTrms <- function(Ztlist, cnms, flist) {
   stopifnot(is.list(Ztlist))
   l <- sapply(attr(flist, "assign"), function(i) nlevels(flist[[i]]))
@@ -194,6 +194,7 @@ pad_reTrms <- function(Ztlist, cnms, flist) {
   Z <- t(do.call(rbind, args = Ztlist))
   return(nlist(Z, cnms, flist))
 }
+
 
 make_b_nms <- function(group, m = NULL, stub = "Long") {
   group_nms <- names(group$cnms)
@@ -213,12 +214,6 @@ make_b_nms <- function(group, m = NULL, stub = "Long") {
   return(b_nms)  
 }
 
-# Drop the extra reTrms from a matrix x
-#
-# @param x A matrix or array (e.g. the posterior sample or matrix of summary
-#   stats)
-# @param columns Do the columns (TRUE) or rows (FALSE) correspond to the 
-#   variables?
 unpad_reTrms <- function(x, ...) UseMethod("unpad_reTrms")
 unpad_reTrms.default <- function(x, ...) {
   if (is.matrix(x) || is.array(x))
@@ -246,19 +241,8 @@ unpad_reTrms.array <- function(x, columns = TRUE, ...) {
 }
 
 
-
-# Create "prior.info" attribute needed for prior_summary()
-#
-# @param user_* The user's prior, prior_intercept and prior_covariance specifications. 
-#   For prior and prior_intercept these should be
-#   passed in after broadcasting the df/location/scale arguments if necessary.
-# @param has_intercept T/F, does model have an intercept?
-# @param has_predictors T/F, does model have predictors?
-# @param adjusted_prior_*_scale adjusted scales computed if using autoscaled priors
-# @param family Family object.
-# @return A named list with components 'prior', 'prior_intercept', and possibly 
-#   'prior_covariance' each of which itself is a list
-#   containing the needed values for prior_summary.
+# Adapted from rstanarm to include "shape" and "shift parameters"
+# for the gamma distribution
 summarize_glm_prior <-
   function(user_prior,
            user_prior_intercept,
