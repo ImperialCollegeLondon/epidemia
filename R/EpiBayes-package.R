@@ -1,4 +1,4 @@
-#' Flexible Bayesian Epidemiological Modeling
+#' Flexible Epidemic Modeling with EpiBayes
 #' 
 #' @description The \pkg{EpiBayes} package allows researchers to flexibly 
 #'      specify and fit Bayesian epidemiological models in the style of 
