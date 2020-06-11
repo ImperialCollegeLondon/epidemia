@@ -15,7 +15,7 @@ checkFormula <- function(formula) {
 #
 # @param formula See [genStanData]
 # @param data See [genStanData] 
-checkData <- function(formula, data) {
+checkData <- function(formula, data, group_subset) {
 
   if(!is.data.frame(data))
     stop("'data' must be a data frame", call. = FALSE)
@@ -49,6 +49,19 @@ checkData <- function(formula, data) {
     }
   )
 
+  groups <- levels(data$group)
+
+  if (!is.null(group_subset)) {
+    if(!all(group_subset %in% groups))
+      stop("Not all groups in group_subset were found in 'data'", call.=FALSE)
+    groups <- group_subset
+  }
+
+  # remove unmodelled groups
+  w <- data$group %in% groups
+  data <- data[w,]
+  data$group <- droplevels(as.factor(data$group))
+
   # check for missing data
   v <- !complete.cases(data)
   if(any(v))
@@ -67,7 +80,7 @@ checkData <- function(formula, data) {
 }
 
 
-checkObs <- function(data, obs) {
+checkObs <- function(obs, data) {
 
   lst <- obs
   if(!is.list(lst))
@@ -154,12 +167,11 @@ checkObsDF <- function(data, df, name) {
     warning(paste(c("Have removed missing data on rows", which(v), " of", name), collapse=" "), call.=FALSE)
   }
 
-  # warn if there are unmodelled groups
-  v <- setdiff(levels(df$group), groups)
-  if(length(v))
-    warning(paste(c("Levels ", v, " in", name, "were not found in 'data'. Removing."), collapse = " "), call.=FALSE)
-
-
+  # # warn if there are unmodelled groups
+  # v <- setdiff(levels(df$group), groups)
+  # if(length(v))
+  #   warning(paste(c("Levels ", v, " in", name, "were not found in 'data'. Removing."), collapse = " "), call.=FALSE)
+  
   # warn if we have to trim the data.
   for (group in groups) {
     if(group %in% df$group) {

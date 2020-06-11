@@ -37,6 +37,8 @@
 #' @param seed_days Number of days for which to seed infections.
 #' @param algorithm One of \code{"sampling"}, \code{"meanfield"} or \code{"fullrank"}. This specifies which \pkg{rstan} 
 #'        function to use for fitting the model.
+#' @param group_subset An optional vector specifying a subset of groups to model. Elements should correspond to the group levels 
+#'        specified through the \code{data} argument.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. In addition to the \pkg{rstanarm} provided \link[rstanarm]{priors},
 #'         a \link[EpiBayes]{shifted_gamma} can be used.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for the regression intercept (if it exists).
@@ -72,6 +74,7 @@ epim <-
            si,
            seed_days = 6,
            algorithm = c("sampling", "meanfield", "fullrank"),
+           group_subset = NULL,
            stan_data = FALSE,
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
@@ -83,9 +86,9 @@ epim <-
   call    <- match.call(expand.dots = TRUE)
   # argument checking
   formula <- checkFormula(formula)
-  data    <- checkData(formula, data)
+  data    <- checkData(formula, data, group_subset)
   groups  <- levels(data$group)
-  obs     <- checkObs(data, obs)
+  obs     <- checkObs(obs, data)
   pops    <- checkPops(pops, groups)
   si      <- checkSV(si)
 

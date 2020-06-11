@@ -8,7 +8,7 @@
 #
 # @returns A named list
 gen_covariates_sdat <- 
-  function(formula, x, link, group, prior, prior_intercept, 
+  function(formula, x, link, group=NULL, prior, prior_intercept, 
            prior_covariance, prior_PD, ...) {
 
   if (is.null(prior)) 

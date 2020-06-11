@@ -60,7 +60,7 @@ get_rt.epimodel <- function(object, ...) {
     # attach corresponding dates
     w <- object$data$group %in% groups[i]
     df <- do.call("cbind.data.frame", 
-                  args = list(date = data$date[w], 
+                  args = list(date = object$data$date[w], 
                               df))
 
     colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
@@ -99,7 +99,7 @@ get_obs.epimodel <- function(object, type, ...) {
     # attach corresponding dates
     w <- object$data$group %in% groups[i]
     df <- do.call("cbind.data.frame", 
-                  args = list(date = data$date[w], 
+                  args = list(date = object$data$date[w], 
                               df))
     
     colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
@@ -133,7 +133,7 @@ get_infections.epimodel <- function(object, ...) {
     # attach corresponding dates
     w <- object$data$group %in% groups[i]
     df <- do.call("cbind.data.frame", 
-                  args = list(date = data$date[w], 
+                  args = list(date = object$data$date[w], 
                               df))
 
     colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
