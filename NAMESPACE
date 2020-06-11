@@ -48,5 +48,6 @@ S3method(print, epimodel)
 export(prior_summary)
 S3method(prior_summary, epimodel)
 S3method(print, prior_summary.epimodel)
-
+export(get_infections)
+S3method(get_infections, epimodel)
 

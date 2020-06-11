@@ -108,3 +108,39 @@ get_obs.epimodel <- function(object, type, ...) {
   return(out)
 }
 
+
+
+get_infections <- function(object, ...) UseMethod("get_infections", object)
+
+
+get_infections.epimodel <- function(object, ...) {
+
+  res <- underlyings(object)
+  Rt <- rstan::extract(res, "infections")[[1]]
+
+  groups <- levels(object$data$group)
+
+  # get indices for each group
+  starts  <- object$standata$starts
+  ends    <- starts + object$standata$NC - 1
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    t <- starts[i]:ends[i]
+    df <- t(Rt[,t,i])
+    df <- as.data.frame(df)
+
+    # attach corresponding dates
+    w <- object$data$group %in% groups[i]
+    df <- do.call("cbind.data.frame", 
+                  args = list(date = data$date[w], 
+                              df))
+
+    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
+    out[[groups[i]]] <- df
+  }
+
+  return(out)
+}
+
+
