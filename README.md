@@ -1,15 +1,15 @@
-Flexible Bayesian Epidemiological Modeling with EpiBayes
+Flexible Modeling of Epidemics with EpiBayes
 ================
 
-The **EpiBayes** package allows researchers to flexibly specify and fit
+The EpiBayes package allows researchers to flexibly specify and fit
 Bayesian epidemiological models in the style of Flaxman et al. (2020).
 The package leverages R’s formula interface to paramterise the
 reproduction rate in terms of arbitrary covariates, and easily allows
 pooling of parameters. The design of the package has been inspired by,
-and has borrowed from, the **rstanarm** package (Goodrich et al. 2020).
-**EpiBayes** uses **rstan** (Stan Development Team 2020) as the backend
-for fitting the models. The primary model fitting function in
-**EpiBayes** is `epim`.
+and has borrowed from, the rstanarm package (Goodrich et al. 2020).
+EpiBayes uses rstan (Stan Development Team 2020) as the backend for
+fitting the models. The primary model fitting function in EpiBayes is
+`epim`.
 
 Please see [here](/vignettes/introduction.md) for a demonstration on how
 to use the package.
