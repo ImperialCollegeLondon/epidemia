@@ -1,4 +1,4 @@
-Flexible Modeling of Epidemics with EpiBayes
+Flexible Epidemic Modeling with EpiBayes
 ================
 
 The EpiBayes package allows researchers to flexibly specify and fit
