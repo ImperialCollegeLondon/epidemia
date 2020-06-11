@@ -6,7 +6,7 @@ output:
     fig_width: 10
     fig_height: 4
 vignette: >
-  %\VignetteIndexEntry{Introduction to EpiBayes}
+  %\VignetteIndexEntry{Time-dpendent Modelling of R}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -21,8 +21,13 @@ args <- EuropeCovid
 
 Pick out two countries as example
 ```{r}
-w <- data$country %in% c("United_Kingdom","Germany")
-data <- data[w,]
+countries <- c("United_Kingdom","Germany")
+data <- args$data
+w <- data$country %in% countries
+data <- droplevels(data[w,])
+args$obs$deaths$obs <- droplevels(args$obs$deaths$obs[args$obs$deaths$obs$country %in% countries,])
+args$pops <- droplevels(args$pops[args$pops$country %in% countries,])
+
 args$data <- data
 ```
 
@@ -58,6 +63,7 @@ plot_rt(fit, "United_Kingdom")
 
 
 ```{r}
+library(splines)
 args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1,intercept=TRUE)|country)
 ```
 
@@ -69,21 +75,11 @@ fit <- do.call("epim", args)
 plot_rt(fit, "United_Kingdom")
 ```
 
-
-### Quadratic
-
-
-```{r}
-args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=2)|country)
+```{r plotlinearGermany}
+plot_rt(fit, "Germany")
 ```
 
-```{r,results='hide'}
-fit <- do.call("epim", args)
-```
 
-```{r plotquadraticUK}
-plot_rt(fit, "United_Kingdom")
-```
 
 
 
