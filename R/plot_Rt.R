@@ -109,6 +109,55 @@ plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
   return(p)
 }
 
+
+
+plot_infections <- function(object, ...) UseMethod("plot_infections", object)
+
+
+plot_infections.epimodel <- function(object, group, levels = c(50, 95), ...) {
+  if (length(group) > 1)
+    stop ("Can only plot for one group at a time")
+  
+  groups <- levels(object$data$group)
+  if (!(group %in% groups))
+    stop(paste0("'",group,"' is not a modeled group."))
+  
+  # compute draws
+  inf <- get_infections(fit)[[group]]
+  dates <- inf$date
+  
+  # quantiles
+  qtl <- .get_quantiles(inf, levels)
+  
+  p <-  ggplot2::ggplot(qtl) + 
+        ggplot2::geom_ribbon(data = qtl, 
+                             ggplot2::aes(x = date,
+                                          ymin=low, 
+                                          ymax=up, 
+                                          fill=tag)) +
+        ggplot2::xlab("") +
+        ggplot2::ylab("Infections") +
+        ggplot2::scale_y_continuous(labels = scales::comma, 
+                                    expand=ggplot2::expansion(mult=c(0,0.1))) +
+        ggplot2::scale_x_date(date_breaks = "2 weeks", 
+                              labels = scales::date_format("%e %b")) + 
+        ggplot2::scale_fill_manual(name = "Credible Intervals", 
+                                  labels = paste0(levels,"%"), 
+                                  values = ggplot2::alpha("deepskyblue4", 
+                                                            0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
+        ggplot2::theme_bw() + 
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
+                      legend.position = "None", 
+                      axis.text = ggplot2::element_text(size = 12),
+                      axis.title = ggplot2::element_text(size = 12)) + 
+        ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
+        ggplot2::theme(legend.position="right") + 
+        ggplot2::ggtitle(group) 
+        
+  
+  return(p)
+}
+
 # Internal
 
 # df A data frame (element of list returned from get_obs)
