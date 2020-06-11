@@ -1,6 +1,6 @@
 
 ---
-title: "Flexible Bayesian Epidemiological Modeling with EpiBayes"
+title: "Flexible Epidemiological Modeling with EpiBayes"
 output: 
   github_document:
     fig_width: 10
