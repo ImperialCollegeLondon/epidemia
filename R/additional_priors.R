@@ -24,9 +24,7 @@ shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
   nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)
 }
 
-
-
-# ---- rstanarm helpers ---- 
+#------- helpers from rstanarm package -------#
 
 # Check for positive scale or df parameter (NULL ok)
 #

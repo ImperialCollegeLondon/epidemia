@@ -1,7 +1,20 @@
 
-#' mirrors as.matrix.stanreg in rstanarm
-#' @rdname as.matrix.epimodel
+#' Extract posterior samples
+#' 
+#' Get parameters samples for a fitted model object of class \code{epimodel}.
+#' 
+#' \code{as.matrix}, \code{as.array} and \code{as.data.frame} each return
+#' a sample of parameter draws from objects of class \code{epimodel}. The 
+#' returned parameters include those in the regression for \eqn{R_{tm}}$, but also 
+#' other parameters in the model. These methods closely resemble those 
+#' for \code{stanreg} objects in \pkg{rstanarm}. Please see \code{\link[rstanarm]{as.matrix.stanreg}} 
+#' for a general explanation of these methods.
 #' @method as.matrix epimodel
+#' @templateVar epimodelArg x
+#' @template args-epimodel-object
+#' @param pars Please see \link[rstanarm]{as.matrix.stanreg}
+#' @param regex_pars Please see \link[rstanarm]{as.matrix.stanreg}
+#' @return A \code{matrix}, \code{array} or \code{data.frame} object.
 as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
   pars <- collect_pars(x, pars, regex_pars)
   user_pars <- !is.null(pars)
@@ -19,7 +32,6 @@ as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
   unpad_reTrms(mat)
 }
 
-#' mirrors as.array.stanreg in rstanarm
 #' @rdname as.matrix.epimodel
 #' @method as.array epimodel
 #' @export
@@ -50,9 +62,8 @@ as.data.frame.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
   as.data.frame(mat)
 }
 
+#------- helpers from rstanarm package -------#
 
-
-### --- helpers from rstanarm ---
 STOP_no_draws <- function() stop("No draws found.", call. = FALSE)
 
 check_missing_pars <- function(x, pars) {
