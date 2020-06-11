@@ -1,3 +1,5 @@
+#' @importFrom Rdpack reprompt
+
 #' Fits an Epidemiological Model
 #' 
 #' @param formula An R object of class `formula`. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector indicating group membership (i.e. country, state, age cohort), and `date` being a vector of Date objects.

@@ -1,8 +1,22 @@
-# generic function
+
+#' Plotting reproduction number over time
+#'
+#' Plots credible intervals for the time-varying reproduction number for a specifed group.
+#' The user can control the level and number of credible intervals.
+#' 
+#' This is a generic function.
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object 
+#' @param ... Other arguments to pass to methods. For a \code{epimodel} object
+#'  this will be a string \code{group} specifying the group to plot for, and 
+#'  \code{levels} is a numeric vector giving the levels of the credible intervals.
+#' @return A ggplot object.
+#' 
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
-
-# method
+#' @rdname plot_rt
+#' @export
 plot_rt.epimodel <- function(object, group, levels = c(50,95), ...) {
   
   if (length(group) > 1)
@@ -52,9 +66,26 @@ plot_rt.epimodel <- function(object, group, levels = c(50,95), ...) {
 }
 
 
+#' Plotting the posterior predictive distribution
+#'
+#' Plots credible intervals for the observed data under the posterior predictive.
+#' Plots for a specific observation type and group. 
+#' The user can control the level and number of credible intervals.
+#' 
+#' This is a generic function.
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object 
+#' @param ... Other arguments to pass to methods. For a \code{epimodel} object
+#'  this will be a string \code{type} specifying the observation type, a string \code{group} 
+#'  specifying the group to plot for, and 
+#'  \code{levels} is a numeric vector giving the levels of the credible intervals.
+#' @return A ggplot object.
+#' 
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
-
+#' @rdname plot_obs
+#' @export
 plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
   if (length(group) > 1)
     stop ("Can only plot for one group at a time")
@@ -110,10 +141,24 @@ plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
 }
 
 
-
+#' Plotting the underlying number of infections over time
+#'
+#' Plots credible intervals for the underlying number of infections for a specified group.
+#' The user can control the level and number of credible intervals.
+#' 
+#' This is a generic function.
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object 
+#' @param ... Other arguments to pass to methods. For a \code{epimodel} object
+#'  this will be a string \code{group} specifying the group to plot for, and 
+#'  \code{levels} is a numeric vector giving the levels of the credible intervals.
+#' @return A ggplot object.
+#' 
 plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 
-
+#' @rdname plot_infections
+#' @export
 plot_infections.epimodel <- function(object, group, levels = c(50, 95), ...) {
   if (length(group) > 1)
     stop ("Can only plot for one group at a time")

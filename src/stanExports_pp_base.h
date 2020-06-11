@@ -55,9 +55,9 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(57, 29, "restart", "model_pp_base");
     reader.add_event(62, 34, "include", "/tparameters/gen_infections.stan");
     reader.add_event(62, 0, "start", "/tparameters/gen_infections.stan");
-    reader.add_event(87, 25, "end", "/tparameters/gen_infections.stan");
-    reader.add_event(87, 35, "restart", "model_pp_base");
-    reader.add_event(102, 48, "end", "model_pp_base");
+    reader.add_event(88, 26, "end", "/tparameters/gen_infections.stan");
+    reader.add_event(88, 35, "restart", "model_pp_base");
+    reader.add_event(103, 48, "end", "model_pp_base");
     return reader;
 }
 template <typename T0__>
@@ -722,29 +722,29 @@ public:
                 }
             }
             }
-            current_statement_begin__ = 89;
+            current_statement_begin__ = 91;
             for (int r = 1; r <= R; ++r) {
-                current_statement_begin__ = 90;
+                current_statement_begin__ = 92;
                 for (int m = 1; m <= M; ++m) {
                     {
-                    current_statement_begin__ = 91;
+                    current_statement_begin__ = 93;
                     int n0(0);
                     (void) n0;  // dummy to suppress unused var warning
                     stan::math::fill(n0, std::numeric_limits<int>::min());
                     stan::math::assign(n0,get_base1(starts, m, "starts", 1));
-                    current_statement_begin__ = 92;
+                    current_statement_begin__ = 94;
                     int n1(0);
                     (void) n1;  // dummy to suppress unused var warning
                     stan::math::fill(n1, std::numeric_limits<int>::min());
                     stan::math::assign(n1,((n0 + get_base1(NC, m, "NC", 1)) - 1));
-                    current_statement_begin__ = 93;
+                    current_statement_begin__ = 95;
                     stan::model::assign(pred, 
                                 stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(n0), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
                                 (1e-15 * get_base1(infections, n0, m, "infections", 1)), 
                                 "assigning variable pred");
-                    current_statement_begin__ = 94;
+                    current_statement_begin__ = 96;
                     for (int i = (n0 + 1); i <= n1; ++i) {
-                        current_statement_begin__ = 95;
+                        current_statement_begin__ = 97;
                         stan::model::assign(pred, 
                                     stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
                                     ((get_base1(noise, m, r, "noise", 1) * get_base1(means, m, r, "means", 1)) * dot_product(sub_col(infections, n0, m, (i - n0)), tail(get_base1(pvecs_rev, r, "pvecs_rev", 1), (i - n0)))), 

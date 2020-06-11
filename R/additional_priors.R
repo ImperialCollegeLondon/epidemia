@@ -1,9 +1,25 @@
-# Additional priors to offer in rstanarm
+#' A shifted gamma prior
+#'
+#' A gamma prior distribution which can be shifted.
+#' 
+#' \pkg{rstanarm} provides a set of distributions (see \code{\link[rstanarm]{priors}}) which
+#' can be used for the priors on regression parameters. Intuitively, non-pharmaceutical interventions are 
+#' unlikely to a-priori cause a large increase in the reproduction number. A shifted gamma prior can 
+#' be used to model this idea, and has been used in 
+#' \insertCite{Flaxman2020;textual}{EpiBayes}.  \code{shifted_gamma} can be used as the \code{prior} argument 
+#' to \code{epim}.
+#' 
+#' @examples
+#' 
+#' library(EpiBayes)
+#' data(EuropeCovid)
+#' args <- EuropeCovid
+#' args$prior = shifted_gamma(shape=1, scale = 1, shift = -0.5)
+#' 
+#' @references
+#' \insertAllCited{}
 
-
-#' @rdname priors
-#' @export
-gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
+shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
   validate_parameter_value(scale)
   nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)
 }

@@ -1,5 +1,9 @@
-
-# create an object of class epimodel. Heavily based on 'stanreg' in rstanarm
+# Constructor for the epimodel class
+#
+# This is an internal constructor initialising objects with class \code{epimodel}.
+# Used inside the \code{epim} function
+#
+# @param object A named list constructed inside the \code{epim} function
 epimodel <- function(object) {
   mixed <- !is.null(object$glmod)
   stanfit <- object$stanfit

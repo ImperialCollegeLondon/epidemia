@@ -61,7 +61,8 @@ Imports:
     lme4,
     ggplot2,
     ggpubr,
-    scales
+    scales,
+    Rdpack
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
@@ -74,4 +75,5 @@ Suggests:
     knitr
 VignetteBuilder:
     knitr
-    
+RdMacros:
+    Rdpack
