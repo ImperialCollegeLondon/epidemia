@@ -50,8 +50,8 @@ genModelStanData <-
     obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
   } else {
     obs           <- data.frame()
-    pvecs         <- array(NA, dim=0)
-    means         <- matrix(NA, M, 0)
+    pvecs         <- array(0, dim=c(0,max_sim))
+    means         <- array(0, dim = c(M,0))
     noise_scales  <- numeric()
   }
 
