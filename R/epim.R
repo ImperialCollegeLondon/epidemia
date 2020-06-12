@@ -153,7 +153,7 @@ epim <-
   cargs$group <- group 
   cargs$prior <- prior
   cargs$prior_intercept <- prior_intercept
-  cargs$prior_covariacne <- prior_covariance
+  cargs$prior_covariance <- prior_covariance
   cargs$prior_PD <- prior_PD
   cargs$link <- "logit"
   standata <- c(standata,
