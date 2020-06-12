@@ -117,6 +117,7 @@ epim <-
     mc$"..." <- NULL
       
     mc$data     <- data
+    mc$na.action <- na.fail
     glmod       <- eval(mc, parent.frame())
     x           <- glmod$X
 

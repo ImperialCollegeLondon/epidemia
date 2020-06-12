@@ -203,6 +203,14 @@ checkObsDF <- function(data, df, name) {
         warning(paste0("Group: ", group, ", found dates in ", name, " outside of ", range, ". Trimming..."), call.=FALSE)
   }
 
+  # trim the data
+  data$group <- as.character(data$group)
+  df$group <- as.character(df$group)
+  df <- dplyr::left_join(data[,c("group", "date")], df, by = c("group", "date"))
+  df <- df[complete.cases(df),]
+  data$group <- as.factor(data$group)
+  df$group <- as.factor(df$group)
+
   # warning if some groups do not have data
   v <- setdiff(levels(data$group), levels(df$group))
   if(length(v))
