@@ -3,8 +3,8 @@
 #' Creates a design matrix for a random walk effect in [epim].
 #'
 #' @param x A vector coercable to a date.
-#' @oaram delta Timesteps in days.
-#' @value The design matrix
+#' @param delta Timesteps in days.
+#' @return The design matrix.
 #' @examples
 #' x<-c("2020-02-22", "2020-02-23", "2020-02-24", "2020-02-25")
 #' rw(x,delta=2)
