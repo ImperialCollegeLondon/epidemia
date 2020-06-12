@@ -49,7 +49,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.0
 Biarch: true
 Depends: 
-    R (>= 3.4.0)
+    R (>= 3.5.0)
 Imports: 
     data.table (>= 1.12.8),
     dplyr (>= 0.8.5),
