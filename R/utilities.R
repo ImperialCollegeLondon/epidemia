@@ -100,9 +100,11 @@ checkObs <- function(obs, data) {
       if (!exists(col))
         stop(paste0("Could not find obs$", nme, "$", col), call. = FALSE)
 
+    print("obs: 1")
     obs   <- checkObsDF(data, 
                         obs, 
                         paste0("obs$", nme, "$obs"))
+    print("obs:2")
 
     rates <- checkRates(levels(data$group),
                         rates, 
@@ -154,7 +156,10 @@ checkObsDF <- function(data, df, name) {
     }
   )
 
-  groups <- levels(data$group)
+  # ignore unmodelled groups
+  w <- df$group %in% levels(data$group)
+  df <- df[w,]
+  df$group <- drop.levels(df$group)
 
   # throw error if duplicated
   if(any(duplicated(df[,1:2])))
@@ -166,37 +171,23 @@ checkObsDF <- function(data, df, name) {
     df <- df[!v,]
     warning(paste(c("Have removed missing data on rows", which(v), " of", name), collapse=" "), call.=FALSE)
   }
-
-  # # warn if there are unmodelled groups
-  # v <- setdiff(levels(df$group), groups)
-  # if(length(v))
-  #   warning(paste(c("Levels ", v, " in", name, "were not found in 'data'. Removing."), collapse = " "), call.=FALSE)
   
   # warn if we have to trim the data.
-  for (group in groups) {
-    if(group %in% df$group) {
-      dates_data  <- data[data$group == group, "date"]
-      start_date  <- min(dates_data)
-      stop_date   <- max(dates_data)
-      range       <- paste0(start_date," : ", stop_date)
-      dates_df    <- df[df$group == group, "date"]
-      
-      if(min(dates_df) < start_date || max(dates_df > stop_date))
+  for (group in levels(df$group)) {
+    dates_data  <- data[data$group == group, "date"]
+    start_date  <- min(dates_data)
+    stop_date   <- max(dates_data)
+    range       <- paste0(start_date," : ", stop_date)
+    dates_df    <- df[df$group == group, "date"]
+
+    if(min(dates_df) < start_date || max(dates_df > stop_date))
         warning(paste0("Group: ", group, ", found dates in ", name, " outside of ", range, ". Trimming..."), call.=FALSE)
-    }
   }
 
-  # trim the data
-  data$group <- as.factor(data$group)
-  df <- dplyr::left_join(data[,c("group", "date")], df, by = c("group", "date"))
-  df <- df[complete.cases(df),]
-
-
   # warning if some groups do not have data
-  v <- setdiff(groups, df$group)
+  v <- setdiff(levels(data$group), levels(df$group))
   if(length(v))
     warning(paste(c("No data for group(s) ", v, " found in", name), collapse=" "), call. = FALSE)
-
 
   return(df)
 }
