@@ -105,7 +105,7 @@ checkObs <- function(lst, data) {
     elem  <- lst[[i]]
     
     # check we have the correct items
-    missing.items <- sapply(c("obs", "rates", "pvec"), function(x) !(x %in% names(elem)))
+    missing.items <- sapply(c("odata", "rates", "pvec"), function(x) !(x %in% names(elem)))
     if(any(missing.items)) {
       missing.items <- names(missing.items)[missing.items]
       stop(paste0(paste0(missing.items, collapse=", "), " missing from obs$", nme), call. = FALSE)
@@ -113,12 +113,6 @@ checkObs <- function(lst, data) {
 
     for (name in names(elem))
       assign(name, elem[[name]])
-
-    # check required components exist
-    req_cols <- c("odata", "rates", "pvec")
-    for (col in req_cols)
-      if (!exists(col))
-        stop(paste0("Could not find obs$", nme, "$", col), call. = FALSE)
 
     odata   <- checkObsDF(data, 
                           odata, 

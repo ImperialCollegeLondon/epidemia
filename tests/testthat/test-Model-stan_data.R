@@ -12,7 +12,7 @@ test_that("Expected stan data for various lengths of 'obs' arguments", {
   m <- length(unique(args$data$code))
   n <- length(unique(args$data$date))
   expect_equal(sdat$R, 2)
-  expect_equal(dim(sdat$P), c(n,2))
+  expect_equal(as.numeric(sapply(sdat$pvecs, length)), rep(n,2))
   expect_equal(dim(sdat$means), c(m,2))
   expect_equal(length(sdat$noise_scales), 2)
 
@@ -20,7 +20,7 @@ test_that("Expected stan data for various lengths of 'obs' arguments", {
   args$obs$incidence <- NULL
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$R, 1)
-  expect_equal(dim(sdat$P), c(n,1))
+  expect_equal(as.numeric(sapply(sdat$pvecs, length)), rep(n,1))
   expect_equal(dim(sdat$means), c(m,1))
   expect_equal(length(sdat$noise_scales),1)
 
@@ -28,7 +28,7 @@ test_that("Expected stan data for various lengths of 'obs' arguments", {
   args$obs$deaths <- NULL
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$R, 0)
-  expect_equal(dim(sdat$P), c(n,0))
+  expect_equal(as.numeric(sapply(sdat$pvecs, length)), rep(n,0))
   expect_equal(dim(sdat$means), c(m,0))
   expect_equal(length(sdat$noise_scales), 0)
 
@@ -36,10 +36,10 @@ test_that("Expected stan data for various lengths of 'obs' arguments", {
   # (i.e. observation date outside of trimmed range)
   args$obs <- NYWA2$obs
   df <- data.frame(code=as.factor("NY"), date = as.Date("2020-06-01"), obs = 1)
-  args$obs$incidence$obs <- df
+  args$obs$incidence$odata <- df
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$R, 1)
-  expect_equal(dim(sdat$P), c(n,1))
+  expect_equal(as.numeric(sapply(sdat$pvecs, length)), rep(n,1))
   expect_equal(dim(sdat$means), c(m,1))
   expect_equal(length(sdat$noise_scales), 1)
 
