@@ -108,7 +108,14 @@ epim <-
       ignore_lhs = TRUE,  
       ignore_x_scale = FALSE
     )
+    ## removing non-lme4::glFormula arguments
     mc$prior    <- NULL
+    mc$obs <- NULL
+    mc$pops <- NULL
+    mc$si <- NULL
+    mc$algorithm <- NULL
+    mc$"..." <- NULL
+      
     mc$data     <- data
     glmod       <- eval(mc, parent.frame())
     x           <- glmod$X
