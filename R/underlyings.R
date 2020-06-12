@@ -82,7 +82,6 @@ get_obs.epimodel <- function(object, type, ...) {
   
   res <- underlyings(object)
   pred <- rstan::extract(res, "pred")[[1]]
-  pred <- pred[,idx,,]
   
   groups <- levels(object$data$group)
   
@@ -93,7 +92,7 @@ get_obs.epimodel <- function(object, type, ...) {
   
   for (i in seq_along(groups)) {
     t <- starts[i]:ends[i]
-    df <- t(pred[,t,i])
+    df <- t(pred[,idx,t,i])
     df <- as.data.frame(df)
     
     # attach corresponding dates
