@@ -89,7 +89,7 @@ epim <-
   groups  <- levels(data$group)
   obs     <- checkObs(obs, data)
   pops    <- checkPops(pops, groups)
-  si      <- checkSV(si)
+  si      <- checkSV(si, "si")
 
   if (seed_days < 1)
     stop("'seed_days' must be greater than zero", call. = FALSE)

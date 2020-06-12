@@ -19,7 +19,13 @@ checkData <- function(formula, data, group_subset) {
 
   if(!is.data.frame(data))
     stop("'data' must be a data frame", call. = FALSE)
-
+  
+  if(nrow(data)==0)
+    stop("data has zero rows", call. = FALSE)
+  
+  if(sum(is.na(data))!=0)
+    stop("data contains NAs", call. = FALSE)
+  
   vars      <- all.vars(formula)
   not_in_df <- !(vars %in% colnames(data))
 
@@ -33,8 +39,7 @@ checkData <- function(formula, data, group_subset) {
   vars                      <- all.vars(update(formula, ".~0"))
   df                        <- data[,vars]
   data[,c("group", "date")] <- df
-
-  # check if columns are coercible
+  
   data <- tryCatch(
     {
       data$group <- droplevels(as.factor(data$group))
@@ -42,12 +47,13 @@ checkData <- function(formula, data, group_subset) {
       data
     },
     error = function(cond) {
-      message(paste0(vars[1], " and ", vars[2], " are not coercible to Factor and Date Respectively."))
-      message("Original message:")
-      message(cond)
-      return(NULL)
+      stop(paste0(vars[1], " and ", vars[2], " are not coercible to Factor and Date Respectively. Original message: ", cond))
     }
   )
+  if(any(is.na(data$group)))
+    stop(paste0("NAs exist in data$", vars[[1]], " after coercion to factor"), call. = FALSE)
+  if(any(is.na(data$date)))
+    stop(paste0("NAs exist in data$", vars[[2]], " after coercion to Date"), call. = FALSE)
 
   groups <- levels(data$group)
 
@@ -97,6 +103,13 @@ checkObs <- function(lst, data) {
     
     nme   <- nms[i]
     elem  <- lst[[i]]
+    
+    # check we have the correct items
+    missing.items <- sapply(c("obs", "rates", "pvec"), function(x) !(x %in% names(elem)))
+    if(any(missing.items)) {
+      missing.items <- names(missing.items)[missing.items]
+      stop(paste0(paste0(missing.items, collapse=", "), " missing from obs$", nme), call. = FALSE)
+    }
 
     for (name in names(elem))
       assign(name, elem[[name]])
@@ -155,12 +168,18 @@ checkObsDF <- function(data, df, name) {
       df
     },
     error = function(cond) {
-      message(paste0("Columns of '", name,"' are not coercible to required classes [factor, Date, numeric]"))
-      message("Original message:")
-      message(cond)
-      return(NULL)
+      stop(paste0("Columns of '", name,"' are not coercible to required classes [factor, Date, numeric]. Original message: ", cond),
+           call. = FALSE)
     }
   )
+  
+  # check no NAs were introducted during coercion
+  contains.NA <- apply(df, 2, function(x) sum(is.na(x)))!=0
+  if(any(contains.NA)) {
+    contains.NA <- names(contains.NA)[contains.NA]
+    stop(paste0(paste0(contains.NA, collapse=", "), " contain NA values after being coerced to their appropriate types. These types are listed in documentation of the obs argument to epim."),
+         call. = FALSE)
+  }
 
   # ignore unmodelled groups
   w <- df$group %in% levels(data$group)
@@ -207,11 +226,14 @@ checkDF <- function(df, name, nc) {
   if(!is.data.frame(df))
     stop(paste0(name, " must be a dataframe."))
   
-  if(any(is.na.data.frame(df[,1:nc])))
-    stop(paste0("'NA's exists in ", name))
+  if(nrow(df)==0)
+    stop(paste0(name, " has zero rows"))
   
   if(ncol(df) < nc)
-    stop(paste0("Not enough columns in ", name))
+    stop(paste0("Not enough columns in ", name, " - at least ", nc, " are required"))
+  
+  if(any(is.na.data.frame(df[,1:nc])))
+    stop(paste0("NAs exist in ", name))
   
   as.data.frame(df[,1:nc])
 }
@@ -221,6 +243,7 @@ checkDF <- function(df, name, nc) {
 # @param pops See [genStanData]
 checkPops <- function(pops, levels) {
   pops <- checkDF(pops, "pops", 2)
+  oldnames <- names(pops)
   names(pops) <- c("group", "pop")
   
   # check if columns are coercible
@@ -231,19 +254,23 @@ checkPops <- function(pops, levels) {
       pops
     },
     error = function(cond) {
-      message("Columns of 'pops' are not coercible to required classes [factor, integer]", call. = FALSE)
-      message("Original message:")
-      message(cond)
-      return(NULL)
+      stop(paste0("Columns of 'pops' are not coercible to required classes [factor, integer]. Original message: ", cond))
     }
   )
-
+  if(any(is.na(pops$group)))
+    stop(paste0("NAs exist in ", name, "$", oldnames[[1]], " after coercion to factor"), call. = FALSE)
+  if(any(is.na(pops$pop)))
+    stop(paste0("NAs exist in ", name, "$", oldnames[[2]], " after coercion to integer"), call. = FALSE)
+  
   # removing rows not represented in response groups
   pops <- pops[pops$group %in% levels,]
 
   # requiring all levels have an associated population
-  if (!all(levels %in% pops$group))
-    stop(paste0("Levels in 'formula' response missing in 'pops'"))
+  missing.levels <- !(levels %in% pops$group)
+  if (any(missing.levels)) {
+    missing.levels <- levels[missing.levels]
+    stop(paste0("Levels in 'formula' response missing in 'pops': ", paste0(missing.levels, collapse=", ")))
+  }
 
   if(any(duplicated(pops$group)))
     stop("Populations for a given group must be unique. Please check 'pops'.", call. = FALSE)
@@ -270,10 +297,15 @@ checkRates <- function(levels, rates, name) {
   if(is.null(rates$means))
     stop(paste0(name,"$means not found. "))
   
+  if(nrow(rates$means)==0)
+    stop(paste0(name,"$means has zero rows"))
+  
   means <- rates$means
 
-  if(is.null(rates$scale))
+  if(is.null(rates$scale)) {
+    warning(paste0(name, "$scale not found, using default value of 0.1"))
     scale = 0.1
+  }
   else if(!is.numeric(rates$scale) || length(rates$scale) != 1)
     stop(paste0(name, "$scale must be a numeric of length 1."))
   else
@@ -290,12 +322,13 @@ checkRates <- function(levels, rates, name) {
       means
     },
     error = function(cond) {
-      message(paste0("Columns of ", name, "$means are not coercible to required classes [factor, numeric]"))
-      message("Original message:")
-      message(cond)
-      return(NULL)
+      stop(paste0("Columns of ", name, "$means are not coercible to required classes [factor, numeric]. Original message: ", cond))
     }
   )
+  if(any(is.na(means$mean)))
+    stop(paste0("NAs exist in ", name, "$means after coercion to numeric"), call. = FALSE)
+  if(any(is.na(means$group)))
+    stop(paste0("NAs exist in ", name, "$group after coercion to factor"), call. = FALSE)
 
   # removing rows not represented in response groups
   means <- means[means$group %in% levels,]
@@ -322,12 +355,16 @@ checkRates <- function(levels, rates, name) {
 # @param name The name of the vector (for error message printing)
 checkSV <- function(vec, name) {
   
+  if(any(is.na(vec)))
+    stop(paste0("NAs exist in ", name), call. = FALSE)
+  
+  # do the coercion then check for NAs
   out <- tryCatch(as.numeric(vec),
     error = function(cond) {
-      message(paste0(name, " could not be coerced to a numeric vector."))
-      message("Original message:")
-      message(cond)
+      stop(paste0(name, " could not be coerced to a numeric vector. Original message: ", cond))
     })
+  if(any(is.na(out)))
+    stop(paste0("NAs exist in ", name, " after coercion to numeric"), call. = FALSE)
   
   if(any(vec < 0))
     stop(paste0("Negative values found in ", name), call. = FALSE)
@@ -351,7 +388,6 @@ checkCovariates <- function(data, if_missing = NULL) {
   # drop other classes (e.g. 'tbl_df', 'tbl', 'data.table')
   data <- as.data.frame(data)
   dropRedundantDims(data)
-
 }
 
 dropRedundantDims <- function(data) {
