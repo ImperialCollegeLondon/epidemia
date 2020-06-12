@@ -19,17 +19,6 @@ data("EuropeCovid")
 args <- EuropeCovid
 ```
 
-Pick out two countries as example
-```{r}
-countries <- c("United_Kingdom","Germany")
-data <- args$data
-w <- data$country %in% countries
-data <- droplevels(data[w,])
-args$obs$deaths$obs <- droplevels(args$obs$deaths$obs[args$obs$deaths$obs$country %in% countries,])
-args$pops <- droplevels(args$pops[args$pops$country %in% countries,])
-
-args$data <- data
-```
 
 Add days to the covariates
 ```{r}
@@ -40,13 +29,14 @@ Set sampling parameters.
 ```{r}
 args$algorithm <- "sampling"
 options(mc.cores = parallel::detectCores())
-args$iter=100
+args$sampling_args <- list(iter=200,control=list(adapt_delta=0.95,max_treedepth=15))
 ```
 
 ### Piecewise constant
 
 ```{r}
-args$formula <- R(country,date) ~ 0 +  (cut(day,c(-1,30,45,60,100))|country)
+args$group_subset <- c("United_Kingdom","Germany")
+args$formula <- R(country,date) ~ 0 +  (cut(day,seq(-1,120,by=14))|country)
 ```
 
 ```{r,results='hide'}
@@ -55,6 +45,7 @@ fit <- do.call("epim", args)
 
 ```{r plotpiecewisecontantUK}
 plot_rt(fit, "United_Kingdom")
+plot_rt(fit, "Germany")
 ```
 
 
@@ -64,7 +55,7 @@ plot_rt(fit, "United_Kingdom")
 
 ```{r}
 library(splines)
-args$formula <- R(country,date) ~ 0 +  (bs(day,knots=c(30,45,60),degree=1,intercept=TRUE)|country)
+args$formula <- R(country,date) ~ 0 + lockdown+ (bs(day,knots=seq(0,100,by=14),degree=3,intercept=TRUE)|country)
 ```
 
 ```{r,results='hide'}
@@ -79,7 +70,16 @@ plot_rt(fit, "United_Kingdom")
 plot_rt(fit, "Germany")
 ```
 
+### Single Countries
 
+```{r}
+args$group_subset <- c("Germany")
+args$formula <- R(country,date) ~ 0 +  bs(day,knots=seq(0,100,by=14),degree=2,intercept=TRUE)
+args$formula <- R(country,date) ~ 0 +  lockdown
+args$formula <- R(country,date) ~ 0 +  cut(day,seq(-1,120,by=14))
+fit <- do.call("epim", args)
+plot_rt(fit, "Germany")
+```
 
 
 
