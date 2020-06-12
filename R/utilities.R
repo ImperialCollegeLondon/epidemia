@@ -194,9 +194,7 @@ checkObsDF <- function(data, df, name) {
   v <- setdiff(levels(data$group), levels(df$group))
   if(length(v))
     warning(paste(c("No data for group(s) ", v, " found in", name), collapse=" "), call. = FALSE)
-    
-  # Need same levels
-  levels(df$group) <- levels(data$group)
+
   return(df)
 }
 

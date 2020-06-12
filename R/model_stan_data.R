@@ -5,7 +5,8 @@ genModelStanData <-
            si,
            seed_days = 6) {
 
-  M       <- length(levels(data$group))
+  groups <- sort(levels(data$group))
+  M       <- length(groups)
   # simulation periods required for each group
   NC      <- as.numeric(table(data$group))
   # maximum number of periods for any given group
@@ -39,7 +40,9 @@ genModelStanData <-
   # create matrix of observations for stan
     f <- function(x, i) {
       df        <- x$odata
-      df$group  <- as.numeric(as.factor(df$group))
+      g <- function(x) which(x == groups)[1]
+
+      df$group  <- sapply(df$group, g)
       df$date   <- as.numeric(df$date - begin + 1)
       df$type   <- i
       df
