@@ -84,20 +84,12 @@ epim <-
            ...) {
   
   call    <- match.call(expand.dots = TRUE)
-  # argument checking
-  print("loc1")
   formula <- checkFormula(formula)
-  print("loc2")
   data    <- checkData(formula, data, group_subset)
-  print("loc3")
   groups  <- levels(data$group)
-  print("loc4")
   obs     <- checkObs(obs, data)
-  print("loc5")
   pops    <- checkPops(pops, groups)
-  print("loc6")
   si      <- checkSV(si)
-  print("loc7")
 
   if (seed_days < 1)
     stop("'seed_days' must be greater than zero", call. = FALSE)

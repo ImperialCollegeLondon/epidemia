@@ -100,11 +100,9 @@ checkObs <- function(obs, data) {
       if (!exists(col))
         stop(paste0("Could not find obs$", nme, "$", col), call. = FALSE)
 
-    print("obs: 1")
     obs   <- checkObsDF(data, 
                         obs, 
                         paste0("obs$", nme, "$obs"))
-    print("obs:2")
 
     rates <- checkRates(levels(data$group),
                         rates, 
@@ -140,6 +138,7 @@ checkObsDF <- function(data, df, name) {
 
   # format correctly
   names(df) <- c("group", "date", "obs")
+
   # check if columns are coercible
   df <- tryCatch(
     {
@@ -159,7 +158,7 @@ checkObsDF <- function(data, df, name) {
   # ignore unmodelled groups
   w <- df$group %in% levels(data$group)
   df <- df[w,]
-  df$group <- drop.levels(df$group)
+  df$group <- droplevels(df$group)
 
   # throw error if duplicated
   if(any(duplicated(df[,1:2])))
