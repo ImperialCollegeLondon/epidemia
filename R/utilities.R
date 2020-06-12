@@ -177,7 +177,7 @@ checkObsDF <- function(data, df, name) {
     df <- df[!v,]
     warning(paste(c("Have removed missing data on rows", which(v), " of", name), collapse=" "), call.=FALSE)
   }
-  
+
   # warn if we have to trim the data.
   for (group in levels(df$group)) {
     dates_data  <- data[data$group == group, "date"]
