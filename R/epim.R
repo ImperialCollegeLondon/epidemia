@@ -16,8 +16,8 @@
 #' and `date` being a vector of Date objects.
 #' @param data A dataframe with columns corresponding to the terms appearing in 'formula'. See [lm].
 #' @param obs A list of lists giving available observations. Each element of 'obs' must itself be a names 
-#' list containing the following four elements
-#' * `obs`: A three column dataframe representing some type of observed data that is a function of the true 
+#' list containing the following three elements
+#' * `odata`: A three column dataframe representing some type of observed data that is a function of the true 
 #' number of infections. Examples include recorded incidence, deaths or hospitalisations. The first column 
 #' represents group membership and must be coercible to class `factor`. The second column indicates the observation 
 #' date and must be coercible to class `Date`. The third column contain the data.

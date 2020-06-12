@@ -38,7 +38,7 @@ genModelStanData <-
 
   # create matrix of observations for stan
     f <- function(x, i) {
-      df        <- x$obs
+      df        <- x$odata
       df$group  <- as.numeric(as.factor(df$group))
       df$date   <- as.numeric(df$date - begin + 1)
       df$type   <- i

@@ -80,29 +80,36 @@ checkData <- function(formula, data, group_subset) {
 }
 
 
-checkObs <- function(obs, data) {
+checkObs <- function(lst, data) {
 
-  lst <- obs
   if(!is.list(lst))
   stop(" Argument 'obs' must be a list.", call.=FALSE)
 
+  # check list has unique nonempty names
+  nms <- names(lst)
+
+  if (any(nms == ""))
+    stop ("All elements of 'obs' must be named.", call.=FALSE)
+  if (length(unique(nms)) < length(nms))
+    stop ("Names of elements in 'obs' are not unique.", call.=FALSE)
+
   for (i in seq_along(lst)) {
     
-    nme   <- names(lst)[[i]] 
+    nme   <- nms[i]
     elem  <- lst[[i]]
 
     for (name in names(elem))
       assign(name, elem[[name]])
 
     # check required components exist
-    req_cols <- c("obs", "rates", "pvec")
+    req_cols <- c("odata", "rates", "pvec")
     for (col in req_cols)
       if (!exists(col))
         stop(paste0("Could not find obs$", nme, "$", col), call. = FALSE)
 
-    obs   <- checkObsDF(data, 
-                        obs, 
-                        paste0("obs$", nme, "$obs"))
+    odata   <- checkObsDF(data, 
+                          odata, 
+                          paste0("obs$", nme, "$odata"))
 
     rates <- checkRates(levels(data$group),
                         rates, 
@@ -111,8 +118,8 @@ checkObs <- function(obs, data) {
     pvec  <- checkSV(pvec, 
                      paste0("obs$", nme, "$pvec"))
     
-    if (nrow(obs))
-      lst[[i]] <- nlist(obs, rates, pvec)
+    if (nrow(odata))
+      lst[[i]] <- nlist(odata, rates, pvec)
     else {
       warning(paste0("No relevant data found in obs$", nme, ". Removing..."), call. = FALSE)
       lst[[i]] <- NULL
@@ -187,7 +194,9 @@ checkObsDF <- function(data, df, name) {
   v <- setdiff(levels(data$group), levels(df$group))
   if(length(v))
     warning(paste(c("No data for group(s) ", v, " found in", name), collapse=" "), call. = FALSE)
-
+    
+  # Need same levels
+  levels(df$group) <- levels(data$group)
   return(df)
 }
 
