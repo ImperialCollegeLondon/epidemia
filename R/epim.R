@@ -110,6 +110,8 @@ epim <-
     )
     ## removing non-lme4::glFormula arguments
     mc$prior    <- NULL
+    mc$group_subset    <- NULL
+    mc$sampling_args   <- NULL
     mc$obs <- NULL
     mc$pops <- NULL
     mc$si <- NULL
