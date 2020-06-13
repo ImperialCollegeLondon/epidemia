@@ -19,7 +19,7 @@ for(r in 1:R)
 parameters {
   vector<lower=0>[M+1] mu;
   vector<lower=0>[M+1] y;
-  real<lower=0> phi;
+  real<lower=0> phi[R];
   matrix<lower=0>[M+1,R] noise;
   vector[N] eta;
 }
