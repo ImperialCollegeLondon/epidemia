@@ -5,7 +5,10 @@ output:
   github_document:
     fig_width: 10
     fig_height: 4
+    pandoc_args:
+      --webtex
 bibliography: ../inst/REFERENCES.bib
+  
 vignette: >
   %\VignetteIndexEntry{Introduction to epidemia}
   %\VignetteEngine{knitr::rmarkdown}

@@ -15,65 +15,133 @@ the model introduced in Flaxman et al. (2020).
 
 We begin by describing the model as it applies to a single population.
 Extensions to multiple populations are described in the next section.
-Let \((t_0, \ldots, t_n)\) be a time index, representing the period over
-which to simulate the epidemic. The index \(t_0\) is taken to be the
-first date at which infections are observed in the population.
+Let ![(t\_0, \\ldots,
+t\_n)](https://latex.codecogs.com/png.latex?%28t_0%2C%20%5Cldots%2C%20t_n%29
+"(t_0, \\ldots, t_n)") be a time index, representing the period over
+which to simulate the epidemic. The index
+![t\_0](https://latex.codecogs.com/png.latex?t_0 "t_0") is taken to be
+the first date at which infections are observed in the population.
 
-Data is observed from \(L\) different observation processes
-\(Y_{1,t}, \ldots, Y_{L,t}\). Each process represents a different type
+Data is observed from ![L](https://latex.codecogs.com/png.latex?L "L")
+different observation processes ![Y\_{1,t}, \\ldots,
+Y\_{L,t}](https://latex.codecogs.com/png.latex?Y_%7B1%2Ct%7D%2C%20%5Cldots%2C%20Y_%7BL%2Ct%7D
+"Y_{1,t}, \\ldots, Y_{L,t}"). Each process represents a different type
 of observation; i.e. daily death data (as in Flaxman et al. (2020)),
 hospitalisation rates, or recorded infections. The random variables
-\(Y_{t,l}\) are assumed to follow a negative binomial distribution with
-positive mean \(y_{t,l}\) and variance given by \[
- y_{t,l} + \frac{y_{t,l}^{2}}{\phi_l},
-\] with \(\phi_l \sim \mathcal{N}^+(0,\sigma^2_{\phi})\) for some
-hyperparameter \(\sigma^2_{\phi_l} > 0\). The expected value \(y_{tl}\)
-is modeled as a function of
+![Y\_{t,l}](https://latex.codecogs.com/png.latex?Y_%7Bt%2Cl%7D
+"Y_{t,l}") are assumed to follow a negative binomial distribution with
+positive mean
+![y\_{t,l}](https://latex.codecogs.com/png.latex?y_%7Bt%2Cl%7D
+"y_{t,l}") and variance given by   
+![&#10; y\_{t,l} +
+\\frac{y\_{t,l}^{2}}{\\phi\_l},&#10;](https://latex.codecogs.com/png.latex?%0A%20y_%7Bt%2Cl%7D%20%2B%20%5Cfrac%7By_%7Bt%2Cl%7D%5E%7B2%7D%7D%7B%5Cphi_l%7D%2C%0A
+"
+ y_{t,l} + \\frac{y_{t,l}^{2}}{\\phi_l},
+")  
+with ![\\phi\_l \\sim
+\\mathcal{N}^+(0,\\sigma^2\_{\\phi})](https://latex.codecogs.com/png.latex?%5Cphi_l%20%5Csim%20%5Cmathcal%7BN%7D%5E%2B%280%2C%5Csigma%5E2_%7B%5Cphi%7D%29
+"\\phi_l \\sim \\mathcal{N}^+(0,\\sigma^2_{\\phi})") for some
+hyperparameter ![\\sigma^2\_{\\phi\_l}
+\> 0](https://latex.codecogs.com/png.latex?%5Csigma%5E2_%7B%5Cphi_l%7D%20%3E%200
+"\\sigma^2_{\\phi_l} \> 0"). The expected value
+![y\_{tl}](https://latex.codecogs.com/png.latex?y_%7Btl%7D "y_{tl}") is
+modeled as a function of
 
-  - \(I_1, \ldots, I_{t-1}\), where \(I_i\) represents the cumulative
-    number of infections at period \(i\),
-  - \(\pi^{(l)}\), a discrete distribution on \(\mathbb{Z}^+\),
-    representing the time from an infection event to an observation
-    event,
-  - and a proportion \(\alpha_l\), assumed to be a time constant
-    quantity representing the rate of infections which will manifest as
-    an observation of type \(l\).
+  - ![I\_1, \\ldots,
+    I\_{t-1}](https://latex.codecogs.com/png.latex?I_1%2C%20%5Cldots%2C%20I_%7Bt-1%7D
+    "I_1, \\ldots, I_{t-1}"), where
+    ![I\_i](https://latex.codecogs.com/png.latex?I_i "I_i") represents
+    the cumulative number of infections at period
+    ![i](https://latex.codecogs.com/png.latex?i "i"),
+  - ![\\pi^{(l)}](https://latex.codecogs.com/png.latex?%5Cpi%5E%7B%28l%29%7D
+    "\\pi^{(l)}"), a discrete distribution on
+    ![\\mathbb{Z}^+](https://latex.codecogs.com/png.latex?%5Cmathbb%7BZ%7D%5E%2B
+    "\\mathbb{Z}^+"), representing the time from an infection event to
+    an observation event,
+  - and a proportion
+    ![\\alpha\_l](https://latex.codecogs.com/png.latex?%5Calpha_l
+    "\\alpha_l"), assumed to be a time constant quantity representing
+    the rate of infections which will manifest as an observation of type
+    ![l](https://latex.codecogs.com/png.latex?l "l").
 
 To give intuition on the above quantities, suppose the observations were
 death counts. Conditional on an individual dying on a given date, then
-\(\pi^{(l)}(t)\) is the probability that this individual was infected
-\(t\) days prior. \(\alpha_{l}\) is then the infection fatality ratio
-(IFR) in the population.
+![\\pi^{(l)}(t)](https://latex.codecogs.com/png.latex?%5Cpi%5E%7B%28l%29%7D%28t%29
+"\\pi^{(l)}(t)") is the probability that this individual was infected
+![t](https://latex.codecogs.com/png.latex?t "t") days prior.
+![\\alpha\_{l}](https://latex.codecogs.com/png.latex?%5Calpha_%7Bl%7D
+"\\alpha_{l}") is then the infection fatality ratio (IFR) in the
+population.
 
-This functional form for \(y_{tl}\) is then simply \[
-y_{t,l} := \alpha_l \sum_{\tau=1}^{t-1} (I_{\tau} - I_{\tau-1})\pi_{t-\tau}.
-\]
+This functional form for
+![y\_{tl}](https://latex.codecogs.com/png.latex?y_%7Btl%7D "y_{tl}") is
+then simply   
+![&#10;y\_{t,l} := \\alpha\_l \\sum\_{\\tau=1}^{t-1} (I\_{\\tau} -
+I\_{\\tau-1})\\pi\_{t-\\tau}.&#10;](https://latex.codecogs.com/png.latex?%0Ay_%7Bt%2Cl%7D%20%3A%3D%20%5Calpha_l%20%5Csum_%7B%5Ctau%3D1%7D%5E%7Bt-1%7D%20%28I_%7B%5Ctau%7D%20-%20I_%7B%5Ctau-1%7D%29%5Cpi_%7Bt-%5Ctau%7D.%0A
+"
+y_{t,l} := \\alpha_l \\sum_{\\tau=1}^{t-1} (I_{\\tau} - I_{\\tau-1})\\pi_{t-\\tau}.
+")  
 
-While the distribution \(\pi^{(l)}\) is *assumed*, a prior is used on
-\(\alpha_l\). This is a normal distribution truncated to \([0,1]\),
-i.e.  \[
-\alpha_l \sim \mathcal{N}_{[0,1]}(\mu_l, \sigma^2_{\alpha_l}),
-\] for hyperparameters \(\mu_l\) and \(\sigma^2_{\alpha_l}\). In future
-versions of epidemia, this may be replaced by a Beta distribution. We
-may also place a prior on the distributions \(\pi^{(l)}\).
+While the distribution
+![\\pi^{(l)}](https://latex.codecogs.com/png.latex?%5Cpi%5E%7B%28l%29%7D
+"\\pi^{(l)}") is *assumed*, a prior is used on
+![\\alpha\_l](https://latex.codecogs.com/png.latex?%5Calpha_l
+"\\alpha_l"). This is a normal distribution truncated to
+![\[0,1\]](https://latex.codecogs.com/png.latex?%5B0%2C1%5D "[0,1]"),
+i.e.    
+![&#10;\\alpha\_l \\sim \\mathcal{N}\_{\[0,1\]}(\\mu\_l,
+\\sigma^2\_{\\alpha\_l}),&#10;](https://latex.codecogs.com/png.latex?%0A%5Calpha_l%20%5Csim%20%5Cmathcal%7BN%7D_%7B%5B0%2C1%5D%7D%28%5Cmu_l%2C%20%5Csigma%5E2_%7B%5Calpha_l%7D%29%2C%0A
+"
+\\alpha_l \\sim \\mathcal{N}_{[0,1]}(\\mu_l, \\sigma^2_{\\alpha_l}),
+")  
+for hyperparameters
+![\\mu\_l](https://latex.codecogs.com/png.latex?%5Cmu_l "\\mu_l") and
+![\\sigma^2\_{\\alpha\_l}](https://latex.codecogs.com/png.latex?%5Csigma%5E2_%7B%5Calpha_l%7D
+"\\sigma^2_{\\alpha_l}"). In future versions of epidemia, this may be
+replaced by a Beta distribution. We may also place a prior on the
+distributions
+![\\pi^{(l)}](https://latex.codecogs.com/png.latex?%5Cpi%5E%7B%28l%29%7D
+"\\pi^{(l)}").
 
-To model the sequence \(\{I_t\}\) we begin with an extension to
-continuous time. Let \(I(t)\) be an ODE satisfying \[
-\frac{dI(t)}{dt} = \frac{P-I(t)}{P}R_{\lfloor t \rfloor}c_{\lfloor t \rfloor}.
-\] with \(R_t\) being the *unadjusted* (not adjusted for the susceptible
-population) time-varying reproduction number, and \(c_t\) is a weighted
-sum over previous infections, defined by \[
-c_{t} = \sum_{\tau=1}^{t} (I_{\tau} - I_{\tau-1}) g(t-\tau).
-\]
+To model the sequence
+![\\{I\_t\\}](https://latex.codecogs.com/png.latex?%5C%7BI_t%5C%7D
+"\\{I_t\\}") we begin with an extension to continuous time. Let
+![I(t)](https://latex.codecogs.com/png.latex?I%28t%29 "I(t)") be an ODE
+satisfying   
+![&#10;\\frac{dI(t)}{dt} = \\frac{P-I(t)}{P}R\_{\\lfloor t
+\\rfloor}c\_{\\lfloor t
+\\rfloor}.&#10;](https://latex.codecogs.com/png.latex?%0A%5Cfrac%7BdI%28t%29%7D%7Bdt%7D%20%3D%20%5Cfrac%7BP-I%28t%29%7D%7BP%7DR_%7B%5Clfloor%20t%20%5Crfloor%7Dc_%7B%5Clfloor%20t%20%5Crfloor%7D.%0A
+"
+\\frac{dI(t)}{dt} = \\frac{P-I(t)}{P}R_{\\lfloor t \\rfloor}c_{\\lfloor t \\rfloor}.
+")  
+with ![R\_t](https://latex.codecogs.com/png.latex?R_t "R_t") being the
+*unadjusted* (not adjusted for the susceptible population) time-varying
+reproduction number, and
+![c\_t](https://latex.codecogs.com/png.latex?c_t "c_t") is a weighted
+sum over previous infections, defined by   
+![&#10;c\_{t} = \\sum\_{\\tau=1}^{t} (I\_{\\tau} - I\_{\\tau-1})
+g(t-\\tau).&#10;](https://latex.codecogs.com/png.latex?%0Ac_%7Bt%7D%20%3D%20%5Csum_%7B%5Ctau%3D1%7D%5E%7Bt%7D%20%28I_%7B%5Ctau%7D%20-%20I_%7B%5Ctau-1%7D%29%20g%28t-%5Ctau%29.%0A
+"
+c_{t} = \\sum_{\\tau=1}^{t} (I_{\\tau} - I_{\\tau-1}) g(t-\\tau).
+")  
 
-\(I_t\) is defined by the exact solution to the above ODE. This is
-easily shown to be \[
-I_t - I_{t-1} = (P - I_{t-1})\left( 1 -\exp\left(-\frac{R_tc_t}{P}\right)\right).
-\]
+![I\_t](https://latex.codecogs.com/png.latex?I_t "I_t") is defined by
+the exact solution to the above ODE. This is easily shown to be   
+![&#10;I\_t - I\_{t-1} = (P - I\_{t-1})\\left( 1
+-\\exp\\left(-\\frac{R\_tc\_t}{P}\\right)\\right).&#10;](https://latex.codecogs.com/png.latex?%0AI_t%20-%20I_%7Bt-1%7D%20%3D%20%28P%20-%20I_%7Bt-1%7D%29%5Cleft%28%201%20-%5Cexp%5Cleft%28-%5Cfrac%7BR_tc_t%7D%7BP%7D%5Cright%29%5Cright%29.%0A
+"
+I_t - I_{t-1} = (P - I_{t-1})\\left( 1 -\\exp\\left(-\\frac{R_tc_t}{P}\\right)\\right).
+")  
 
-This satisfies intuitive properties. If \(R_t = 0\), then there are no
-new infections. Fixing \(c_t > 0\) and letting \(R_t \to \infty\)
-implies that \(I_t \to P\), i.e. everyone is infected tomorrow.
+This satisfies intuitive properties. If ![R\_t
+= 0](https://latex.codecogs.com/png.latex?R_t%20%3D%200 "R_t = 0"), then
+there are no new infections. Fixing ![c\_t
+\> 0](https://latex.codecogs.com/png.latex?c_t%20%3E%200 "c_t \> 0") and
+letting ![R\_t \\to
+\\infty](https://latex.codecogs.com/png.latex?R_t%20%5Cto%20%5Cinfty
+"R_t \\to \\infty") implies that ![I\_t \\to
+P](https://latex.codecogs.com/png.latex?I_t%20%5Cto%20P "I_t \\to P"),
+i.e. everyone is infected tomorrow.
 
 <!-- ## Multiple Populations -->
 
@@ -85,10 +153,13 @@ implies that \(I_t \to P\), i.e. everyone is infected tomorrow.
 
 <!-- We observe $R$ different types of observation. These could be death data as in XXX, or alternatively one could use hospitalisation rates, or recorded infections. The set of all observed data is denoted by $Y$, and each $Y_{t,m,r} \in Y$ must correspond to a specific type of data $r$, a specific population $m$ and a specific date $t \in t^{(m)}$. Each observation must be a function of the underlying infection  -->
 
-The time-varying reproduction number \(R_{tm}\)
+The time-varying reproduction number
+![R\_{tm}](https://latex.codecogs.com/png.latex?R_%7Btm%7D "R_{tm}")
 
-Each group \(m\) has its own start date \(t^{(m)}_{0}\) for the
-epidemic.
+Each group ![m](https://latex.codecogs.com/png.latex?m "m") has its own
+start date
+![t^{(m)}\_{0}](https://latex.codecogs.com/png.latex?t%5E%7B%28m%29%7D_%7B0%7D
+"t^{(m)}_{0}") for the epidemic.
 
 # References
 
