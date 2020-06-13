@@ -180,7 +180,6 @@ epim <-
             "mu",
             "tau2",
             "phi",
-            "kappa",
             "noise")
 
   args <- sampling_args
@@ -220,7 +219,6 @@ epim <-
                 c(paste0("R0[", groups, "]")),
                 "tau",
                 "phi",
-                "kappa",
                 if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
                 "log-posterior")
 

@@ -36,7 +36,6 @@ parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
   vector<lower=0>[M] mu;
-  real<lower=0> kappa;
   vector<lower=0>[M] y;
   real<lower=0> phi;
   real<lower=0> tau2;
@@ -72,8 +71,7 @@ model {
     y[m] ~ exponential(1/tau2);
   }
   phi ~ normal(0,5);
-  kappa ~ normal(0,0.5);
-  mu ~ normal(3.28, kappa);
+  mu ~ normal(3.28, 0.5);
 
   for (r in 1:R)
     noise[,r] ~ normal(1, noise_scales[r]);
