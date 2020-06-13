@@ -37,7 +37,7 @@ parameters {
 #include /parameters/parameters_glm.stan
   vector<lower=0>[M] mu;
   vector<lower=0>[M] y;
-  real<lower=0> phi[N_obs];
+  real<lower=0> phi[R];
   real<lower=0> tau2;
   matrix<lower=0>[M,R] noise;
 }
@@ -84,7 +84,7 @@ model {
 
   if (prior_PD == 0) {
     for (i in 1:N_obs)
-      obs[i] ~ neg_binomial_2(E_obs[i] + 1e-15, phi[i]);
+      obs[i] ~ neg_binomial_2(E_obs[i] + 1e-15, phi[obs_type[i]]);
   }
 }
 
