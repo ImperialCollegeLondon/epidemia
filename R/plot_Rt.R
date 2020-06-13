@@ -26,7 +26,7 @@ plot_rt.epimodel <- function(object, group, levels = c(50,95), ...) {
   if (!(group %in% groups))
     stop(paste0("'",group,"' is not a modeled group."))
   
-  rt <- get_rt(fit)[[group]]
+  rt <- get_rt(object)[[group]]
   dates <- rt$date
 
   # quantiles
@@ -95,7 +95,7 @@ plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
     stop(paste0("'",group,"' is not a modeled group."))
   
   # compute draws
-  obs <- get_obs(fit, type)[[group]]
+  obs <- get_obs(object, type)[[group]]
   dates <- obs$date
   
   # quantiles
@@ -168,7 +168,7 @@ plot_infections.epimodel <- function(object, group, levels = c(50, 95), ...) {
     stop(paste0("'",group,"' is not a modeled group."))
   
   # compute draws
-  inf <- get_infections(fit)[[group]]
+  inf <- get_infections(object)[[group]]
   dates <- inf$date
   
   # quantiles

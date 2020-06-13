@@ -317,7 +317,8 @@ public:
             validate_non_negative_index("y", "(M + 1)", (M + 1));
             num_params_r__ += (M + 1);
             current_statement_begin__ = 48;
-            num_params_r__ += 1;
+            validate_non_negative_index("phi", "R", R);
+            num_params_r__ += (1 * R);
             current_statement_begin__ = 49;
             validate_non_negative_index("noise", "(M + 1)", (M + 1));
             validate_non_negative_index("noise", "R", R);
@@ -381,13 +382,20 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable phi missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("phi");
         pos__ = 0U;
-        context__.validate_dims("parameter initialization", "phi", "double", context__.to_vec());
-        double phi(0);
-        phi = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0, phi);
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable phi: ") + e.what()), current_statement_begin__, prog_reader__());
+        validate_non_negative_index("phi", "R", R);
+        context__.validate_dims("parameter initialization", "phi", "double", context__.to_vec(R));
+        std::vector<double> phi(R, double(0));
+        size_t phi_k_0_max__ = R;
+        for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
+            phi[k_0__] = vals_r__[pos__++];
+        }
+        size_t phi_i_0_max__ = R;
+        for (size_t i_0__ = 0; i_0__ < phi_i_0_max__; ++i_0__) {
+            try {
+                writer__.scalar_lb_unconstrain(0, phi[i_0__]);
+            } catch (const std::exception& e) {
+                stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable phi: ") + e.what()), current_statement_begin__, prog_reader__());
+            }
         }
         current_statement_begin__ = 49;
         if (!(context__.contains_r("noise")))
@@ -467,12 +475,15 @@ public:
             else
                 y = in__.vector_lb_constrain(0, (M + 1));
             current_statement_begin__ = 48;
-            local_scalar_t__ phi;
-            (void) phi;  // dummy to suppress unused var warning
-            if (jacobian__)
-                phi = in__.scalar_lb_constrain(0, lp__);
-            else
-                phi = in__.scalar_lb_constrain(0);
+            std::vector<local_scalar_t__> phi;
+            size_t phi_d_0_max__ = R;
+            phi.reserve(phi_d_0_max__);
+            for (size_t d_0__ = 0; d_0__ < phi_d_0_max__; ++d_0__) {
+                if (jacobian__)
+                    phi.push_back(in__.scalar_lb_constrain(0, lp__));
+                else
+                    phi.push_back(in__.scalar_lb_constrain(0));
+            }
             current_statement_begin__ = 49;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, Eigen::Dynamic> noise;
             (void) noise;  // dummy to suppress unused var warning
@@ -528,6 +539,7 @@ public:
         dims__.push_back((M + 1));
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(R);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back((M + 1));
@@ -578,8 +590,16 @@ public:
         for (size_t j_1__ = 0; j_1__ < y_j_1_max__; ++j_1__) {
             vars__.push_back(y(j_1__));
         }
-        double phi = in__.scalar_lb_constrain(0);
-        vars__.push_back(phi);
+        std::vector<double> phi;
+        size_t phi_d_0_max__ = R;
+        phi.reserve(phi_d_0_max__);
+        for (size_t d_0__ = 0; d_0__ < phi_d_0_max__; ++d_0__) {
+            phi.push_back(in__.scalar_lb_constrain(0));
+        }
+        size_t phi_k_0_max__ = R;
+        for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
+            vars__.push_back(phi[k_0__]);
+        }
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> noise = in__.matrix_lb_constrain(0, (M + 1), R);
         size_t noise_j_2_max__ = R;
         size_t noise_j_1_max__ = (M + 1);
@@ -834,9 +854,12 @@ public:
             param_name_stream__ << "y" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "phi";
-        param_names__.push_back(param_name_stream__.str());
+        size_t phi_k_0_max__ = R;
+        for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "phi" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
         size_t noise_j_2_max__ = R;
         size_t noise_j_1_max__ = (M + 1);
         for (size_t j_2__ = 0; j_2__ < noise_j_2_max__; ++j_2__) {
@@ -912,9 +935,12 @@ public:
             param_name_stream__ << "y" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "phi";
-        param_names__.push_back(param_name_stream__.str());
+        size_t phi_k_0_max__ = R;
+        for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "phi" << '.' << k_0__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
         size_t noise_j_2_max__ = R;
         size_t noise_j_1_max__ = (M + 1);
         for (size_t j_2__ = 0; j_2__ < noise_j_2_max__; ++j_2__) {
