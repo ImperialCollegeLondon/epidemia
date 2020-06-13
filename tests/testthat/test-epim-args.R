@@ -108,7 +108,7 @@ test_that("wrong column types in obs$deaths$odata throws error", {
   # passing "hello" as the data column in obs
   broken.obs <- working.args$obs
   broken.obs$deaths$odata$deaths <- "hello"
-  expect_error(run.with.obs(broken.obs))
+  expect_error(suppressWarnings(run.with.obs(broken.obs)))
 })
 
 test_that("wrong types in obs throws error", {
@@ -116,7 +116,7 @@ test_that("wrong types in obs throws error", {
   # passing character vector as pvec
   broken.obs <- working.args$obs
   broken.obs$deaths$pvec <- rep("hello", 20)
-  expect_error(run.with.obs(broken.obs))
+  expect_error(suppressWarnings(run.with.obs(broken.obs)))
   
   # passing dataframe as rates
   broken.obs <- working.args$obs
