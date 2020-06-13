@@ -58,6 +58,8 @@ checkData <- function(formula, data, group_subset) {
   groups <- levels(data$group)
 
   if (!is.null(group_subset)) {
+    if (!is.character(group_subset))
+      stop("group_subset must be a character vector.")
     if(!all(group_subset %in% groups))
       stop("Not all groups in group_subset were found in 'data'", call.=FALSE)
     groups <- group_subset
