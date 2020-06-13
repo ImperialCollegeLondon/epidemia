@@ -11,6 +11,3 @@ int<lower=1> link;  // interpretation varies by .stan file
 //   5 = laplace, 6 = lasso, 7 = product_normal
 int<lower=0,upper=8> prior_dist;
 int<lower=0,upper=2> prior_dist_for_intercept;
-
-
-  

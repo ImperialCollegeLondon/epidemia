@@ -50,7 +50,6 @@
 #' @param ... 
 #' @examples
 #' \dontrun{
-#' library(epidemia)
 #' data("EuropeCovid")
 #'
 #' args <- EuropeCovid
