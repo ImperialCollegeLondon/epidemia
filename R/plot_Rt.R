@@ -102,7 +102,7 @@ plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
   qtl <- .get_quantiles(obs, levels)
   
   # observed data
-  df <- object$obs[[type]][["obs"]]
+  df <- object$obs[[type]][["odata"]]
   w  <- df$group %in% group
   df <- df[w,]
   

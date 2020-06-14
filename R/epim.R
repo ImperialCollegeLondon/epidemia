@@ -182,7 +182,6 @@ epim <-
             if (length(group)) "b",
             if (standata$len_theta_L) "theta_L",
             "y",
-            "mu",
             "tau2",
             "phi",
             "noise")
@@ -221,7 +220,6 @@ epim <-
                 if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
                 if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                 c(paste0("seeds[", groups, "]")),
-                c(paste0("R0[", groups, "]")),
                 "tau",
                 "phi",
                 if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
