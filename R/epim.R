@@ -43,7 +43,7 @@
 #'         a \link[epidemia]{shifted_gamma} can be used.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for the regression intercept (if it exists).
 #' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only used if the \code{formula} argument specifies a
-#' @param r0 The prior expected value of \eqn{R_0}. This parameter specifies the range of possible values for the \eqn{R_0}.
+#' @param r0 The prior expected value of \eqn{R_0}. The maximum \eqn{R_0} in the simulations will be limited to twice this value.
 #' @param prior_phi The prior distribution on \eqn{\phi}. This parameter is described in the introductory vignette, and determined the variance 
 #'  of the observed data around its mean. Must be a call to \code{\link[rstanarm]{normal}}, which again is transformed to a half normal distribution.
 #' @param prior_tau The prior for \eqn{\tau}.This parameter is described in the introductory vignette, and controls the variability in the number of
