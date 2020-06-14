@@ -30,6 +30,7 @@ center_x <- function(x, sparse) {
   return(nlist(xtemp, xbar, has_intercept))
 }
 
+
 # Deal with priors
 #
 # Adapted to handle shifted gamma prior

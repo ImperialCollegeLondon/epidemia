@@ -3,7 +3,10 @@ genModelStanData <-
            obs,
            pops,
            si,
-           seed_days = 6) {
+           seed_days = 6,
+           prior_r0,
+           prior_phi,
+           prior_tau) {
 
   groups <- sort(levels(data$group))
   M       <- length(groups)
@@ -22,6 +25,32 @@ genModelStanData <-
 
   # create matrix P
   R <- length(obs)
+
+  prior_r0_stuff <- handle_glm_prior(prior = prior_r0,
+                                     nvars = M,
+                                     default_scale = 0.4,
+                                     link = "dummy",
+                                     ok_dists = nlist("normal"))
+
+  names(prior_r0_stuff) <- paste0(names(prior_r0_stuff), "_r0")
+  for (i in names(prior_r0_stuff))
+    assign(i, prior_intercept_stuff[[i]])                                   
+
+  prior_phi_stuff <- handle_glm_prior(prior = prior_phi,
+                                      nvars = R,
+                                      default_scale = 5,
+                                      link = "dummy",
+                                      ok_dists = nlist("normal"))
+  
+  names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_phi") 
+
+  prior_tau_stuff <- handle_glm_prior(prior = prior_tau,
+                                      nvars = 1,
+                                      default_scale = 1/0.03,
+                                      link = "dummy",
+                                      ok_dists = nlist("exponential"))
+
+  names(prior_tau_stuff) <- paste0(names(prior_tau_stuff), "_tau") 
 
   if (R) {
     f <- function(x) padSV(x$p, max_sim, 0)

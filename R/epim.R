@@ -78,6 +78,9 @@ epim <-
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
            prior_covariance = rstanarm::decov(),
+           prior_r0 = rstanarm::normal(location=3.28, scale=0.4),
+           prior_phi = rstanarm::normal(location=0, scale = 5),
+           prior_tau = rstanarm::exponential(rate = 0.03),
            prior_PD = FALSE,
            sampling_args = list(),
            ...) {

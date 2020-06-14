@@ -35,11 +35,9 @@ for(r in 1:R)
 parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
-  vector<lower=0>[M] mu;
   vector[M] z_mu;
   vector[R] z_phi;
   vector<lower=0>[M] y;
-  real<lower=0> phi[R];
   real<lower=0> tau2;
   matrix<lower=0>[M,R] noise;
 }
@@ -72,7 +70,7 @@ transformed parameters {
 }
 
 model {
-  tau2 ~ exponential(prior_rate_for_tau);
+  tau2 ~ exponential(1./ prior_scale_for_tau);
   for (m in 1:M) {
     y[m] ~ exponential(1/tau2);
   }
