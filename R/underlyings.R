@@ -23,9 +23,10 @@ underlyings.epimodel <- function(object, ...) {
   stanmat <- cbind(stanmat, eta)
 
   # bug in rstan::gqs means we have to pad parameters if M=1...
-  mat <- matrix(0, nrow=draws, ncol= 2 + R)
+  mat <- matrix(0, nrow=draws, ncol= 3 + R)
   colnames(mat) <- c(paste0("mu[",M+1,"]"),
                      paste0("y[",M+1,"]"),
+                     paste0("phi[",R+1,"]"),
                      paste0("noise[",M+1,",",1:R,"]"))
 
   stanmat <- cbind(stanmat, mat)
@@ -33,7 +34,6 @@ underlyings.epimodel <- function(object, ...) {
   return(rstan::gqs(stanmodels$pp_base, 
                     data = object$standata, 
                     draws=stanmat))
-
 }
 
 

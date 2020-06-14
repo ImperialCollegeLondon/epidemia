@@ -32,9 +32,10 @@ genModelStanData <-
                                      link = "dummy",
                                      ok_dists = nlist("normal"))
 
-  names(prior_r0_stuff) <- paste0(names(prior_r0_stuff), "_r0")
+  names(prior_r0_stuff) <- paste0(names(prior_r0_stuff), "_for_r0")
+  
   for (i in names(prior_r0_stuff))
-    assign(i, prior_intercept_stuff[[i]])                                   
+    assign(i, prior_r0_stuff[[i]])                                   
 
   prior_phi_stuff <- handle_glm_prior(prior = prior_phi,
                                       nvars = R,
@@ -42,7 +43,10 @@ genModelStanData <-
                                       link = "dummy",
                                       ok_dists = nlist("normal"))
   
-  names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_phi") 
+  names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_for_phi") 
+
+  for (i in names(prior_phi_stuff))
+    assign(i, prior_phi_stuff[[i]]) 
 
   prior_tau_stuff <- handle_glm_prior(prior = prior_tau,
                                       nvars = 1,
@@ -50,7 +54,10 @@ genModelStanData <-
                                       link = "dummy",
                                       ok_dists = nlist("exponential"))
 
-  names(prior_tau_stuff) <- paste0(names(prior_tau_stuff), "_tau") 
+  names(prior_tau_stuff) <- paste0(names(prior_tau_stuff), "_for_tau") 
+
+  for (i in names(prior_tau_stuff))
+    assign(i, prior_tau_stuff[[i]]) 
 
   if (R) {
     f <- function(x) padSV(x$p, max_sim, 0)
@@ -84,7 +91,7 @@ genModelStanData <-
     noise_scales  <- numeric()
   }
 
-  standata <- list(M            = M,
+  standata <- nlist(M            = M,
                    N0           = seed_days,
                    si           = si,
                    pop          = as.array(pops$pop),
@@ -100,7 +107,12 @@ genModelStanData <-
                    pvecs        = pvecs,
                    means        = means,
                    noise_scales = as.array(noise_scales),
-                   NS           = max_sim)
+                   NS           = max_sim,
+                   prior_mean_for_phi,
+                   prior_scale_for_phi,
+                   prior_mean_for_mu,
+                   prior_scale_for_mu,
+                   prior_scale_for_tau)
 
   return(standata)
 }
