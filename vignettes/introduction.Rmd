@@ -2,7 +2,7 @@
 ---
 title: "Introduction to epidemia"
 output: 
-  github_document:
+  html_document:
     fig_width: 10
     fig_height: 4
     pandoc_args:
