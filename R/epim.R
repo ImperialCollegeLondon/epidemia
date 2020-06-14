@@ -111,15 +111,9 @@ epim <-
       ignore_x_scale = FALSE
     )
     ## removing non-lme4::glFormula arguments
-    mc$prior    <- NULL
-    mc$group_subset <- NULL
-    mc$sampling_args <- NULL
-    mc$obs <- NULL
-    mc$pops <- NULL
-    mc$si <- NULL
-    mc$algorithm <- NULL
-    mc$"..." <- NULL
-      
+    mc$prior <- mc$prior_r0 <- mc$prior_phi <- mc$prior_tau <-
+    mc$group_subset <- mc$sampling_args <- mc$obs <- mc$pops <- 
+    mc$si <- mc$algorithm <- mc$"..." <- NULL
     mc$data     <- data
     mc$na.action <- na.fail
     glmod       <- eval(mc, parent.frame())
@@ -156,7 +150,10 @@ epim <-
   margs$pops <- pops
   margs$si <- si
   margs$seed_days <- seed_days
-  standata <- do.call("genModelStanData", args=margs)
+  margs$prior_r0 <- prior_r0
+  margs$prior_phi <- prior_phi
+  margs$prior_tau <- prior_tau
+  standata <- do.call("gen_model_sdat", args=margs)
 
   cargs <- list()
   cargs$formula <- formula

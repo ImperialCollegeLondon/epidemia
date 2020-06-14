@@ -1680,7 +1680,7 @@ private:
         vector_d prior_scale_for_phi;
         vector_d prior_mean_for_mu;
         vector_d prior_scale_for_mu;
-        double prior_rate_for_tau;
+        double prior_scale_for_tau;
         std::vector<vector_d> pvecs;
         vector_d pop;
         vector_d si;
@@ -1917,12 +1917,12 @@ public:
             }
             check_greater_or_equal(function__, "prior_scale_for_mu", prior_scale_for_mu, 0);
             current_statement_begin__ = 578;
-            context__.validate_dims("data initialization", "prior_rate_for_tau", "double", context__.to_vec());
-            prior_rate_for_tau = double(0);
-            vals_r__ = context__.vals_r("prior_rate_for_tau");
+            context__.validate_dims("data initialization", "prior_scale_for_tau", "double", context__.to_vec());
+            prior_scale_for_tau = double(0);
+            vals_r__ = context__.vals_r("prior_scale_for_tau");
             pos__ = 0;
-            prior_rate_for_tau = vals_r__[pos__++];
-            check_greater_or_equal(function__, "prior_rate_for_tau", prior_rate_for_tau, 0);
+            prior_scale_for_tau = vals_r__[pos__++];
+            check_greater_or_equal(function__, "prior_scale_for_tau", prior_scale_for_tau, 0);
             current_statement_begin__ = 579;
             validate_non_negative_index("pvecs", "NS", NS);
             validate_non_negative_index("pvecs", "R", R);
@@ -3468,7 +3468,7 @@ public:
             }
             // model body
             current_statement_begin__ = 821;
-            lp_accum__.add(exponential_log<propto__>(tau2, prior_rate_for_tau));
+            lp_accum__.add(exponential_log<propto__>(tau2, (1. / prior_scale_for_tau)));
             current_statement_begin__ = 822;
             for (int m = 1; m <= M; ++m) {
                 current_statement_begin__ = 823;

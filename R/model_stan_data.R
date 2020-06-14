@@ -1,4 +1,4 @@
-genModelStanData <- 
+gen_model_sdat <- 
   function(data,
            obs,
            pops,
@@ -110,8 +110,8 @@ genModelStanData <-
                    NS           = max_sim,
                    prior_mean_for_phi,
                    prior_scale_for_phi,
-                   prior_mean_for_mu,
-                   prior_scale_for_mu,
+                   prior_mean_for_r0,
+                   prior_scale_for_r0,
                    prior_scale_for_tau)
 
   return(standata)

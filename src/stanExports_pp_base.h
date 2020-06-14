@@ -120,7 +120,7 @@ private:
         vector_d prior_scale_for_phi;
         vector_d prior_mean_for_mu;
         vector_d prior_scale_for_mu;
-        double prior_rate_for_tau;
+        double prior_scale_for_tau;
         std::vector<vector_d> pvecs;
         vector_d pop;
         vector_d si;
@@ -264,12 +264,12 @@ public:
             }
             check_greater_or_equal(function__, "prior_scale_for_mu", prior_scale_for_mu, 0);
             current_statement_begin__ = 30;
-            context__.validate_dims("data initialization", "prior_rate_for_tau", "double", context__.to_vec());
-            prior_rate_for_tau = double(0);
-            vals_r__ = context__.vals_r("prior_rate_for_tau");
+            context__.validate_dims("data initialization", "prior_scale_for_tau", "double", context__.to_vec());
+            prior_scale_for_tau = double(0);
+            vals_r__ = context__.vals_r("prior_scale_for_tau");
             pos__ = 0;
-            prior_rate_for_tau = vals_r__[pos__++];
-            check_greater_or_equal(function__, "prior_rate_for_tau", prior_rate_for_tau, 0);
+            prior_scale_for_tau = vals_r__[pos__++];
+            check_greater_or_equal(function__, "prior_scale_for_tau", prior_scale_for_tau, 0);
             current_statement_begin__ = 31;
             validate_non_negative_index("pvecs", "NS", NS);
             validate_non_negative_index("pvecs", "R", R);
@@ -371,8 +371,8 @@ public:
             validate_non_negative_index("y", "(M + 1)", (M + 1));
             num_params_r__ += (M + 1);
             current_statement_begin__ = 54;
-            validate_non_negative_index("phi", "R", R);
-            num_params_r__ += (1 * R);
+            validate_non_negative_index("phi", "(R + 1)", (R + 1));
+            num_params_r__ += (1 * (R + 1));
             current_statement_begin__ = 55;
             validate_non_negative_index("noise", "(M + 1)", (M + 1));
             validate_non_negative_index("noise", "R", R);
@@ -436,14 +436,14 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable phi missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("phi");
         pos__ = 0U;
-        validate_non_negative_index("phi", "R", R);
-        context__.validate_dims("parameter initialization", "phi", "double", context__.to_vec(R));
-        std::vector<double> phi(R, double(0));
-        size_t phi_k_0_max__ = R;
+        validate_non_negative_index("phi", "(R + 1)", (R + 1));
+        context__.validate_dims("parameter initialization", "phi", "double", context__.to_vec((R + 1)));
+        std::vector<double> phi((R + 1), double(0));
+        size_t phi_k_0_max__ = (R + 1);
         for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
             phi[k_0__] = vals_r__[pos__++];
         }
-        size_t phi_i_0_max__ = R;
+        size_t phi_i_0_max__ = (R + 1);
         for (size_t i_0__ = 0; i_0__ < phi_i_0_max__; ++i_0__) {
             try {
                 writer__.scalar_lb_unconstrain(0, phi[i_0__]);
@@ -530,7 +530,7 @@ public:
                 y = in__.vector_lb_constrain(0, (M + 1));
             current_statement_begin__ = 54;
             std::vector<local_scalar_t__> phi;
-            size_t phi_d_0_max__ = R;
+            size_t phi_d_0_max__ = (R + 1);
             phi.reserve(phi_d_0_max__);
             for (size_t d_0__ = 0; d_0__ < phi_d_0_max__; ++d_0__) {
                 if (jacobian__)
@@ -593,7 +593,7 @@ public:
         dims__.push_back((M + 1));
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dims__.push_back(R);
+        dims__.push_back((R + 1));
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back((M + 1));
@@ -645,12 +645,12 @@ public:
             vars__.push_back(y(j_1__));
         }
         std::vector<double> phi;
-        size_t phi_d_0_max__ = R;
+        size_t phi_d_0_max__ = (R + 1);
         phi.reserve(phi_d_0_max__);
         for (size_t d_0__ = 0; d_0__ < phi_d_0_max__; ++d_0__) {
             phi.push_back(in__.scalar_lb_constrain(0));
         }
-        size_t phi_k_0_max__ = R;
+        size_t phi_k_0_max__ = (R + 1);
         for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
             vars__.push_back(phi[k_0__]);
         }
@@ -908,7 +908,7 @@ public:
             param_name_stream__ << "y" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t phi_k_0_max__ = R;
+        size_t phi_k_0_max__ = (R + 1);
         for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "phi" << '.' << k_0__ + 1;
@@ -989,7 +989,7 @@ public:
             param_name_stream__ << "y" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t phi_k_0_max__ = R;
+        size_t phi_k_0_max__ = (R + 1);
         for (size_t k_0__ = 0; k_0__ < phi_k_0_max__; ++k_0__) {
             param_name_stream__.str(std::string());
             param_name_stream__ << "phi" << '.' << k_0__ + 1;
