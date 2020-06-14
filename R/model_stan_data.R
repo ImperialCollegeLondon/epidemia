@@ -4,7 +4,7 @@ gen_model_sdat <-
            pops,
            si,
            seed_days = 6,
-           prior_r0,
+           r0,
            prior_phi,
            prior_tau) {
 
@@ -24,18 +24,7 @@ gen_model_sdat <-
   si <- padSV(si, max_sim, 0)
 
   # create matrix P
-  R <- length(obs)
-
-  prior_r0_stuff <- handle_glm_prior(prior = prior_r0,
-                                     nvars = M,
-                                     default_scale = 0.4,
-                                     link = "dummy",
-                                     ok_dists = nlist("normal"))
-
-  names(prior_r0_stuff) <- paste0(names(prior_r0_stuff), "_for_mu")
-  
-  for (i in names(prior_r0_stuff))
-    assign(i, prior_r0_stuff[[i]])                                   
+  R <- length(obs)                      
 
   prior_phi_stuff <- handle_glm_prior(prior = prior_phi,
                                       nvars = R,
@@ -110,8 +99,7 @@ gen_model_sdat <-
                    NS           = max_sim,
                    prior_mean_for_phi,
                    prior_scale_for_phi,
-                   prior_mean_for_mu,
-                   prior_scale_for_mu,
+                   r0,
                    prior_scale_for_tau = as.numeric(prior_scale_for_tau))
 
   return(standata)

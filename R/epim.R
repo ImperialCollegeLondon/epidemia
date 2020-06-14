@@ -42,7 +42,12 @@
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. In addition to the \pkg{rstanarm} provided \link[rstanarm]{priors},
 #'         a \link[epidemia]{shifted_gamma} can be used.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for the regression intercept (if it exists).
-#' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only used if the \code{formula} argument specifies a 
+#' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only used if the \code{formula} argument specifies a
+#' @param r0 The prior expected value of \eqn{R_0}. This parameter specifies the range of possible values for the \eqn{R_0}.
+#' @param prior_phi The prior distribution on \eqn{\phi}. This parameter is described in the introductory vignette, and determined the variance 
+#'  of the observed data around its mean. Must be a call to \code{\link[rstanarm]{normal}}, which again is transformed to a half normal distribution.
+#' @param prior_tau The prior for \eqn{\tau}.This parameter is described in the introductory vignette, and controls the variability in the number of
+#'  seeded infections at the beginning of the epidemic. Must be a call to \code{\link[rstanarm]{exponential}}.
 #' @param prior_PD Same as in \code{\link[rstanarm]{glm}}. If \code{TRUE}, samples parameters from the prior disribution. 
 #' Defaults to \code{FALSE}.
 #' @param sampling_args An (optional) named list of parameters to pass to the \pkg{rstan} function used for model fitting,
@@ -78,7 +83,7 @@ epim <-
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
            prior_covariance = rstanarm::decov(),
-           prior_r0 = rstanarm::normal(location=3.28, scale=0.4),
+           r0 = 3.28,
            prior_phi = rstanarm::normal(location=0, scale = 5),
            prior_tau = rstanarm::exponential(rate = 0.03),
            prior_PD = FALSE,
@@ -111,7 +116,7 @@ epim <-
       ignore_x_scale = FALSE
     )
     ## removing non-lme4::glFormula arguments
-    mc$prior <- mc$prior_r0 <- mc$prior_phi <- mc$prior_tau <-
+    mc$prior <- mc$r0 <- mc$prior_phi <- mc$prior_tau <-
     mc$group_subset <- mc$sampling_args <- mc$obs <- mc$pops <- 
     mc$si <- mc$algorithm <- mc$"..." <- NULL
     mc$data     <- data
@@ -150,7 +155,7 @@ epim <-
   margs$pops <- pops
   margs$si <- si
   margs$seed_days <- seed_days
-  margs$prior_r0 <- prior_r0
+  margs$r0 <- r0
   margs$prior_phi <- prior_phi
   margs$prior_tau <- prior_tau
   standata <- do.call("gen_model_sdat", args=margs)
