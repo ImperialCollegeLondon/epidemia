@@ -8,7 +8,7 @@ for (m in 1:M){
     int n2 = n0 + NC[m] - 1;
 
     // impute unadjusted Rt from the linear predictor
-    Rt_unadj[n0:n2,m] = mu[m] * 2 * inv_logit(-eta[idx:(idx+NC[m]-1)]);
+    Rt_unadj[n0:n2,m] = r0 * 2 * inv_logit(-eta[idx:(idx+NC[m]-1)]);
     Rt[n0:n1,m] = Rt_unadj[n0:n1,m]; 
     idx += NC[m];
 
