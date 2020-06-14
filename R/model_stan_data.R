@@ -32,7 +32,7 @@ gen_model_sdat <-
                                      link = "dummy",
                                      ok_dists = nlist("normal"))
 
-  names(prior_r0_stuff) <- paste0(names(prior_r0_stuff), "_for_r0")
+  names(prior_r0_stuff) <- paste0(names(prior_r0_stuff), "_for_mu")
   
   for (i in names(prior_r0_stuff))
     assign(i, prior_r0_stuff[[i]])                                   
@@ -110,9 +110,9 @@ gen_model_sdat <-
                    NS           = max_sim,
                    prior_mean_for_phi,
                    prior_scale_for_phi,
-                   prior_mean_for_r0,
-                   prior_scale_for_r0,
-                   prior_scale_for_tau)
+                   prior_mean_for_mu,
+                   prior_scale_for_mu,
+                   prior_scale_for_tau = as.numeric(prior_scale_for_tau))
 
   return(standata)
 }
