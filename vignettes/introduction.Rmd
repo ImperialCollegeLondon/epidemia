@@ -1,18 +1,15 @@
 
 ---
 title: "Introduction to epidemia"
-output: 
+output:
+  pdf_document: default
   html_document:
-    fig_width: 10
     fig_height: 4
-    pandoc_args:
-      --webtex
+    fig_width: 10
+    pandoc_args: --webtex
 bibliography: ../inst/REFERENCES.bib
-  
-vignette: >
-  %\VignetteIndexEntry{Introduction to epidemia}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+vignette: |
+  %\VignetteIndexEntry{Introduction to epidemia} %\VignetteEngine{knitr::rmarkdown} \usepackage[utf8]{inputenc}
 ---
 
 This vignette is very much a work in progress, and will be regularly updated. It aims to demonstrate basis usage of the **epidemia** package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
@@ -68,29 +65,21 @@ $$
 This satisfies intuitive properties. If $R_t = 0$, then there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to P$, i.e. everyone is infected tomorrow.
 
 
-<!-- ## Multiple Populations -->
+## Multiple Infections
+
+TODO
 
 
-<!-- The model aims to infer the latent number of infections (attack rate) and the latent time-varying reproduction number in a set of modeled populations. -->
+## Europe Data Example
 
-<!-- The model infers the latent number of infections in each  -->
+The package contains the dataset used in the Nature paper. Load weith
 
-<!-- There are $M$ modeled populations indexed by $\mathcal{M} := \{1, \ldots, M\}$. These could represent countries, regions within countries, or even separate age cohorts. Each group $m$ has a specified time index $t^{(m)} := \{t_{0}^{(m)}, \ldots, t_{n_m}^{(m)} \}$ representing the period over which to simulate the epidemic. The starting index $t_{0}^{(m)}$ is taken to be the first date at which infections are observed in the population.  -->
+```{r}
+library(epidemia)
+data("EuropeCovid")
+```
 
-
-<!-- We observe $R$ different types of observation. These could be death data as in XXX, or alternatively one could use hospitalisation rates, or recorded infections. The set of all observed data is denoted by $Y$, and each $Y_{t,m,r} \in Y$ must correspond to a specific type of data $r$, a specific population $m$ and a specific date $t \in t^{(m)}$. Each observation must be a function of the underlying infection  -->
-
-
-
-
-
-
-The time-varying reproduction number $R_{tm}$
-
-
-Each group $m$ has its own start date $t^{(m)}_{0}$ for the epidemic.
-
-# References
+`EuropeCovid` is a list containing most of the information required for `epim`. These fields are names as follows.
 
 
 <!-- ## Europe Data -->

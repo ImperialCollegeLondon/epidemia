@@ -5,18 +5,19 @@
 #
 # @param x A design matrix
 # @param sparse A flag indicating whether x is to be treated as sparse
-center_x <- function(x, sparse) {
+process_x <- function(x, center) {
   x <- as.matrix(x)
-  has_intercept <- if (ncol(x) == 0) 
-    FALSE else grepl("(Intercept", colnames(x)[1L], fixed = TRUE)
+  has_intercept <- if (ncol(x)) 
+    grepl("(Intercept", colnames(x)[1L], fixed=TRUE) else FALSE
   
   xtemp <- if (has_intercept) x[, -1L, drop=FALSE] else x
-  if (has_intercept && !sparse) {
+
+  if (has_intercept && center) {
     xbar <- colMeans(xtemp)
     xtemp <- sweep(xtemp, 2, xbar, FUN = "-")
-  }
-  else xbar <- rep(0, ncol(xtemp))
-  
+  } else 
+    xbar <- rep(0, ncol(xtemp))
+
   sel <- apply(xtemp, 2L, function(x) !all(x == 1) && length(unique(x)) < 2)
   if (any(sel)) {
     # drop any column of x with < 2 unique values (empty interaction levels)
@@ -26,7 +27,6 @@ center_x <- function(x, sparse) {
     xtemp <- xtemp[, !sel, drop = FALSE]
     xbar <- xbar[!sel]
   }
-  
   return(nlist(xtemp, xbar, has_intercept))
 }
 

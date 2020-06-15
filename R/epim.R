@@ -80,6 +80,7 @@ epim <-
            algorithm = c("sampling", "meanfield", "fullrank"),
            group_subset = NULL,
            stan_data = FALSE,
+           center = FALSE,
            prior = rstanarm::normal(),
            prior_intercept = rstanarm::normal(),
            prior_covariance = rstanarm::decov(),
@@ -169,6 +170,7 @@ epim <-
   cargs$prior_covariance <- prior_covariance
   cargs$prior_PD <- prior_PD
   cargs$link <- "logit"
+  cargs$center <- center
   standata <- c(standata,
                 do.call("gen_covariates_sdat", args=cargs))
 

@@ -9,7 +9,7 @@
 # @returns A named list
 gen_covariates_sdat <- 
   function(formula, x, link, group=NULL, prior, prior_intercept, 
-           prior_covariance, prior_PD, ...) {
+           prior_covariance, prior_PD, center, ...) {
 
   if (is.null(prior)) 
     prior <- list()
@@ -22,7 +22,7 @@ gen_covariates_sdat <-
   if (!length(link))
     stop("'link' must be one of ", paste(supported_links, collapse = ", "))
 
-  x_stuff <- center_x(x, FALSE)
+  x_stuff <- center_x(x, center)
 
   for (i in names(x_stuff)) # xtemp, xbar, has_intercept
     assign(i, x_stuff[[i]])
