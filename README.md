@@ -22,7 +22,7 @@ data(EuropeCovid)
 
 # Collect args for epim
 args <- EuropeCovid
-args$formula <- R(country, date) ~  0 + schools_universities + self_isolating_if_ill +
+args$formula <- R(country, date) ~ schools_universities + self_isolating_if_ill +
   public_events + lockdown + social_distancing_encouraged
 args$algorithm <- "sampling"
 args$prior <- shifted_gamma(shape = 1/6, scale = 1, shift = -log(1.05)/6)
@@ -32,14 +32,6 @@ args$group_subset <- c("Germany", "United_Kingdom")
 options(mc.cores=parallel::detectCores())
 fit <- do.call("epim", args)
 ```
-
-    ## Warning: Column `group` joining factors with different levels, coercing to
-    ## character vector
-
-    ## Warning: There were 3396 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
-    ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
-
-    ## Warning: Examine the pairs() plot to diagnose sampling problems
 
 ``` r
 # Inspect Rt

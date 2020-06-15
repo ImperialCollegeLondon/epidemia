@@ -30,7 +30,7 @@ data(EuropeCovid)
 
 # Collect args for epim
 args <- EuropeCovid
-args$formula <- R(country, date) ~  0 + schools_universities + self_isolating_if_ill +
+args$formula <- R(country, date) ~ schools_universities + self_isolating_if_ill +
   public_events + lockdown + social_distancing_encouraged
 args$algorithm <- "sampling"
 args$prior <- shifted_gamma(shape = 1/6, scale = 1, shift = -log(1.05)/6)
