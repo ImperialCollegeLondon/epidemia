@@ -7,64 +7,72 @@
 #' This is a generic function.
 #' 
 #' @templateVar epimodelArg object
-#' @template args-epimodel-object 
-#' @param ... Other arguments to pass to methods. For a \code{epimodel} object
-#'  this will be a string \code{group} specifying the group to plot for, and 
-#'  \code{levels} is a numeric vector giving the levels of the credible intervals.
+#' @template args-epimodel-object
+#' @param group \code{NULL}, string or character vector specifying which groups
+#' to plot. Default is \code{NULL}, which plots all possible groups.
+#' @param levels numeric vector giving the levels of the plotted credible intervals
+#' @param log10_scale whether to plot the reproduction number on a log10-scale.
+#' Logical, default is \code{FALSE}.
+#' @param ... not yet implemented
 #' @return A ggplot object.
 #' 
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
 #' @rdname plot_rt
 #' @export
-plot_rt.epimodel <- function(object, group, levels = c(50,95), ...) {
+plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scale = FALSE, ...) {
   
-  if (length(group) > 1)
-    stop ("Can only plot Rt for a single group at a time.")
+  # if group is specified, check they were all modelled
+  if(!is.null(group)) {
+    modelled_groups <- levels(object$data$group)
+    missing_groups <- !(group %in% modelled_groups)
+    if (any(missing_groups)) {
+      missing_groups <- group[missing_groups]
+      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
+    }
+  } else group <- levels(object$data$group)
   
-  groups <- levels(object$data$group)
-  if (!(group %in% groups))
-    stop(paste0("'",group,"' is not a modeled group."))
+  # get the Rt by group
+  rt <- lapply(group, function(g) get_rt(object)[[g]])
+  names(rt) <- group
   
-  rt <- get_rt(object)[[group]]
-  dates <- rt$date
-
-  # quantiles
-  qtl <- .get_quantiles(rt, levels)
+  # quantiles by group
+  qtl <- lapply(rt, function(.rt) .get_quantiles(.rt, levels))
+  qtl <- data.table::rbindlist(qtl, idcol="group")
   
   p <-  ggplot2::ggplot(qtl) + 
-        ggplot2::geom_ribbon(data = qtl, 
-                             ggplot2::aes(x=date, 
-                                          ymin = low, 
-                                          ymax = up,
-                                          group = tag,  
-                                          fill=tag)) + 
-        ggplot2::geom_hline(yintercept = 1, 
-                            color = 'black', 
-                            size = 0.7) + 
-        ggplot2::xlab("") + 
-        ggplot2::ylim(0, NA) +
-        ggplot2::ylab(expression(R[t])) + 
-        ggplot2::scale_fill_manual(name = "Credible intervals", 
-                                  labels = paste0(levels,"%"), 
-                                  values = ggplot2::alpha("deepskyblue4", 
-                                                            0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
-        ggplot2::guides(shape = ggplot2::guide_legend(order = 2), 
-                        col = ggplot2::guide_legend(order = 1), 
-                        fill = ggplot2::guide_legend(order = 0)) +
-        ggplot2::scale_x_date(date_breaks = "2 weeks", 
-                              labels = scales::date_format("%e %b")) + 
-        ggplot2::theme_bw() + 
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
-                                                           hjust = 1), 
-                       axis.text = ggplot2::element_text(size = 12),
-                       axis.title = ggplot2::element_text(size = 12)) + 
-        ggplot2::theme(legend.position="right") + 
-        ggplot2::ggtitle(group)
+    ggplot2::geom_ribbon(data = qtl, 
+                         ggplot2::aes(x=date, 
+                                      ymin = low, 
+                                      ymax = up,
+                                      group = tag,  
+                                      fill=tag)) + 
+    ggplot2::geom_hline(yintercept = 1, 
+                        color = 'black', 
+                        size = 0.7) + 
+    ggplot2::xlab("") + 
+    ggplot2::ylab(expression(R[t])) + 
+    ggplot2::scale_fill_manual(name = "Credible intervals", 
+                               labels = paste0(levels,"%"), 
+                               values = ggplot2::alpha("deepskyblue4", 
+                                                       0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
+    ggplot2::guides(shape = ggplot2::guide_legend(order = 2), 
+                    col = ggplot2::guide_legend(order = 1), 
+                    fill = ggplot2::guide_legend(order = 0)) +
+    ggplot2::scale_x_date(date_breaks = "2 weeks", 
+                          labels = scales::date_format("%e %b")) + 
+    ggplot2::scale_y_continuous(trans = ifelse(log10_scale, "log10", "identity"),
+                                limits = c(ifelse(log10_scale, NA, 0), NA)) +
+    ggplot2::theme_bw() + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
+                                                       hjust = 1), 
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.title = ggplot2::element_text(size = 12)) + 
+    ggplot2::theme(legend.position="right") +
+    ggplot2::facet_wrap(~group)
   
   return(p)
 }
-
 
 #' Plotting the posterior predictive distribution
 #'
@@ -76,30 +84,42 @@ plot_rt.epimodel <- function(object, group, levels = c(50,95), ...) {
 #' 
 #' @templateVar epimodelArg object
 #' @template args-epimodel-object 
-#' @param ... Other arguments to pass to methods. For a \code{epimodel} object
-#'  this will be a string \code{type} specifying the observation type, a string \code{group} 
-#'  specifying the group to plot for, and 
-#'  \code{levels} is a numeric vector giving the levels of the credible intervals.
+#' @param type the name of the observations to plot. This should match one of the names
+#' of the \code{obs} argument to \code{epim}.
+#' @param group \code{NULL}, string or character vector specifying which groups
+#' to plot. Default is \code{NULL}, which plots all possible groups.
+#' @param levels numeric vector giving the levels of the plotted credible intervals
+#' @param log10_scale whether to plot the reproduction number on a log10-scale.
+#' Logical, default is \code{FALSE}.
+#' @param ... not yet implemented
 #' @return A ggplot object.
 #' 
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
 #' @rdname plot_obs
 #' @export
-plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
-  if (length(group) > 1)
-    stop ("Can only plot for one group at a time")
+plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ...) {
   
-  groups <- levels(object$data$group)
-  if (!(group %in% groups))
-    stop(paste0("'",group,"' is not a modeled group."))
+  if(!(type %in% names(object$obs)))
+    stop(paste0("obs does not contain any observations for type '", type, "'"))
   
-  # compute draws
-  obs <- get_obs(object, type)[[group]]
-  dates <- obs$date
+  # if group is specified, check they were all modelled
+  if(!is.null(group)) {
+    modelled_groups <- levels(object$data$group)
+    missing_groups <- !(group %in% modelled_groups)
+    if (any(missing_groups)) {
+      missing_groups <- group[missing_groups]
+      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
+    }
+  } else group <- levels(object$data$group)
   
-  # quantiles
-  qtl <- .get_quantiles(obs, levels)
+  # compute draws by group
+  obs <- lapply(group, function(g) get_obs(object, type)[[g]])
+  names(obs) <- group
+  
+  # quantiles by group
+  qtl <- lapply(obs, function(.obs) .get_quantiles(.obs, levels))
+  qtl <- data.table::rbindlist(qtl, idcol="group")
   
   # observed data
   df <- object$obs[[type]][["odata"]]
@@ -107,35 +127,35 @@ plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
   df <- df[w,]
   
   p <-  ggplot2::ggplot(qtl) + 
-        ggplot2::geom_bar(data = df, 
-                          ggplot2::aes(x = date, y = obs, fill = "reported"),
-                          fill = "coral4", 
-                          stat='identity', 
-                          alpha=0.5) + 
-        ggplot2::geom_ribbon(data = qtl, 
-                            ggplot2::aes(x = date,
-                                         ymin=low, 
-                                         ymax=up, 
-                                         fill=tag)) +
-        ggplot2::xlab("") +
-        ggplot2::ylab(type) +
-        ggplot2::scale_y_continuous(labels = scales::comma, 
-                                    expand=ggplot2::expansion(mult=c(0,0.1))) +
-        ggplot2::scale_x_date(date_breaks = "2 weeks", 
-                              labels = scales::date_format("%e %b")) + 
-        ggplot2::scale_fill_manual(name = "Credible Intervals", 
-                                  labels = paste0(levels,"%"), 
-                                  values = ggplot2::alpha("deepskyblue4", 
-                                                            0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
-        ggplot2::theme_bw() + 
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
-                      legend.position = "None", 
-                      axis.text = ggplot2::element_text(size = 12),
-                      axis.title = ggplot2::element_text(size = 12)) + 
-        ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
-        ggplot2::theme(legend.position="right") + 
-        ggplot2::ggtitle(group) 
-        
+    ggplot2::geom_bar(data = df, 
+                      ggplot2::aes(x = date, y = obs, fill = "reported"),
+                      fill = "coral4", 
+                      stat='identity', 
+                      alpha=0.5) + 
+    ggplot2::geom_ribbon(data = qtl, 
+                         ggplot2::aes(x = date,
+                                      ymin=low, 
+                                      ymax=up, 
+                                      fill=tag)) +
+    ggplot2::xlab("") +
+    ggplot2::ylab(type) +
+    ggplot2::scale_y_continuous(labels = scales::comma, 
+                                expand=ggplot2::expansion(mult=c(0,0.1))) +
+    ggplot2::scale_x_date(date_breaks = "2 weeks", 
+                          labels = scales::date_format("%e %b")) + 
+    ggplot2::scale_fill_manual(name = "Credible Intervals", 
+                               labels = paste0(levels,"%"), 
+                               values = ggplot2::alpha("deepskyblue4", 
+                                                       0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
+    ggplot2::theme_bw() + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
+                   legend.position = "None", 
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.title = ggplot2::element_text(size = 12)) + 
+    ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
+    ggplot2::theme(legend.position="right") + 
+    ggplot2::facet_wrap(~group, scale = "free_y")
+  
   
   return(p)
 }
@@ -150,55 +170,62 @@ plot_obs.epimodel <- function(object, type, group, levels = c(50, 95), ...) {
 #' 
 #' @templateVar epimodelArg object
 #' @template args-epimodel-object 
-#' @param ... Other arguments to pass to methods. For a \code{epimodel} object
-#'  this will be a string \code{group} specifying the group to plot for, and 
-#'  \code{levels} is a numeric vector giving the levels of the credible intervals.
+#' @param group \code{NULL}, string or character vector specifying which groups
+#' to plot. Default is \code{NULL}, which plots all possible groups.
+#' @param levels numeric vector giving the levels of the plotted credible intervals
+#' @param log10_scale whether to plot the reproduction number on a log10-scale.
+#' Logical, default is \code{FALSE}.
+#' @param ... not yet implemented
 #' @return A ggplot object.
 #' 
 plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 
 #' @rdname plot_infections
 #' @export
-plot_infections.epimodel <- function(object, group, levels = c(50, 95), ...) {
-  if (length(group) > 1)
-    stop ("Can only plot for one group at a time")
+plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), ...) {
   
-  groups <- levels(object$data$group)
-  if (!(group %in% groups))
-    stop(paste0("'",group,"' is not a modeled group."))
+  # if group is specified, check they were all modelled
+  if(!is.null(group)) {
+    modelled_groups <- levels(object$data$group)
+    missing_groups <- !(group %in% modelled_groups)
+    if (any(missing_groups)) {
+      missing_groups <- group[missing_groups]
+      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
+    }
+  } else group <- levels(object$data$group)
   
-  # compute draws
-  inf <- get_infections(object)[[group]]
-  dates <- inf$date
+  # compute draws by group
+  inf <- lapply(group, function(g) get_infections(object)[[g]])
+  names(inf) <- group
   
-  # quantiles
-  qtl <- .get_quantiles(inf, levels)
+  # quantiles by group
+  qtl <- lapply(inf, function(.inf) .get_quantiles(.inf, levels))
+  qtl <- data.table::rbindlist(qtl, idcol="group")
   
   p <-  ggplot2::ggplot(qtl) + 
-        ggplot2::geom_ribbon(data = qtl, 
-                             ggplot2::aes(x = date,
-                                          ymin=low, 
-                                          ymax=up, 
-                                          fill=tag)) +
-        ggplot2::xlab("") +
-        ggplot2::ylab("Infections") +
-        ggplot2::scale_y_continuous(labels = scales::comma, 
-                                    expand=ggplot2::expansion(mult=c(0,0.1))) +
-        ggplot2::scale_x_date(date_breaks = "2 weeks", 
-                              labels = scales::date_format("%e %b")) + 
-        ggplot2::scale_fill_manual(name = "Credible Intervals", 
-                                  labels = paste0(levels,"%"), 
-                                  values = ggplot2::alpha("deepskyblue4", 
-                                                            0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
-        ggplot2::theme_bw() + 
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
-                      legend.position = "None", 
-                      axis.text = ggplot2::element_text(size = 12),
-                      axis.title = ggplot2::element_text(size = 12)) + 
-        ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
-        ggplot2::theme(legend.position="right") + 
-        ggplot2::ggtitle(group) 
-        
+    ggplot2::geom_ribbon(data = qtl, 
+                         ggplot2::aes(x = date,
+                                      ymin=low, 
+                                      ymax=up, 
+                                      fill=tag)) +
+    ggplot2::xlab("") +
+    ggplot2::ylab("Infections") +
+    ggplot2::scale_y_continuous(labels = scales::comma, 
+                                expand=ggplot2::expansion(mult=c(0,0.1))) +
+    ggplot2::scale_x_date(date_breaks = "2 weeks", 
+                          labels = scales::date_format("%e %b")) + 
+    ggplot2::scale_fill_manual(name = "Credible Intervals", 
+                               labels = paste0(levels,"%"), 
+                               values = ggplot2::alpha("deepskyblue4", 
+                                                       0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
+    ggplot2::theme_bw() + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
+                   legend.position = "None", 
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.title = ggplot2::element_text(size = 12)) + 
+    ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
+    ggplot2::theme(legend.position="right") + 
+    ggplot2::facet_wrap(~group, scales = "free_y") 
   
   return(p)
 }
