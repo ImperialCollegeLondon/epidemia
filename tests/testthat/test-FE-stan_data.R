@@ -36,6 +36,7 @@ test_that("Correct number of predictors K", {
 test_that("Parsing of model matrix (centering, predictor means)", {
 
   # check predictor mean values
+  args$center <- TRUE
   args$formula <- Rt(code, date) ~ 1 + av_mobility + residential
   sdat <- do.call("epim", args=args)
   vars <- all.vars(update(args$formula, "0~."))
