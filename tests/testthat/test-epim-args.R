@@ -187,3 +187,9 @@ test_that("error if group missing from pops", {
   expect_error(do.call("epim", args=broken.args), regexp = "Levels in 'formula' response missing in 'pops': Denmark")
 })
 
+test_that("error if group_subset contains invalid group", {
+  broken.args <- working.args
+  broken.args$group_subset <- c("Austria", "Germany", "FakeCountry")
+  expect_error(do.call("epim", args=broken.args), regexp = "Not all groups in group_subset were found in 'data'")
+})
+
