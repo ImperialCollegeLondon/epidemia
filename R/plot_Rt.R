@@ -236,7 +236,7 @@ plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), .
 # checks that all elements of group were modelled in object
 # if group=NULL returns all the groups found in object
 .check_plot_groups <- function(object, group) {
-	if(!is.null(group)) {
+  if(!is.null(group)) {
       modelled_groups <- levels(object$data$group)
       missing_groups <- !(group %in% modelled_groups)
     if (any(missing_groups)) {
