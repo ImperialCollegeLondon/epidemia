@@ -1,8 +1,9 @@
 
 #' Plotting reproduction number over time
 #'
-#' Plots credible intervals for the time-varying reproduction number for a specifed group.
-#' The user can control the level and number of credible intervals.
+#' Plots credible intervals for the time-varying reproduction number.
+#' The user can control the level, number of credible intervals and
+#' the plotted group(s).
 #' 
 #' This is a generic function.
 #' 
@@ -22,16 +23,8 @@ plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 #' @export
 plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scale = FALSE, ...) {
   
-  # if group is specified, check they were all modelled
-  if(!is.null(group)) {
-    modelled_groups <- levels(object$data$group)
-    missing_groups <- !(group %in% modelled_groups)
-    if (any(missing_groups)) {
-      missing_groups <- group[missing_groups]
-      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
-    }
-  } else group <- levels(object$data$group)
-  
+  group <- .check_plot_groups(object, group)
+
   # get the Rt by group
   rt <- lapply(group, function(g) get_rt(object)[[g]])
   names(rt) <- group
@@ -77,8 +70,8 @@ plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scal
 #' Plotting the posterior predictive distribution
 #'
 #' Plots credible intervals for the observed data under the posterior predictive.
-#' Plots for a specific observation type and group. 
-#' The user can control the level and number of credible intervals.
+#' Plots for a specific observation type. 
+#' The user can control the level, number of credible intervals and the plotted group(s).
 #' 
 #' This is a generic function.
 #' 
@@ -103,16 +96,8 @@ plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ..
   if(!(type %in% names(object$obs)))
     stop(paste0("obs does not contain any observations for type '", type, "'"))
   
-  # if group is specified, check they were all modelled
-  if(!is.null(group)) {
-    modelled_groups <- levels(object$data$group)
-    missing_groups <- !(group %in% modelled_groups)
-    if (any(missing_groups)) {
-      missing_groups <- group[missing_groups]
-      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
-    }
-  } else group <- levels(object$data$group)
-  
+  group <- .check_plot_groups(object, group)
+
   # compute draws by group
   obs <- lapply(group, function(g) get_obs(object, type)[[g]])
   names(obs) <- group
@@ -163,8 +148,8 @@ plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ..
 
 #' Plotting the underlying number of infections over time
 #'
-#' Plots credible intervals for the underlying number of infections for a specified group.
-#' The user can control the level and number of credible intervals.
+#' Plots credible intervals for the underlying number of infections.
+#' The user can control the level, number of credible intervals and the plotted group(s).
 #' 
 #' This is a generic function.
 #' 
@@ -184,15 +169,7 @@ plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 #' @export
 plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), ...) {
   
-  # if group is specified, check they were all modelled
-  if(!is.null(group)) {
-    modelled_groups <- levels(object$data$group)
-    missing_groups <- !(group %in% modelled_groups)
-    if (any(missing_groups)) {
-      missing_groups <- group[missing_groups]
-      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
-    }
-  } else group <- levels(object$data$group)
+  group <- .check_plot_groups(object, group)
   
   # compute draws by group
   inf <- lapply(group, function(g) get_infections(object)[[g]])
@@ -252,4 +229,20 @@ plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), .
   f <- function(x) quantile(x, 0.5 + levels/200)
   qtl$up <- matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F)
   return(qtl)
+}
+
+# Internal
+
+# checks that all elements of group were modelled in object
+# if group=NULL returns all the groups found in object
+.check_plot_groups <- function(object, group) {
+	if(!is.null(group)) {
+      modelled_groups <- levels(object$data$group)
+      missing_groups <- !(group %in% modelled_groups)
+    if (any(missing_groups)) {
+      missing_groups <- group[missing_groups]
+      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
+    }
+  } else group <- levels(object$data$group)
+  return(group)
 }
