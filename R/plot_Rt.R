@@ -2,7 +2,7 @@
 #' Plotting reproduction number over time
 #'
 #' Plots credible intervals for the time-varying reproduction number.
-#' The user can control the level, number of credible intervals and
+#' The user can control the level and number of credible intervals and
 #' the plotted group(s).
 #' 
 #' This is a generic function.
@@ -23,8 +23,12 @@ plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 #' @export
 plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scale = FALSE, ...) {
   
+  # input checks
   group <- .check_plot_groups(object, group)
-
+  levels <- .check_levels(levels)
+  if(!is.logical(log10_scale))
+    stop("log10_scale must be of type logical", call. = FALSE)
+  
   # get the Rt by group
   rt <- lapply(group, function(g) get_rt(object)[[g]])
   names(rt) <- group
@@ -71,7 +75,7 @@ plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scal
 #'
 #' Plots credible intervals for the observed data under the posterior predictive.
 #' Plots for a specific observation type. 
-#' The user can control the level, number of credible intervals and the plotted group(s).
+#' The user can control the level and number of credible intervals and the plotted group(s).
 #' 
 #' This is a generic function.
 #' 
@@ -96,8 +100,10 @@ plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ..
   if(!(type %in% names(object$obs)))
     stop(paste0("obs does not contain any observations for type '", type, "'"))
   
+  # input checks
   group <- .check_plot_groups(object, group)
-
+  levels <- .check_levels(levels)
+  
   # compute draws by group
   obs <- lapply(group, function(g) get_obs(object, type)[[g]])
   names(obs) <- group
@@ -149,7 +155,7 @@ plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ..
 #' Plotting the underlying number of infections over time
 #'
 #' Plots credible intervals for the underlying number of infections.
-#' The user can control the level, number of credible intervals and the plotted group(s).
+#' The user can control the level and number of credible intervals and the plotted group(s).
 #' 
 #' This is a generic function.
 #' 
@@ -169,7 +175,9 @@ plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 #' @export
 plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), ...) {
   
+  # input checks
   group <- .check_plot_groups(object, group)
+  levels <- .check_levels(levels)
   
   # compute draws by group
   inf <- lapply(group, function(g) get_infections(object)[[g]])
@@ -241,8 +249,22 @@ plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), .
       missing_groups <- !(group %in% modelled_groups)
     if (any(missing_groups)) {
       missing_groups <- group[missing_groups]
-      stop(paste0("Group(s) `", paste0(missing_groups, collapse=", "), "` are not modelled."))
+      stop(paste0("Group(s) '", paste0(missing_groups, collapse=", "), "' are not modelled."), call. = FALSE)
     }
   } else group <- levels(object$data$group)
   return(group)
+}
+
+# Internal
+
+# makes sure all levels are between 0 and 100 (inclusive)
+# also sorts levels so colour scheme makes sense
+.check_levels <- function(levels) {
+  if(length(levels)==0) {
+    warning("no levels provided, will use default credible intervals (50% and 95%)", call. = FALSE)
+    return(c(50, 95))
+  }
+  if(any(!dplyr::between(levels, 0, 100)))
+    stop("all levels must be between 0 and 100 (inclusive)", call. = FALSE)
+  return(sort(levels))
 }
