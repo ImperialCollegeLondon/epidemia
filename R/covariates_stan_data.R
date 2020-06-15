@@ -22,7 +22,7 @@ gen_covariates_sdat <-
   if (!length(link))
     stop("'link' must be one of ", paste(supported_links, collapse = ", "))
 
-  x_stuff <- center_x(x, center)
+  x_stuff <- process_x(x, center)
 
   for (i in names(x_stuff)) # xtemp, xbar, has_intercept
     assign(i, x_stuff[[i]])

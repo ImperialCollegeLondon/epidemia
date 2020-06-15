@@ -39,6 +39,8 @@
 #'        function to use for fitting the model.
 #' @param group_subset An optional vector specifying a subset of groups to model. Elements should correspond to the group levels 
 #'        specified through the \code{data} argument.
+#' @param center If \code{TRUE} then the covariates for the \eqn{R_t} regression are centered to have mean zero. All of the priors are then interpreted as 
+#'        prior on the centered covariates. Defaults to \code{FALSE}.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. In addition to the \pkg{rstanarm} provided \link[rstanarm]{priors},
 #'         a \link[epidemia]{shifted_gamma} can be used.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for the regression intercept (if it exists).
