@@ -11,7 +11,7 @@ from, the rstanarm package (Goodrich et al. 2020). epidemia uses rstan
 (Stan Development Team 2020) as the backend for fitting models. The
 primary model fitting function in epidemia is `epim`.
 
-Please see [here](/vignettes/introduction.md) for a demonstration on how
+Please see [here](/vignettes/introduction.pdf) for a demonstration on how
 to use the package.
 
 # Example Usage
