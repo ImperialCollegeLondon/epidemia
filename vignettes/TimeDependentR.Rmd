@@ -21,14 +21,12 @@ library(epidemia)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
 ```
-Set sampling parameters.
-```{r}
-```
+
 ### Single Country, Random Walk
 
 This considers a single country, modelling a weekly change in $R_t$ as a random walk.
 
-```{r,results='hide'}
+```{r computeItalyrw,results='hide'}
 library(xfun)
 fit <- xfun::cache_rds({
     args <- EuropeCovid
@@ -48,7 +46,7 @@ grid.arrange(plot_obs(fit, type="deaths"),plot_infections(fit),plot_rt(fit),nrow
 
 ### Multiple Countries, Country specific weekly effect via random walk
 
-```{r,results='hide'}
+```{r compute4countries,results='hide'}
 fit <- xfun::cache_rds({
     args <- EuropeCovid
     args$formula <- R(country,date) ~ 1+ rw(date,7)*country
@@ -82,15 +80,15 @@ use the functionality in the splines package, below with quadratic
 splines for one country..
 
 
-```{r,results='hide'}
+```{r computeUKsplines,results='hide'}
 library(splines)
 fit <- xfun::cache_rds({
     args <- EuropeCovid
-    args$formula <- R(country,date) ~ bs(day,df=6,degree=2)
+    args$formula <- R(country,date) ~ bs(day,df=8,degree=3)
     args$group_subset <- c("United_Kingdom")
     args$data$day <- as.integer(args$data$date-min(args$data$date))
     args$algorithm <- "sampling"
-    args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=20),seed=12381)
+    args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=15),seed=1231)
     fit <- do.call("epim", args)
 })
 ```
