@@ -3,73 +3,92 @@
 title: "Introduction to epidemia"
 output:
   pdf_document: default
-  html_document:
-    fig_height: 4
-    fig_width: 10
-    pandoc_args: --webtex
+fontsize: 12pt
 bibliography: ../inst/REFERENCES.bib
 vignette: |
-  %\VignetteIndexEntry{Introduction to epidemia} %\VignetteEngine{knitr::rmarkdown} \usepackage[utf8]{inputenc}
+  %\VignetteIndexEntry{Introduction to epidemia} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  \usepackage[utf8]{inputenc}
 ---
 
-This vignette is very much a work in progress, and will be regularly updated. It aims to demonstrate basis usage of the **epidemia** package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
+This vignette is very much a work in progress, and will be regularly updated. It aims to detail the models fit by epidemia, and also to demonstrate basic usage of the package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
 
 ## Model Overview
 
-The models that can be fit using the epidemia package are extensions of the model introduced in @Flaxman2020. 
-
+@Flaxman2020 introduced a hierarchical Bayesian approach for epidemic modeling, and applied it to assessing the effect of non-pharmaceutical interventions on the covid-19 pandemic in 11 European countries. *epidemia* is designed to fit models which are largely extensions of this approach. There are however important differences which will be emphasized as we go along. The model is first described as it applies to a single population. Extensions to multiple populations are considered in the subsequent section.
 
 ### A Single Population
 
-We begin by describing the model as it applies to a single population. Extensions to multiple populations are described in the next section. Let $(t_0, \ldots, t_n)$ be a time index, representing the period over which to simulate the epidemic. The index $t_0$ is taken to be the first date at which infections are observed in the population.
+Let $(t_0, \ldots, t_n)$ be a time index, representing the period over which to simulate the epidemic. The index $t_0$ is taken to be the first date at which infections are non-zero in the population. In what follows $t$ is an arbitrary integer satisfying $t_0 < t \leq t_n$.
 
+The basic idea behind the model is that the observed quantities (daily deaths, incidence rates etc.) are a function of the latent infections in the population over time. These infections are in turn a function of the *time-varying reproduction number*. This number may be explained by a number of covariates; for example non-pharmaceutical interventions, or changes in mobility over time.
 
-Data is observed from $L$ different observation processes $Y_{1,t}, \ldots, Y_{L,t}$. Each process represents a different type of observation; i.e. daily death data (as in @Flaxman2020), hospitalisation rates, or recorded infections. The random variables $Y_{t,l}$ are assumed to follow a negative binomial distribution with positive mean $y_{t,l}$ and variance given by
+The remainder of this section is organized as follows. First, the model for the sequence of time-varying reproduction numbers is described. Infections are then modeled in terms of this sequence. Finally, the observed data is modeled as a function of these latent infections. 
+
+#### Time-varying reproduction number 
+
+Let $R := (R_{t_0},\ldots,R_{t_n})$ be a non-negative sequence representing the *unadjusted* time-varying reproduction number over the period considered.  Intuitively, $R_t$ measures the intensity of infectious interactions occuring in the population at time $t$. The term *unadjusted* is used to make explicit that the sequence being modeled has not been adjusted for the size of the susceptible population. This adjustment is made later in the model for infections. The sequence is parameterized as
 $$
- y_{t,l} + \frac{y_{t,l}^{2}}{\phi_l},
+R = 2A f\left(X\beta + Zb\right)
 $$
-with $\phi_l \sim \mathcal{N}^+(0,\sigma^2_{\phi})$ for some hyperparameter $\sigma^2_{\phi_l} > 0$. The expected value $y_{tl}$ is modeled as a function of 
+where $A$ is a constant, $X$ and $Z$ are $n \times p$ and $n \times q$ model matrices and where $f$ is the logistic function $f(a) := \exp(a)/(1+\exp(a))$. The $p$-dimensional $\beta$ represents pooled coefficients, while the $q$-dimensional $b$ represent group-specific effects. When both $p$ and $q$ are greather than zero, this is known as *partial pooling*.
 
-* $I_1, \ldots, I_{t-1}$, where $I_i$ represents the cumulative number of infections at period $i$, 
-* $\pi^{(l)}$, a discrete distribution on $\mathbb{Z}^+$, representing the time from an infection event to an observation event, 
-* and a proportion $\alpha_l$, assumed to be a time constant quantity representing the rate of infections which will manifest as an observation of type $l$. 
+The vector $R$ is latent and unobserved. The quantities we do observe are linked to $R$ through its effect on underlying infections, which we now describe.
 
-To give intuition on the above quantities, suppose the observations were death counts. Conditional on an individual dying on a given date, then $\pi^{(l)}(t)$ is the probability that this individual was infected $t$ days prior. $\alpha_{l}$ is then the infection fatality ratio (IFR) in the population.
 
-This functional form for $y_{tl}$ is then simply
+#### Infections
+
+Let $I_{t_0}, \ldots I_{t_n}$ be a sequence, wher $I_{t'}$ is the count of infections that have occurred by period ${t'}$,
+
+
+
+Consider the sequence of cumulative infections $I_{t_0}, I_{t_0+1}, \ldots$. This is modeled as the *exact* solution to an ordinary differential equation. Before describing this ODE, first define $s := (s_1,s_2,\ldots)$, a distribution on $\mathbb{Z}^+$ representing the serial interval of the disease being modeled.
+
+The ODE $I(t)$ satisfies 
 $$
-y_{t,l} := \alpha_l \sum_{\tau=1}^{t-1} (I_{\tau} - I_{\tau-1})\pi_{t-\tau}.
+\frac{dI(t)}{dt} = \frac{P-I(t)}{P}R_{\lfloor t \rfloor}c_{\lfloor t \rfloor},
+$$
+where $c-t$ is a weighted sum over previous infections, defined by
+$$
+c_{t} = \sum_{\tau=1}^{t} (I_{\tau} - I_{\tau-1}) s_{t-\tau}.
 $$
 
-While the distribution $\pi^{(l)}$ is *assumed*, a prior is used on $\alpha_l$. This is a normal distribution truncated to $[0,1]$, i.e. 
+The exact solution to the above ODE on the integers is easily shown to give 
+$$
+I_t = I_{t-1} + (P - I_{t-1})\left( 1 -\exp\left(-\frac{R_tc_t}{P}\right)\right),
+$$
+where $P$ is the population size. This satisfies intuitive properties. If $R_t = 0$, then there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to P$, i.e. everyone is infected tomorrow.
+
+#### Observations
+
+Data is observed from $L$ observation processes $Y_{t}^{(1)}, \ldots Y_{t}^{(L)}$. Each process represents a different type of observation. This could be daily death data as used in @Flaxman2020, or hospitalization rates, or recorded infections for example. The random variables $Y^{(l)}_t$ are assumed to follow a negative binomial distribution with mean $y_{t}^{(l)}$ and variance
+$$
+y_t^{(l)} + \frac{{\left(y_t^{(l)}\right)}^2}{\phi_l},
+$$
+where $\phi_l \sim \mathcal{N}^+(0,\sigma^2_{\phi_l})$ for some hyperparameter $\sigma^2_{\phi_l} > 0$. The expected value $y_{t}^{(l)}$ is modeled as a function of
+\begin{itemize}
+\item $I_{t_0}, \ldots, I_{t-1}$, where $I_{t'}$ is the count of infections that have occurred by period ${t'}$,
+\item $\pi^{(l)} = (\pi^{(l)}_1, \pi^{(l)}_2, \ldots)$, a discrete distribution on $\mathbb{Z}^+$ representing the time distribution from an infection event to an observation event,
+\item and a proportion $\alpha_l$, assumed to be a time constant quantity representing the rate of infections which will eventually record as an observation of type $l$.
+\end{itemize}
+To give intuition on the above quantities, suppose for now that the $l$\textsuperscript{th} observation process recorded daily death counts. Then $\pi^{(l)}_{t'}$ is the probability, conditional on a death being recorded today, that this individual was infected exactly ${t'}$ days prior. $\alpha_{l}$ is then the mean infection fatality ratio (IFR) for the given population.
+
+The functional form for $y_{t}^{(l)}$ is then simply
+$$
+y_{t}^{(l)} := \alpha_l \sum_{\tau=t_0}^{t-1} (I_{\tau} - I_{\tau-1})\pi^{(l)}_{t-\tau},
+$$
+where $I_{t_0-1} = 0$. The distribution $\pi^{(l)}$ is *treated as known*, however in future versions of epidemia we may allow it to be learnt. One possibility in this direction would be to view $\pi^{(l)}$ as a discretization of a continuous parametric distribution. The parameters could be given priors and learnt. The Gamma distribution is a suitable candidate for this.
+
+The proportion $\alpha_l$ is treated as unknown, and given a normal prior truncated to the unit interval. To be precise
 $$
 \alpha_l \sim \mathcal{N}_{[0,1]}(\mu_l, \sigma^2_{\alpha_l}),
 $$
-for hyperparameters $\mu_l$ and $\sigma^2_{\alpha_l}$. In future versions of epidemia, this may be replaced by a Beta distribution. We may also place a prior on the distributions $\pi^{(l)}$.
+for given hyperparameters $\mu_l$ and $\sigma^2_{\alpha_l}$. In future versions of epidemia, these proportions may instead be assigned Beta priors.
 
 
-To model the sequence $\{I_t\}$ we begin with an extension to continuous time. Let $I(t)$ be an ODE satisfying
-$$
-\frac{dI(t)}{dt} = \frac{P-I(t)}{P}R_{\lfloor t \rfloor}c_{\lfloor t \rfloor}.
-$$
-with $R_t$ being the *unadjusted* (not adjusted for the susceptible population) time-varying reproduction number, and $c_t$ is a weighted sum over previous infections, defined by
-$$
-c_{t} = \sum_{\tau=1}^{t} (I_{\tau} - I_{\tau-1}) g(t-\tau).
-$$
-
-$I_t$ is defined by the exact solution to the above ODE. This is easily shown to be
-$$
-I_t - I_{t-1} = (P - I_{t-1})\left( 1 -\exp\left(-\frac{R_tc_t}{P}\right)\right).
-$$
-
-This satisfies intuitive properties. If $R_t = 0$, then there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to P$, i.e. everyone is infected tomorrow.
-
-
-## Multiple Infections
+## Multiple Populations
 
 TODO
-
-
 
 ## Example Usage
 
@@ -104,7 +123,7 @@ deaths <- args$obs$deaths
 names(deaths)
 ```
 
-`epim` requires a formula, which specifies the model to be fit. In the current version of the package, the terms in the formila must correspond to the names in `data`. This may be relaxed in future versions, in line with other model fitting functions like `lm` or `glm`. 
+`epim` requires a formula, which specifies the model to be fit. In the current version of the package, the terms in the formila must correspond to the names in `data`. This may be relaxed in future versions, in line with other model fitting functions like `lm` or `glm`.
 
 Although `data$country` contains 11 different populations, here we consider, for simplicity, only two. Specifically we will look at Germany and the United Kingdim. `epim` makes this simple by providing a `group_subset` argument.
 
@@ -113,7 +132,7 @@ args$group_subset <- c("Germany", "United_Kingdom")
 ```
 
  A model is specified using the `formula` argument. The LHS of the formula always takes the form `R(x,y)` for some columns `x` and `y` in `data`. Unless `group_subset` is specified explicitly, `epim` will use the factor levels in `data$x` as the groups to model, and will use `data$y` to specify the modeled dates for each group. The dates must be a consecutive range, and there must be no missing covarite data in the columns specified on the RHS of the formula. The first date found for each group is assumed to be the beginning of the epidemic, and seeding of infections begins from this date.
- 
+
 We briefly give an intepretation of the models specified by different fomulas. Suppose for simplicity that the value of all covariates at the start date is zero, so that the intercept can be interpreted as specifying the $R_0$. Then
 
 * `R(country, date) ~ 0 + ...` This is a no-intercept model. The effect is to set an exact starting $R_0$ which is the same for all countries. This is then modified at dates for which covariates become non-zero (i.e. after interventions come into place). This starting value is controlled by the `r0` argument to `epim`, which defaults to 3.28.
@@ -121,7 +140,7 @@ We briefly give an intepretation of the models specified by different fomulas. S
 * `R(country, date) ~ 1 + ...` This gives a common intercept for all countries. The distribution for $R_0$ is the same for all countries. This distribution can be modified by specifying the `prior_intercept` argument for `epim`
 
 * `R(country, date) ~ (1 | country) + ...` The random effects term allows the distribution for $R_0$ to depend on the country. The prior for these is controlled by both `prior_intercept` and `prior_covariance`.
- 
+
 Similar to @Flaxman2020, we specify the following model.
 
 ```{r}
@@ -132,9 +151,9 @@ This model allows a separate $R_0$ for each country, and includes 6 different no
 
 ### Trying out different priors.
 
-The priors on the coefficient in the regressions, and on other parameters are controlled by the arguments `prior`, `prior_intercept`, `prior_covariance`, `prior_tau` and `prior_phi`. Please read the documentation for `epim` for a precise interpretation of these arguments. 
+The priors on the coefficient in the regressions, and on other parameters are controlled by the arguments `prior`, `prior_intercept`, `prior_covariance`, `prior_tau` and `prior_phi`. Please read the documentation for `epim` for a precise interpretation of these arguments.
 
-Here we focus on specifying the `prior` argument. This controls the prior distribution of the coefficients in the regression. Any of the rstanarm priors can be used. We have also added a `shifted_gamma` prior to replicate the prior in @Flaxman2020. 
+Here we focus on specifying the `prior` argument. This controls the prior distribution of the coefficients in the regression. Any of the rstanarm priors can be used. We have also added a `shifted_gamma` prior to replicate the prior in @Flaxman2020.
 
 To quickly visualise the effect of the prior distribution we can used the `prior_PD` flag to `epim`. If `TRUE` epim will sample all parameters from their prior distribution. We specify the prior for the intercept as follows.
 
@@ -183,63 +202,6 @@ And get the matrix of parameter draws
 draws <- as.matrix(fit)
 head(draws)
 ```
-
-
-<!-- ### Model 1 -->
-
-<!-- We start by fitting a simple model with the only covariate being the indicator for lockdown. This is intuitively specified as -->
-<!-- ```{r} -->
-<!-- args$formula <- R(country, date) ~ 0 + lockdown  -->
-<!-- ``` -->
-<!-- The LHS of the formula always takes the form `R(x,y)` for some columns `x` and `y` in `data`. Epim will always use the factor levels found in `data$x` as the groups to model, and will use `data$y` to specify the modeled dates for each group. Since we removed all countries other than `United_Kingdom` from `data$country`, `epim` will only model the UK. The dates must be a consecutive range, and there must be no missing covariate data in the columns specified on the R.H.S. of the above formula. The first date found for each group is assumed to be the beginning of the epidemic, and seeding of infections begins from this date. -->
-
-
-<!-- We fit this model using variational bayes as it is quick. For a full analysis, MCMC sampling should be used. -->
-
-<!-- ```{r} -->
-<!-- # can switch out for "sampling" if desired -->
-<!-- args$algorithm <- "meanfield" -->
-<!-- fit <- do.call("epim", args) -->
-<!-- ``` -->
-
-
-<!-- We can quickly plot the estimated $R_{tm}$ with the `plot_rt` function, as follows: -->
-
-<!-- ```{r} -->
-<!-- plot_rt(fit, group = "United_Kingdom") -->
-<!-- ``` -->
-
-<!-- ### Model 2 -->
-
-<!-- We also demonstrate how to use random effects terms in the formula. We will fit a simple model replacing the lockdown covariate with a 'week specific' effect. To do this, we augment `data` to store the week as a covariate, and update the formula -->
-
-<!-- ```{r} -->
-<!-- data$week <- as.factor(format(data$date, "%V")) -->
-<!-- args$data <- data -->
-<!-- args$formula <- R(country,date) ~ 0  + (1 | week) -->
-<!-- ``` -->
-
-<!-- Fitting the model -->
-<!-- ```{r} -->
-<!-- fit <- do.call("epim", args) -->
-<!-- ``` -->
-<!-- and plotting -->
-<!-- ```{r} -->
-<!-- plot_rt(fit, "United_Kingdom") -->
-<!-- ``` -->
-
-
-<!-- ### Model 3 -->
-
-<!-- We can mix fixed effects and random effects... -->
-
-<!-- ```{r} -->
-<!-- args$formula <- R(country,date) ~ 0 + lockdown  + (1 | week) -->
-<!-- fit <- do.call("epim", args) -->
-<!-- plot_rt(fit, "United_Kingdom") -->
-<!-- ``` -->
-
-
 
 
 
