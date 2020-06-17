@@ -3,6 +3,8 @@ title: "Flexible Epdiemic Modeling with epidemia"
 output:
   bookdown::html_document2:
 fontsize: 12pt
+fig_width: 9 
+fig_height: 4
 bibliography: ../inst/REFERENCES.bib
 vignette: |
   %\VignetteIndexEntry{Introduction to epidemia} 
@@ -10,13 +12,17 @@ vignette: |
   \usepackage[utf8]{inputenc}
 ---
 
-This vignette is very much a work in progress, and will be regularly updated. It aims to detail the models fit by epidemia, and also to demonstrate basic usage of the package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
+**Note:** *This vignette is very much a work in progress, and will be regularly updated.*
 
-## Example Usage
+**epidemia** is an R-package for fitting Bayesian epidemic models. Here we detail these models and give users enough information to start fitting them independently. We hope that users find the interface provided by the package intuitive. 
+
+The document is organized as follows. Section \@ref(example-usage) provides basic examples with minimal description, so that users can quickly get a feel for the package. Section \@ref(model-overview) digs deeper and gives a formal framework for the models within the scope of the package. Understanding this framework is essential for making the most of the flexibility offered by **epidemia**. Section \@ref(implementation-in-r) discusses the details of `epim`; the primary model fitting function in the package. `epim` is designed to be flexible, and therefore has a number of arguments. This can be intimidating, and so Section \@ref(implementation-in-r) describes these arguments in a lot of detail. Finally Section \@ref(examples) highlights some of the more useful features of the package.
+
+# Example Usage
 
 The package contains an example dataset `EuropeCovid`, which contains data on the daily deaths from Covid-19 recorded in 11 European countries. Here we provide code snippets showing basic usage of **epidemia**.
 
-```{r echo=FALSE}
+```{r message=FALSE}
 library(epidemia)
 library(xfun)
 data("EuropeCovid")
@@ -26,31 +32,41 @@ options(mc.cores = parallel::detectCores())
 The line `options(mc.cores = parallel::detectCores())` is important if MCMC sampling is used, as it allows different chains to be run in parallel, rather than sequentially.
 
 
-\ref{computeItaly} considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`.
+Below considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`.
 ```{r computeItaly,results='hide'}
-fit <- xfun::cache_rds({
-    args <- EuropeCovid
-    args$algorithm <- "sampling"
-    args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=79881)
-    args$group_subset <- c("Italy")
-    args$formula <- R(country,date) ~  1 + lockdown
-    args$prior <- rstanarm::normal(location=0,scale=.5)
-    args$prior_intercept <- rstanarm::normal(location=0,scale=2)
-    do.call("epim", args)
-})
+# collect arguments for 'epim'
+args <- EuropeCovid
+args$algorithm <- "sampling"
+args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+args$group_subset <- c("Italy")
+args$formula <- R(country,date) ~  1 + lockdown
+args$prior <- rstanarm::normal(location=0,scale=.5)
+args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+fit <- xfun::cache_rds({do.call("epim", args)})
 ```
-```{r plotItaly}
+```{r plotItaly, fig.height=9, fig.align="center"}
 library(gridExtra)
 grid.arrange(plot_obs(fit, type="deaths"), plot_infections(fit), plot_rt(fit),nrow=3)
 ```
 
+Often we would like to model more than one population. Here is an example of using multiple populations, where the regression for the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific sloups; for example by using `(1 | lockdown)` in the formula argument.
 
+```{r computeIU,results='hide'}
+# collect arguments for 'epim'
+args$group_subset <- c("Italy", "United_Kingdom")
+args$formula <- R(country,date) ~  (1|country) + lockdown
+fit <- xfun::cache_rds({do.call("epim", args)})
+```
+```{r plotIU,results='hold',fig.align="center"}
+plot_obs(fit, type = "deaths")
+plot_rt(fit)
+```
 
-## Model Overview
+# Model Overview
 
 @Flaxman2020 introduced a hierarchical Bayesian approach for epidemic modeling, and applied it to assessing the effect of non-pharmaceutical interventions on the covid-19 pandemic in 11 European countries. **epidemia** is designed to fit models which are largely extensions of this approach. There are however important differences which will be emphasized as we go along. The model is first described as it applies to a single population. Extensions to multiple populations are considered in the subsequent section.
 
-### A Single Population
+## A Single Population
 
 Let $t_0$ be an integer representing the first date at which infections are non-zero in the population, and let $T$ be the number of consecutive days over which to simulate the epidemic.
 
@@ -58,18 +74,19 @@ The basic idea behind the model is that the observed quantities (daily deaths, i
 
 The remainder of this section is organized as follows. First, the model for the sequence of time-varying reproduction numbers is described. Infections are then modeled in terms of this sequence. Finally, the observed data is modeled as a function of these latent infections. 
 
-#### Time-varying reproduction number 
+### Time-varying reproduction number 
 
 Let $R := (R_{0},\ldots,R_{T})$ be a non-negative sequence representing the *unadjusted* time-varying reproduction number over the period considered.  Intuitively, $R_t$ measures the intensity of infectious interactions occuring in the population at time $t_0 + t$. The term *unadjusted* is used to make explicit that the sequence being modeled has not been adjusted for the size of the susceptible population. This adjustment is made later in the model for infections. The sequence is parameterized as
-$$
+\begin{equation}
 R = 2A f\left(X\beta + Zb\right)
-$$
+(\#eq:rt)
+\end{equation}
 where $A$ is a constant, $X$ and $Z$ are $T \times p$ and $T \times q$ model matrices and where $f$ is the logistic function $f(a) := \exp(a)/(1+\exp(a))$. The $p$-dimensional $\beta$ represents pooled coefficients, while the $q$-dimensional $b$ represent group-specific effects. When both $p$ and $q$ are greater than zero, this is known as *partial pooling*.
 
 The vector $R$ is latent and unobserved. The quantities we do observe are linked to $R$ through its effect on the underlying infections, which we now describe.
 
 
-#### Infections
+### Infections
 
 Let $I_{0}, \ldots I_{T}$ be a sequence where $I_{t}$ is the count of infections that have occurred by date $t_0 + t$. This is modeled as the *exact* solution to an ordinary differential equation denoted by $I(t)$. Before describing this ODE, first define $s := (s_1,s_2,\ldots)$, a distribution on $\mathbb{Z}^+$ representing the serial interval of the disease being modeled.
 
@@ -88,7 +105,7 @@ I_t = I_{t-1} + (P - I_{t-1})\left( 1 -\exp\left(-\frac{R_tc_t}{P}\right)\right)
 $$
 where $P$ is the population size. This satisfies intuitive properties. If $R_t = 0$, then there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to P$, i.e. everyone is infected tomorrow.
 
-#### Observations
+### Observations
 
 Data is observed from $L$ observation processes $Y_t^{(1)} \ldots Y_{t}^{(L)}$, with the subscript $t$ ranging between $1$ and $T$. Each process represents a different type of observation. This could be daily death data as used in @Flaxman2020, or hospitalization rates, or recorded infections for example. The random variables $Y^{(l)}_t$ are assumed to follow a negative binomial distribution with mean $y_{t}^{(l)}$ and variance
 $$
@@ -117,16 +134,21 @@ for given hyperparameters $\mu_l$ and $\sigma^2_{\alpha_l}$. In future versions 
 
 ## Multiple Populations
 
-Extensing to multiple populations is straightforward. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$. Collect the time-varying reproduction numbers into a vector $R$ with total length $T' := \sum_{m=1}^M T_m$, and consider the parameterization of $R$ in terms of covariates described in the previous section. This approach allows flexible pooling of parameters through $\beta$, while still permitting between group variation using the group-effects $b$. Some populations may have little data; these groups could be at the early stages of the epidemic for example. This approach allows learning to be shared between groups, while helping to avoid overfitting to each group.
+Extending to multiple populations is straightforward. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$. Collect the time-varying reproduction numbers into a vector $R$ with total length $T' := \sum_{m=1}^M T_m$, and consider the parameterization of $R$ in terms of covariates given in \@ref(eq:rt). This approach allows flexible pooling of parameters through $\beta$, while still permitting between group variation using the group-effects $b$. Some populations may have little data; these groups could be at the early stages of the epidemic for example. This approach allows learning to be shared between groups, while helping to avoid overfitting to each group.
 
 # Implementation in R
 
-**epidemia** is an R package allowing flexible specification of the models just outlined. In particular, **epidemia** utilizes R's formula interface to specify regression models for the time-varying reproduction number. The implementation of this shares many similarities with the `stan_glmer` function in **rstanarm** and the `glmer` function in **lme4**. The primary model fitting function in **epidemia** is `epim`. We now describe in detail the arguments 
+**epidemia** is designed to fit the models described in Section \@ref(model-overview). In particular, it uses R's formula interface to parameterize the time-varying reproduction number in terms of a number of covariates (see \@ref(eq:rt)). The implementation of this shares many similarities with the `stan_glmer` function in **rstanarm** and the **glmer** function in **lme4**.
 
+## Model fitting using `epim`
 
-## `epim`
+As mentioned in the introduction, the primary model fitting function in **epidemia** is `epim`. We now describe this function in depth. Section \@ref(function-arguments) details the formal arguments to `epim`, and links them where possible to the mathematical notation used in Section \@ref(model-overview). Much of the intuition for these arguments will come only through examples, which are provided in Section \@ref(example-calls).
 
-```{r, echo=F}
+### Function Arguments
+
+Table XXX lists the formal arguments to `epim`.
+
+```{r epimArgs, echo=F}
 df <- data.frame(Arguments = c("formula", 
                                "data",
                                "obs",
@@ -144,7 +166,7 @@ df <- data.frame(Arguments = c("formula",
                                "prior_tau",
                                "prior_PD",
                                "sampling_args"),
-                 Description = c("An R object of class 'formula'",
+                 Description = c("An R object of class 'formula'. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector giving the group membership (i.e. country, state, age cohort). `date` must ve a vector of Date objects.",
                                  "Provides the data used in the model specified by 'formula'.",
                                  "A list providing all observed data.",
                                  "Population size for each group.",
@@ -160,24 +182,37 @@ df <- data.frame(Arguments = c("formula",
                                  "Prior on the vector $(\\phi_1, \\ldots, \\phi_L)$.",
                                  "Prior on $\\tau$.",
                                  "Flag whether to sample from the prior distribution.",
-                                 "Arguments to pass to the sampling algorithm."))
+                                 "Arguments to pass to the sampling algorithm."),
+                 type = c("Formula",
+                          "data.frame",
+                          "list",
+                          "data.frame",
+                          "numeric",
+                          "integer",
+                          "c('sampling','meanfield', 'fullrank')",
+                          "string vector",
+                          "Boolean",
+                          "rstanarm::prior",
+                          "rstanarm::prior",
+                          "rstanarm::prior",
+                          "numeric",
+                          "rstanarm::prior",
+                          "rstanarm::prior",
+                          "Boolean",
+                          "list"))
 knitr::kable(df, caption = "Formal arguments for the epim function")
 ```
 
 
-## Example Usage
+### Example Calls
+
+# Examples
 
 The main model fitting function in **epidemia** is `epim`. This section demonstrates basic usage of this function.
 
-### Europe Covid
+## Europe Covid
 
 The package contains the dataset used in @Flaxman2020. This data pertains to covid-19 in 11 European countries. Load this with
-```{r}
-library(epidemia)
-library(xfun)
-data("EuropeCovid")
-options(mc.cores = parallel::detectCores())
-```
 
 `EuropeCovid` is a list containing much of the information required for `epim`. These fields are named as follows.
 
@@ -225,7 +260,7 @@ args$formula <- R(country,date) ~ 1 + schools_universities + self_isolating_if_i
 
 This model allows a separate $R_0$ for each country, and includes 6 different non-pharamceutical interventions (NPIs) to explain the changes in the time-varying reproduction number.
 
-### Trying out different priors.
+## Prior Specification
 
 The priors on the coefficient in the regressions, and on other parameters are controlled by the arguments `prior`, `prior_intercept`, `prior_covariance`, `prior_tau` and `prior_phi`. Please read the documentation for `epim` for a precise interpretation of these arguments.
 
@@ -238,7 +273,7 @@ args$prior_intercept <- rstanarm::normal(location=0,scale = 0.5)
 ```
 
 \small
-```{r, results="hide"}
+```{r normalPrior, results="hide"}
 args$prior <- rstanarm::normal(scale = 0.5)
 args$algorithm <- "sampling"
 args$sampling_args <- list(iter=200,control=list(adapt_delta=0.95,max_treedepth=15))
@@ -250,14 +285,14 @@ plot_rt(fit, levels = c(20,40,60,80,95))
 \normalsize
 And example of using a shifted gamma prior...
 
-```{r, results="hide"}
+```{r gammaPrior, results="hide"}
 args$prior <- shifted_gamma(shape=1/6, scale=1, shift = -log(1.05)/6)
 fit <- xfun::cache_rds({ do.call("epim", args)})
 plot_rt(fit, levels = c(20,40,60,80,95))
 ```
 
 Fitting the model to the data...
-```{r, results="hide"}
+```{r fittedRun, results="hide"}
 args$prior_PD = FALSE
 fit <- xfun::cache_rds({do.call("epim", args)})
 ```
