@@ -18,7 +18,7 @@
 #' 
 #' @references
 #' \insertAllCited{}
-
+#' @export
 shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
   validate_parameter_value(scale)
   loo::nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)

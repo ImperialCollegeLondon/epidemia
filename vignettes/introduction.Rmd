@@ -124,7 +124,7 @@ df <- data.frame(Arguments = c("formula",
                                  "Prior on the intercept, if it exists in the model.",
                                  "Prior on the covariance matrix of $b$, the group-specific paramters.",
                                  "Set the constant $A$, described above.",
-                                 "Prior on the vector $(\\phi_1, \ldots, \\phi_L)$.",
+                                 "Prior on the vector $(\\phi_1, \\ldots, \\phi_L)$.",
                                  "Prior on $\\tau$.",
                                  "Flag whether to sample from the prior distribution.",
                                  "Arguments to pass to the sampling algorithm."))
