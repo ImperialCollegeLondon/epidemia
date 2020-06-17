@@ -120,7 +120,7 @@ epim <-
     ## removing non-lme4::glFormula arguments
     mc$prior <- mc$r0 <- mc$prior_phi <- mc$prior_tau <-
     mc$group_subset <- mc$sampling_args <- mc$obs <- mc$pops <- 
-    mc$si <- mc$algorithm <- mc$"..." <- NULL
+    mc$si <- mc$algorithm <- mc$"..." <- mc$stan_data <- NULL
     mc$data     <- data
     mc$na.action <- na.fail
     glmod       <- eval(mc, parent.frame())

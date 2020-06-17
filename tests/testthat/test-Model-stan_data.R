@@ -37,7 +37,7 @@ test_that("Expected stan data for various lengths of 'obs' arguments", {
   args$obs <- NYWA2$obs
   df <- data.frame(code=as.factor("NY"), date = as.Date("2020-06-01"), obs = 1)
   args$obs$incidence$odata <- df
-  sdat <- do.call("epim", args=args)
+  expect_warning(sdat <- do.call("epim", args=args))
   expect_equal(sdat$R, 1)
   expect_equal(as.numeric(sapply(sdat$pvecs, length)), rep(n,1))
   expect_equal(dim(sdat$means), c(m,1))
