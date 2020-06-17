@@ -1,5 +1,3 @@
-
-
 #' @export
 #' @method prior_summary epimodel
 #' @importFrom rstanarm prior_summary
@@ -15,8 +13,17 @@ prior_summary.epimodel <- function(object, digits = 2,...) {
   
 }
 
+#' Print method for \code{prior_summary} objects
+#' 
+#' Prints details of the priors used. Please see
+#' \code{\link{rstanarm::print.prior_summary}} for 
+#' more details
+#' 
+#' @templateVar epimodelArg x
+#' @template args-epimodel-object
+#' @param digits Number of decimal places to print.
+#' 
 #' @export
-#' @method print prior_summary.epimodel
 print.prior_summary.epimodel <- function(x, digits, ...) {
   if (missing(digits))
     digits <- attr(x, "print_digits") %ORifNULL% 2

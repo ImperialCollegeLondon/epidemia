@@ -1,6 +1,13 @@
 
-
-
+#' Print fitted model details
+#' 
+#' Prints estimated regression parameters, and other model parameters.
+#' Similar to printing of \code{rstan::stanreg} objects.
+#' 
+#' @templateVar epimodelArg x
+#' @template args-epimodel-object
+#' @param digits Number of decimal places to print.
+#' @export
 print.epimodel <- function(x, digits=1, ...) {
 
   mixed <- is.mixed(x)
@@ -45,8 +52,6 @@ print.epimodel <- function(x, digits=1, ...) {
 
    invisible(x)
 }
-
-
 
 
 # Helpers from rstanarm
