@@ -9,12 +9,12 @@
 #' other parameters in the model. These methods closely resemble those 
 #' for \code{stanreg} objects in \pkg{rstanarm}. Please see \code{\link[rstanarm]{as.matrix.stanreg}} 
 #' for a general explanation of these methods.
-#' @method as.matrix epimodel
 #' @templateVar epimodelArg x
 #' @template args-epimodel-object
 #' @param pars Please see \link[rstanarm]{as.matrix.stanreg}
 #' @param regex_pars Please see \link[rstanarm]{as.matrix.stanreg}
 #' @return A \code{matrix}, \code{array} or \code{data.frame} object.
+#' @export
 as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
   pars <- collect_pars(x, pars, regex_pars)
   user_pars <- !is.null(pars)
@@ -33,7 +33,6 @@ as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
 }
 
 #' @rdname as.matrix.epimodel
-#' @method as.array epimodel
 #' @export
 as.array.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
   pars <- collect_pars(x, pars, regex_pars)
