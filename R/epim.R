@@ -71,7 +71,6 @@
 #' @references 
 #' \insertAllCited{}
 #' @export
-#' @importFrom Rdpack reprompt
 epim <- 
   function(formula, 
            data,

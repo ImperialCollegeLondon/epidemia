@@ -19,6 +19,8 @@
 #' @import methods
 #' @import Rcpp
 #' @importFrom rstan sampling
+#' @importFrom rstan vb
+#' @importFrom Rdpack reprompt
 #'
 #' @references
 #' \insertAllCited()
