@@ -15,7 +15,7 @@ underlyings.epimodel <- function(object, ...) {
   draws <- nrow(stanmat)
 
   if (length(x))
-    eta <- stanmat[,1:ncol(x), drop = FALSE] %*% t(x)
+    eta <- stanmat[,1:ncol(x), drop = FALSE] %*% Matrix::t(x)
   else
     eta <- matrix(0, draws, N)
 
@@ -35,10 +35,21 @@ underlyings.epimodel <- function(object, ...) {
                     draws=stanmat))
 }
 
-
+#' Get the reproduction number over time
+#'
+#' For each posterior draw, constructs the reproduction number
+#' over the simulation period for each modeled population.
+#' 
+#' This is a generic function.
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
+#' @param ... not yet implemented
+#' @return A list of dataframes.
+#' @export
 get_rt <- function(object, ...) UseMethod("get_rt", object)
 
-
+#' @rdname get_rt
 get_rt.epimodel <- function(object, ...) {
 
   res <- underlyings(object)
@@ -69,6 +80,21 @@ get_rt.epimodel <- function(object, ...) {
   return(out)
 }
 
+
+#' Get fittedmodel predictions for the observations over time
+#'
+#' For each posterior draw and modeled population, constructs 
+#' predicted observations of the given type, over the simulation 
+#' period, and for each modeled population.
+#' 
+#' This is a generic function.
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
+#' @param type The observation type
+#' @param ... not yet implemented
+#' @return A list of dataframes.
+#' @export
 get_obs <- function(object, ...) UseMethod("get_obs", object)
 
 get_obs.epimodel <- function(object, type, ...) {
@@ -107,7 +133,18 @@ get_obs.epimodel <- function(object, type, ...) {
 }
 
 
-
+#' Get the underlying infections over time
+#'
+#' For each posterior draw, constructs the latent number
+#' of infections over the simulation period for each modeled population.
+#' 
+#' This is a generic function.
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
+#' @param ... not yet implemented
+#' @return A list of dataframes.
+#' @export
 get_infections <- function(object, ...) UseMethod("get_infections", object)
 
 

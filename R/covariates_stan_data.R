@@ -28,7 +28,7 @@ gen_covariates_sdat <-
     assign(i, x_stuff[[i]])
   nvars <- ncol(xtemp)
 
-  ok_dists <- nlist("normal", student_t = "t", "cauchy", "hs", "hs_plus",
+  ok_dists <- loo::nlist("normal", student_t = "t", "cauchy", "hs", "hs_plus",
                     "laplace", "lasso", "product_normal", "gamma")
   ok_intercept_dists <- ok_dists[1:3]
   # prior distributions
@@ -77,7 +77,7 @@ gen_covariates_sdat <-
     min(.Machine$double.xmax, prior_scale_for_intercept)
 
   # create entries in the data block of the .stan file
-  standata <- nlist(
+  standata <- loo::nlist(
     N = nrow(xtemp),
     K = ncol(xtemp),
     xbar = as.array(xbar),
@@ -125,7 +125,7 @@ gen_covariates_sdat <-
     standata$q <- ncol(Z)
     standata$len_theta_L <- sum(choose(p, 2), p)
     
-    parts <- extract_sparse_parts(Z)
+    parts <- rstan::extract_sparse_parts(Z)
     standata$num_non_zero <- length(parts$w)
     standata$w <- parts$w
     standata$v <- parts$v - 1L
@@ -189,10 +189,10 @@ pad_reTrms <- function(Ztlist, cnms, flist) {
                             paste0("_NEW_", names(flist)[i]))
   }
   for (i in 1:length(p)) {
-    Ztlist[[i]] <- rbind(Ztlist[[i]], Matrix(0, nrow = p[i], ncol = n, sparse = TRUE))
+    Ztlist[[i]] <- rbind(Ztlist[[i]], Matrix::Matrix(0, nrow = p[i], ncol = n, sparse = TRUE))
   }
-  Z <- t(do.call(rbind, args = Ztlist))
-  return(nlist(Z, cnms, flist))
+  Z <- Matrix::t(do.call(rbind, args = Ztlist))
+  return(loo::nlist(Z, cnms, flist))
 }
 
 

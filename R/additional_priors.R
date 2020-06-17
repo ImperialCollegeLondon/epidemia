@@ -21,7 +21,7 @@
 
 shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
   validate_parameter_value(scale)
-  nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)
+  loo::nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)
 }
 
 #------- helpers from rstanarm package -------#

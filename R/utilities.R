@@ -128,7 +128,7 @@ checkObs <- function(lst, data) {
                      paste0("obs$", nme, "$pvec"))
     
     if (nrow(odata))
-      lst[[i]] <- nlist(odata, rates, pvec)
+      lst[[i]] <- loo::nlist(odata, rates, pvec)
     else {
       warning(paste0("No relevant data found in obs$", nme, ". Removing..."), call. = FALSE)
       lst[[i]] <- NULL
@@ -350,7 +350,7 @@ checkRates <- function(levels, rates, name) {
   # sort by group
   means <- means[order(means$group),]
   
-  return(nlist(means, scale))
+  return(loo::nlist(means, scale))
 }
 
 # Simple check of a simplex vector

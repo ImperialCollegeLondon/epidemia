@@ -16,7 +16,7 @@
 #' Logical, default is \code{FALSE}.
 #' @param ... not yet implemented
 #' @return A ggplot object.
-#' 
+#' @export
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
 #' @rdname plot_rt
@@ -90,7 +90,7 @@ plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scal
 #' Logical, default is \code{FALSE}.
 #' @param ... not yet implemented
 #' @return A ggplot object.
-#' 
+#' @export
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
 #' @rdname plot_obs
@@ -168,7 +168,7 @@ plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ..
 #' Logical, default is \code{FALSE}.
 #' @param ... not yet implemented
 #' @return A ggplot object.
-#' 
+#' @export
 plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 
 #' @rdname plot_infections

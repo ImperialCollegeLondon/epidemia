@@ -27,7 +27,7 @@ process_x <- function(x, center) {
     xtemp <- xtemp[, !sel, drop = FALSE]
     xbar <- xbar[!sel]
   }
-  return(nlist(xtemp, xbar, has_intercept))
+  return(loo::nlist(xtemp, xbar, has_intercept))
 }
 
 
@@ -41,7 +41,7 @@ process_x <- function(x, center) {
 # @param link String naming the link function.
 # @param ok_dists A list of admissible distributions.
 handle_glm_prior <- function(prior, nvars, default_scale, link,
-                             ok_dists = nlist("gamma", "normal", student_t = "t", 
+                             ok_dists = loo::nlist("gamma", "normal", student_t = "t", 
                                               "cauchy", "hs", "hs_plus", 
                                               "laplace", "lasso", "product_normal")) {
   if (!length(prior))
@@ -105,7 +105,7 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_shift <- maybe_broadcast(prior_shift, nvars)
   prior_shift <- as.array(prior_shift)
 
-  nlist(prior_dist, 
+  loo::nlist(prior_dist, 
         prior_mean, 
         prior_scale,
         prior_shape,

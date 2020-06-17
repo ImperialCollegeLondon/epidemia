@@ -209,7 +209,7 @@ extract_pars <- function(object, stanmat = NULL, means = FALSE) {
   abeta <- stanmat[, nms$a, drop = FALSE]
   bhcoef <- stanmat[, nms$e_extra, drop = FALSE]
   b     <- lapply(1:M, function(m) stanmat[, nms$y_b[[m]], drop = FALSE])
-  nlist(beta, ebeta, abeta, bhcoef, b, stanmat)
+  loo::nlist(beta, ebeta, abeta, bhcoef, b, stanmat)
 }
 
 

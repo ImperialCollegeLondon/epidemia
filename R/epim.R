@@ -238,7 +238,7 @@ epim <-
   if (length(z))
     colnames(z) <- b_names(names(fit), value = TRUE)
 
-  out <- nlist(stanfit = fit, 
+  out <- loo::nlist(stanfit = fit, 
                formula,
                x = cbind(x,z),
                data,
@@ -267,7 +267,7 @@ transformTheta_L <- function(stanfit, cnms) {
   nc <- sapply(cnms, FUN = length)
   nms <- names(cnms)
   Sigma <- apply(thetas, 1:2, FUN = function(theta) {
-    Sigma <- mkVarCorr(sc = 1, cnms, nc, theta, nms)
+    Sigma <- lme4::mkVarCorr(sc = 1, cnms, nc, theta, nms)
     unlist(sapply(Sigma, simplify = FALSE, 
                   FUN = function(x) x[lower.tri(x, TRUE)]))
   })

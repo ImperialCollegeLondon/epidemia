@@ -30,7 +30,7 @@ gen_model_sdat <-
                                       nvars = R,
                                       default_scale = 5,
                                       link = "dummy",
-                                      ok_dists = nlist("normal"))
+                                      ok_dists = loo::nlist("normal"))
   
   names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_for_phi") 
 
@@ -41,7 +41,7 @@ gen_model_sdat <-
                                       nvars = 1,
                                       default_scale = 1/0.03,
                                       link = "dummy",
-                                      ok_dists = nlist("exponential"))
+                                      ok_dists = loo::nlist("exponential"))
 
   names(prior_tau_stuff) <- paste0(names(prior_tau_stuff), "_for_tau") 
 
@@ -80,7 +80,7 @@ gen_model_sdat <-
     noise_scales  <- numeric()
   }
 
-  standata <- nlist(M            = M,
+  standata <- loo::nlist(M            = M,
                    N0           = seed_days,
                    si           = si,
                    pop          = as.array(pops$pop),
