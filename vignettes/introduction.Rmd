@@ -1,8 +1,7 @@
-
 ---
 title: "Flexible Epdiemic Modeling with epidemia"
 output:
-  pdf_document: default
+  bookdown::html_document2:
 fontsize: 12pt
 bibliography: ../inst/REFERENCES.bib
 vignette: |
@@ -12,6 +11,40 @@ vignette: |
 ---
 
 This vignette is very much a work in progress, and will be regularly updated. It aims to detail the models fit by epidemia, and also to demonstrate basic usage of the package. The main work is done in the `epim` function. Before continuing, please read the documentation for a more detailed description of this function.
+
+## Example Usage
+
+The package contains an example dataset `EuropeCovid`, which contains data on the daily deaths from Covid-19 recorded in 11 European countries. Here we provide code snippets showing basic usage of **epidemia**.
+
+```{r echo=FALSE}
+library(epidemia)
+library(xfun)
+data("EuropeCovid")
+options(mc.cores = parallel::detectCores())
+```
+
+The line `options(mc.cores = parallel::detectCores())` is important if MCMC sampling is used, as it allows different chains to be run in parallel, rather than sequentially.
+
+
+\ref{computeItaly} considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`.
+```{r computeItaly,results='hide'}
+fit <- xfun::cache_rds({
+    args <- EuropeCovid
+    args$algorithm <- "sampling"
+    args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=79881)
+    args$group_subset <- c("Italy")
+    args$formula <- R(country,date) ~  1 + lockdown
+    args$prior <- rstanarm::normal(location=0,scale=.5)
+    args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+    do.call("epim", args)
+})
+```
+```{r plotItaly}
+library(gridExtra)
+grid.arrange(plot_obs(fit, type="deaths"), plot_infections(fit), plot_rt(fit),nrow=3)
+```
+
+
 
 ## Model Overview
 
@@ -204,6 +237,7 @@ To quickly visualise the effect of the prior distribution we can used the `prior
 args$prior_intercept <- rstanarm::normal(location=0,scale = 0.5)
 ```
 
+\small
 ```{r, results="hide"}
 args$prior <- rstanarm::normal(scale = 0.5)
 args$algorithm <- "sampling"
@@ -213,6 +247,7 @@ fit <- xfun::cache_rds({do.call("epim", args)})
 plot_rt(fit, levels = c(20,40,60,80,95))
 ```
 
+\normalsize
 And example of using a shifted gamma prior...
 
 ```{r, results="hide"}
@@ -235,15 +270,19 @@ print(fit, digits = 2)
 
 Can extract the priors used...
 
+\small
 ```{r}
 prior_summary(fit)
 ```
 
+\normalsize
 And get the matrix of parameter draws
 
+\small
 ```{r}
 draws <- as.matrix(fit)
-head(draws)
+draws[1:4,1:4]
 ```
 
+\normalsize
 # References

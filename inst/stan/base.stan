@@ -45,7 +45,7 @@ transformed parameters {
   vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
   
-  # transformed phi (half normal distributions)
+  // transformed phi (half normal distributions)
   vector<lower=0>[R] phi = fabs(z_phi .* prior_scale_for_phi + prior_mean_for_phi);
 
 #include /tparameters/infections_rt.stan
