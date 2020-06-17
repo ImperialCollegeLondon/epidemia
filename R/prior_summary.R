@@ -1,6 +1,20 @@
+
+#' Get details of the priors used
+#' 
+#' Details of the priors used. Please see
+#' \code{\link[rstanarm]{prior_summary}} for 
+#' more details
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
+#' @param digits Number of digits for rounding.
+#' @return A prior_summary object
 #' @export
-#' @method prior_summary epimodel
-#' @importFrom rstanarm prior_summary
+prior_summary <- function(object, ...) UseMethod("prior_summary", object)
+
+
+#' @rdname prior_summary
+#' @export
 prior_summary.epimodel <- function(object, digits = 2,...) {
   x <- object[["prior.info"]]
   if (is.null(x)) {
@@ -13,15 +27,11 @@ prior_summary.epimodel <- function(object, digits = 2,...) {
   
 }
 
-#' Print method for \code{prior_summary} objects
-#' 
-#' Prints details of the priors used. Please see
-#' \code{\link{rstanarm::print.prior_summary}} for 
-#' more details
+#' Print method for \code{prior_summary.epimodel} objects
 #' 
 #' @templateVar epimodelArg x
 #' @template args-epimodel-object
-#' @param digits Number of decimal places to print.
+#' @param digitsNumber of digits for rounding.
 #' 
 #' @export
 print.prior_summary.epimodel <- function(x, digits, ...) {

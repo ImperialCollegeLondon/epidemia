@@ -1,6 +1,10 @@
 
-# Simple function to get underlying quantities from a fitted model
+# Underlying quantities from a fitted model
+#
 # includes Rt, underlying infections, and expected observations
+#
+# @templateVar epimodelArg object
+# @template args-epimodel-object
 underlyings <- function(object, ...) UseMethod("underlyings", object)
 
 underlyings.epimodel <- function(object, ...) {
