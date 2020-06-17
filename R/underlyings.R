@@ -1,7 +1,6 @@
 
 # Simple function to get underlying quantities from a fitted model
 # includes Rt, underlying infections, and expected observations
-
 underlyings <- function(object, ...) UseMethod("underlyings", object)
 
 underlyings.epimodel <- function(object, ...) {
@@ -50,6 +49,7 @@ underlyings.epimodel <- function(object, ...) {
 get_rt <- function(object, ...) UseMethod("get_rt", object)
 
 #' @rdname get_rt
+#' @export
 get_rt.epimodel <- function(object, ...) {
 
   res <- underlyings(object)
@@ -97,6 +97,8 @@ get_rt.epimodel <- function(object, ...) {
 #' @export
 get_obs <- function(object, ...) UseMethod("get_obs", object)
 
+#' @rdname get_obs
+#' @export
 get_obs.epimodel <- function(object, type, ...) {
   
   types <- names(object$obs)
@@ -147,7 +149,8 @@ get_obs.epimodel <- function(object, type, ...) {
 #' @export
 get_infections <- function(object, ...) UseMethod("get_infections", object)
 
-
+#' @rdname get_infections
+#' @export 
 get_infections.epimodel <- function(object, ...) {
 
   res <- underlyings(object)
