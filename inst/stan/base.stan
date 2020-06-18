@@ -36,14 +36,15 @@ parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
   vector[R] z_phi;
-  vector<lower=0>[M] y;
-  real<lower=0> tau2;
+  vector<lower=0>[M] y_raw;
+  real<lower=0> tau_raw;
   matrix<lower=0>[M,R] noise;
 }
 
 transformed parameters {
   vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
+  vector<lower=0>[M] y = prior_scale_for_tau * tau_raw * y_raw;
   
   // transformed phi (half normal distributions)
   vector<lower=0>[R] phi = fabs(z_phi .* prior_scale_for_phi + prior_mean_for_phi);
@@ -68,11 +69,8 @@ transformed parameters {
 }
 
 model {
-  tau2 ~ exponential(1./ prior_scale_for_tau);
-  for (m in 1:M) {
-    y[m] ~ exponential(1/tau2);
-  }
-
+  target += exponential_lpdf(tau_raw | 1);
+  target += exponential_lpdf(y_raw | 1);
   target += normal_lpdf(z_phi | 0, 1);
 
   for (r in 1:R)
