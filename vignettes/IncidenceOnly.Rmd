@@ -42,10 +42,10 @@ args <- list(formula=Rt(country,date)~rw(date,3),
              pops=data.frame(country="A",pop=1e6),
              si=flu$si,
              prior = rstanarm::normal(location=0,scale=.2),
-             prior_intercept = rstanarm::normal(location=0,scale=.2),
+             prior_intercept = rstanarm::normal(location=0,scale=.5),
              prior_tau = rstanarm::exponential(rate=4)             
              )
-args$sampling_args <- list(iter=100,control=list(adapt_delta=0.95,max_treedepth=15),seed=713)
+args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=15),seed=713)
 fit <- xfun::cache_rds(do.call("epim",args),hash=args)
 ```
 
