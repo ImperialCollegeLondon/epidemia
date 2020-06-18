@@ -14,13 +14,11 @@ vignette: |
 
 **Note:** *This vignette is very much a work in progress, and will be regularly updated.*
 
-**epidemia** is an R-package for fitting Bayesian epidemic models. Here we detail these models and give users enough information to start fitting them independently. We hope that users find the interface provided by the package intuitive. 
+**epidemia** is an R-package for fitting Bayesian epidemic models in the style of @Flaxman2020. Here we detail these models and give users enough information to start fitting them independently.
 
-The document is organized as follows. Section \@ref(example-usage) provides basic examples with minimal description, so that users can quickly get a feel for the package. Section \@ref(model-overview) digs deeper and gives a formal framework for the models within the scope of the package. Understanding this framework is essential for making the most of the flexibility offered by **epidemia**. Section \@ref(implementation-in-r) discusses the details of `epim`; the primary model fitting function in the package. `epim` is designed to be flexible, and therefore has a number of arguments. This can be intimidating, and so Section \@ref(implementation-in-r) describes these arguments in a lot of detail. Finally Section \@ref(examples) highlights some of the more useful features of the package.
+The document is organized as follows. Section \@ref(example-usage) provides basic examples with minimal description, so that users can quickly get a feel for the package. Section \@ref(model-overview) digs deeper and gives a formal framework for the models within the scope of the package. Understanding this framework is essential for making the most of the flexibility offered by **epidemia**. Section \@ref(r-implementation) discusses the details of `epim`; the primary model fitting function in the package. `epim` is designed to be flexible, and therefore has a number of arguments. This can be intimidating, and so Section \@ref(r-implementation) describes these arguments in a lot of detail. Finally Section \@ref(examples) highlights some of the more useful features of the package.
 
-# Example Usage
-
-The package contains an example dataset `EuropeCovid`, which contains data on the daily deaths from Covid-19 recorded in 11 European countries. Here we provide code snippets showing basic usage of **epidemia**.
+The package contains an example dataset `EuropeCovid`, which contains data on the daily deaths from Covid-19 recorded in 11 European countries. This will be used as a running example throughout the vignette.
 
 ```{r message=FALSE}
 library(epidemia)
@@ -32,7 +30,8 @@ options(mc.cores = parallel::detectCores())
 The line `options(mc.cores = parallel::detectCores())` is important if MCMC sampling is used, as it allows different chains to be run in parallel, rather than sequentially.
 
 
-Below considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`.
+# Example Usage
+Here we provide code snippets showing basic usage of **epidemia**. Below considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`.
 ```{r computeItaly,results='hide'}
 # collect arguments for 'epim'
 args <- EuropeCovid
@@ -136,7 +135,7 @@ for given hyperparameters $\mu_l$ and $\sigma^2_{\alpha_l}$. In future versions 
 
 Extending to multiple populations is straightforward. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$. Collect the time-varying reproduction numbers into a vector $R$ with total length $T' := \sum_{m=1}^M T_m$, and consider the parameterization of $R$ in terms of covariates given in \@ref(eq:rt). This approach allows flexible pooling of parameters through $\beta$, while still permitting between group variation using the group-effects $b$. Some populations may have little data; these groups could be at the early stages of the epidemic for example. This approach allows learning to be shared between groups, while helping to avoid overfitting to each group.
 
-# Implementation in R
+# R Implementation
 
 **epidemia** is designed to fit the models described in Section \@ref(model-overview). In particular, it uses R's formula interface to parameterize the time-varying reproduction number in terms of a number of covariates (see \@ref(eq:rt)). The implementation of this shares many similarities with the `stan_glmer` function in **rstanarm** and the **glmer** function in **lme4**.
 
@@ -146,7 +145,7 @@ As mentioned in the introduction, the primary model fitting function in **epidem
 
 ### Function Arguments
 
-Table XXX lists the formal arguments to `epim`.
+Table \@ref(tab:epimArgs) lists the formal arguments to `epim`.
 
 ```{r epimArgs, echo=F}
 df <- data.frame(Arguments = c("formula", 
@@ -166,50 +165,80 @@ df <- data.frame(Arguments = c("formula",
                                "prior_tau",
                                "prior_PD",
                                "sampling_args"),
-                 Description = c("An R object of class 'formula'. The left hand side must take the form `R(group,date)`, with `group` representing a factor vector giving the group membership (i.e. country, state, age cohort). `date` must ve a vector of Date objects.",
-                                 "A dataframe providing the data used in the model specified by 'formula'. Each term in `formula` must have a corresponding column in `data`.",
-                                 "A list providing all available observations. Each element of `obs` represents its own type of observation. More on this below",
-                                 "A two column dataframe giving the total population of each group. The first column represents the group and the second giving the corresponding population.",
-                                 "A numeric vector representing the serial interval of the disease. This should be a simplex vector - i.e. all elements non-negative and summing to one. The $n$\\textsuperscript{th} element gives the probability an individual infects another $n$ days after disease onset.",
-                                 "Number of days $N_0$ for which to seed infections.",
-                                 "The algorithm used to fit the model. Must be one of 'sampling', 'meanfield' or 'fullrank'.",
+                 Description = c("The left hand side must take the form `R(group,date)`, with `group` representing a factor vector giving the group membership (i.e. country, state, age cohort). `date` must ve a vector of Date objects.",
+                                 "The data used in the model specified by 'formula'. Each term in `formula` must have a corresponding column in `data`.",
+                                 "All available observations and hyperparamters for the observation model. Each element of `obs` represents its own type of observation. More on this below.",
+                                 "Population of each modeled group. The first column represents the group and the second giving the corresponding population.",
+                                 "A vector representing the serial interval of the disease. This should be a simplex vector - i.e. all elements are non-negative and sum to one. The $n$^th^ element gives the probability an individual infects another $n$ days after disease onset.",
+                                 "Number of days $N_0$ for which to seed infections at the start of the epidemic.",
+                                 "The algorithm used to fit the model. Must be one of 'sampling', 'meanfield' or 'fullrank', which correspond to `rstan` sampling methods.",
                                  "An optional vector specifying a subset of groups to model. Elements should correspond to the group levels specified through the `data` argument.",
-                                 "If `TRUE` then the covariates for the regression on $R$ are centered (shifted to have mean zero). Warning: all of the priors are then interpreted as priors on the centered covariates. Defaults to `FALSE`.",
-                                 "Prior on $\\beta$, excluding the intercept. Same as in `rstanarm::stan_glm`",
-                                 "Prior on the intercept, if it exists in the model. Same as in `rstanarm::stan_glm`",
-                                 "Prior on the covariance matrix of $b$, the group-specific parameters. Only used if the formula has at least one term of the form `(.|.)`.",
+                                 "If `TRUE` then all covariates in \\@ref(eq:rt) are centered (shifted to have mean zero). WARNING: *the priors are then interpreted as priors on the centered covariates*. Defaults to `FALSE`.",
+                                 " The prior on $\\beta$, excluding the possible intercept.`",
+                                 "Prior on the intercept if one has been specified in `formula`.`",
+                                 "Prior on the covariance matrix of the group-specific parameters $b$. Only used if the formula has at least one term of the form `(.|.)`.",
                                  "Set the constant $A$, introduced in \\@ref(eq:rt).",
                                  "Prior on the vector $(\\phi_1, \\ldots, \\phi_L)$.",
                                  "Prior on $\\tau$.",
                                  "Flag whether to sample from the prior distribution.",
                                  "An (optional) named list of parameters to pass to the rstan function used for model fitting, for example `rstan::sampling`."),
-                 type = c("Formula",
+                 Class = c("formula",
                           "data.frame",
                           "list",
                           "data.frame",
                           "numeric",
                           "integer",
-                          "c('sampling','meanfield', 'fullrank')",
-                          "string vector",
-                          "Boolean",
-                          "rstanarm::prior",
-                          "rstanarm::prior",
-                          "rstanarm::prior",
+                          "character",
+                          "character",
+                          "logical",
+                          "list",
+                          "list",
+                          "list",
                           "numeric",
-                          "rstanarm::prior",
-                          "rstanarm::prior",
-                          "Boolean",
+                          "list",
+                          "list",
+                          "logical",
                           "list"))
-knitr::kable(df, caption = "Formal arguments for the epim function")
+knitr::kable(df, caption = "Formal arguments for the epim function", booktabs=TRUE)
 ```
+
+Most of the arguments listed in Table \@ref(tab:epimArgs) are self-explanatory. However the first three  require further explanation. We tackle each of these in turn.
 
 #### `formula` Argument
 
-This argument specifies a model for the *unadjusted* time-varying reproduction number, introduced in Section \@ref(time-varying-reproduction-number). The object passed must have class `formula`. 
+This specifies the model for the *unadjusted* time-varying reproduction number, given by \@ref(eq:rt). The LHS takes the form `R(group,date)`. This is just syntactic sugar to make explicit that the model is for the reproduction number for a given population and date.
 
-As mentioned in Table xxx, the LHS must take the form `R(group,date)`. This notation is to make explicit that we are modelling the reproduction number for a specific population and date.
+The right hand side can include both pooled and unpooled coefficients. For more details on interpreting different formulas, please see [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). 
+
+We briefly give an intepretation for specific models in the context of the Europe data. First note that terms in the formula must correspond to column names in `data`, which are
+```{r dataColnames}
+colnames(EuropeCovid$data)
+```
+Suppose for simplicity that the value of all covariates at the start date of each group is zero, so that the intercept can be interpreted as determining the basic reproduction number of the disease. Then
+
+* `R(country, date) ~ 0 + lockdown` This is a no-intercept model. The effect is to set an exact starting reproduction rate $R_0$ which is *the same for all countries*. This potentially changes at dates for which `lockdown` become non-zero (i.e. after the intervention come into place). The starting value is precisely $A$ defined in \@ref(eq:rt). 
+
+* `R(country, date) ~ 1 + lockdown` The intercept is the same for all countries. This implies a common distribution for $R_0$, which is set by `prior_intercept`.
+
+* `R(country, date) ~ (1 | country) + lockdown` A country-specific intercept allows $R_0$ to depend on the country. The prior on these is controlled by both `prior_intercept` and `prior_covariance`.
 
 #### `data` argument
+
+This argument provides any data specified by the formula. It must contain at least two columns which give the modeled populations and simulation dates. In the Europe example, the columns `country` and `date` serve this purpose. The `country` column must be coercible to class `factor`, and the levels of this column determine the possible populations to model. 
+```{r}
+data <- EuropeCovid$data
+levels(data$country)
+```
+If specified, only the populations given in the `group_subset` argument are modeled. Otherwise, all levels are used.
+
+The `dates` column must be coercible to a 'Date' vector. Dates must be consecutive for each modeled group. The first date is taken to be the start date $t_0$ of the epidemic in that population, and the final date is taken to be $t_T$. 
+```{r}
+agg <- function(x,f) aggregate(x$date, by=list(x$country), FUN=f)
+setNames(cbind(agg(data, min),
+               agg(data, max)[,2]),
+         c("country", "start", "date"))
+```
+The start dates shown above are thirty days prior to the first date for which more than 10 cumulative deaths were observed in the given country. They are *not learnt by the model*, rather they are assumed and specified by the user.
 
 #### `obs` argument
 
@@ -242,9 +271,10 @@ deaths$rates
 This shows the assumed values for the hyperparameters $\alpha_{l,m}$ and $\sigma_{\alpha_l}$ described above. Note the differing prior expected value of the IFR between groups. This is partially a result of differing age demographics.
 
 Finally, we visualise the distribution of time from disease onset to death.
-```{r pvec}
+```{r pvec, fig.align="center"}
 barplot(deaths$pvec, names.arg=1:101)
 ```
+
 Following @Flaxman2020, this is a discretization of a $Gamma(X,Y)$ distribution.
 
 ### Example Calls
@@ -286,14 +316,6 @@ args$group_subset <- c("Germany", "United_Kingdom")
 ```
 
  A model is specified using the `formula` argument. The LHS of the formula always takes the form `R(x,y)` for some columns `x` and `y` in `data`. Unless `group_subset` is specified explicitly, `epim` will use the factor levels in `data$x` as the groups to model, and will use `data$y` to specify the modeled dates for each group. The dates must be a consecutive range, and there must be no missing covarite data in the columns specified on the RHS of the formula. The first date found for each group is assumed to be the beginning of the epidemic, and seeding of infections begins from this date.
-
-We briefly give an intepretation of the models specified by different fomulas. Suppose for simplicity that the value of all covariates at the start date is zero, so that the intercept can be interpreted as specifying the $R_0$. Then
-
-* `R(country, date) ~ 0 + ...` This is a no-intercept model. The effect is to set an exact starting $R_0$ which is the same for all countries. This is then modified at dates for which covariates become non-zero (i.e. after interventions come into place). This starting value is controlled by the `r0` argument to `epim`, which defaults to 3.28.
-
-* `R(country, date) ~ 1 + ...` This gives a common intercept for all countries. The distribution for $R_0$ is the same for all countries. This distribution can be modified by specifying the `prior_intercept` argument for `epim`
-
-* `R(country, date) ~ (1 | country) + ...` The random effects term allows the distribution for $R_0$ to depend on the country. The prior for these is controlled by both `prior_intercept` and `prior_covariance`.
 
 Similar to @Flaxman2020, we specify the following model.
 
