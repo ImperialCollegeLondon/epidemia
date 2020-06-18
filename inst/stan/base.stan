@@ -44,7 +44,8 @@ parameters {
 transformed parameters {
   vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
-  vector<lower=0>[M] y = prior_scale_for_tau * tau_raw * y_raw;
+  real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
+  vector<lower=0>[M] y = tau2 * y_raw;
   
   // transformed phi (half normal distributions)
   vector<lower=0>[R] phi = fabs(z_phi .* prior_scale_for_phi + prior_mean_for_phi);
