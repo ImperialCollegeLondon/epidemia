@@ -2,7 +2,7 @@
 title: "Flexible Epdiemic Modeling with epidemia"
 output:
   bookdown::html_document2:
-fontsize: 12pt
+fontsize: 14pt
 fig_width: 9 
 fig_height: 6
 bibliography: ../inst/REFERENCES.bib
@@ -34,27 +34,37 @@ The line `options(mc.cores = parallel::detectCores())` is important if MCMC samp
 Here we provide code snippets showing basic usage of **epidemia**. Below considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`.
 ```{r computeItaly,results='hide'}
 # collect arguments for 'epim'
-args <- EuropeCovid
-args$algorithm <- "sampling"
-args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
-args$group_subset <- c("Italy")
-args$formula <- R(country,date) ~  1 + lockdown
-args$prior <- rstanarm::normal(location=0,scale=.5)
-args$prior_intercept <- rstanarm::normal(location=0,scale=2)
-fit <- xfun::cache_rds({do.call("epim", args)})
+fit <- xfun::cache_rds({
+  args <- EuropeCovid
+  args$algorithm <- "sampling"
+  args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+  args$group_subset <- c("Italy")
+  args$formula <- R(country,date) ~  1 + lockdown
+  args$prior <- rstanarm::normal(location=0,scale=.5)
+  args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+  do.call("epim", args)
+})
 ```
 ```{r plotItaly, fig.height=9, fig.align="center"}
 library(gridExtra)
 grid.arrange(plot_obs(fit, type="deaths"), plot_infections(fit), plot_rt(fit),nrow=3)
 ```
 
-Often we would like to model more than one population. Here is an example of using multiple populations, where the regression for the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific sloups; for example by using `(1 | lockdown)` in the formula argument.
+Often we would like to model more than one population. Here is an example of using multiple populations, where the regression for the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using `(1 | lockdown)` in the formula argument.
 
 ```{r computeIU,results='hide'}
 # collect arguments for 'epim'
-args$group_subset <- c("Italy", "United_Kingdom")
-args$formula <- R(country,date) ~  (1|country) + lockdown
-fit <- xfun::cache_rds({do.call("epim", args)})
+fit <- xfun::cache_rds({
+  args <- EuropeCovid
+  args$algorithm <- "sampling"
+  args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+  args$group_subset <- c("Italy", "United_Kingdom")
+  args$formula <- R(country,date) ~  country + lockdown
+  args$prior <- rstanarm::normal(location=0,scale=.5)
+  args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+  do.call("epim", args)
+})
+
 ```
 ```{r plotIU,results='hold',fig.align="center", fig.width=12}
 plot_obs(fit, type = "deaths")
@@ -165,7 +175,7 @@ df <- data.frame(Arguments = c("formula",
                                "prior_tau",
                                "prior_PD",
                                "sampling_args"),
-                 Description = c("The left hand side must take the form `R(group,date)`, with `group` representing a factor vector giving the group membership (i.e. country, state, age cohort). `date` must ve a vector of Date objects.",
+                 Description = c("Specifies the model for the unadjusted time-varying reproduction number. This takes the form \\@ref(eq:rt)",
                                  "The data used in the model specified by 'formula'. Each term in `formula` must have a corresponding column in `data`.",
                                  "All available observations and hyperparamters for the observation model. Each element of `obs` represents its own type of observation. More on this below.",
                                  "Population of each modeled group. The first column represents the group and the second giving the corresponding population.",
@@ -214,13 +224,13 @@ We briefly give an intepretation for specific models in the context of the Europ
 ```{r dataColnames}
 colnames(EuropeCovid$data)
 ```
-Suppose for simplicity that the value of all covariates at the start date of each group is zero, so that the intercept can be interpreted as determining the basic reproduction number of the disease. Then
+Suppose for simplicity that the value of all covariates at the start date of each group is zero, so that the intercept can be interpreted as determining the starting reproduction number $R_0$ of the disease (this is indeed the case for the Europe example). Then
 
-* `R(country, date) ~ 0 + lockdown` This is a no-intercept model. The effect is to set an exact starting reproduction rate $R_0$ which is *the same for all countries*. This potentially changes at dates for which `lockdown` become non-zero (i.e. after the intervention come into place). The starting value is precisely $A$ defined in \@ref(eq:rt). 
+* `R(country, date) ~ 0 + lockdown` This is a no-intercept model. The effect is to set an exact $R_0$ which is *the same for all countries*. This potentially changes at dates for which `lockdown` become non-zero (i.e. after the intervention come into place). The starting value is precisely $A$ defined in \@ref(eq:rt). 
 
 * `R(country, date) ~ 1 + lockdown` The intercept is the same for all countries. This implies a common distribution for $R_0$, which is set by `prior_intercept`.
 
-* `R(country, date) ~ (1 | country) + lockdown` A country-specific intercept allows $R_0$ to depend on the country. The prior on these is controlled by both `prior_intercept` and `prior_covariance`.
+* `R(country, date) ~ (1 | country) + lockdown` A country-specific intercept allows the distribution of $R_0$ to depend on the country. The prior on these is controlled by both `prior_intercept` and `prior_covariance`.
 
 #### `data` argument
 
@@ -231,24 +241,24 @@ levels(data$country)
 ```
 If specified, only the populations given in the `group_subset` argument are modeled. Otherwise, all levels are used.
 
-The `dates` column must be coercible to a 'Date' vector. Dates must be consecutive for each modeled group. The first date is taken to be the start date $t_0$ of the epidemic in that population, and the final date is taken to be $t_T$. 
+The `dates` column must be coercible to a 'Date' vector. Dates must be consecutive for each modeled group. The first date is taken to be the start date $t^{(m)}_0$ of the epidemic in that population, and the final date is taken to be $t^{(m)} + T$. 
 ```{r}
 agg <- function(x,f) aggregate(x$date, by=list(x$country), FUN=f)
 setNames(cbind(agg(data, min),
                agg(data, max)[,2]),
          c("country", "start", "date"))
 ```
-The start dates shown above are thirty days prior to the first date for which more than 10 cumulative deaths were observed in the given country. They are *not learnt by the model*, rather they are assumed and specified by the user.
+Following @Flamxan2020, the start dates shown above are thirty days prior to the first date for which more than 10 cumulative deaths were observed in the given country. They are *not learnt by the model*, rather they are assumed and specified by the user.
 
 #### `obs` argument
 
-A list of lists giving available observations from the $L$ observation processes introduced in Section \@ref(observations), and hyperparameters for the observation model. The $l$^th^ element of `obs` must itself be a named list containing the following three elements.
+A list of lists giving available observations from the $L$ observation processes introduced in Section \@ref(observations), and hyperparameters for the observation model. These hyperparameters are $\{\mu_{l,m}\}$ and $\{\sigma_{\alpha_l}\}$. The $l$^th^ element of `obs` must itself be a named list containing the following three elements.
 
 * **odata**: A three column dataframe representing observations from the $l$^th^ observation process. The first column represents group membership and must be coercible to class factor. The second column indicates the observation date and must be coercible to class Date. The third column contain the actual data.
 
 * **rates**: A named list specifying the prior for the proportion of infected individuals recorded as an observation. For example if recording deaths this would be some estimate of each groups infection fatality ratio (IFR). The priors are assumed normal. Contains:
 
-    * **means**: A two column dataframe giving the hyperparameters $\alpha_{l,m}$, i.e. the estimated mean proportion of infected individuals recorded as an observation. First column represents the group, while the second the corresponding proportion.
+    * **means**: A two column dataframe giving the hyperparameters $\mu_{l,m}$, i.e. the estimated mean proportion of infected individuals recorded as an observation. First column represents the group, while the second the corresponding proportion.
 
     * **scale**: The standard deviation $\sigma_{\alpha_l}$ around the mean values. Default is 0.1.
 
