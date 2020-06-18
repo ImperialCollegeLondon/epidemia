@@ -2,7 +2,7 @@
 title: "Flexible Epdiemic Modeling with epidemia"
 output:
   bookdown::html_document2:
-fontsize: 14pt
+    theme: cerulean
 fig_width: 9 
 fig_height: 6
 bibliography: ../inst/REFERENCES.bib
@@ -12,11 +12,51 @@ vignette: |
   \usepackage[utf8]{inputenc}
 ---
 
-**Note:** *This vignette is very much a work in progress, and will be regularly updated.*
+<style type="text/css">
+body{ /* Normal */
+font-size: 16px;
+}
+td { /* Table */
+font-size: 14px;
+}
+h1.title {
+font-size: 38px;
+color: Black;
+}
+h1 { /* Header 1 */
+font-size: 28px;
+color: Black;
+}
+h2 { /* Header 2 */
+font-size: 22px;
+color: DarkBlue;
+}
+h3 { /* Header 3 */
+font-size: 18px;
+color: DarkBlue;
+}
+}
+h3 { /* Header 4 */
+font-size: 16px;
+color: DarkBlue;
+}
+h4 { /* Header 4 */
+font-size: 16px;
+color: DarkBlue;
+}
+code.r{ /* Code block */
+font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+font-size: 14px;
+}
+</style>
+
+**Note:** *This vignette is a work in progress, and will be regularly updated.*
 
 **epidemia** is an R-package for fitting Bayesian epidemic models in the style of @Flaxman2020. Here we detail these models and give users enough information to start fitting them independently.
 
-The document is organized as follows. Section \@ref(example-usage) provides basic examples with minimal description, so that users can quickly get a feel for the package. Section \@ref(model-overview) digs deeper and gives a formal framework for the models within the scope of the package. Understanding this framework is essential for making the most of the flexibility offered by **epidemia**. Section \@ref(r-implementation) discusses the details of `epim`; the primary model fitting function in the package. `epim` is designed to be flexible, and therefore has a number of arguments. This can be intimidating, and so Section \@ref(r-implementation) describes these arguments in a lot of detail. Finally Section \@ref(examples) highlights some of the more useful features of the package.
+The document is organized as follows. Section \@ref(example-usage) provides basic examples with minimal description, so that users can quickly get a feel for the package. Section \@ref(model-overview) digs deeper and gives a formal framework for the models within the scope of the package. Understanding this framework is essential for making the most of the flexibility offered by **epidemia**. Section \@ref(r-implementation) discusses the details of `epim`; the primary model fitting function in the package. `epim` is designed to be flexible, and therefore has a number of arguments. This can be intimidating, so we describe these arguments in a lot of detail. Finally Section \@ref(examples) highlights some of the more useful features of the package.
 
 The package contains an example dataset `EuropeCovid`, which contains data on the daily deaths from Covid-19 recorded in 11 European countries. This will be used as a running example throughout the vignette.
 
@@ -32,7 +72,7 @@ The line `options(mc.cores = parallel::detectCores())` is important if MCMC samp
 
 # Example Usage
 Here we provide code snippets showing basic usage of **epidemia**. Below considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`.
-```{r computeItaly,results='hide'}
+```{r computeItaly}
 # collect arguments for 'epim'
 fit <- xfun::cache_rds({
   args <- EuropeCovid
@@ -50,18 +90,19 @@ library(gridExtra)
 grid.arrange(plot_obs(fit, type="deaths"), plot_infections(fit), plot_rt(fit),nrow=3)
 ```
 
-Often we would like to model more than one population. Here is an example of using multiple populations, where the regression for the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using `(1 | lockdown)` in the formula argument.
+Often we would like to model more than one population. Here is an example of using multiple populations, where the regression for the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using `(1 + lockdown | country)` in place of `(1 | country)` in `args$formula` below.
 
-```{r computeIU,results='hide'}
+```{r computeIU}
 # collect arguments for 'epim'
 fit <- xfun::cache_rds({
   args <- EuropeCovid
   args$algorithm <- "sampling"
-  args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+  args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
   args$group_subset <- c("Italy", "United_Kingdom")
-  args$formula <- R(country,date) ~  country + lockdown
+  args$formula <- R(country,date) ~  0 + (1|country) + lockdown
   args$prior <- rstanarm::normal(location=0,scale=.5)
   args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+  args$prior_covariance <- rstanarm::decov(scale=0.1) 
   do.call("epim", args)
 })
 
@@ -91,6 +132,8 @@ R = 2A f\left(X\beta + Zb\right)
 (\#eq:rt)
 \end{equation}
 where $A$ is a constant, $X$ and $Z$ are $T \times p$ and $T \times q$ model matrices and where $f$ is the logistic function $f(a) := \exp(a)/(1+\exp(a))$. The $p$-dimensional $\beta$ represents pooled coefficients, while the $q$-dimensional $b$ represent group-specific effects. When both $p$ and $q$ are greater than zero, this is known as *partial pooling*.
+
+The parameters $\beta$ are assigned a prior distribution. This is flexible, and leverages the framework offered by **rstanarm**. Multiple different prior families are available. The group specific coefficients $b$ are treated as zero mean multivariate normal. Prior specifications are described in more detail in Section \@ref(prior-arguments).
 
 The vector $R$ is latent and unobserved. The quantities we do observe are linked to $R$ through its effect on the underlying infections, which we now describe.
 
@@ -175,23 +218,23 @@ df <- data.frame(Arguments = c("formula",
                                "prior_tau",
                                "prior_PD",
                                "sampling_args"),
-                 Description = c("Specifies the model for the unadjusted time-varying reproduction number. This takes the form \\@ref(eq:rt)",
-                                 "The data used in the model specified by 'formula'. Each term in `formula` must have a corresponding column in `data`.",
-                                 "All available observations and hyperparamters for the observation model. Each element of `obs` represents its own type of observation. More on this below.",
+                 Description = c("Specifies the model \\@ref(eq:rt) for the unadjusted time-varying reproduction number. See [glmer](https://www.rdocumentation.org/packages/lme4/versions/1.1-23/topics/glmer) for more details.",
+                                 "The data used in the model specified by 'formula'. Each term in `formula` must have a corresponding column in `data`. See [glmer](https://www.rdocumentation.org/packages/lme4/versions/1.1-23/topics/glmer) for more details.",
+                                 "All available observations and hyperparamters for the observation model (Section \\@ref(observations)). Each element of `obs` represents its own type of observation. More on this below.",
                                  "Population of each modeled group. The first column represents the group and the second giving the corresponding population.",
                                  "A vector representing the serial interval of the disease. This should be a simplex vector - i.e. all elements are non-negative and sum to one. The $n$^th^ element gives the probability an individual infects another $n$ days after disease onset.",
-                                 "Number of days $N_0$ for which to seed infections at the start of the epidemic.",
-                                 "The algorithm used to fit the model. Must be one of 'sampling', 'meanfield' or 'fullrank', which correspond to `rstan` sampling methods.",
+                                 "Number of days $N_0$ for which to seed infections at the start of the epidemic. Defaults to 6L",
+                                 "The algorithm used to fit the model. Must be one of 'sampling', 'meanfield' or 'fullrank', which correspond to `rstan` sampling methods. See [sampling](https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html) and [vb](https://mc-stan.org/rstan/reference/stanmodel-method-vb.html).",
                                  "An optional vector specifying a subset of groups to model. Elements should correspond to the group levels specified through the `data` argument.",
-                                 "If `TRUE` then all covariates in \\@ref(eq:rt) are centered (shifted to have mean zero). WARNING: *the priors are then interpreted as priors on the centered covariates*. Defaults to `FALSE`.",
-                                 " The prior on $\\beta$, excluding the possible intercept.`",
-                                 "Prior on the intercept if one has been specified in `formula`.`",
-                                 "Prior on the covariance matrix of the group-specific parameters $b$. Only used if the formula has at least one term of the form `(.|.)`.",
-                                 "Set the constant $A$, introduced in \\@ref(eq:rt).",
-                                 "Prior on the vector $(\\phi_1, \\ldots, \\phi_L)$.",
-                                 "Prior on $\\tau$.",
-                                 "Flag whether to sample from the prior distribution.",
-                                 "An (optional) named list of parameters to pass to the rstan function used for model fitting, for example `rstan::sampling`."),
+                                 "If `TRUE` then all covariates in \\@ref(eq:rt) are centered (shifted to have mean zero). **WARNING**: *the priors are then interpreted as priors on the centered covariates*. Defaults to `FALSE`.",
+                                 " The prior distribution on $\\beta$, excluding any possible intercept.",
+                                 "Prior on the intercept if one has been specified in the model implied by `formula`.",
+                                 "Prior on the covariance matrix of the group-specific parameters $b$. Only used if the formula has at least one 'random-effects' term, i.e. `(a|b)`.",
+                                 "Set the constant $A$, introduced in \\@ref(eq:rt). This will determine the maximum possible unadjusted $R_t$ (to be clear, not neccessarily $A$). Defaults to 3.28.",
+                                 "Prior on the vector $(\\phi_1, \\ldots, \\phi_L)$, the parameter controling variability of the observations around their mean values.",
+                                 "Prior on $\\tau$, the parameter controling the variability in the seeded cases.",
+                                 "Flag whether to sample from the prior distribution. Same as [stan_lm](https://mc-stan.org/rstanarm/reference/stan_lm.html). Defaults to `FALSE`.",
+                                 "An (optional) named list of parameters to pass to the rstan function used for model fitting. See [sampling](https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html) and [vb](https://mc-stan.org/rstan/reference/stanmodel-method-vb.html) for details of possible arguments."),
                  Class = c("formula",
                           "data.frame",
                           "list",
@@ -212,10 +255,9 @@ df <- data.frame(Arguments = c("formula",
 knitr::kable(df, caption = "Formal arguments for the epim function", booktabs=TRUE)
 ```
 
-Most of the arguments listed in Table \@ref(tab:epimArgs) are self-explanatory. However the first three  require further explanation. We tackle each of these in turn.
+Most of the arguments listed in Table \@ref(tab:epimArgs) are self-explanatory. However the first three and also the prior arguments require further explanation. We tackle each of these in turn.
 
 #### `formula` Argument
-
 This specifies the model for the *unadjusted* time-varying reproduction number, given by \@ref(eq:rt). The LHS takes the form `R(group,date)`. This is just syntactic sugar to make explicit that the model is for the reproduction number for a given population and date.
 
 The right hand side can include both pooled and unpooled coefficients. For more details on interpreting different formulas, please see [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). 
@@ -284,12 +326,29 @@ Finally, we visualise the distribution of time from disease onset to death.
 ```{r pvec, fig.align="center"}
 barplot(deaths$pvec, names.arg=1:101)
 ```
+Following @Flaxman2020, this is a discretization of the distribution of $\text{Gamma}(1.35,3.77) + \text{Gamma}(4.94,3.60)$, where the notation $\text{Gamma}(\alpha, \theta)$ refers to a Gamma random variable with shape $\alpha$ and scale $\theta$.
 
-Following @Flaxman2020, this is a discretization of a $Gamma(X,Y)$ distribution.
+#### Prior arguments
 
-### Example Calls
+Prior distributions should be specified for the parameters in \@ref(eq:rt), and for additional model parameters. 
 
-# Examples
+*Please note that the current default priors may not be appropriate, and should not be relied upon. In future versions of the package, we hope to set good default priors.*
+
+The priors for $\beta$ (see \@ref(eq:rt)) are set using the `prior` and `prior_intercept` arguments. These will only have an effect if the formula specifies covariates and an intercept respectively. These function  similarly to the same arguments in[`stan_lm`](https://mc-stan.org/rstanarm/reference/stan_lm.html). To understand which families can be used please refer to [rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html). 
+
+There is one caveat: which is that we offer additional priors. Currently there is just one, `shifted_gamma`, which can only be used for the `prior` argument. The addition of this prior is motivated by the priors used in @Flaxman2020. This essentially allows for 
+\begin{equation}
+\beta_i \sim \text{Gamma}(\alpha,\theta) - \eta,
+\end{equation}
+where $\alpha$ and $\theta$ are shape and scale parameters, and $\eta$ is a shift to allow for priors with support below zero.
+
+Consider a single 'random-effects' term in the formula. A good example would be `(1 + lockdown | country)`. For each group the intercepts and slopes are treated as zero-mean multivariate normal with unknown covariance matrix $\Sigma$. For our example term, fix one level implied by the factor `country`, say `Italy`. For this group, there are two coefficients - a random intercept for Italy, and a random slope. Therefore $\Sigma$ has dimension $2 \times 2$. Coefficients for different groups are treated as independent. 
+
+**epidemia** borrows from **rstanarm** and uses the [`decov`](rstanarm priors) prior for $\Sigma$. This decomposes $\Sigma$ into a variance vector and a correlation matrix. An LKJ prior is used on the correlation matrix, while the variance is decomposed into the product of a simplex vector and the trace of $\Sigma$. The simplex vector is given a symmetric Dirichlet prior, which the trace is once again decomposed as $tr(\Sigma) = J \kappa$, where $J$ is the order of $\Sigma$. Finally $\kappa$ is assigned a scale-invariant prior - specifically a Gamma distribution with give shape and scale hyperparameters. For more information on this, please see [rstanarm priors](http://mc-stan.org/rstanarm/reference/priors.html) and this [vignette](http://mc-stan.org/rstanarm/articles/glmer.html).
+
+When the left hand side of the formula has only one term (for example `(1 | country)`), this prior on the covariance simplifies considerably. $\Sigma$ simply reduces to $\kappa$, which has a gamma prior.
+
+# A Complete Example
 
 The main model fitting function in **epidemia** is `epim`. This section demonstrates basic usage of this function.
 
@@ -344,7 +403,7 @@ Here we focus on specifying the `prior` argument. This controls the prior distri
 To quickly visualise the effect of the prior distribution we can used the `prior_PD` flag to `epim`. If `TRUE` epim will sample all parameters from their prior distribution. We specify the prior for the intercept as follows.
 
 ```{r}
-args$prior_intercept <- rstanarm::normal(location=0,scale = 0.5)
+args$prior_intercept <- rstanarm::normal(location=0, scale = 0.5)
 ```
 
 \small
