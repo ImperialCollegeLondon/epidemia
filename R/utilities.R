@@ -388,7 +388,7 @@ checkCV <- function(vec, name) {
     stop(paste0("Values in ", name, " expected to be non-decreasing.", call. = FALSE))
 
   if (abs(tail(vec,1) - 1) > 1e-14)
-    warning(paste0("Final value in "name, " was not equal to 1. Have rescaled to form a distribution function."), call. = FALSE))
+    warning(paste0("Final value in ", name, " was not equal to 1. Have rescaled to form a distribution function."), call. = FALSE)
 
   return(vec/tail(vec,1))
 }
