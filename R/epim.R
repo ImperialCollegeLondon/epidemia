@@ -94,6 +94,7 @@ epim <-
            prior_tau = rstanarm::exponential(rate = 0.03),
            prior_PD = FALSE,
            sampling_args = list(),
+           debug = FALSE,
            ...) {
   
   call    <- match.call(expand.dots = TRUE)
@@ -195,7 +196,7 @@ epim <-
             "noise")
 
   args <- sampling_args
-  args$pars <- pars
+  if (!debug) args$pars <- pars
   args$object <- stanmodels$base
   args$data <- standata
 
@@ -234,7 +235,7 @@ epim <-
                 "log-posterior")
 
   orig_names <- fit@sim$fnames_oi
-  fit@sim$fnames_oi <- new_names
+  if(!debug) fit@sim$fnames_oi <- new_names
 
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[ , !sel, drop = FALSE]
