@@ -114,12 +114,6 @@ checkObs <- function(lst, data) {
       stop(paste0(paste0(missing.items, collapse=", "), " missing from obs$", nme), call. = FALSE)
     }
 
-    # check values of the density
-    if (!("density" %in% names(elem)))
-      elem$density <- TRUE
-    else if (!is.logical(elem$density))
-      stop(paste0("obs$", nme, "$density should either be logical or omitted."))
-
     for (name in names(elem))
       assign(name, elem[[name]])
 
@@ -131,15 +125,25 @@ checkObs <- function(lst, data) {
                         rates, 
                         paste0("obs$", nme, "$rates"))
 
-    if (density) {
-      pvec <- checkSV(pvec, 
-                      paste0("obs$", nme, "$pvec")) 
-    } else {
+
+    # check values of the density
+    if (!("ptype" %in% names(elem)))
+      ptype <- "density"
+    else if (!is.string(ptype) || length(ptype)>1) 
+      stop(paste0("obs$", nme, "$ptype should either be either a single string or omitted."))
+    else if (!(ptype %in c("density", "distribution", "unadjusted"))) 
+      stop(paste0("obs$", nme, "$ptype should be one of 'density', 'distribution' or 'unadjusted'."))
+
+    if (ptype == "density") 
+      pvec <- checkSV(pvec, paste0("obs$", nme, "$pvec")) 
+    else if (ptype == "distribution") 
       pvec <- checkCV(pvec, paste0("obs$", nme, "$pvec"))
-    }
+    else 
+      pvec <- checkV(pvec, paste0("obs$", nme, "$pvec"))
+    
     
     if (nrow(odata))
-      lst[[i]] <- loo::nlist(odata, rates, pvec, density)
+      lst[[i]] <- loo::nlist(odata, rates, pvec, ptype)
     else {
       warning(paste0("No relevant data found in obs$", nme, ". Removing..."), call. = FALSE)
       lst[[i]] <- NULL
@@ -364,44 +368,11 @@ checkRates <- function(levels, rates, name) {
   return(loo::nlist(means, scale))
 }
 
-# Simple check of a cumulative vector
-#
-# @param vec A numeric vector
-# @ names The name of the vector (for error messsage printing)
-checkCV <- function(vec, name) {
-
-  if (any(is.na(vec)))
-    stop(paste0("NAs exist in ", name), call. = FALSE)
-
-    # do the coercion then check for NAs
-  out <- tryCatch(as.numeric(vec),
-    error = function(cond) {
-      stop(paste0(name, " could not be coerced to a numeric vector. Original message: ", cond))
-    })
-
-  if (any(is.na(out)))
-    stop(paste0("NAs exist in ", name, " after coercion to numeric"), call. = FALSE)
-
-  if (any(vec < 0))
-    stop(paste0("Negative values found in ", name), call. = FALSE)
-  if (all(vec < 1e-14))
-    stop(paste0("No positive values found in ", name), call. = FALSE)
-
-  if (any(diff(vec) < 0))
-    stop(paste0("Values in ", name, " expected to be non-decreasing.", call. = FALSE))
-
-  if (abs(tail(vec,1) - 1) > 1e-14)
-    warning(paste0("Final value in ", name, " was not equal to 1. Have rescaled to form a distribution function."), call. = FALSE)
-
-  return(vec/tail(vec,1))
-}
-
-
-# Simple check of a simplex vector
+# Simple check of a vector
 #
 # @param vec A numeric vector
 # @param name The name of the vector (for error message printing)
-checkSV <- function(vec, name) {
+checkV <- function(vec, name) {
 
   if(any(is.na(vec)))
     stop(paste0("NAs exist in ", name), call. = FALSE)
@@ -418,6 +389,38 @@ checkSV <- function(vec, name) {
     stop(paste0("Negative values found in ", name), call. = FALSE)
   if(all(vec < 1e-14))
     stop(paste0("No positive values found in ", name), call. = FALSE)
+
+  return(vec)
+}
+
+
+# Simple check of a cumulative vector
+#
+# @param vec A numeric vector
+# @ names The name of the vector (for error messsage printing)
+checkCV <- function(vec, name) {
+
+  vec <- checkV(vec, name)
+
+  if (any(diff(vec) < 0))
+    stop(paste0("Values in ", name, " expected to be non-decreasing.", call. = FALSE))
+
+  if (abs(tail(vec,1) - 1) > 1e-14)
+    warning(paste0("Final value in ", name, " was not equal to 1. Have rescaled to form a distribution function."), call. = FALSE)
+
+  return(vec/tail(vec,1))
+}
+
+
+
+# Simple check of a simplex vector
+#
+# @param vec A numeric vector
+# @param name The name of the vector (for error message printing)
+checkSV <- function(vec, name) {
+
+  vec <- checkV(vec)
+
   if(abs(sum(vec) - 1) > 1e-14)
     warning(paste0(name, " did not sum to 1. Have rescaled to form a probability vector."), call. = FALSE)
   

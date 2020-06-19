@@ -31,7 +31,9 @@
 #' * `pvec`: A probability vector with the following interpretation. Conditional on an observation "event" 
 #'    (i.e. a single death or hospitalisation etc.), the nth element represents the probability that the individual 
 #'    was infected exactly n days prior to this.
-#' * `density`: A flag indicating whether the `pvec` should be treated as a density. If TRUE, it will be rescaled to a
+#' * `pvec_type`: A string, either "density", "distribution" or "unadjusted". Indicates how `pvec` should be treated.
+#'    If "density" then rescaled to simplex vector, If "distribution", ensures it takes the form of a distribution function. 
+#'    If "unadjusted", only checks values are between 0 and 1.
 #' simplex vector. Otherwise, this is treated as a cumulative distribution. Defaults to TRUE.
 #' @param pops  A two column dataframe giving the total population of each group. First column represents the group, 
 #'      with the second giving the corresponding population.
