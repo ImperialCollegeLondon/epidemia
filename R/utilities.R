@@ -115,7 +115,7 @@ checkObs <- function(lst, data) {
     }
 
     # check values of the density
-    if (!("density" %in% elem))
+    if (!("density" %in% names(elem)))
       elem$density <- TRUE
     else if (!is.logical(elem$density))
       stop(paste0("obs$", nme, "$density should either be logical or omitted."))
@@ -131,12 +131,15 @@ checkObs <- function(lst, data) {
                         rates, 
                         paste0("obs$", nme, "$rates"))
 
-    pvec  <- if (density) checkSV(pvec, 
-                                  paste0("obs$", nme, "$pvec")) else
-                          checkCV(pvec, paste0("obs$", nme, "$pvec"))
+    if (density) {
+      pvec <- checkSV(pvec, 
+                      paste0("obs$", nme, "$pvec")) 
+    } else {
+      pvec <- checkCV(pvec, paste0("obs$", nme, "$pvec"))
+    }
     
     if (nrow(odata))
-      lst[[i]] <- loo::nlist(odata, rates, pvec)
+      lst[[i]] <- loo::nlist(odata, rates, pvec, density)
     else {
       warning(paste0("No relevant data found in obs$", nme, ". Removing..."), call. = FALSE)
       lst[[i]] <- NULL
@@ -394,13 +397,12 @@ checkCV <- function(vec, name) {
 }
 
 
-
 # Simple check of a simplex vector
 #
 # @param vec A numeric vector
 # @param name The name of the vector (for error message printing)
 checkSV <- function(vec, name) {
-  
+
   if(any(is.na(vec)))
     stop(paste0("NAs exist in ", name), call. = FALSE)
   

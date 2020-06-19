@@ -49,7 +49,12 @@ gen_model_sdat <-
     assign(i, prior_tau_stuff[[i]]) 
 
   if (R) {
-    f <- function(x) padSV(x$p, max_sim, 0)
+    f <- function(x) {
+      if (x$density)
+        padSV(x$p, max_sim, 0)
+      else
+        padCV(x$p, max_sim, 0)
+    }
     pvecs <- as.array(lapply(obs, f))
 
     # matrix of mean rates for each observation type
@@ -104,6 +109,22 @@ gen_model_sdat <-
 
   return(standata)
 }
+
+
+# Takes a simplex vector and extends to required length
+#
+# @param vec The vector to pad
+# @param len The exact required length
+# @param tol The value to impute for extended entries
+padCV <- function(vec, len, tol) {
+  nimpute <- len - length(vec)
+
+  if (nimpute > 0) 
+    vec <- c(vec, rep(tol, nimpute))
+  
+  return(vec[1:len])
+}
+
 
 
 # Takes a simplex vector and extends to required length
