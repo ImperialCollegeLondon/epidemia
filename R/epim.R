@@ -31,7 +31,7 @@
 #' * `pvec`: A probability vector with the following interpretation. Conditional on an observation "event" 
 #'    (i.e. a single death or hospitalisation etc.), the nth element represents the probability that the individual 
 #'    was infected exactly n days prior to this.
-#' * `pvec_type`: A string, either "density", "distribution" or "unadjusted". Indicates how `pvec` should be treated.
+#' * `ptype`: A string, either "density", "distribution" or "unadjusted". Indicates how `pvec` should be treated.
 #'    If "density" then rescaled to simplex vector, If "distribution", ensures it takes the form of a distribution function. 
 #'    If "unadjusted", only checks values are between 0 and 1.
 #' simplex vector. Otherwise, this is treated as a cumulative distribution. Defaults to TRUE.

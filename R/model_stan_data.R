@@ -50,10 +50,10 @@ gen_model_sdat <-
 
   if (R) {
     f <- function(x) {
-      if (x$density)
-        padSV(x$p, max_sim, 0)
-      else
-        padCV(x$p, max_sim, 0)
+      if (x$ptype == "density")
+        padSV(x$pvec, max_sim, 0)
+      else 
+        padV(x$pvec, max_sim, tail(x$pvec,1))
     }
     pvecs <- as.array(lapply(obs, f))
 
@@ -116,7 +116,7 @@ gen_model_sdat <-
 # @param vec The vector to pad
 # @param len The exact required length
 # @param tol The value to impute for extended entries
-padCV <- function(vec, len, tol) {
+padV <- function(vec, len, tol) {
   nimpute <- len - length(vec)
 
   if (nimpute > 0) 

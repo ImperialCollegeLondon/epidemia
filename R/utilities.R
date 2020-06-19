@@ -129,9 +129,9 @@ checkObs <- function(lst, data) {
     # check values of the density
     if (!("ptype" %in% names(elem)))
       ptype <- "density"
-    else if (!is.string(ptype) || length(ptype)>1) 
+    else if ((!is.character(ptype)) || length(ptype)>1) 
       stop(paste0("obs$", nme, "$ptype should either be either a single string or omitted."))
-    else if (!(ptype %in c("density", "distribution", "unadjusted"))) 
+    else if (!(ptype %in% c("density", "distribution", "unadjusted"))) 
       stop(paste0("obs$", nme, "$ptype should be one of 'density', 'distribution' or 'unadjusted'."))
 
     if (ptype == "density") 
@@ -140,7 +140,6 @@ checkObs <- function(lst, data) {
       pvec <- checkCV(pvec, paste0("obs$", nme, "$pvec"))
     else 
       pvec <- checkV(pvec, paste0("obs$", nme, "$pvec"))
-    
     
     if (nrow(odata))
       lst[[i]] <- loo::nlist(odata, rates, pvec, ptype)
