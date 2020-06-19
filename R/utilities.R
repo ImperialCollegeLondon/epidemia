@@ -418,7 +418,7 @@ checkCV <- function(vec, name) {
 # @param name The name of the vector (for error message printing)
 checkSV <- function(vec, name) {
 
-  vec <- checkV(vec)
+  vec <- checkV(vec, name)
 
   if(abs(sum(vec) - 1) > 1e-14)
     warning(paste0(name, " did not sum to 1. Have rescaled to form a probability vector."), call. = FALSE)
