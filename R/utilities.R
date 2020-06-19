@@ -108,10 +108,17 @@ checkObs <- function(lst, data) {
     
     # check we have the correct items
     missing.items <- sapply(c("odata", "rates", "pvec"), function(x) !(x %in% names(elem)))
+
     if(any(missing.items)) {
       missing.items <- names(missing.items)[missing.items]
       stop(paste0(paste0(missing.items, collapse=", "), " missing from obs$", nme), call. = FALSE)
     }
+
+    # check values of the density
+    if (!("density" %in% elem))
+      elem$density <- TRUE
+    else if (!is.logical(elem$density))
+      stop(paste0("obs$", nme, "$density should either be logical or omitted."))
 
     for (name in names(elem))
       assign(name, elem[[name]])
@@ -124,8 +131,9 @@ checkObs <- function(lst, data) {
                         rates, 
                         paste0("obs$", nme, "$rates"))
 
-    pvec  <- checkSV(pvec, 
-                     paste0("obs$", nme, "$pvec"))
+    pvec  <- if (density) checkSV(pvec, 
+                                  paste0("obs$", nme, "$pvec")) else
+                          checkCV(pvec, paste0("obs$", nme, "$pvec"))
     
     if (nrow(odata))
       lst[[i]] <- loo::nlist(odata, rates, pvec)
@@ -352,6 +360,40 @@ checkRates <- function(levels, rates, name) {
   
   return(loo::nlist(means, scale))
 }
+
+# Simple check of a cumulative vector
+#
+# @param vec A numeric vector
+# @ names The name of the vector (for error messsage printing)
+checkCV <- function(vec, name) {
+
+  if (any(is.na(vec)))
+    stop(paste0("NAs exist in ", name), call. = FALSE)
+
+    # do the coercion then check for NAs
+  out <- tryCatch(as.numeric(vec),
+    error = function(cond) {
+      stop(paste0(name, " could not be coerced to a numeric vector. Original message: ", cond))
+    })
+
+  if (any(is.na(out)))
+    stop(paste0("NAs exist in ", name, " after coercion to numeric"), call. = FALSE)
+
+  if (any(vec < 0))
+    stop(paste0("Negative values found in ", name), call. = FALSE)
+  if (all(vec < 1e-14))
+    stop(paste0("No positive values found in ", name), call. = FALSE)
+
+  if (any(diff(vec) < 0))
+    stop(paste0("Values in ", name, " expected to be non-decreasing.", call. = FALSE))
+
+  if (abs(tail(vec,1) - 1) > 1e-14)
+    warning(paste0("Final value in "name, " was not equal to 1. Have rescaled to form a distribution function."), call. = FALSE))
+
+  return(vec/tail(vec,1))
+}
+
+
 
 # Simple check of a simplex vector
 #
