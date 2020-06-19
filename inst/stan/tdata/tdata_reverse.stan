@@ -1,4 +1,4 @@
 
 simplex[NS] si_rev = reverse(si); 
-simplex[NS] pvecs_rev[R]; 
+vector<lower=0,upper=1>[NS] pvecs_rev[R]; 
 

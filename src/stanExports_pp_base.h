@@ -271,7 +271,8 @@ public:
             }
             size_t pvecs_i_0_max__ = R;
             for (size_t i_0__ = 0; i_0__ < pvecs_i_0_max__; ++i_0__) {
-                stan::math::check_simplex(function__, "pvecs[i_0__]", pvecs[i_0__]);
+                check_greater_or_equal(function__, "pvecs[i_0__]", pvecs[i_0__], 0);
+                check_less_or_equal(function__, "pvecs[i_0__]", pvecs[i_0__], 1);
             }
             current_statement_begin__ = 30;
             validate_non_negative_index("pop", "M", M);
@@ -344,7 +345,8 @@ public:
             current_statement_begin__ = 42;
             size_t pvecs_rev_i_0_max__ = R;
             for (size_t i_0__ = 0; i_0__ < pvecs_rev_i_0_max__; ++i_0__) {
-                stan::math::check_simplex(function__, "pvecs_rev[i_0__]", pvecs_rev[i_0__]);
+                check_greater_or_equal(function__, "pvecs_rev[i_0__]", pvecs_rev[i_0__], 0);
+                check_less_or_equal(function__, "pvecs_rev[i_0__]", pvecs_rev[i_0__], 1);
             }
             // validate, set parameter ranges
             num_params_r__ = 0U;
