@@ -1,5 +1,5 @@
 ---
-title: "Flexible Epdiemic Modeling with epidemia"
+title: "Flexible Epidemic Modeling with epidemia"
 output:
   bookdown::html_document2:
     theme: cerulean
@@ -134,9 +134,9 @@ Let $R := (R_{0},\ldots,R_{T})$ be a non-negative sequence representing the *una
 R = 2A f\left(X\beta + Zb\right)
 (\#eq:rt)
 \end{equation}
-where $A$ is a constant, $X$ and $Z$ are $T \times p$ and $T \times q$ model matrices and where $f$ is the logistic function $f(a) := \exp(a)/(1+\exp(a))$. The $p$-dimensional $\beta$ represents pooled coefficients, while the $q$-dimensional $b$ represent group-specific effects. When both $p$ and $q$ are greater than zero, this is known as *partial pooling*.
+where $A$ is a constant, $X$ and $Z$ are $T \times p$ and $T \times q$ model matrices and where $f$ is the standard logistic function $f(a) := \exp(a)/(1+\exp(a))$. The $p$-dimensional $\beta$ represents pooled coefficients, while the $q$-dimensional $b$ represent group-specific effects. When both $p$ and $q$ are greater than zero, this is known as *partial pooling*.
 
-The parameters $\beta$ are assigned a prior distribution. This is flexible, and leverages the framework offered by **rstanarm**. Multiple different prior families are available. The group specific coefficients $b$ are treated as zero mean multivariate normal. Prior specifications are described in more detail in Section \@ref(prior-arguments).
+The parameters $\beta$ are assigned a prior distribution. This is flexible, and leverages the framework offered by **rstanarm**. Multiple different prior families are available. The group specific parameters $b$ are treated as zero mean multivariate normal. Prior specifications are described in more detail in Section \@ref(prior-arguments).
 
 The vector $R$ is latent and unobserved. The quantities we do observe are linked to $R$ through its effect on the underlying infections, which we now describe.
 
