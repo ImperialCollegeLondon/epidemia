@@ -51,3 +51,4 @@ src/*.o
 src/*.cc
 *.so
 
+docs
