@@ -143,7 +143,7 @@ The vector $R$ is latent and unobserved. The quantities we do observe are linked
 
 ### Infections
 
-Let $I_{0}, \ldots I_{T}$ be a sequence where $I_{t}$ is the count of infections that have occurred by date $t_0 + t$. This is modeled as the *exact* solution to an ordinary differential equation denoted by $I(t)$. Before describing this ODE, first define $s := (s_1,s_2,\ldots)$, a distribution on $\mathbb{Z}^+$ representing the serial interval of the disease being modeled.
+Let $I_{0}, \ldots I_{T}$ be a sequence where $I_{t}$ represents the cumulative infections that have occurred by $t_0 + t$. This is modeled as the *exact* solution to an ordinary differential equation denoted by $I(t)$. Before describing this ODE, first define $s := (s_1,s_2,\ldots)$, a distribution on $\mathbb{Z}^+$ representing the serial interval of the disease being modeled.
 
 The ODE $I(t)$ satisfies 
 $$
