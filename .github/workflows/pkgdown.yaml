@@ -1,6 +1,6 @@
 on:
   push:
-    branches: develop
+    branches: RC
 
 name: pkgdown
 
