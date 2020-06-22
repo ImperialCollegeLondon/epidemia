@@ -24,19 +24,19 @@ Authors@R: c(
            family = "Unwin",
            role = c("aut"),
            email = "Your email",
-           comment = c(ORCID = "Your email")
+           comment = c(ORCID = "0000-0002-9120-4003")
 	   ),
     person(given = "Seth",
            family = "Flaxman",
            role = c("aut"),
            email = "Your email",
-           comment = c(ORCID = "Your email")
+           comment = c(ORCID = "0000-0002-2477-4217")
 	   ),
     person(given = "Samir",
            family = "Bhatt",
            role = c("aut"),
            email = "Your email",
-           comment = c(ORCID = "Your email")
+           comment = c(ORCID = "0000-0002-0891-4611")
 	   )
 	   )  
 Description: Tools for a Bayesian hierarchial modelling approach for epidemics. Based on the methodology introduced in 
