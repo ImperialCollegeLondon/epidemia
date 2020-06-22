@@ -38,7 +38,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Require libtbb2
-        run: sudo apt-get install libtbb-dev libtbb2
+        run: brew install tbb
 
       - name: Install package
         run: R CMD INSTALL .
