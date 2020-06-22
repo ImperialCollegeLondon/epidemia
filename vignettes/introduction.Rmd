@@ -162,17 +162,25 @@ where $P$ is the population size. This satisfies intuitive properties. If $R_t =
 
 ### Observations
 
-Data is observed from $L$ observation processes $Y_t^{(1)} \ldots Y_{t}^{(L)}$, with the subscript $t$ ranging between $1$ and $T$. Each process represents a different type of observation. This could be daily death data as used in @Flaxman2020, or hospitalization rates, or recorded infections for example. The random variables $Y^{(l)}_t$ are assumed to follow a negative binomial distribution with mean $y_{t}^{(l)}$ and variance
+Data is observed from $L$ observation processes $Y_t^{(1)} \ldots Y_{t}^{(L)}$, with the subscript $t$ ranging between $1$ and $T$. These processes do not need to be fully observed; i.e. data may be missing for a subset of time periods. The typical example of such data would be daily death (as used in @Flaxman2020) or incidence data. However, you are not limited to this. In general,
+
+* $Y_t^{(l)}$ should represent the count of a particular type of 'event' at time $t$. 
+* This event is assumed to occur at most once per member of the population; an example would be hospitalization data. This assumption excludes the processes from representing cumulative observations - which would require a more complex dependence structure than presented here.
+* The processes should be roughly conditionally independent given the underlying infection process.
+
+Extensions to more general types of data will be considered in future versions of the package.
+
+Although the multivariate normal is an obvious candidate for the distribution of $Y^{(l)}_t$, in practice there can be data issues leading to many observations being reported on one day, and fewer on others. To avoid being too influenced by this, the random variables $Y^{(l)}_t$ are assumed independent and negative binomial with mean $y_{t}^{(l)}$ and variance
 $$
 y_t^{(l)} + \frac{{\left(y_t^{(l)}\right)}^2}{\phi_l},
 $$
-where $\phi_l \sim \mathcal{N}^+(0,\sigma^2_{\phi_l})$ for some hyperparameter $\sigma^2_{\phi_l} > 0$. The expected value $y_{t}^{(l)}$ is modeled as a function of
-\begin{itemize}
-\item $I_{t_0}, \ldots, I_{t-1}$, where $I_{t'}$ is the count of infections that have occurred by period ${t'}$,
-\item $\pi^{(l)} = (\pi^{(l)}_1, \pi^{(l)}_2, \ldots)$, a discrete distribution on $\mathbb{Z}^+$ representing the time distribution from an infection event to an observation event,
-\item and a proportion $\alpha_l$, assumed to be a time constant quantity representing the rate of infections which will eventually record as an observation of type $l$.
-\end{itemize}
-To give intuition on the above quantities, suppose for now that the $l$\textsuperscript{th} observation process recorded daily death counts. Then $\pi^{(l)}_{t}$ is the probability, conditional on a death being recorded today, that this individual was infected exactly ${t}$ days prior. $\alpha_{l}$ is then the mean infection fatality ratio (IFR) for the given population.
+where $\phi_l$ is a dispersion parameter distributed $\phi_l \sim \mathcal{N}^+(0,\sigma^2_{\phi_l})$ for some hyperparameter $\sigma^2_{\phi_l} > 0$. The expected value $y_{t}^{(l)}$ is then modeled as a function of
+
+* $I_{t_0}, \ldots, I_{t-1}$, the previous infections,
+* $\pi^{(l)} = (\pi^{(l)}_1, \pi^{(l)}_2, \ldots)$, a discrete distribution on $\mathbb{Z}^+$ representing the time distribution from an infection event to an observation event,
+* and a proportion $\alpha_l$, assumed to be a time constant quantity representing the rate of infections which will eventually record as an observation of type $l$.
+
+To give intuition on the above quantities, suppose for now that the $l$^th^ observation process recorded daily death counts. Then $\pi^{(l)}_{t}$ is the probability, conditional on a death being recorded today, that this individual was infected exactly ${t}$ days prior. $\alpha_{l}$ is then the mean infection fatality ratio (IFR) for the given population.
 
 The functional form for $y_{t}^{(l)}$ is then simply
 $$
@@ -181,15 +189,23 @@ $$
 The distribution $\pi^{(l)}$ is *treated as known*, however in future versions of epidemia we may allow it to be learnt. One possibility in this direction would be to view $\pi^{(l)}$ as a discretization of a continuous parametric distribution. The parameters could be given priors and learnt. The Gamma distribution is a suitable candidate for this.
 
 The proportion $\alpha_l$ is treated as unknown, and given a normal prior truncated to the unit interval. To be precise
-$$
+\begin{equation}
 \alpha_l \sim \mathcal{N}_{[0,1]}(\mu_l, \sigma^2_{\alpha_l}),
-$$
+(\#eq:alpha)
+\end{equation}
 for given hyperparameters $\mu_l$ and $\sigma^2_{\alpha_l}$. In future versions of epidemia, these proportions may instead be assigned Beta priors.
-
 
 ## Multiple Populations
 
-Extending to multiple populations is straightforward. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$. Collect the time-varying reproduction numbers into a vector $R$ with total length $T' := \sum_{m=1}^M T_m$, and consider the parameterization of $R$ in terms of covariates given in \@ref(eq:rt). This approach allows flexible pooling of parameters through $\beta$, while still permitting between group variation using the group-effects $b$. Some populations may have little data; these groups could be at the early stages of the epidemic for example. This approach allows learning to be shared between groups, while helping to avoid overfitting to each group.
+Extending to multiple populations is done by allowing some parameters to be pooled, while keeping others group specific. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$.
+
+We begin by discussing the model parameters outside of \@ref(eq:rt). We replace \@ref(eq:alpha) with
+$$
+\alpha_{l,m} \sim \mathcal{N}_{[0,1]}(\mu_{l,m}, \sigma^2_{\alpha_l}),
+$$
+so that \@ref(eq:alpha) is replicated for each group, except that each observation type has a shared hyperparameter $\sigma^2_{\alpha_l}$. The dispersion parameters $\phi_l$ are on the other hand pooled, and $\pi^{(l)}$ are assumed the same for each group.
+
+The remaining parameters relate to the parameterisation of the time-varying reproduction numbers. Collect these into a vector $R$ with total length $T' := \sum_{m=1}^M T_m$, and consider the parameterization of $R$ in terms of covariates given in \@ref(eq:rt). This approach allows flexible pooling of parameters through $\beta$, while still permitting between group variation using the group-effects $b$. 
 
 # R Implementation
 
