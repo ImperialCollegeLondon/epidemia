@@ -141,7 +141,7 @@ Next we prepare the initialisation values. This is very crude at the moment and 
 ```{r}
 initf <- function(){
     i <- sample(1:50,1)
-    res <- lapply(extract(fitpre$stanfit),
+    res <- lapply(rstan::extract(fitpre$stanfit),
                   function(x) {
                       if (length(dim(x))==1){
                           as.array(x[i])

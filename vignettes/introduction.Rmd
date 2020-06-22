@@ -176,7 +176,7 @@ y_t^{(l)} + \frac{{\left(y_t^{(l)}\right)}^2}{\phi_l},
 $$
 where $\phi_l$ is a dispersion parameter distributed $\phi_l \sim \mathcal{N}^+(0,\sigma^2_{\phi_l})$ for some hyperparameter $\sigma^2_{\phi_l} > 0$. The expected value $y_{t}^{(l)}$ is then modeled as a function of
 
-* $I_{t_0}, \ldots, I_{t-1}$, the previous infections,
+* $I_{0}, \ldots, I_{t-1}$, the previous infections,
 * $\pi^{(l)} = (\pi^{(l)}_1, \pi^{(l)}_2, \ldots)$, a discrete distribution on $\mathbb{Z}^+$ representing the time distribution from an infection event to an observation event,
 * and a proportion $\alpha_l$, assumed to be a time constant quantity representing the rate of infections which will eventually record as an observation of type $l$.
 
