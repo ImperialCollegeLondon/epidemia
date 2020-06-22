@@ -78,7 +78,6 @@ Suggests:
     knitr,
     gridExtra,
     xfun,
-    rstanarm,
     bookdown
 VignetteBuilder:
     knitr
