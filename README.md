@@ -17,17 +17,20 @@ design of the package has been inspired by, and has borrowed from,
 epidemia uses [rstan](https://mc-stan.org/rstan/) (Stan Development Team
 2020) as the backend for fitting models.
 
-This is an early beta release of the package. There will be regular
+This is an early beta release of the package. If you are interested in 
+taking part in beta testing, please *[contact us](mailto:james.scott15@imperial.ac.uk).
+
+## Disclaimer
+
+As a beta release, there will be regular
 updates with additional features and more extensive testing. Any
 feedback is greatly appreciated - in particular if you find bugs, find
 the documentation unclear, or have feature requests, please report them
 [here](https://github.com/ImperialCollegeLondon/epidemia/issues).
 
 ## Installation
-
-If you are interested in beta testing this package, please [contact
-us](mailto:james.scott15@imperial.ac.uk). Once you have access to the
-repository, clone it and install from source. We recommend avoiding
+Once you have access to the repository, clone it and install from source. 
+We recommend avoiding
 installation of any vignettes as these are computationally demanding,
 and are best viewed online.
 
