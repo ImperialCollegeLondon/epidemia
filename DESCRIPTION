@@ -64,7 +64,8 @@ Imports:
     ggplot2,
     ggpubr,
     scales,
-    Rdpack
+    Rdpack,
+    stats
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
@@ -74,7 +75,11 @@ LinkingTo:
 SystemRequirements: GNU make
 Suggests: 
     testthat,
-    knitr
+    knitr,
+    gridExtra,
+    xfun,
+    rstanarm,
+    bookdown
 VignetteBuilder:
     knitr
 RdMacros:
