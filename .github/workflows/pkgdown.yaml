@@ -6,7 +6,7 @@ name: pkgdown
 
 jobs:
   pkgdown:
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -30,9 +30,6 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
-      - name: Install libcurl4
-        run: sudo apt-get install libcurl4-openssl-dev
-
       - name: Install dependencies
         run: |
           install.packages("remotes")
@@ -41,7 +38,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Require libtbb2
-        run: sudo apt-get install libtbb-dev libtbb2 
+        run: brew install tbb
 
       - name: Install package
         run: R CMD INSTALL .
