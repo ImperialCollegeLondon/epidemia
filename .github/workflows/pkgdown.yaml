@@ -6,7 +6,7 @@ name: pkgdown
 
 jobs:
   pkgdown:
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -38,7 +38,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Require libtbb2
-        run: brew install tbb
+        run: sudo apt-get install libtbb-dev libtbb2
 
       - name: Install package
         run: R CMD INSTALL .
