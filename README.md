@@ -2,17 +2,15 @@ Flexible Epidemic Modeling with epidemia
 ================
 
 The epidemia package allows researchers to flexibly specify and fit
-Bayesian epidemiological models in the style of Flaxman et al. (2020).
+Bayesian epidemiological models in the style of [Flaxman et al. (2020)](https://www.nature.com/articles/s41586-020-2405-7).
 The package leverages R’s formula interface to paramaterize the
-time-varying reproduction rate in terms of arbitrary covariates.
-Multiple countries/states can be modelled simultaneously with multilevel
+time-varying reproduction number in terms of arbitrary covariates.
+Multiple countries/states can be modelled simultaneously with hierarchical
 models. The design of the package has been inspired by, and has borrowed
-from, the rstanarm package (Goodrich et al. 2020). epidemia uses rstan
-(Stan Development Team 2020) as the backend for fitting models. The
+from, the [rstanarm](https://mc-stan.org/rstanarm/) package (Goodrich et al. 2020). epidemia uses [RStan](https://mc-stan.org/rstan/) (Stan Development Team 2020) as the backend for fitting models. The
 primary model fitting function in epidemia is `epim`.
 
-Please see [here](/vignettes/introduction.pdf) for a demonstration on how
-to use the package.
+[Our vignettes](/vignettes/introduction.pdf) demonstrate how to use the package.
 
 # Example Usage
 
