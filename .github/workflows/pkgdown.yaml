@@ -33,7 +33,9 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
       - name: Document package
-        run: devtools::document()
+        run: |
+          install.packages("devtools")
+          devtools::document()
         shell: Rscript {0}
 
       - name: Install dependencies
