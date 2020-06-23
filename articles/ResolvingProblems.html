@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
       </span>
     </div>
 
@@ -135,7 +135,7 @@
 <span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2003-01-01"</span>)<span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,along.with=<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
 <span class="kw">obs</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
 
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span><span class="fu">rw</span>(<span class="kw">date</span>,<span class="fl">3</span>),
+<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span><span class="fu"><a href="../reference/rw.html">rw</a></span>(<span class="kw">date</span>,<span class="fl">3</span>),
      data=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,date=<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span>),
              obs=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
                  incidence=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
@@ -220,8 +220,8 @@
 <p>And here are the resulting fits.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu">plot_rt</span>(<span class="kw">fit</span>),
-             <span class="fu">plot_obs</span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),
+             <span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
              nrow=<span class="fl">2</span>)
 </pre></div>
 <p><img src="ResolvingProblems_files/figure-html/SARScumulativeplot-1.png" width="700"></p>

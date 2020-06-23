@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Articles • epidemia</title>
+<title>Flexible Epidemic Modeling with epidemia — epidemia-package • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,7 +41,19 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Articles" />
+<meta property="og:title" content="Flexible Epidemic Modeling with epidemia — epidemia-package" />
+<meta property="og:description" content="The epidemia package allows researchers to flexibly
+specify and fit Bayesian epidemiological models in the style of
+Flaxman et al. (2020)
+. The
+package leverages R's formula interface to paramterise the reproduction rate
+in terms of arbitrary covariates, and easily allows pooling of parameters.
+The design of the package has been inspired by, and borrowed from, the rstanarm
+package (Goodrich et al. 2020)
+.
+epidemia uses rstan (Stan Development Team 2020)
+ as the backend for fitting the models.
+The primary model fitting function in epidemia is epim." />
 
 
 
@@ -60,7 +72,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-article-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -133,24 +145,54 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Articles</h1>
+    <h1>Flexible Epidemic Modeling with epidemia</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/epidemia-package.R'><code>R/epidemia-package.R</code></a></small>
+    <div class="hidden name"><code>epidemia-package.Rd</code></div>
     </div>
 
-    <div class="section ">
-      <h3>All vignettes</h3>
-      <p class="section-desc"></p>
-
-      <dl>
-        <dt><a href="IncidenceOnly.html">Modelling of R  with only Incidence data</a></dt>
-        <dd></dt>
-        <dt><a href="ResolvingProblems.html">Resolving Problems</a></dt>
-        <dd></dt>
-        <dt><a href="TimeDependentR.html">Time-dependent Modelling of R</a></dt>
-        <dd></dt>
-        <dt><a href="introduction.html">Flexible Epidemic Modeling with epidemia</a></dt>
-        <dd></dt>
-      </dl>
+    <div class="ref-description">
+    <p>The <span class="pkg">epidemia</span> package allows researchers to flexibly
+specify and fit Bayesian epidemiological models in the style of
+Flaxman et al. (2020)
+. The
+package leverages R's formula interface to paramterise the reproduction rate
+in terms of arbitrary covariates, and easily allows pooling of parameters.
+The design of the package has been inspired by, and borrowed from, the <span class="pkg">rstanarm</span>
+package (Goodrich et al. 2020)
+.
+<span class="pkg">epidemia</span> uses <span class="pkg">rstan</span> (Stan Development Team 2020)
+ as the backend for fitting the models.
+The primary model fitting function in <span class="pkg">epidemia</span> is <code><a href='https://rdrr.io/pkg/epidemia/man/epim.html'>epim</a></code>.</p>
     </div>
+
+
+
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    
+
+
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van
+Elsland SL, FitzJohn RG, Gaythorpe KAM, Geidelberg L, Grassly NC, Green WD, Hallett T, Hamlet A, Hinsley W, Jeffrey B, Knock E, Laydon DJ, Nedjati-Gilani G, Nouvellet P, Parag KV, Siveroni I, Thompson HA, Verity R, Volz E, Walters CE, Wang H, Wang Y, Watson OJ, Winskill P, Xi X, Walker PGT, Ghani AC, Donnelly CA, Riley SM, Vollmer MAC, Ferguson NM, Okell LC, Bhatt S, Team ICCR (2020).
+&#8220;Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.&#8221;
+<em>Nature</em>.
+ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038/s41586-020-2405-7</a>
+, <a href='https://doi.org/10.1038/s41586-020-2405-7'>https://doi.org/10.1038/s41586-020-2405-7</a>.<br /><br /> Goodrich B, Gabry J, Ali I, Brilleman S (2020).
+&#8220;rstanarm: Bayesian applied regression modeling via
+      Stan.&#8221;
+R package version 2.19.3, <a href='https://mc-stan.org/rstanarm'>https://mc-stan.org/rstanarm</a>.<br /><br /> Stan Development Team (2020).
+&#8220;RStan: the R interface to Stan.&#8221;
+R package version 2.19.3, <a href='http://mc-stan.org/'>http://mc-stan.org/</a>.
+()
+Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.19.3. https://mc-stan.org</p>
+
+  </div>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 

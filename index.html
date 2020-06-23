@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
       </span>
     </div>
 
@@ -134,7 +134,6 @@
 <a href="#usage" class="anchor"></a>Usage</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/yihui/xfun">xfun</a></span>)
 <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores=<span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="kw">EuropeCovid</span>)
@@ -145,15 +144,15 @@
 <span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">1e3</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">12345</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>, <span class="kw">date</span>) <span class="op">~</span> <span class="kw">schools_universities</span> <span class="op">+</span> <span class="kw">self_isolating_if_ill</span> <span class="op">+</span>
   <span class="kw">public_events</span> <span class="op">+</span> <span class="kw">lockdown</span> <span class="op">+</span> <span class="kw">social_distancing_encouraged</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu">shifted_gamma</span>(shape = <span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale = <span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="kw">xfun</span>::<span class="fu"><a href="https://rdrr.io/pkg/xfun/man/cache_rds.html">cache_rds</a></span>({<span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)}, hash=<span class="kw">args</span>)
+<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shifted_gamma.html">shifted_gamma</a></span>(shape = <span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale = <span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
+<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 </pre></div>
 <p><img src="reference/figures/plot-1.png"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit">
 <span class="co"># Inspect Rt</span>
-<span class="fu">plot_rt</span>(<span class="kw">fit</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
+<span class="fu"><a href="reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
 <span class="co"># And deaths</span>
-<span class="fu">plot_obs</span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
+<span class="fu"><a href="reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
 </pre></div>
 <p><img src="reference/figures/plot-2.png"></p>
 </div>
@@ -172,6 +171,12 @@
 <h2>License</h2>
 <ul class="list-unstyled">
 <li><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a></li>
+</ul>
+</div>
+<div class="citation">
+<h2>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html">Citing epidemia</a></li>
 </ul>
 </div>
 <div class="developers">

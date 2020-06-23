@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Articles • epidemia</title>
+<title>Print fitted model details — print.epimodel • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,7 +41,9 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Articles" />
+<meta property="og:title" content="Print fitted model details — print.epimodel" />
+<meta property="og:description" content="Prints estimated regression parameters, and other model parameters.
+Similar to printing of rstan::stanreg objects." />
 
 
 
@@ -60,7 +62,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-article-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -133,24 +135,39 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Articles</h1>
+    <h1>Print fitted model details</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/print.R'><code>R/print.R</code></a></small>
+    <div class="hidden name"><code>print.epimodel.Rd</code></div>
     </div>
 
-    <div class="section ">
-      <h3>All vignettes</h3>
-      <p class="section-desc"></p>
-
-      <dl>
-        <dt><a href="IncidenceOnly.html">Modelling of R  with only Incidence data</a></dt>
-        <dd></dt>
-        <dt><a href="ResolvingProblems.html">Resolving Problems</a></dt>
-        <dd></dt>
-        <dt><a href="TimeDependentR.html">Time-dependent Modelling of R</a></dt>
-        <dd></dt>
-        <dt><a href="introduction.html">Flexible Epidemic Modeling with epidemia</a></dt>
-        <dd></dt>
-      </dl>
+    <div class="ref-description">
+    <p>Prints estimated regression parameters, and other model parameters.
+Similar to printing of <code>rstan::stanreg</code> objects.</p>
     </div>
+
+    <pre class="usage"><span class='co'># S3 method for epimodel</span>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='kw'>x</span>, digits = <span class='fl'>1</span>, <span class='kw'>...</span>)</pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>A fitted model object returned by <code>epim</code>.
+See <code>epimodel-objects</code>.</p></td>
+    </tr>
+    <tr>
+      <th>digits</th>
+      <td><p>Number of decimal places to print.</p></td>
+    </tr>
+    </table>
+
+
+  </div>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 

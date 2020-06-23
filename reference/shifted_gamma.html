@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Articles • epidemia</title>
+<title>A shifted gamma prior — shifted_gamma • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,7 +41,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Articles" />
+<meta property="og:title" content="A shifted gamma prior — shifted_gamma" />
+<meta property="og:description" content="A gamma prior distribution which can be shifted." />
 
 
 
@@ -60,7 +61,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-article-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -133,24 +134,48 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Articles</h1>
+    <h1>A shifted gamma prior</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/additional_priors.R'><code>R/additional_priors.R</code></a></small>
+    <div class="hidden name"><code>shifted_gamma.Rd</code></div>
     </div>
 
-    <div class="section ">
-      <h3>All vignettes</h3>
-      <p class="section-desc"></p>
-
-      <dl>
-        <dt><a href="IncidenceOnly.html">Modelling of R  with only Incidence data</a></dt>
-        <dd></dt>
-        <dt><a href="ResolvingProblems.html">Resolving Problems</a></dt>
-        <dd></dt>
-        <dt><a href="TimeDependentR.html">Time-dependent Modelling of R</a></dt>
-        <dd></dt>
-        <dt><a href="introduction.html">Flexible Epidemic Modeling with epidemia</a></dt>
-        <dd></dt>
-      </dl>
+    <div class="ref-description">
+    <p>A gamma prior distribution which can be shifted.</p>
     </div>
+
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a></span>(shape = <span class='fl'>1</span>, scale = <span class='fl'>1</span>, shift = <span class='fl'>0</span>, autoscale = <span class='fl'>TRUE</span>)</pre>
+
+
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p><span class="pkg">rstanarm</span> provides a set of distributions (see <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a></code>) which
+can be used for the priors on regression parameters. Intuitively, non-pharmaceutical interventions are
+unlikely to a-priori cause a large increase in the reproduction number. A shifted gamma prior can
+be used to model this idea, and has been used in
+Flaxman et al. (2020)
+.  <code>shifted_gamma</code> can be used as the <code>prior</code> argument
+to <code>epim</code>.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van
+Elsland SL, FitzJohn RG, Gaythorpe KAM, Geidelberg L, Grassly NC, Green WD, Hallett T, Hamlet A, Hinsley W, Jeffrey B, Knock E, Laydon DJ, Nedjati-Gilani G, Nouvellet P, Parag KV, Siveroni I, Thompson HA, Verity R, Volz E, Walters CE, Wang H, Wang Y, Watson OJ, Winskill P, Xi X, Walker PGT, Ghani AC, Donnelly CA, Riley SM, Vollmer MAC, Ferguson NM, Okell LC, Bhatt S, Team ICCR (2020).
+&#8220;Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.&#8221;
+<em>Nature</em>.
+ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038/s41586-020-2405-7</a>
+, <a href='https://doi.org/10.1038/s41586-020-2405-7'>https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='kw'><a href='https://github.com/ImperialCollegeLondon/epidemia'>epidemia</a></span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='kw'>EuropeCovid</span>)
+<span class='kw'>args</span> <span class='op'>&lt;-</span> <span class='kw'>EuropeCovid</span>
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a></span>(shape=<span class='fl'>1</span>, scale = <span class='fl'>1</span>, shift = <span class='op'>-</span><span class='fl'>0.5</span>)
+</div></pre>
+  </div>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 

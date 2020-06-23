@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
       </span>
     </div>
 
@@ -147,7 +147,6 @@ font-size: 14px;
 <p><strong>epidemia</strong> contains an example dataset <code>EuropeCovid</code>, which contains data on the daily deaths from Covid-19 recorded in 11 European countries. This will be used as a running example throughout the vignette.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/yihui/xfun">xfun</a></span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 </pre></div>
@@ -169,7 +168,7 @@ font-size: 14px;
 </pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu">plot_obs</span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>), <span class="fu">plot_infections</span>(<span class="kw">fit</span>), <span class="fu">plot_rt</span>(<span class="kw">fit</span>),nrow=<span class="fl">3</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>), <span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>), <span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),nrow=<span class="fl">3</span>)
 </pre></div>
 <p><img src="introduction_files/figure-html/plotItaly-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>Often we would like to model more than one population. Here is an example of using multiple populations, where the regression for the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using <code>(1 + lockdown | country)</code> in place of <code>(1 | country)</code> in <code>args$formula</code> below.</p>
@@ -181,11 +180,11 @@ font-size: 14px;
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 </pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu">plot_obs</span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>)
+<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>)
 </pre></div>
 <p><img src="introduction_files/figure-html/plotIU-1.png" width="1152" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="fu">plot_rt</span>(<span class="kw">fit</span>)
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>)
 </pre></div>
 <p><img src="introduction_files/figure-html/plotIU-2.png" width="1152" style="display: block; margin: auto;"></p>
 </div>
@@ -556,14 +555,14 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">200</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>))
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior_PD</span> <span class="op">&lt;-</span> <span class="fl">TRUE</span>
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-<span class="fu">plot_rt</span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>))
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>))
 </pre></div>
 <p><img src="introduction_files/figure-html/normalPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>And example of using a shifted gamma prior…</p>
 <div class="sourceCode" id="cb23"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu">shifted_gamma</span>(shape=<span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale=<span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
+<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shifted_gamma.html">shifted_gamma</a></span>(shape=<span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale=<span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-<span class="fu">plot_rt</span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>))
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>))
 </pre></div>
 <p><img src="introduction_files/figure-html/gammaPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>The above plots give a good indication of the implications of different prior families.</p>
@@ -583,7 +582,7 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 </pre></div>
 <p>You can retrieve the prior distributions used easily with the following.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit">
-<span class="fu">prior_summary</span>(<span class="kw">fit</span>)
+<span class="fu"><a href="../reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fit</span>)
 </pre></div>
 <pre><code>## Priors for model 'fit' 
 ## ------
@@ -604,10 +603,10 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 </pre></div>
 <pre><code>##           parameters
 ## iterations (Intercept) schools_universities self_isolating_if_ill public_events
-##       [1,]    1.937372            0.6731147              5.426596      3.889746
-##       [2,]    1.937325            0.6731219              5.426487      3.889733
-##       [3,]    1.936701            0.6731761              5.427788      3.889753
-##       [4,]    1.936628            0.6731630              5.427825      3.889708</code></pre>
+##       [1,]  -0.3968095         -0.008125440           0.078344280      2.655233
+##       [2,]  -0.5956155         -0.008131280          -0.001502955      2.817968
+##       [3,]  -0.4577314         -0.008131017           0.006516169      2.788945
+##       [4,]  -0.5290314         -0.008128891          -0.005533060      2.715131</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
