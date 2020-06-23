@@ -32,14 +32,9 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
-      - name: Document package
-        run: |
-          install.packages("devtools")
-          devtools::document()
-        shell: Rscript {0}
-
       - name: Install dependencies
         run: |
+          install.packages("devtools")
           install.packages("remotes")
           remotes::install_deps(dependencies = TRUE)
           remotes::install_dev("pkgdown")
@@ -52,5 +47,7 @@ jobs:
         run: R CMD INSTALL .
 
       - name: Deploy package
-        run: pkgdown::deploy_to_branch(new_process = FALSE)
+        run: |
+          devtools::document()
+          pkgdown::deploy_to_branch(new_process = FALSE)
         shell: Rscript {0}
