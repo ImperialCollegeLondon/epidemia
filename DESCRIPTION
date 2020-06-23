@@ -1,6 +1,6 @@
 Package: epidemia
 Title: Modeling of Epidemics using Hierarchical Bayesian Models
-Version: 0.2.0.9000
+Version: 0.3.0
 Authors@R: c(
     person(given = "James",
            family = "Scott",
