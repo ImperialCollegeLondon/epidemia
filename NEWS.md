@@ -1,4 +1,8 @@
 
+# epidemia 0.3.2
+* Citation file
+* Fixes to documentation in website
+
 # epidemia 0.3.1
 * Website fixes
 * Separate index for website and github
