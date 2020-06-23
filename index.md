@@ -54,7 +54,6 @@ The best way to get started is to read the
 
 ``` r
 library(epidemia)
-library(xfun)
 options(mc.cores=parallel::detectCores())
 
 data(EuropeCovid)
@@ -66,7 +65,7 @@ args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=
 args$formula <- R(country, date) ~ schools_universities + self_isolating_if_ill +
   public_events + lockdown + social_distancing_encouraged
 args$prior <- shifted_gamma(shape = 1/6, scale = 1, shift = -log(1.05)/6)
-fit <- xfun::cache_rds({do.call("epim", args)}, hash=args)
+fit <- do.call("epim", args)
 ```
 
 ![](reference/figures/plot-1.png)

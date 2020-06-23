@@ -32,6 +32,10 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
+      - name: Document package
+        run: devtools::document()
+        shell: Rscript {0}
+
       - name: Install dependencies
         run: |
           install.packages("remotes")
