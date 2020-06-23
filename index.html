@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
       </span>
     </div>
 
@@ -93,13 +93,8 @@
 <div id="epidemia" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#epidemia" class="anchor"></a>epidemia</h1></div>
-<style type="text/css">
-body{ /* Normal */
-font-size: 16px;
-}
-</style>
-<p><strong>epidemia</strong> is an R package allowing flexible specification and fitting of Bayesian models for epidemics in the style of Flaxman et al. (2020). The package leverages R’s formula interface to paramaterize the time-varying reproduction rate as a function of covariates. Multiple populations can be modeled simultaneously using hierarchical models. The design of the package has been inspired by, and has borrowed from, <a href="https://mc-stan.org/rstanarm/">rstanarm</a> (Goodrich et al. 2020). epidemia uses <a href="https://mc-stan.org/rstan/">rstan</a> (Stan Development Team 2020) as the backend for fitting models.</p>
-<p>This is an early beta release of the package. If you are interested in taking part in beta testing, please *<a href="mailto:james.scott15@imperial.ac.uk">contact us</a>.</p>
+<p>The epidemia package allows researchers to flexibly specify and fit Bayesian epidemiological models in the style of <a href="https://www.nature.com/articles/s41586-020-2405-7">Flaxman et al. (2020)</a>. The package leverages R’s formula interface to paramaterize the time-varying reproduction rate as a function of covariates. Multiple populations can be modeled simultaneously with hierarchical models. The design of the package has been inspired by, and has borrowed from, <a href="https://mc-stan.org/rstanarm/">rstanarm</a> (Goodrich et al. 2020). epidemia uses <a href="https://mc-stan.org/rstan/">rstan</a> (Stan Development Team 2020) as the backend for fitting models.</p>
+<p>This is an early beta release of the package. If you are interested in taking part in beta testing, please <a href="mailto:james.scott15@imperial.ac.uk">contact us</a>.</p>
 <div id="disclaimer" class="section level2">
 <h2 class="hasAnchor">
 <a href="#disclaimer" class="anchor"></a>Disclaimer</h2>
@@ -148,12 +143,12 @@ font-size: 16px;
 <span class="co"># Inspect Rt</span>
 <span class="fu">plot_rt</span>(<span class="kw">fit</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
 </pre></div>
-<p><img src="../README_files/figure-gfm/examplePlots-1.png"><!-- --></p>
+<p><img src="https://github.com/ImperialCollegeLondon/epidemia/raw/master/README_files/figure-gfm/unnamed-chunk-1-1.png"><!-- --></p>
 <div class="sourceCode" id="cb4"><pre class="downlit">
 <span class="co"># And deaths</span>
 <span class="fu">plot_obs</span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
 </pre></div>
-<p><img src="../README_files/figure-gfm/examplePlots-2.png"><!-- --></p>
+<p><img src="https://github.com/ImperialCollegeLondon/epidemia/raw/master/README_files/figure-gfm/unnamed-chunk-1-2.png"><!-- --></p>
 </div>
 <div id="references" class="section level2">
 <h2 class="hasAnchor">
