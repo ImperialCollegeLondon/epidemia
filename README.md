@@ -1,24 +1,18 @@
 epidemia
 ================
 
-<style type="text/css">
-body{ /* Normal */
-font-size: 16px;
-}
-</style>
-
-**epidemia** is an R package allowing flexible specification and fitting
-of Bayesian models for epidemics in the style of Flaxman et al. (2020).
+The epidemia package allows researchers to flexibly specify and fit
+Bayesian epidemiological models in the style of [Flaxman et al. (2020)](https://www.nature.com/articles/s41586-020-2405-7).
 The package leverages R’s formula interface to paramaterize the
 time-varying reproduction rate as a function of covariates. Multiple
-populations can be modeled simultaneously using hierarchical models. The
+populations can be modeled simultaneously with hierarchical models. The
 design of the package has been inspired by, and has borrowed from,
 [rstanarm](https://mc-stan.org/rstanarm/) (Goodrich et al. 2020).
 epidemia uses [rstan](https://mc-stan.org/rstan/) (Stan Development Team
 2020) as the backend for fitting models.
 
 This is an early beta release of the package. If you are interested in 
-taking part in beta testing, please *[contact us](mailto:james.scott15@imperial.ac.uk).
+taking part in beta testing, please [contact us](mailto:james.scott15@imperial.ac.uk).
 
 ## Disclaimer
 
@@ -77,14 +71,14 @@ fit <- xfun::cache_rds({do.call("epim", args)}, hash=args)
 plot_rt(fit, group = "United_Kingdom", levels = c(25,50,75,95))
 ```
 
-![](../README_files/figure-gfm/examplePlots-1.png)<!-- -->
+![](https://github.com/ImperialCollegeLondon/epidemia/raw/master/README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
 ``` r
 # And deaths
 plot_obs(fit, type = "deaths", group = "United_Kingdom", levels = c(25,50,75,95))
 ```
 
-![](../README_files/figure-gfm/examplePlots-2.png)<!-- -->
+![](https://github.com/ImperialCollegeLondon/epidemia/raw/master/README_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->
 
 ## References
 
