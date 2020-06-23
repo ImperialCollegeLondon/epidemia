@@ -26,6 +26,6 @@ have feature requests, please report them
 
 ## Package Website
 
-To get started, please see the [package website](#package-website),
+To get started, please see the [package website](https://imperialcollegelondon.github.io/epidemia/index.html),
 where you can find installation instructions, function documentation,
 and vignettes.
