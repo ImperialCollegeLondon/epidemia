@@ -43,7 +43,8 @@ The best way to get started is to read the
   - [Time-Dependent Modeling](articles/TimeDependentR.html) demonstrate
     how to model weekly changes in the reproduction number as a random
     walk.
-
+  - [Resolving Problems](articles/ResolvingProblems.htm) will demonstrate how to resolve common problems when using the package.
+  
 ## Usage
 
 ``` r
