@@ -23,21 +23,28 @@ Authors@R: c(
 	person(given = "Juliette",
            family = "Unwin",
            role = c("aut"),
-           email = "Your email",
+           email = "h.unwin@imperial.ac.uk",
            comment = c(ORCID = "0000-0002-9120-4003")
 	   ),
     person(given = "Seth",
            family = "Flaxman",
            role = c("aut"),
-           email = "Your email",
+           email = "s.flaxman@imperial.ac.uk",
            comment = c(ORCID = "0000-0002-2477-4217")
 	   ),
     person(given = "Samir",
            family = "Bhatt",
            role = c("aut"),
-           email = "Your email",
+           email = "s.bhatt@imperial.ac.uk",
            comment = c(ORCID = "0000-0002-0891-4611")
+	   ),
+     person(given = "Jonathan",
+           family = "Ish-Horowicz",
+           role = c("ctb"),
+           email = "jonathan.ish-horowicz17@imperial.ac.uk",
+           comment = c(ORCID = "0000-0002-5386-6620")
 	   )
+
 	   )  
 Description: Tools for a Bayesian hierarchial modelling approach for epidemics. Based on the methodology introduced in 
 Flaxman, S., Mishra, S., Gandy, A. et al. <doi:10.1038/s41586-020-2405-7>.

@@ -1,25 +1,28 @@
 epidemia
 ================
 
+## Overview
+
 The epidemia package allows researchers to flexibly specify and fit
 Bayesian epidemiological models in the style of [Flaxman et
-                                                 al. (2020)](https://www.nature.com/articles/s41586-020-2405-7). The
+al. (2020)](https://www.nature.com/articles/s41586-020-2405-7). The
 package leverages R’s formula interface to paramaterize the time-varying
 reproduction rate as a function of covariates. Multiple populations can
 be modeled simultaneously with hierarchical models. The design of the
 package has been inspired by, and has borrowed from,
 [rstanarm](https://mc-stan.org/rstanarm/) (Goodrich et al. 2020).
 epidemia uses [rstan](https://mc-stan.org/rstan/) (Stan Development Team
-                                                   2020) as the backend for fitting models.
+2020) as the backend for fitting models.
 
 This is an early beta release of the package. If you are interested in
 taking part in beta testing, please [contact
-                                     us](mailto:james.scott15@imperial.ac.uk).
+us](mailto:james.scott15@imperial.ac.uk).
 
 ## Disclaimer
 
 As a beta release, there will be regular updates with additional
-features and more extensive testing. Any feedback is greatly appreciated. In particular if you find bugs, the documentation unclear, or
+features and more extensive testing. Any feedback is greatly appreciated
+- in particular if you find bugs, find the documentation unclear, or
 have feature requests, please report them
 [here](https://github.com/ImperialCollegeLondon/epidemia/issues).
 
@@ -34,16 +37,18 @@ computationally demanding, and are best viewed online.
 The best way to get started is to read the
 [vignettes](articles/index.html).
 
-- [Flexible Epidemic Modeling with
-   epidemia](articles/introduction.html) is the main vignette,
-introducing the model framework and the primary model fitting
-function `epim`.
-- [Incidence Only](articles/IncidenceOnly.html) gives examples of
-fitting models using only incidence data and a discrete serial
-interval.
-- [Time-Dependent Modeling](articles/TimeDependentR.html) demonstrate
-how to model weekly changes in the reproduction number as a random
-walk.
+  - [Flexible Epidemic Modeling with
+    epidemia](articles/introduction.html) is the main vignette,
+    introducing the model framework and the primary model fitting
+    function `epim`.
+  - [Incidence Only](articles/IncidenceOnly.html) gives examples of
+    fitting models using only incidence data and a discrete serial
+    interval.
+  - [Time-Dependent Modeling](articles/TimeDependentR.html) demonstrate
+    how to model weekly changes in the reproduction number as a random
+    walk.
+  - [Resolving Problems](articles/ResolvingProblems.htm) will
+    demonstrate how to resolve common problems when using the package.
 
 ## Usage
 
