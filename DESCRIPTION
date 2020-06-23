@@ -37,7 +37,13 @@ Authors@R: c(
            role = c("aut"),
            email = "Your email",
            comment = c(ORCID = "0000-0002-0891-4611")
+	   ),
+     person(given = "Jonathan",
+           family = "Ish-Horowicz",
+           role = c("ctb"),
+           email = "Your email",
 	   )
+
 	   )  
 Description: Tools for a Bayesian hierarchial modelling approach for epidemics. Based on the methodology introduced in 
 Flaxman, S., Mishra, S., Gandy, A. et al. <doi:10.1038/s41586-020-2405-7>.
