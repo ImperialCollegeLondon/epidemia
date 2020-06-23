@@ -1,0 +1,17 @@
+year <- sub("-.*", "", meta$Date)
+version_note <- sprintf("R package version %s", meta$Version)
+
+citHeader("To cite epidemia in publications please use the following citation entry.")
+          
+citEntry(entry = "Misc", 
+         title = "epidemia: Modeling of Epidemics using Hierarchical Bayesian Models",
+         author = c(person("James A.", "Scott"),
+                    person("Axel", "Gandy"),
+                    person("Swapnil", "Mishra"),
+                    person("Juliette", "Unwin"),
+		    person("Seth", "Flaxman"),
+		    person("Samir", "Bhatt")),
+         note = version_note,
+         year = year,
+         url = "https://imperialcollegelondon.github.io/epidemia/"
+)
