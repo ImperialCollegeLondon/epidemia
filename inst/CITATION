@@ -12,6 +12,10 @@ citEntry(entry = "Misc",
 		    person("Seth", "Flaxman"),
 		    person("Samir", "Bhatt")),
          note = version_note,
-         year = year,
-         url = "https://imperialcollegelondon.github.io/epidemia/"
+         year = 2020,
+         url = "https://imperialcollegelondon.github.io/epidemia/",
+	 textVersion =
+           paste0("Scott J. A., Gandy A., Mishra, S., Unwin J., Flaxman S. & Bhatt S. (2020). ",
+                 title = "epidemia: Modeling of Epidemics using Hierarchical Bayesian Models.",
+                 version_note, " https://imperialcollegelondon.github.io/epidemia/")
 )
