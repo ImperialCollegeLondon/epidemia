@@ -49,7 +49,7 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
   if (!is.null(x[["prior_intercept"]]))
     .print_scalar_prior(
       x[["prior_intercept"]], 
-      txt = paste0("Intercept (after predictors centered)"), 
+      txt = paste0("Intercept"), 
       formatters
     )
   if (!is.null(x[["prior"]]))
@@ -61,6 +61,20 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
 
   if (!is.null(x[["prior_covariance"]]))
     .print_covariance_prior(x[["prior_covariance"]], txt = "\nCovariance", formatters)
+
+  if (!is.null(x[["prior_tau"]]))
+    .print_scalar_prior(
+      x[["prior_tau"]], 
+      txt = paste0("\ntau"), 
+      formatters
+    )
+
+  if (!is.null(x[["prior_phi"]]))
+    .print_scalar_prior(
+      x[["prior_phi"]], 
+      txt = paste0("\nphi"), 
+      formatters
+    )
 
   cat("\n------\n")
   cat("See help('prior_summary.epimodel') for more details\n")
@@ -97,7 +111,6 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
 #   for adjusted scales, for which the second function is used. This is kind of
 #   hacky and should be replaced at some point.
 # 
-
 .print_scalar_prior <- function(p, txt = "Intercept", formatters = list()) {
   stopifnot(length(formatters) == 2)
   .f1 <- formatters[[1]]
