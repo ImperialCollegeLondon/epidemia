@@ -44,7 +44,6 @@ Authors@R: c(
            email = "jonathan.ish-horowicz17@imperial.ac.uk",
            comment = c(ORCID = "0000-0002-5386-6620")
 	   )
-
 	   )  
 Description: Tools for a Bayesian hierarchial modelling approach for epidemics. Based on the methodology introduced in 
 Flaxman, S., Mishra, S., Gandy, A. et al. <doi:10.1038/s41586-020-2405-7>.
