@@ -67,12 +67,14 @@ VarCorr.epimodel <- function(x, sigma = 1, ...) {
 #' 
 ngrps.mixed <- function(object, ...) vapply(.flist(object), nlevels, 1)
 
-
 #' Terms method for epimodel objects
 #' @export
 #' @param object, fixed.only, random.only, ... See \code{\link{lme4:::terms.merMod}}
 terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...) {
-  
+
+  if (!is.mixed(object))
+    return(NextMethod("terms"))
+
   fr <- object$glmod$fr
   if (missing(fixed.only) && random.only) 
     fixed.only <- FALSE
