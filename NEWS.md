@@ -1,3 +1,7 @@
+# epidemia 0.3.4
+* New default prior scales in `epim`
+* Example added to using priors vignette
+
 # epidemia 0.3.3
 * Added vignette describing priors
 * Description of collinearity issues in 'resolving problems' vignette
