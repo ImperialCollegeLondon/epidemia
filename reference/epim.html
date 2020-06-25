@@ -74,7 +74,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.4</span>
       </span>
     </div>
 
@@ -157,9 +157,9 @@
   group_subset = <span class='kw'>NULL</span>,
   stan_data = <span class='fl'>FALSE</span>,
   center = <span class='fl'>FALSE</span>,
-  prior = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.25</span>),
-  prior_intercept = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.25</span>),
-  prior_covariance = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>decov</a></span>(scale = <span class='fl'>0.25</span>),
+  prior = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.5</span>),
+  prior_intercept = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.5</span>),
+  prior_covariance = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>decov</a></span>(scale = <span class='fl'>0.5</span>),
   r0 = <span class='fl'>3.28</span>,
   prior_phi = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(location = <span class='fl'>0</span>, scale = <span class='fl'>5</span>),
   prior_tau = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(rate = <span class='fl'>0.03</span>),
@@ -238,7 +238,8 @@ prior on the centered covariates. Defaults to <code>FALSE</code>.</p></td>
     <tr>
       <th>prior</th>
       <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. In addition to the <span class="pkg">rstanarm</span> provided <a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a>,
-a <a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a> can be used.</p></td>
+a <a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a> can be used. <strong>Note:</strong> If <code>autoscale=TRUE</code> (Default) in the call to the prior distribution then
+automatic rescaling of the prior may take place.</p></td>
     </tr>
     <tr>
       <th>prior_intercept</th>

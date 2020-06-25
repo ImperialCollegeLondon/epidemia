@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.4</span>
       </span>
     </div>
 
@@ -98,12 +98,8 @@
 <div id="epidemia" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#epidemia" class="anchor"></a>epidemia</h1></div>
-<div id="overview" class="section level2">
-<h2 class="hasAnchor">
-<a href="#overview" class="anchor"></a>Overview</h2>
 <p>The epidemia package allows researchers to flexibly specify and fit Bayesian epidemiological models in the style of <a href="https://www.nature.com/articles/s41586-020-2405-7">Flaxman et al. (2020)</a>. The package leverages R’s formula interface to paramaterize the time-varying reproduction rate as a function of covariates. Multiple populations can be modeled simultaneously with hierarchical models. The design of the package has been inspired by, and has borrowed from, <a href="https://mc-stan.org/rstanarm/">rstanarm</a> (Goodrich et al. 2020). epidemia uses <a href="https://mc-stan.org/rstan/">rstan</a> (Stan Development Team 2020) as the backend for fitting models.</p>
 <p>This is an early beta release of the package. If you are interested in taking part in beta testing, please <a href="https://forms.gle/PT4JtLs4e3KdLkdp7">fill out this form</a>.</p>
-</div>
 <div id="disclaimer" class="section level2">
 <h2 class="hasAnchor">
 <a href="#disclaimer" class="anchor"></a>Disclaimer</h2>
@@ -125,11 +121,13 @@
 <li>
 <a href="articles/introduction.html">Flexible Epidemic Modeling with epidemia</a> is the main vignette, introducing the model framework and the primary model fitting function <code>epim</code>.</li>
 <li>
+<a href="articles/priors.html">Using Priors</a> gives important details behind using prior distributions for model paramters.</li>
+<li>
 <a href="articles/IncidenceOnly.html">Incidence Only</a> gives examples of fitting models using only incidence data and a discrete serial interval.</li>
 <li>
 <a href="articles/TimeDependentR.html">Time-Dependent Modeling</a> demonstrate how to model weekly changes in the reproduction number as a random walk.</li>
 <li>
-<a href="articles/ResolvingProblems.htm">Resolving Problems</a> will demonstrate how to resolve common problems when using the package.</li>
+<a href="articles/ResolvingProblems.html">Resolving Problems</a> will demonstrate how to resolve common computational problems when using the package.</li>
 </ul>
 </div>
 <div id="usage" class="section level2">

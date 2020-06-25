@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.4</span>
       </span>
     </div>
 
@@ -111,11 +111,10 @@
 <a href="#overview" class="anchor"></a><span class="header-section-number">1</span> Overview</h1>
 <p>Recall the parameterisation for the time-varying reproduction number, given by <a href="#eq:rt">(1.1)</a>.
 <span class="math display" id="eq:rt">\[\begin{equation}
-R = 2A f\left(X\beta + Zb\right)
+R = 2A f\left(X\beta + Zb\right),
 \tag{1.1}
-\end{equation}\]</span></p>
-<p>Prior distributions should be specified for the parameters in <a href="#eq:rt">(1.1)</a>,
-and for additional model parameters.</p>
+\end{equation}\]</span>
+where <span class="math inline">\(f\)</span> is the standard logistic function. Prior distributions should be specified for the parameters in <a href="#eq:rt">(1.1)</a>, and for additional model parameters. Here we focus on those arising from <a href="#eq:rt">(1.1)</a>.</p>
 <p><em>Please note that the current default priors may not be appropriate,
 and should not be relied upon. In future versions of the package,
 we hope to set reasonable default priors.</em></p>
@@ -135,8 +134,8 @@ quantity to intuit for these models.</p>
 <h1 class="hasAnchor">
 <a href="#autoscaling-prior" class="anchor"></a><span class="header-section-number">2</span> Autoscaling <code>prior</code>
 </h1>
-<p>The scale of the <code>prior</code> argument may be adjusted internally to ensure that the prior
-is weakly informative. This can happen both when the default argument is used, and when
+<p>The scale of the <code>prior</code> argument may be adjusted internally to attempt to make the prior
+is weakly informative. This functionality mirrors that used in <strong>rstanarm</strong>. This rescaling can occur both when the default argument is used, and when
 it is user-specified. This adjustment can easily be disabled by setting <code>autoscale=FALSE</code> in the
 call to the prior functions. An example of such a call would be <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::normal(autoscale=FALSE)</a></code>.</p>
 <p>The automatic scaling rules used for the <code>prior</code> is the same as that in <strong>rstanarm</strong>. For clarity,
@@ -147,12 +146,135 @@ we repeat these rules here. Please also refer to <a href="https://mc-stan.org/rs
 <li>For more than two unique values, the original scale is divided by the standard deviation of the predictor.</li>
 </ul>
 <p>If you are unsure whether rescaling has occurred, call <code>prior_summary</code> on a fitted model object.
-If an adjustment has been made, this will show both the originally specified prior and the scaled version.</p>
+If an adjustment has been made, this will show both the originally specified prior and the scaled version An example is given below.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
+<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
+
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)
+<span class="kw">args</span> <span class="op">&lt;-</span> <span class="kw">EuropeCovid</span>
+<span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="st">"France"</span>
+<span class="kw">args</span><span class="op">$</span><span class="kw">algorithm</span> <span class="op">&lt;-</span> <span class="st">"meanfield"</span>
+<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="kw">schools_universities</span> <span class="op">+</span> <span class="kw">lockdown</span> 
+<span class="kw">fm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
+</pre></div>
+<pre><code>## Chain 1: ------------------------------------------------------------
+## Chain 1: EXPERIMENTAL ALGORITHM:
+## Chain 1:   This procedure has not been thoroughly tested and may be unstable
+## Chain 1:   or buggy. The interface is subject to change.
+## Chain 1: ------------------------------------------------------------
+## Chain 1: 
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Gradient evaluation took 0.000343 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.43 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Begin eta adaptation.
+## Chain 1: Iteration:   1 / 250 [  0%]  (Adaptation)
+## Chain 1: Iteration:  50 / 250 [ 20%]  (Adaptation)
+## Chain 1: Iteration: 100 / 250 [ 40%]  (Adaptation)
+## Chain 1: Iteration: 150 / 250 [ 60%]  (Adaptation)
+## Chain 1: Iteration: 200 / 250 [ 80%]  (Adaptation)
+## Chain 1: Success! Found best value [eta = 1] earlier than expected.
+## Chain 1: 
+## Chain 1: Begin stochastic gradient ascent.
+## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
+## Chain 1:    100         -564.543             1.000            1.000
+## Chain 1:    200         -440.020             0.641            1.000
+## Chain 1:    300         -436.805             0.430            0.283
+## Chain 1:    400         -428.427             0.327            0.283
+## Chain 1:    500         -425.056             0.264            0.020
+## Chain 1:    600         -425.106             0.220            0.020
+## Chain 1:    700         -425.631             0.188            0.008   MEDIAN ELBO CONVERGED
+## Chain 1: 
+## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
+## Chain 1: COMPLETED.</code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit">
+<span class="co"># default prior scale not adjusted</span>
+<span class="fu"><a href="../reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fm</span>)
+</pre></div>
+<pre><code>## Priors for model 'fm' 
+## ------
+## Intercept
+##  ~ normal(location = 0, scale = 0.5)
+## 
+## Coefficients
+##  ~ normal(location = [0,0], scale = [0.5,0.5])
+## ------
+## See help('prior_summary.epimodel') for more details</code></pre>
+<p>Notice that no rescaling occurs and the default priors are used.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit">
+<span class="co"># rescale lockdown indicator</span>
+<span class="kw">args</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">lockdown</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="op">*</span> <span class="kw">args</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">lockdown</span>
+<span class="kw">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
+</pre></div>
+<pre><code>## Chain 1: ------------------------------------------------------------
+## Chain 1: EXPERIMENTAL ALGORITHM:
+## Chain 1:   This procedure has not been thoroughly tested and may be unstable
+## Chain 1:   or buggy. The interface is subject to change.
+## Chain 1: ------------------------------------------------------------
+## Chain 1: 
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Gradient evaluation took 0.000246 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.46 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Begin eta adaptation.
+## Chain 1: Iteration:   1 / 250 [  0%]  (Adaptation)
+## Chain 1: Iteration:  50 / 250 [ 20%]  (Adaptation)
+## Chain 1: Iteration: 100 / 250 [ 40%]  (Adaptation)
+## Chain 1: Iteration: 150 / 250 [ 60%]  (Adaptation)
+## Chain 1: Iteration: 200 / 250 [ 80%]  (Adaptation)
+## Chain 1: Iteration: 250 / 250 [100%]  (Adaptation)
+## Chain 1: Success! Found best value [eta = 0.1].
+## Chain 1: 
+## Chain 1: Begin stochastic gradient ascent.
+## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
+## Chain 1:    100         -770.869             1.000            1.000
+## Chain 1:    200         -607.235             0.635            1.000
+## Chain 1:    300         -540.222             0.465            0.269
+## Chain 1:    400         -521.259             0.357            0.269
+## Chain 1:    500         -508.644             0.291            0.124
+## Chain 1:    600         -499.238             0.246            0.124
+## Chain 1:    700         -498.169             0.211            0.036
+## Chain 1:    800         -495.352             0.185            0.036
+## Chain 1:    900         -493.429             0.165            0.025
+## Chain 1:   1000         -487.182             0.150            0.025
+## Chain 1:   1100         -480.070             0.051            0.019
+## Chain 1:   1200         -481.397             0.025            0.015
+## Chain 1:   1300         -476.481             0.013            0.013
+## Chain 1:   1400         -467.686             0.011            0.013
+## Chain 1:   1500         -473.070             0.010            0.011
+## Chain 1:   1600         -472.918             0.008            0.010   MEAN ELBO CONVERGED
+## Chain 1: 
+## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
+## Chain 1: COMPLETED.</code></pre>
+<div class="sourceCode" id="cb7"><pre class="downlit">
+<span class="co"># notice the rescaled prior for lockdown</span>
+<span class="fu"><a href="../reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fm2</span>)
+</pre></div>
+<pre><code>## Priors for model 'fm2' 
+## ------
+## Intercept
+##  ~ normal(location = 0, scale = 0.5)
+## 
+## Coefficients
+##   Specified prior:
+##     ~ normal(location = [0,0], scale = [0.5,0.5])
+##   Adjusted prior:
+##     ~ normal(location = [0,0], scale = [0.500,0.005])
+## ------
+## See help('prior_summary.epimodel') for more details</code></pre>
+<p>Rescaling the lockdown indicator has lead to an adjusted prior on the lockdown coefficient.</p>
 </div>
 <div id="additional-priors" class="section level1">
 <h1 class="hasAnchor">
 <a href="#additional-priors" class="anchor"></a><span class="header-section-number">3</span> Additional Priors</h1>
-<p>There is one caveat: which is that we offer additional priors. Currently there is just one, <code>shifted_gamma</code>, which can only be used for the <code>prior</code> argument. The addition of this prior is motivated by the priors used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. This essentially allows for
+<p><strong>epidemia</strong> offers additional priors on top of those in <strong>rstanarm</strong>. Currently there is just one, <code>shifted_gamma</code>, which can only be used for the <code>prior</code> argument. The addition of this prior is motivated by the priors used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. This essentially allows for
 <span class="math display">\[\begin{equation}
 \beta_i \sim \text{Gamma}(\alpha,\theta) - \eta,
 \end{equation}\]</span>
