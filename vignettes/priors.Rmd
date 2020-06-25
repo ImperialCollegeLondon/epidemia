@@ -1,0 +1,82 @@
+---
+title: "Using Prior Distributions"
+output:
+  bookdown::html_document2:
+    theme: cerulean
+link-citations: yes
+pkgdown:
+  as_is: true
+fig_width: 9 
+fig_height: 6
+bibliography: ../inst/REFERENCES.bib
+vignette: |
+  %\VignetteIndexEntry{Using prior distributions} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  \usepackage[utf8]{inputenc}
+---
+
+*Please read the [introductory vignette](introduction.html) before this document.* 
+
+# Overview
+
+Recall the parameterisation for the time-varying reproduction number, given by \@ref(eq:rt).
+\begin{equation}
+R = 2A f\left(X\beta + Zb\right)
+(\#eq:rt)
+\end{equation}
+
+Prior distributions should be specified for the parameters in \@ref(eq:rt), 
+and for additional model parameters. 
+
+*Please note that the current default priors may not be appropriate, 
+and should not be relied upon. In future versions of the package, 
+we hope to set reasonable default priors.*
+
+The priors for $\beta$ are set using the `prior` and 
+`prior_intercept` arguments. These will only have an effect if the formula 
+specifies covariates and an intercept respectively. These function  similarly 
+to the same arguments in [`stan_lm`](https://mc-stan.org/rstanarm/reference/stan_lm.html). 
+To understand which families can be used please refer to 
+[rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html). 
+
+
+Suppose we are modeling a single group and \@ref(eq:rt) specifies an intercept. If `center=FALSE` in a call to `epim`, then `prior_intercept` sets the prior on the raw intercept. If all other covariates are zero at the beginning of the epidemic then 
+this can be viewed as specifying a prior on the initial reproduction rate. We do not recommend 
+using `center=TRUE`, because `prior_intercept` then refers to 
+the prior on the intercept after all covariates have been centered. This is a difficult 
+quantity to intuit for these models.
+
+# Autoscaling `prior`
+
+The scale of the `prior` argument may be adjusted internally to ensure that the prior 
+is weakly informative. This can happen both when the default argument is used, and when 
+it is user-specified. This adjustment can easily be disabled by setting `autoscale=FALSE` in the 
+call to the prior functions. An example of such a call would be `rstanarm::normal(autoscale=FALSE)`.
+
+The automatic scaling rules used for the `prior` is the same as that in **rstanarm**. For clarity, 
+we repeat these rules here. Please also refer to [rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html) for more information on this.
+
+* If a predictor has only one unique value, no rescaling occurs.
+* If it has two unique values, the original scale is divided by the range of the values.
+* For more than two unique values, the original scale is divided by the standard deviation of the predictor.
+
+If you are unsure whether rescaling has occurred, call `prior_summary` on a fitted model object.
+If an adjustment has been made, this will show both the originally specified prior and the scaled version.
+
+# Additional Priors
+
+There is one caveat: which is that we offer additional priors. Currently there is just one, `shifted_gamma`, which can only be used for the `prior` argument. The addition of this prior is motivated by the priors used in @Flaxman2020. This essentially allows for 
+\begin{equation}
+\beta_i \sim \text{Gamma}(\alpha,\theta) - \eta,
+\end{equation}
+where $\alpha$ and $\theta$ are shape and scale parameters, and $\eta$ is a shift to allow for priors with support below zero.
+
+## Priors on Covariance Matrices
+
+Consider a single 'random-effects' term in the formula. A good example would be `(1 + lockdown | country)`. For each group the intercepts and slopes are treated as zero-mean multivariate normal with unknown covariance matrix $\Sigma$. For our example term, fix one level implied by the factor `country`, say `"Italy"`. For this group, there are two coefficients - a random intercept for Italy, and a random slope. Therefore $\Sigma$ has dimension $2 \times 2$. Coefficients for different groups are treated as independent. 
+
+**epidemia** borrows from **rstanarm** and uses the [`decov`](rstanarm priors) prior for $\Sigma$. This decomposes $\Sigma$ into a variance vector and a correlation matrix. An LKJ prior is used on the correlation matrix, while the variance is decomposed into the product of a simplex vector and the trace of $\Sigma$. The simplex vector is given a symmetric Dirichlet prior, which the trace is once again decomposed as $tr(\Sigma) = J \kappa$, where $J$ is the order of $\Sigma$. Finally $\kappa$ is assigned a scale-invariant prior - specifically a Gamma distribution with give shape and scale hyperparameters. For more information on this, please see [rstanarm priors](http://mc-stan.org/rstanarm/reference/priors.html) and this [vignette](http://mc-stan.org/rstanarm/articles/glmer.html).
+
+When the left hand side of the formula has only one term (for example `(1 | country)`), this prior on the covariance simplifies considerably. $\Sigma$ simply reduces to $\kappa$, which has a gamma prior.
+
+# References

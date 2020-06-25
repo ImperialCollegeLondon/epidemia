@@ -15,8 +15,7 @@ epidemia uses [rstan](https://mc-stan.org/rstan/) (Stan Development Team
 2020) as the backend for fitting models.
 
 This is an early beta release of the package. If you are interested in
-taking part in beta testing, please [contact
-us](mailto:james.scott15@imperial.ac.uk).
+taking part in beta testing, please [fill out this form](https://forms.gle/PT4JtLs4e3KdLkdp7).
 
 ## Disclaimer
 
