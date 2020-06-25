@@ -128,3 +128,86 @@ grid.arrange(plot_rt(fit),
              plot_obs(fit,"incidence"),
              nrow=2)
 ```
+
+## Collinearity
+
+In our experience, a leading cause of pathologies in the model fitting stage is collinearity between the predictors explaining the time-varying reproduction number. This can lead to divergent transitions and long sampling times.
+
+Take the example of modeling the effect of several non-pharmaceutical interventions (NPIs). There are two primary reasons why these effects can be highly confounded. Most obviously, the interventions will often take place in quick succession, and so they will be highly collinear. The second cause is the time distribution from infection to an event - for example a death. This is often such that conditional on observing a death at a particular time, there is a wide range of plausible dates at which the individual was infected. Any effects on the reproduction number from interventions occuring close to one-another will be smoothed over in the death data, and the signal as to which intervention actually had an effect becomes weaker.
+
+One possible remedy for this is to pool the effects over different groups. This incorporates more data to delineate each effect. Another approach is to regularize the problem by using more informative priors. Of course this should be done in a principled manner; for example by using results from previous studies.
+
+In this section, we illustrate this phenomenon with a simulated dataset. The code below simulates death data using an assumed initial reproduction number, and assumed effect sizes for the `schools_universities` and `lockdown` NPIs. The aim will be to recover the parameters under which the data was simulated.
+
+```{r priorSampling, cache=TRUE}
+data("EuropeCovid")
+EuropeCovid$data[EuropeCovid$data$country == "France" & EuropeCovid$data$date >= as.Date("2020-03-01"), "schools_universities"] = 1
+args <- EuropeCovid
+args$group_subset <- "France"
+args$algorithm <- "sampling"
+args$sampling_args <- list(iter = 1e3, seed=12345)
+args$formula <- R(country, date) ~ schools_universities + lockdown
+args$prior_PD <- TRUE
+
+# set some reasonable prior values
+args$r0 <- 3
+args$prior_intercept <- rstanarm::normal(location=0, scale = 0.01)
+args$prior <- rstanarm::normal(location = c(0.5,1.5), scale=0.01)
+
+fm <- do.call("epim", args)
+# look at prior predictive distribution
+plot_rt(fm)
+```
+In the above code, we have assumed that the initial reproduction number is close to 3, and have assumed regression parameters for the schools/universities and lockdown NPIs of around 0.5 and 1.5 respectively. Now we simulate daily death counts under this model, which will be used in place of the true death data. 
+```{r replaceData}
+# use mean data from prior run
+obs <- get_obs(fm, type="deaths")$France
+dates <- obs[,1]
+obs <- as.integer(rowMeans(obs[,-1]))
+
+# replace France deaths data with simulated data
+deaths <- args$obs$deaths
+w <- deaths$odata$country == "France"
+deaths$odata <- deaths$odata[w,]
+deaths$odata$deaths <- obs
+args$obs$deaths <- deaths
+```
+
+Fitting the model to the simulared data with uninformative priors for the initial reproduction number and effects.
+```{r divergentRun, cache=TRUE}
+# fit the model with uninformative priors
+args$prior_PD <- FALSE
+args$prior_intercept <- rstanarm::normal()
+args$prior <- rstanarm::normal()
+system.time(fm2 <- do.call("epim", args))
+```
+Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.
+```{r regularized}
+# more informative prior intercept
+args$prior_intercept <- rstanarm::normal(scale=0.2)
+system.time(fm3 <- do.call("epim", args))
+```
+This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.
+
+We now plot the posterior correlations between these two parameters.
+```{r}
+par(mfrow=c(1,2))
+mat <- as.array(fm2)
+r0 <- mat[,1,"(Intercept)"]
+schools_universities <- mat[,1,"schools_universities"]
+plot(r0, schools_universities, type = "o")
+
+mat <- as.array(fm3)
+r0 <- mat[,1,"(Intercept)"]
+schools_universities <- mat[,1,"schools_universities"]
+plot(r0, schools_universities, type = "o")
+```
+The left hand plot shows the posterior distribution from `fm2`, where less informative priors were used. The divergent transitions appear to be caused by the small step-size required to traverse the distribution horizontally/vertically, and the large step size desired for traversing the diagonal; there is a *ridge* in the posterior. For more information on why this can pose a problem for Hamiltonian Monte Carlo, please refer to [the stan user guide](https://mc-stan.org/docs/2_20/stan-users-guide/collinearity-section.html). Using stronger prior information reduces the posterior correlation and the sampler explores the space better, as shown in the right hand plot.
+
+```{r}
+print(fm2, digits=2)
+print(fm3, digits=2)
+```
+
+
+

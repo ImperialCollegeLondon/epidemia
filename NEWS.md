@@ -1,3 +1,7 @@
+# epidemia 0.3.3
+* Added vignette describing priors
+* Description of collinearity issues in 'resolving problems' vignette
+* Form for potential beta testers
 
 # epidemia 0.3.2
 * Citation file

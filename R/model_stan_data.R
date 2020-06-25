@@ -85,7 +85,7 @@ gen_model_sdat <-
     noise_scales  <- numeric()
   }
 
-  standata <- loo::nlist(M            = M,
+  standata <- loo::nlist(M      = M,
                    N0           = seed_days,
                    si           = si,
                    pop          = as.array(pops$pop),

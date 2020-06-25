@@ -65,7 +65,6 @@ The document is organized as follows. Section \@ref(example-usage) provides basi
 
 ```{r message=FALSE}
 library(epidemia)
-library(xfun)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
 ```

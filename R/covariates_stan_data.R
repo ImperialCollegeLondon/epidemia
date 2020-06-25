@@ -36,7 +36,7 @@ gen_covariates_sdat <-
     prior,
     nvars,
     link = linkstr,
-    default_scale = 2.5,
+    default_scale = 0.25,
     ok_dists = ok_dists
   )
 
@@ -48,7 +48,7 @@ gen_covariates_sdat <-
   prior_intercept_stuff <- handle_glm_prior(
     prior_intercept,
     nvars = 1,
-    default_scale = 10,
+    default_scale = 0.25,
     link = linkstr,
     ok_dists = ok_intercept_dists
   )
@@ -171,6 +171,7 @@ gen_covariates_sdat <-
     adjusted_prior_intercept_scale = prior_scale_for_intercept)
 
   standata$prior.info <- prior_info
+
   standata$X <- xtemp
   
   return(standata)
