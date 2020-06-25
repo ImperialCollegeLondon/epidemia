@@ -46,7 +46,8 @@
 #' @param center If \code{TRUE} then the covariates for the \eqn{R_t} regression are centered to have mean zero. All of the priors are then interpreted as 
 #'        prior on the centered covariates. Defaults to \code{FALSE}.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. In addition to the \pkg{rstanarm} provided \link[rstanarm]{priors},
-#'         a \link[epidemia]{shifted_gamma} can be used.
+#'         a \link[epidemia]{shifted_gamma} can be used. **Note:** If \code{autoscale=TRUE} (Default) in the call to the prior distribution then 
+#'         automatic rescaling of the prior may take place. 
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for the regression intercept (if it exists).
 #' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only used if the \code{formula} argument specifies a
 #' @param r0 The prior expected value of \eqn{R_0}. The maximum \eqn{R_0} in the simulations will be limited to twice this value.

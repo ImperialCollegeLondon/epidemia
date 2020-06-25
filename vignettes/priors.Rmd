@@ -46,8 +46,8 @@ quantity to intuit for these models.
 
 # Autoscaling `prior`
 
-The scale of the `prior` argument may be adjusted internally to ensure that the prior 
-is weakly informative. This can happen both when the default argument is used, and when 
+The scale of the `prior` argument may be adjusted internally to attempt to make the prior 
+is weakly informative. This functionality mirrors that used in **rstanarm**. This rescaling can occur both when the default argument is used, and when 
 it is user-specified. This adjustment can easily be disabled by setting `autoscale=FALSE` in the 
 call to the prior functions. An example of such a call would be `rstanarm::normal(autoscale=FALSE)`.
 
@@ -59,11 +59,38 @@ we repeat these rules here. Please also refer to [rstanarm's priors](https://mc-
 * For more than two unique values, the original scale is divided by the standard deviation of the predictor.
 
 If you are unsure whether rescaling has occurred, call `prior_summary` on a fitted model object.
-If an adjustment has been made, this will show both the originally specified prior and the scaled version.
+If an adjustment has been made, this will show both the originally specified prior and the scaled version An example is given below.
+
+```{r priorAS, message=FALSE, warning=FALSE}
+library(epidemia)
+options(mc.cores = parallel::detectCores())
+
+data("EuropeCovid")
+args <- EuropeCovid
+args$group_subset <- "France"
+args$algorithm <- "meanfield"
+args$formula <- R(country,date) ~ 1 + schools_universities + lockdown 
+fm <- do.call("epim", args)
+
+# default prior scale not adjusted
+prior_summary(fm)
+```
+Notice that no rescaling occurs and the default priors are used.
+
+
+```{r priorAS2, message=FALSE, warning=FALSE}
+# rescale lockdown indicator
+args$data$lockdown <- 100 * args$data$lockdown
+fm2 <- do.call("epim", args)
+# notice the rescaled prior for lockdown
+prior_summary(fm2)
+
+```
+Rescaling the lockdown indicator has lead to an adjusted prior on the lockdown coefficient.
 
 # Additional Priors
 
-There is one caveat: which is that we offer additional priors. Currently there is just one, `shifted_gamma`, which can only be used for the `prior` argument. The addition of this prior is motivated by the priors used in @Flaxman2020. This essentially allows for 
+**epidemia** offers additional priors on top of those in **rstanarm**. Currently there is just one, `shifted_gamma`, which can only be used for the `prior` argument. The addition of this prior is motivated by the priors used in @Flaxman2020. This essentially allows for 
 \begin{equation}
 \beta_i \sim \text{Gamma}(\alpha,\theta) - \eta,
 \end{equation}
