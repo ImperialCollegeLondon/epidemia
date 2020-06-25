@@ -1,8 +1,6 @@
 epidemia
 ================
 
-## Overview
-
 The epidemia package allows researchers to flexibly specify and fit
 Bayesian epidemiological models in the style of [Flaxman et
 al. (2020)](https://www.nature.com/articles/s41586-020-2405-7). The
@@ -40,14 +38,16 @@ The best way to get started is to read the
     epidemia](articles/introduction.html) is the main vignette,
     introducing the model framework and the primary model fitting
     function `epim`.
+  - [Using Priors](articles/priors.html) gives important details behind 
+    using prior distributions for model paramters.
   - [Incidence Only](articles/IncidenceOnly.html) gives examples of
     fitting models using only incidence data and a discrete serial
     interval.
   - [Time-Dependent Modeling](articles/TimeDependentR.html) demonstrate
     how to model weekly changes in the reproduction number as a random
     walk.
-  - [Resolving Problems](articles/ResolvingProblems.htm) will
-    demonstrate how to resolve common problems when using the package.
+  - [Resolving Problems](articles/ResolvingProblems.html) will
+    demonstrate how to resolve common computational problems when using the package.
 
 ## Usage
 
