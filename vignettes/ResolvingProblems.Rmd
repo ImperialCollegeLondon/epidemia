@@ -177,14 +177,15 @@ Fitting the model to the simulared data with uninformative priors for the initia
 ```{r divergentRun, cache=TRUE}
 # fit the model with uninformative priors
 args$prior_PD <- FALSE
-args$prior_intercept <- rstanarm::normal()
-args$prior <- rstanarm::normal()
+args$prior_intercept <- rstanarm::normal(scale=10)
+args$prior <- rstanarm::normal(scale=10)
 system.time(fm2 <- do.call("epim", args))
 ```
 Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.
 ```{r regularized}
 # more informative prior intercept
-args$prior_intercept <- rstanarm::normal(scale=0.2)
+args$prior_intercept <- rstanarm::normal(scale=0.5)
+args$prior <- rstanarm::normal(scale=0.5)
 system.time(fm3 <- do.call("epim", args))
 ```
 This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.

@@ -21,12 +21,10 @@ vignette: |
 
 Recall the parameterisation for the time-varying reproduction number, given by \@ref(eq:rt).
 \begin{equation}
-R = 2A f\left(X\beta + Zb\right)
+R = 2A f\left(X\beta + Zb\right),
 (\#eq:rt)
 \end{equation}
-
-Prior distributions should be specified for the parameters in \@ref(eq:rt), 
-and for additional model parameters. 
+where $f$ is the standard logistic function. Prior distributions should be specified for the parameters in \@ref(eq:rt), and for additional model parameters. Here we focus on those arising from \@ref(eq:rt).
 
 *Please note that the current default priors may not be appropriate, 
 and should not be relied upon. In future versions of the package, 
