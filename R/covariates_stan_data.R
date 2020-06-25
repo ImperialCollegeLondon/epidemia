@@ -172,7 +172,6 @@ gen_covariates_sdat <-
 
   standata$prior.info <- prior_info
 
-  print(standata$prior.info)
   standata$X <- xtemp
   
   return(standata)
