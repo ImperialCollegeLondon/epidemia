@@ -57,7 +57,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(65, 0, "start", "/tparameters/gen_infections.stan");
     reader.add_event(91, 26, "end", "/tparameters/gen_infections.stan");
     reader.add_event(91, 34, "restart", "model_pp_base");
-    reader.add_event(106, 47, "end", "model_pp_base");
+    reader.add_event(107, 48, "end", "model_pp_base");
     return reader;
 }
 template <typename T0__>
@@ -773,6 +773,11 @@ public:
                         stan::model::assign(pred, 
                                     stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
                                     ((get_base1(noise, m, r, "noise", 1) * get_base1(means, m, r, "means", 1)) * dot_product(sub_col(infections, n0, m, (i - n0)), tail(get_base1(pvecs_rev, r, "pvecs_rev", 1), (i - n0)))), 
+                                    "assigning variable pred");
+                        current_statement_begin__ = 101;
+                        stan::model::assign(pred, 
+                                    stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
+                                    neg_binomial_2_rng(get_base1(get_base1(pred, r, "pred", 1), i, m, "pred", 2), get_base1(phi, r, "phi", 1), base_rng__), 
                                     "assigning variable pred");
                     }
                     }

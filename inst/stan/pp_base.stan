@@ -41,6 +41,7 @@ for (r in 1:R) {
         pred[r][n0,m] = 1e-15 * infections[n0,m];
         for (i in (n0+1):n1) {
             pred[r][i,m] = noise[m, r] * means[m, r] * dot_product(sub_col(infections, n0, m, i-n0), tail(pvecs_rev[r], i-n0));
+            pred[r][i,m] = neg_binomial_2_rng(pred[r][i,m], phi[r]);
         }
     }
 }
