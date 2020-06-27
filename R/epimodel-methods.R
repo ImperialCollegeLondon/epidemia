@@ -92,3 +92,70 @@ terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...)
   }
   return(tt)
 }
+
+
+#' model.frame method for epimodel objects
+#' 
+#' @export
+#' @param formula, ... See \code{\link[stats]{model.frame}}.
+#' @param fixed.only See \code{\link[lme4]{model.frame.merMod}}.
+#' 
+model.frame.epimodel <- function(formula, fixed.only = FALSE, ...) {
+  if (is.mixed(formula)) {
+    fr <- formula$glmod$fr
+    if (fixed.only) {
+      ff <- formula(formula, fixed.only = TRUE)
+      vars <- rownames(attr(terms.formula(ff), "factors"))
+      fr <- fr[vars]
+    }
+    return(fr)
+  }
+  NextMethod("model.frame")
+}
+
+#' formula method for epimodel objects
+#' 
+#' @export
+#' @param x An epimodel object.
+#' @param ... Can contain \code{fixed.only} and \code{random.only} arguments 
+#'   that both default to \code{FALSE}.
+#' 
+formula.epimodel <- function(x, ...) {
+  if (is.mixed(x)) return(formula_mixed(x, ...))
+  x$formula
+}
+
+
+### rstanarm helpers ###
+
+formula_mixed <- function (x, fixed.only = FALSE, random.only = FALSE, ...) {
+  if (missing(fixed.only) && random.only) 
+    fixed.only <- FALSE
+  if (fixed.only && random.only) 
+    stop("'fixed.only' and 'random.only' can't both be TRUE.", call. = FALSE)
+  
+  fr <- x$glmod$fr
+  if (is.null(form <- attr(fr, "formula"))) {
+    if (!grepl("lmer$", deparse(getCall(x)[[1L]]))) 
+      stop("Can't find formula stored in model frame or call.", call. = FALSE)
+    form <- as.formula(formula(getCall(x), ...))
+  }
+  if (fixed.only) {
+    form <- attr(fr, "formula")
+    form[[length(form)]] <- lme4::nobars(form[[length(form)]])
+  }
+  if (random.only)
+    form <- justRE(form, response = TRUE)
+  
+  return(form)
+}
+
+
+justRE <- function(f, response = FALSE) {
+  response <- if (response && length(f) == 3) f[[2]] else NULL
+  reformulate(paste0("(", vapply(lme4::findbars(f), 
+                                 function(x) paste(deparse(x, 500L), 
+                                                   collapse = " "), 
+                                 ""), ")"), 
+              response = response)
+}
