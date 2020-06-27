@@ -103,7 +103,7 @@ get_obs <- function(object, ...) UseMethod("get_obs", object)
 
 #' @rdname get_obs
 #' @export
-get_obs.epimodel <- function(object, type, ...) {
+get_obs.epimodel <- function(object, type = NULL, ...) {
   
   types <- names(object$obs)
   if (!(type %in% types))

@@ -83,10 +83,9 @@ model {
                           regularization, delta, shape, t, p);
   }
 
-  if (prior_PD == 0) {
-    for (i in 1:N_obs)
-      obs[i] ~ neg_binomial_2(E_obs[i] + 1e-15, phi[obs_type[i]]);
-  }
+  if (prior_PD == 0)
+    obs ~ neg_binomial_2(E_obs + 1e-15, phi[obs_type]);
+
 }
 
 generated quantities {

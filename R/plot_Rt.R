@@ -95,7 +95,7 @@ plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
 #' @rdname plot_obs
 #' @export
-plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ...) {
+plot_obs.epimodel <- function(object, type = NULL, group = NULL, levels = c(50, 95), ...) {
   
   if(!(type %in% names(object$obs)))
     stop(paste0("obs does not contain any observations for type '", type, "'"))

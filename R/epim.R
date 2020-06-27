@@ -253,6 +253,7 @@ epim <-
                pops,
                call,
                algorithm, 
+               terms = if(mixed) NULL else mt,
                glmod,
                standata,
                orig_names)

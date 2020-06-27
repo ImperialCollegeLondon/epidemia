@@ -87,7 +87,7 @@ terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...)
     attr(tt, "predvars") <- attr(terms(fr), "predvars.fixed")
   }
   if (random.only) {
-    tt <- terms.formula(subbars(formula(object, random.only = TRUE)))
+    tt <- terms.formula(lme4::subbars(formula(object, random.only = TRUE)))
     attr(tt, "predvars") <- attr(terms(fr), "predvars.random")
   }
   return(tt)

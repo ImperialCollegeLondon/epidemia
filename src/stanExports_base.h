@@ -117,7 +117,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(825, 0, "start", "/model/priors_glm.stan");
     reader.add_event(877, 52, "end", "/model/priors_glm.stan");
     reader.add_event(877, 80, "restart", "model_base");
-    reader.add_event(897, 98, "end", "model_base");
+    reader.add_event(904, 105, "end", "model_base");
     return reader;
 }
 template <typename T0__>
@@ -3545,11 +3545,11 @@ public:
                 stan::math::assign(dummy,decov_lp(z_b, z_T, rho, zeta, tau, regularization, delta, shape, t, p, lp__, lp_accum__, pstream__));
                 }
             }
-            current_statement_begin__ = 883;
+            current_statement_begin__ = 889;
             if (as_bool(logical_eq(prior_PD, 0))) {
-                current_statement_begin__ = 884;
+                current_statement_begin__ = 890;
                 for (int i = 1; i <= N_obs; ++i) {
-                    current_statement_begin__ = 885;
+                    current_statement_begin__ = 891;
                     lp_accum__.add(neg_binomial_2_log<propto__>(get_base1(obs, i, "obs", 1), (get_base1(E_obs, i, "E_obs", 1) + 1e-15), get_base1(phi, get_base1(obs_type, i, "obs_type", 1), "phi", 1)));
                 }
             }
@@ -4248,22 +4248,22 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 890;
+            current_statement_begin__ = 897;
             validate_non_negative_index("alpha", "has_intercept", has_intercept);
             std::vector<double> alpha(has_intercept, double(0));
             stan::math::initialize(alpha, DUMMY_VAR__);
             stan::math::fill(alpha, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 892;
+            current_statement_begin__ = 899;
             if (as_bool(logical_eq(has_intercept, 1))) {
-                current_statement_begin__ = 893;
+                current_statement_begin__ = 900;
                 stan::model::assign(alpha, 
                             stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
                             (get_base1(gamma, 1, "gamma", 1) - dot_product(xbar, beta)), 
                             "assigning variable alpha");
             }
             // validate, write generated quantities
-            current_statement_begin__ = 890;
+            current_statement_begin__ = 897;
             size_t alpha_k_0_max__ = has_intercept;
             for (size_t k_0__ = 0; k_0__ < alpha_k_0_max__; ++k_0__) {
                 vars__.push_back(alpha[k_0__]);
