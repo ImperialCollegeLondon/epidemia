@@ -21,6 +21,22 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL, .
   
   data = pp_eta(object, dat, draws)
 
+  
+
+  # generate new standata
+  standata <- get_sdat_data(newdata)
+  # need some standata generated from checkObs
+  obs     <- checkObs(object$obs, newdata)
+  standata <- get_sdat_obs(standata, object$obs)
+  # ensure correct populations passed into stan
+  pops <- checkPops(object$pops, groups)
+  standata$pops <- standata$pop <- as.array(pops$pop)
+
+  standata$si <- padSV(si, standata$NS, 0)
+  standata$r0 <- r0
+  standata$N0 <- seed_days
+  standata$pop <- as.array(pops$pop)
+
   return(data)
 }
 
