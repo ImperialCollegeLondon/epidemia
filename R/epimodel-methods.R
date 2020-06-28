@@ -1,6 +1,4 @@
 
-
-
 VarCorr.epimodel <- function(x, sigma = 1, ...) {
   cnms <- .cnms(x)
   mat <- as.matrix(x)

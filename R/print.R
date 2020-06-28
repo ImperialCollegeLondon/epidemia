@@ -41,7 +41,7 @@ print.epimodel <- function(x, digits=1, ...) {
 
   if (mixed) {
     cat("\nError terms:\n")
-    print(VarCorr(x), digits = digits + 1)
+    print(lme4::VarCorr(x), digits = digits + 1)
     cat("\nNum. levels:", 
         paste(names(ngrps(x)), unname(ngrps(x)), collapse = ", "), "\n")
   }
