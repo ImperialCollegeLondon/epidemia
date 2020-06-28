@@ -91,19 +91,18 @@ terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...)
   return(tt)
 }
 
-
 #' model.frame method for epimodel objects
 #' 
 #' @export
-#' @param formula, ... See \code{\link[stats]{model.frame}}.
+#' @param object, ... See \code{formula} and \code{...} from \code{\link[stats]{model.frame}}.
 #' @param fixed.only See \code{\link[lme4]{model.frame.merMod}}.
 #' 
-model.frame.epimodel <- function(formula, fixed.only = FALSE, ...) {
-  if (is.mixed(formula)) {
-    fr <- formula$glmod$fr
+model.frame.epimodel <- function(object, fixed.only=FALSE, ...) {
+  if (is.mixed(object)) {
+    fr <- object$glmod$fr
     if (fixed.only) {
-      ff <- formula(formula, fixed.only = TRUE)
-      vars <- rownames(attr(terms.formula(ff), "factors"))
+      trms <- delete.response(terms(object, fixed.only=TRUE))
+      vars <- all.vars(trms)
       fr <- fr[vars]
     }
     return(fr)
