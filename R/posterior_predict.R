@@ -21,8 +21,6 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL, .
   
   data = pp_eta(object, dat, draws)
 
-  
-
   # generate new standata
   standata <- get_sdat_data(newdata)
   # need some standata generated from checkObs
@@ -35,9 +33,31 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL, .
   standata$si <- padSV(si, standata$NS, 0)
   standata$r0 <- r0
   standata$N0 <- seed_days
-  standata$pop <- as.array(pops$pop)
 
-  return(data)
+  stanms <- object$orig_names
+
+  # replace original names for the seeds
+  seeds_idx <- grep(paste0("seeds["), colnames(mat), fixed=TRUE)
+  seeds_idx_keep <- sapply(groups, function(x) grep(paste0("seeds[", x, "]"), colnames(mat), fixed=TRUE))
+  stanms[seeds_idx_keep] <- paste0("y[", seq_along(groups), "]")
+
+  noise_idx <- NULL
+  noise_idx_keep <- NULL
+
+  if (standata$R > 0) {
+  # replace original names for the noise
+  noise_idx <- grep(paste0("noise["), colnames(mat), fixed=TRUE)
+  noise_idx_keep <- sapply(groups, function(x) grep(paste0("noise[", x), colnames(mat), fixed=TRUE))
+  combs <- expand.grid(seq_along(groups), standata$R)
+  stanms[noise_idx_keep] <- paste0("noise[", combs[,1], ",", combs[,2], "]")
+  }
+
+  colnames(mat) <- stanms
+  # get indices to remove
+  col_rm <- union(setdiff(seeds_idx, seeds_idx_keep),setdiff(noise_idx, noise_idx_keep))
+  mat <- mat[,-col_rm]
+
+  return(mat)
 }
 
 # Linear predictor from posterior samples and provided data
