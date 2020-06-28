@@ -124,31 +124,22 @@ formula.epimodel <- function(x, ...) {
 }
 
 
-### rstanarm helpers ###
-
 formula_mixed <- function (x, fixed.only = FALSE, random.only = FALSE, ...) {
-  if (missing(fixed.only) && random.only) 
+  if (missing(fixed.only) && random.only)
     fixed.only <- FALSE
-  if (fixed.only && random.only) 
+  if (fixed.only && random.only)
     stop("'fixed.only' and 'random.only' can't both be TRUE.", call. = FALSE)
   
-  fr <- x$glmod$fr
-  if (is.null(form <- attr(fr, "formula"))) {
-    if (!grepl("lmer$", deparse(getCall(x)[[1L]]))) 
-      stop("Can't find formula stored in model frame or call.", call. = FALSE)
-    form <- as.formula(formula(getCall(x), ...))
-  }
-  if (fixed.only) {
-    form <- attr(fr, "formula")
+  form <- x$formula
+  if (fixed.only) 
     form[[length(form)]] <- lme4::nobars(form[[length(form)]])
-  }
   if (random.only)
-    form <- justRE(form, response = TRUE)
-  
+    form <- justRE(form, response=TRUE)
+    
   return(form)
 }
 
-
+### rstanarm helpers ###
 justRE <- function(f, response = FALSE) {
   response <- if (response && length(f) == 3) f[[2]] else NULL
   reformulate(paste0("(", vapply(lme4::findbars(f), 

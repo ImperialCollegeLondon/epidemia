@@ -256,7 +256,8 @@ epim <-
                terms = if(mixed) NULL else mt,
                glmod,
                standata,
-               orig_names)
+               orig_names,
+               groups)
 
   return(epimodel(out))
 }
