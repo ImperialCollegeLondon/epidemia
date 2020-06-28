@@ -11,23 +11,27 @@ get_sdat_data <- function(data) {
   begin   <- min(starts)
   # integer index of start (1 being 'begin')
   starts  <- as.numeric(starts - begin + 1)
-  return(list(M = M,
+  return(list(groups = groups,
+              M = M,
               NC = as.array(NC),
               NS = max_sim,
-              starts = as.array(starts)))
+              starts = as.array(starts),
+              begin = begin))
 }
 
 # get relevant standata from obs. Used internally in epim.
 #
+# @param sdat The result of get_sdat_data
 # @param obs The result of checkObs
-get_sdat_obs <- function(obs) {
+# @param max_sim Maximum simulation periods
+get_sdat_obs <- function(sdat, obs) {
   R <- length(obs)
   if (R) {
       f <- function(x) {
         if (x$ptype == "density")
-          padSV(x$pvec, max_sim, 0)
+          padSV(x$pvec, sdat$NS, 0)
         else 
-          padV(x$pvec, max_sim, tail(x$pvec,1))
+          padV(x$pvec, sdat$NS, tail(x$pvec,1))
       }
       pvecs <- as.array(lapply(obs, f))
 
@@ -44,22 +48,23 @@ get_sdat_obs <- function(obs) {
     # create matrix of observations for stan
       f <- function(x, i) {
         df        <- x$odata
-        g <- function(x) which(x == groups)[1]
+        g <- function(x) which(x == sdat$groups)[1]
 
         df$group  <- sapply(df$group, g)
-        df$date   <- as.numeric(df$date - begin + 1)
+        df$date   <- as.numeric(df$date - sdat$begin + 1)
         df$type   <- i
         df
       }
       obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
     } else {
       obs           <- data.frame()
-      pvecs         <- array(0, dim=c(0,max_sim))
+      pvecs         <- array(0, dim=c(0,sdat$NS))
       means         <- array(0, dim = c(M,0))
       noise_scales  <- numeric()
     }
 
-    return(list(
+    return(c(sdat, 
+             list(
                 obs_group    = as.numeric(obs$group),
                 obs_date     = as.numeric(obs$date),
                 obs_type     = as.numeric(obs$type),
@@ -68,8 +73,7 @@ get_sdat_obs <- function(obs) {
                 R            = R,
                 pvecs        = pvecs,
                 means        = means,
-                noise_scales = as.array(noise_scales),
-                NS           = max_sim))
+                noise_scales = as.array(noise_scales))))
 }
 
 
@@ -77,10 +81,10 @@ get_sdat_obs <- function(obs) {
 #
 # @param prior_phi, prior_tau See \code{\link{epim}}
 # @param R Number of observation types
-get_sdat_add_priors <- function(prior_phi, prior_tau, R) {
+get_sdat_add_priors <- function(sdat, prior_phi, prior_tau) {
 
   prior_phi_stuff <- handle_glm_prior(prior = prior_phi,
-                                      nvars = R,
+                                      nvars = sdat$R,
                                       default_scale = 5,
                                       link = "dummy",
                                       ok_dists = loo::nlist("normal"))
@@ -101,9 +105,10 @@ get_sdat_add_priors <- function(prior_phi, prior_tau, R) {
   for (i in names(prior_tau_stuff))
     assign(i, prior_tau_stuff[[i]]) 
 
-  return(loo::nlist(prior_mean_for_phi,
-                    prior_scale_for_phi,
-                    prior_scale_for_tau = as.numeric(prior_scale_for_tau))))
+  return(c(sdat,
+          loo::nlist(prior_mean_for_phi,
+                     prior_scale_for_phi,
+                     prior_scale_for_tau = as.numeric(prior_scale_for_tau))))
 }
 
 # Takes a simplex vector and extends to required length

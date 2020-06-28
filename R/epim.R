@@ -157,33 +157,14 @@ epim <-
     glmod <- group <- NULL
   }
 
-  # parse standata from data and obs
-  standata <- c(get_sdat_data(data),
-                get_sdat_obs(obs))
-  
-  # parse standata from priors on phi and tau
-  standata <- c(standata, get_sdata_add_priors(prior_phi, 
-                                               prior_tau,
-                                               standata$R))
-
+  # get standata relating to model pars excluding Rt regression
+  standata <- get_sdat_data(data)
+  standata <- get_sdat_obs(standata, obs)
+  standata <- get_sdat_add_priors(standata, prior_phi, prior_tau)
   standata$si <- padSV(si, standata$NS, 0)
   standata$r0 <- r0
   standata$N0 <- seed_days
-  standata$pops <-
-
-
-
-  # generate stan data 
-  margs <- list()
-  margs$data <- data
-  margs$obs <- obs
-  margs$pops <- pops
-  margs$si <- si
-  margs$seed_days <- seed_days
-  margs$r0 <- r0
-  margs$prior_phi <- prior_phi
-  margs$prior_tau <- prior_tau
-  standata <- do.call("gen_model_sdat", args=margs)
+  standata$pop <- as.array(pops$pop)
 
   cargs <- list()
   cargs$formula <- formula
