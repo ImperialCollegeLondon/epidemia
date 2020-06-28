@@ -157,6 +157,21 @@ epim <-
     glmod <- group <- NULL
   }
 
+  # parse standata from data and obs
+  standata <- c(get_sdat_data(data),
+                get_sdat_obs(obs))
+  
+  # parse standata from priors on phi and tau
+  standata <- c(standata, get_sdata_add_priors(prior_phi, 
+                                               prior_tau,
+                                               standata$R))
+
+  standata$si <- padSV(si, standata$max_sim, 0)
+  standata$r0 <- r0
+  standata$N0 <- seed_days
+
+
+
   # generate stan data 
   margs <- list()
   margs$data <- data
