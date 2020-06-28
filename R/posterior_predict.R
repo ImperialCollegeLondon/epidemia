@@ -3,7 +3,7 @@
 #' Given new data for modeled populations, generates outcome data based on fitted model
 #' 
 #' @export
-posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL) {
+posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL, ...) {
   if (!is.null(seed))
     set.seed(seed)
   dots <- list(...)
@@ -14,13 +14,13 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL) {
   w <- !(groups %in% object$groups)
   if (any(w))
     stop(paste0("Groups ", groups[w], " not modeled. 'newdata' only supported for existing populations."))
+  
+  dat <- pp_data(object=object, newdata=newdata, ...)
+  
+  data = pp_eta(object, dat, draws)
 
-  pp_data_args <- c(list(object, newdata), dots)
-  dat <- do.call("pp_data", pp_data_args)
-  return(dat)
+  return(data)
 }
-
-
 
 # Linear predictor from posterior samples and provided data
 #
