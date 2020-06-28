@@ -15,6 +15,7 @@ get_sdat_data <- function(data) {
               M = M,
               NC = as.array(NC),
               NS = max_sim,
+              N2 = max(starts + NC - 1),
               starts = as.array(starts),
               begin = begin))
 }
@@ -59,7 +60,7 @@ get_sdat_obs <- function(sdat, obs) {
     } else {
       obs           <- data.frame()
       pvecs         <- array(0, dim=c(0,sdat$NS))
-      means         <- array(0, dim = c(M,0))
+      means         <- array(0, dim = c(sdat$M,0))
       noise_scales  <- numeric()
     }
 
@@ -124,8 +125,6 @@ padV <- function(vec, len, tol) {
   
   return(vec[1:len])
 }
-
-
 
 # Takes a simplex vector and extends to required length
 #
