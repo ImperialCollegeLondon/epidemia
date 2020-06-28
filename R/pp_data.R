@@ -4,12 +4,6 @@
 #' @export
 fe_mat <- function(object, newdata) {
   
-  newdata <- checkData(formula(object), newdata, NULL)
-  groups <- levels(newdata$group)
-  w <- !(groups %in% object$groups)
-  if (any(w))
-    stop(paste0("Groups ", groups[w], " not modeled. 'newdata' only supported for existing populations."))
-
   trms <- delete.response(terms(object, fixed.only=TRUE))
   mf <- model.frame(object, fixed.only=TRUE)
   
