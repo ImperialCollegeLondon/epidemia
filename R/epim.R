@@ -166,9 +166,10 @@ epim <-
                                                prior_tau,
                                                standata$R))
 
-  standata$si <- padSV(si, standata$max_sim, 0)
+  standata$si <- padSV(si, standata$NS, 0)
   standata$r0 <- r0
   standata$N0 <- seed_days
+  standata$pops <-
 
 
 

@@ -11,10 +11,10 @@ get_sdat_data <- function(data) {
   begin   <- min(starts)
   # integer index of start (1 being 'begin')
   starts  <- as.numeric(starts - begin + 1)
-  return(loo::nlist(M,
-                    NC,
-                    max_sim,
-                    starts))
+  return(list(M = M,
+              NC = as.array(NC),
+              NS = max_sim,
+              starts = as.array(starts)))
 }
 
 # get relevant standata from obs. Used internally in epim.
@@ -59,17 +59,17 @@ get_sdat_obs <- function(obs) {
       noise_scales  <- numeric()
     }
 
-    return(loo::nlist(
-                   obs_group    = as.numeric(obs$group),
-                   obs_date     = as.numeric(obs$date),
-                   obs_type     = as.numeric(obs$type),
-                   obs          = as.numeric(obs$obs),
-                   N_obs        = nrow(obs),
-                   R            = R,
-                   pvecs        = pvecs,
-                   means        = means,
-                   noise_scales = as.array(noise_scales),
-                   NS           = max_sim))
+    return(list(
+                obs_group    = as.numeric(obs$group),
+                obs_date     = as.numeric(obs$date),
+                obs_type     = as.numeric(obs$type),
+                obs          = as.numeric(obs$obs),
+                N_obs        = nrow(obs),
+                R            = R,
+                pvecs        = pvecs,
+                means        = means,
+                noise_scales = as.array(noise_scales),
+                NS           = max_sim))
 }
 
 
@@ -105,27 +105,6 @@ get_sdat_add_priors <- function(prior_phi, prior_tau, R) {
                     prior_scale_for_phi,
                     prior_scale_for_tau = as.numeric(prior_scale_for_tau))))
 }
-
-
-gen_model_sdat <- 
-  function(data,
-           obs,
-           pops,
-           si,
-           seed_days = 6,
-           r0,
-           prior_phi,
-           prior_tau) {
-
-
-  # create matrix P                   
-
-  standata <- loo::nlist(si           = si,
-                   r0)
-
-  return(standata)
-}
-
 
 # Takes a simplex vector and extends to required length
 #
