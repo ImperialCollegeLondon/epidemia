@@ -17,5 +17,6 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL) {
 
   pp_data_args <- c(list(object, newdata), dots)
   dat <- do.call("pp_data", pp_data_args)
+  return(dat)
 }
 

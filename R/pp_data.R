@@ -1,8 +1,20 @@
 
+
+
+#' Generate the data required for constructing the linear predictor
+#'
+#' @export
+pp_data <- function(object, newdata, ...) {
+    out <- fe_data(object, newdata, ...)
+    if (is.mixed(object))
+      out <- c(out, re_data(object, newdata, ...))
+    return(out)
+}
+
 #' Given new data, generates the fixed effects model matrix
 #' 
 #' @export
-fe_mat <- function(object, newdata) {
+fe_data <- function(object, newdata) {
   
   trms <- delete.response(terms(object, fixed.only=TRUE))
   mf <- model.frame(object, fixed.only=TRUE)
@@ -19,7 +31,7 @@ fe_mat <- function(object, newdata) {
 #' First attempt at getting random effects from new data
 #' 
 #' @export
-re_mat <- function(object, newdata) {
+re_data <- function(object, newdata) {
   
   trms <- delete.response(terms(object, random.only=T))
   fr <- model.frame(formula(trms), newdata, na.action = na.fail)
