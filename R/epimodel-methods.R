@@ -122,7 +122,6 @@ formula.epimodel <- function(x, ...) {
   x$formula
 }
 
-
 formula_mixed <- function (x, fixed.only = FALSE, random.only = FALSE, ...) {
   if (missing(fixed.only) && random.only)
     fixed.only <- FALSE
