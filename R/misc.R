@@ -275,3 +275,31 @@ check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
     warning("Markov chains did not converge! Do not analyze results!", 
             call. = FALSE, noBreaks. = TRUE)
 }
+
+
+# Get total number of posterior parameter draws
+posterior_sample_size <- function(object) {
+  return(object$stanfit@sim$n_save
+         - object$stanfit@sim$warmup2)
+}
+
+
+# Methods from rstanarm for creating a linear predictor
+#
+# Offset removed
+#
+# @param beta, x A vector or matrix or parameter estimates.
+# @param x Predictor matrix.
+# @param offset Optional offset vector.
+# @return A vector or matrix.
+linear_predictor <- function(beta, x) {
+  UseMethod("linear_predictor")
+}
+
+linear_predictor.default <- function(beta, x) {
+  return(as.vector(if (NCOL(x) == 1L) x * beta else x %*% beta))
+}
+
+linear_predictor.matrix <- function(beta, x) {
+  return(as.matrix(beta) %*% t(x))
+}

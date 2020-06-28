@@ -7,7 +7,7 @@
 pp_data <- function(object, newdata, ...) {
     out <- fe_data(object, newdata, ...)
     if (is.mixed(object))
-      out <- c(out, re_data(object, newdata, ...))
+      out <- c(list(x=out), re_data(object, newdata, ...))
     return(out)
 }
 
