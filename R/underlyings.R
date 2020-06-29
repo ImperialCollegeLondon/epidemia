@@ -52,6 +52,8 @@ underlyings.epimodel <- function(object, ...) {
 #' @export
 get_rt <- function(object, ...) UseMethod("get_rt", object)
 
+
+
 #' @rdname get_rt
 #' @export
 get_rt.epimodel <- function(object, ...) {

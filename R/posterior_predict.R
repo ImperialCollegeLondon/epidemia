@@ -35,6 +35,121 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL, .
 
 }
 
+.parse_latent <- function(draws, data, nme) {
+
+  # get useful quantities
+  sdat <- get_sdat_data(data)
+  for (name in names(sdat))
+    assign(name, sdat[[name]])
+
+  draws <- rstan::extract(draws, nmse)[[1]]
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    t <- starts[i]:ends[i]
+    df <- as.data.frame(t(draws[,t,i]))
+
+    w <- data$group %in% groups[i]
+    
+    df <- do.call("cbind.data.frame", 
+                  args = list(date = data$date[w], 
+                              df))
+      
+    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
+    out[[groups[i]]] <- df
+  }
+  return(out)
+}
+
+
+
+.parse_latents <- function(draws, data) {
+
+  # get useful quantities
+  sdat <- get_sdat_data(data)
+  for (name in names(sdat))
+    assign(name, sdat[[name]])
+
+  rt_unadj    <- rstan::extract(draws, "Rt_unadj")[[1]]
+  rt          <- rstan::extract(draws, "Rt")[[1]]
+  infections  <- rstan::extract(draws, "infections")[[1]]
+
+  rout <- list()
+  for (i in seq_along(groups)) {
+    t <- starts[i]:ends[i]
+    df <- as.data.frame(t(rt[,t,i]))
+
+    w <- data$group
+  }
+
+
+}
+
+# Parses the time varying reproduction number from the result of rstan::qgs
+#
+# @param draws The result of rstan::gqs in posterior_predict
+# @param data The data.frame used
+# @param standata 
+
+.parse_rt <- function(draws, data, standata) {
+
+  groups <- levels(object$data$group)
+
+  rt <- rstan::extract(draws, "Rt")[[1]]
+  starts <- standata$starts
+  ends <- starts + standata$NC - 1
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    t <- starts[i]:ends[i]
+    df <- as.data.frame(t(rt[,t,i]))
+
+    # attach corresponding dates
+    w <- data$group %in% groups[i]
+    df <- do.call("cbind.data.frame",
+                  args = list(date= data$date[w],
+                              df))
+    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
+    out[[groups[[i]]]] <- df
+  }
+  return(out)
+}
+
+
+.parse_obs. <- function(object, type = NULL, ...) {
+  
+  types <- names(object$obs)
+  if (!(type %in% types))
+    stop(paste0("'",type,"' is not an observation type."))
+  idx <- which(type == types)
+  
+  
+  res <- underlyings(object)
+  pred <- rstan::extract(res, "pred")[[1]]
+  
+  groups <- levels(object$data$group)
+  
+  # get indices for each group
+  starts  <- object$standata$starts
+  ends    <- starts + object$standata$NC - 1
+  out <- list()
+  
+  for (i in seq_along(groups)) {
+    t <- starts[i]:ends[i]
+    df <- t(pred[,idx,t,i])
+    df <- as.data.frame(df)
+    
+    # attach corresponding dates
+    w <- object$data$group %in% groups[i]
+    df <- do.call("cbind.data.frame", 
+                  args = list(date = object$data$date[w], 
+                              df))
+    
+    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
+    out[[groups[i]]] <- df
+  }
+  return(out)
+}
 
 
 subsamp <- function(object, mat, draws=NULL) {
