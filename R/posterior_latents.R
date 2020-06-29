@@ -5,7 +5,8 @@
 #' @param newdata If provided, the original \code{data} used in \code{object} is overidden. Useful both for conterfactual and prediction analysis
 #' @param draws Number of posterior draws to use. Defaults to the number of parameter draws in the fitted model.
 #' @param seed An optional seed.
-#' @return A list, each element of which is a dataframe giving infections over time in a given population
+#' @return A named list, each element of which corresponds to a modeled population. Each element is itself a dataframe with 
+#' \code{nrow(newdata)} rows and \code{draws+1} columns. First column gives dates, subsequent are different draws of the series.
 #' @export
 posterior_infections <- function(object, ...) UseMethod("posterior_infections", object)
 
@@ -18,10 +19,9 @@ posterior_infections.epimodel <- function(object, newdata, draws=NULL, seed=NULL
   return(eval(mc))
 }
 
-#' Generic function for getting posterior draws of a total infectiousness over time
+#' Generic function for getting posterior draws of total infectiousness over time
 #' 
-#' @inheritParams posterior_infections
-#' @return A list, each element of which is a dataframe giving infections over time in a given population
+#' @inherit posterior_infections return params
 #' @export
 posterior_infectious <- function(object, ...) UseMethod("posterior_infectious", object)
 
@@ -36,9 +36,8 @@ posterior_infectious.epimodel <- function(object, newdata, draws=NULL, seed=NULL
 
 #' Generic function for getting posterior draws of the time-varying reproduction rates
 #' 
-#' @inheritParams posterior_infections
+#' @inherit posterior_infections return params
 #' @param adjusted Flag whether to return the adjusted reproduction rates. Defaults to TRUE.
-#' @return A list, each element of which is a dataframe giving infections over time in a given population
 #' @export
 posterior_rt <- function(object, ...) UseMethod("posterior_rt", object)
 
@@ -58,9 +57,8 @@ posterior_rt.epimodel <- function(object, newdata, draws=NULL, seed=NULL, adjust
 #' reproduction number over time (unadjusted or adjusted), the daily new infections, 
 #' or the total "infectiousness" of the population over time.
 #' 
-#' @inheritParams posterior_infections
+#' @inherit posterior_infections return params
 #' @param series Type of latent series to return.
-#' @return A list, each element of which is a dataframe giving infections over time in a given population
 #' @export
 posterior_latent <- function(object, ...) UseMethod("posterior_latent", object)
 
