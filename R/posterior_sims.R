@@ -6,29 +6,35 @@
 #
 # @inheritParams posterior_infections
 # return A names list, with each elements containing draws of a particular type of series
-posterior_sims <- function(object, newdata, draws=NULL, seed=NULL, ...) {
+posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
   if (!is.null(seed))
     set.seed(seed)
   dots <- list(...)
-  
-  # validate the new data
-  newdata <- checkData(formula(object), newdata, NULL)
-  groups <- levels(newdata$group)
-  w <- !(groups %in% object$groups)
-  if (any(w))
-    stop(paste0("Groups ", groups[w], " not modeled. 'newdata' only supported for existing populations."))
 
-  stanmat <- as.matrix(object$stanfit)
-  stanmat <- subsamp(object, stanmat, draws)
+  # subsampled matrix of posterior draws
+  stanmat <- subsamp(object, as.matrix(object$stanfit), draws)
 
-  # Construct linear predictor eta
-  dat <- pp_data(object=object, newdata=newdata, ...)
-  eta = pp_eta(object, dat, stanmat)
+  if (!is.null(newdata)) {
+    newdata <- checkData(formula(object), newdata, NULL)
+    groups <- levels(newdata$group)
+    w <- !(groups %in% object$groups)
+    if (any(w))
+      stop(paste0("Groups ", groups[w], " not modeled. 'newdata' only supported for existing populations."))
+
+    # construct linear predictor
+    dat <- pp_data(object=object, newdata=newdata, ...)
+    eta <- pp_eta(object, dat, stanmat)
+  }
+  else {
+    x <- object$x
+    eta <- stanmat[,1:ncol(x), drop = FALSE] %*% Matrix::t(x)
+  }
+
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
-
-  standata <- pp_standata(object, newdata)
   stanmat <- pp_stanmat(object, stanmat, groups)
   stanmat <- cbind(stanmat, eta)
+
+  standata <- pp_standata(object, newdata)
 
   sims <- rstan::gqs(stanmodels$pp_base, 
                      data = standata, 

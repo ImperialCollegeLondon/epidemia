@@ -1,10 +1,10 @@
 #' Generate the data required for constructing the linear predictor
 #'
 #' @export
-pp_data <- function(object, newdata, ...) {
-    out <- fe_data(object, newdata)
+pp_data <- function(object, newdata=NULL, ...) {
+    out <- fe_data(object=object, newdata=newdata)
     if (is.mixed(object))
-      out <- c(list(x=out), re_data(object, newdata))
+      out <- c(list(x=out), re_data(object, newdata=newdata))
     return(out)
 }
 
@@ -12,7 +12,7 @@ pp_data <- function(object, newdata, ...) {
 #' 
 #' @export
 fe_data <- function(object, newdata) {
-  
+  if (is.null(newdata)) return(get_x(object))
   trms <- delete.response(terms(object, fixed.only=TRUE))
   mf <- model.frame(object, fixed.only=TRUE)
   
@@ -29,7 +29,7 @@ fe_data <- function(object, newdata) {
 #' 
 #' @export
 re_data <- function(object, newdata) {
-  
+  if(is.null(newdata)) return(list(Zt = t(get_z(object)))
   trms <- delete.response(terms(object, random.only=T))
   fr <- model.frame(formula(trms), newdata, na.action = na.fail)
   

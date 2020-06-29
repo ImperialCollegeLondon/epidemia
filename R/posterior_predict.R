@@ -7,11 +7,12 @@
 #' @inheritParams posterior_infections
 #' @param types A character vector specifying the observation types to consider. If NULL, uses all 
 #' types. Defaults to NULL.
-#' @return A named list, each element of which corresponds to an observation type. Each element is itself a named list, with elements
-#' corresponding to modeled populations. Each of these elements is a dataframe with 
+#' @return A named list, each element of which corresponds to an observation type. Each observation type is itself a named list, with elements
+#' corresponding to modeled populations; each of which is a dataframe with 
 #' \code{nrow(newdata)} rows and \code{draws+1} columns. First column gives dates, subsequent are different draws of the observation series.
 #' @export posterior_predict
 #' @importFrom rstantools posterior_predict
+#' @export
 posterior_predict.epimodel <- function(object, newdata, draws=NULL, types = NULL, seed=NULL, ...) {
 
   alltypes <- names(object$obs)
