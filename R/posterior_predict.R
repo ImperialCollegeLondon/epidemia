@@ -21,18 +21,38 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL, .
   dat <- pp_data(object=object, newdata=newdata, ...)
   data = pp_eta(object, dat, draws)
 
-  # generate new standata
+  standata <- pp_standata(object, newdata)
+  stanmat <- pp_stanmat(object, groups)
+
+  return(list(stanmat=stanmat, standata=standata))
+}
+
+# Creates standata from newdata, which is passed into rstan::gqs
+#
+# @param object An \code{epimodel} object
+# @param newdata The result of checkData
+pp_standata <- function(object, newdata) {
+  groups <- levels(newdata$group)
+
   standata <- get_sdat_data(newdata)
-  # need some standata generated from checkObs
   obs     <- checkObs(object$obs, newdata)
   standata <- get_sdat_obs(standata, object$obs)
-  # ensure correct populations passed into stan
   pops <- checkPops(object$pops, groups)
   standata$pop <- as.array(pops$pop)
 
   standata$si <- padSV(object$si, standata$NS, 0)
   standata$r0 <- object$r0
   standata$N0 <- object$seed_days
+
+  return(standata)
+}
+
+
+# Creates matrix of parameter draws to be passed into rstan::gqs
+#
+# @param object An \code{epimodel} object
+# @param groups Ordered vector of unique populations to be modelled 
+pp_stanmat <- function(object, groups) {
 
   stanms <- object$orig_names
   stanmat <- as.matrix(object$stanfit)
@@ -55,9 +75,7 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, seed=NULL, .
   colnames(stanmat) <- stanms
   # remove redundant indices to avoid name conflicts
   col_rm <- union(setdiff(seeds_idx, seeds_idx_keep),setdiff(noise_idx, noise_idx_keep))
-  stanmat <- stanmat[,-col_rm]
-
-  return(stanmat)
+  return(stanmat[,-col_rm])
 }
 
 # Linear predictor from posterior samples and provided data
