@@ -1,8 +1,11 @@
-# Uses rstan::gqs to generate quantities of interest using posterior parameter draws
+# Generate posterior draws of time series of interest
 #
-# @param object An \code{epimodel} object
-# @param newdata A dataframe giving newdata to simulate with
-# @param draws
+# This used rstan::gqs to generate posterior draws of time series,
+# including latent series such as daily infections, reproduction number and 
+# also the observation series.
+#
+# @inheritParams posterior_infections
+# return A names list, with each elements containing draws of a particular type of series
 posterior_sims <- function(object, newdata, draws=NULL, seed=NULL, ...) {
   if (!is.null(seed))
     set.seed(seed)
@@ -46,9 +49,10 @@ posterior_sims <- function(object, newdata, draws=NULL, seed=NULL, ...) {
 
 # Parses a given latent quantity from the result of rstan::qgs
 #
-# @param draws Result of rstan::gqs in posterior_predict
-# @param data data.frame used (data from epim or newdata)
-# @param nme Name of the latent variable to return
+# @param sims Result of calling rstan::gqs in posterior_sims
+# @param data data.frame used 
+# @param nme Name of the latent series to return
+# @inherits posterior_infections return
 parse_latent <- function(sims, data, nme) {
 
   # get useful quantities
@@ -77,9 +81,8 @@ parse_latent <- function(sims, data, nme) {
 
 # Parses a given latent quantity from the result of rstan::qgs
 #
-# @param sims Result of rstan::gqs in posterior_predict
-# @param data data.frame used (data from epim or newdata)
-# @param idx Name of the latent variable to return
+# @inherits parse_latent param sims, data, return
+# @param idx index of the latent observation series to return
 parse_obs <- function(sims, data, idx) {
 
   sims <- rstan::extract(sims, "pred")[[1]]
@@ -108,6 +111,11 @@ parse_obs <- function(sims, data, idx) {
   return(out)
 }
 
+# Subsample a matrix of posterior parameter draws
+#
+# @param object An object of class \code{epimodel}
+# @param mat A matrix of parameter draws (result of as.matrix.epimodel)
+# @param draws Optionally specify number of posterior draws to use.
 subsamp <- function(object, mat, draws=NULL) {
 
   max_draws <- posterior_sample_size(object)
@@ -188,11 +196,10 @@ pp_stanmat <- function(object, stanmat, groups) {
   return(stanmat)
 }
 
-# Linear predictor from posterior samples and provided data
+# Construct a linear predictor from the posterior samples and provided dataframe.
+# Adapted from \code{rstanarm:::pp_eta}
 #
-# This is essentially \code{rstanarm:::pp_eta}, with minor adaptations
-#
-# @param object, data, stanmat, stanmat See \code{rstanarm:::pp_eta}
+# @param object, data, stanmat  See \code{rstanarm:::pp_eta}
 pp_eta <- function(object, data, stanmat) {
   x <- data$x
   
