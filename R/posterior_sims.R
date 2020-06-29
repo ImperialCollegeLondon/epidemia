@@ -40,9 +40,10 @@ posterior_sims <- function(object, newdata, draws=NULL, seed=NULL, ...) {
   out$infections <- parse_latent(sims, newdata, "infections")
 
   # get posterior predictive
-  types <- paste0("obs[",names(object$obs),"]")
+  out$obs <- list()
+  types <- names(object$obs)
   for(i in seq_along(types))
-    out$types[i] <- parse_obs(sims, newdata, i)
+    out$obs$types[i] <- parse_obs(sims, newdata, i)
 
   return(out)
 }
@@ -137,9 +138,12 @@ subsamp <- function(object, mat, draws=NULL) {
 #
 # @param object An \code{epimodel} object
 # @param newdata The result of checkData
-pp_standata <- function(object, newdata) {
+pp_standata <- function(object, newdata=NULL) {
 
   sdat <- object$standata
+
+  if (is.null(newdata))
+    return(sdat)
 
   groups <- levels(newdata$group)
   obs    <- checkObs(object$obs, newdata)
