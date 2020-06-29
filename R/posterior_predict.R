@@ -29,6 +29,17 @@ posterior_sims <- function(object, newdata, draws=NULL, seed=NULL, ...) {
                      data = standata, 
                      draws=stanmat)
 
+  out <- list()
+  out$rt_unadj <- parse_latent(sims, newdata, "Rt_unadj")
+  out$rt <- parse_latent(sims, newdata, "Rt")
+  out$infections <- parse_latent(sims, newdata, "infections")
+
+  # get posterior predictive
+  types <- paste0("obs[",names(object$obs),"]")
+  for(i in seq_along types)
+    out$types[i] <- parse_obs(sims, newdata, i)
+
+  return(out)
 }
 
 
@@ -106,13 +117,11 @@ parse_latent <- function(sims, data, nme) {
 # @param sims Result of rstan::gqs in posterior_predict
 # @param data data.frame used (data from epim or newdata)
 # @param nme Name of the latent variable to return
-parse_obs <- function(sims, data, obs, type) {
+parse_obs <- function(sims, data, idx) {
 
-  types <- names(obs)
   if (!(type %in% types))
     stop(paste0("'",type,"' is not an observation type."))
 
-  idx <- which(type == types)
   sims <- rstan::extract(sims, "pred")[[1]]
 
   # get useful quantities
