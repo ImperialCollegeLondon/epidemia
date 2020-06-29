@@ -1,13 +1,10 @@
-
-
-
 #' Generate the data required for constructing the linear predictor
 #'
 #' @export
 pp_data <- function(object, newdata, ...) {
-    out <- fe_data(object, newdata, ...)
+    out <- fe_data(object, newdata)
     if (is.mixed(object))
-      out <- c(list(x=out), re_data(object, newdata, ...))
+      out <- c(list(x=out), re_data(object, newdata))
     return(out)
 }
 
