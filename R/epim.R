@@ -246,6 +246,8 @@ epim <-
                x = cbind(x,z),
                data,
                obs,
+               r0,
+               seed_days,
                si,
                pops,
                call,
