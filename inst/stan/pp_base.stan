@@ -4,7 +4,10 @@ functions {
 
 data {
 #include data/data_indices.stan
-#include data/data_model.stan
+real<lower=0> r0; // the prior expected value for r0
+vector<lower=0,upper=1>[NS] pvecs[R]; // the 'pvec' for each type of observation.
+vector<lower=0>[M] pop;
+simplex[NS] si; // fixed serial interval using empirical data
 int<lower=1> N; 
 matrix<lower=0, upper=1>[M, R] means; // mean values for observed events / total cases (for example, IFR)
 }
