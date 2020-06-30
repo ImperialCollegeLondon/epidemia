@@ -12,9 +12,12 @@ posterior_infections <- function(object, ...) UseMethod("posterior_infections", 
 
 #' @rdname posterior_infections
 #' @export
-posterior_infections.epimodel <- function(object, newdata, draws=NULL, seed=NULL, ...) {
+posterior_infections.epimodel <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
   mc      <- match.call(expand.dots = FALSE)
   mc[[1]] <- quote(posterior_latent)
+  mc$newdata <- newdata
+  mc$draws <- draws
+  mc$seed <- seed
   mc$series <- "infections"
   return(eval(mc))
 }
@@ -27,9 +30,12 @@ posterior_infectious <- function(object, ...) UseMethod("posterior_infectious", 
 
 #' @rdname posterior_infectious
 #' @export
-posterior_infectious.epimodel <- function(object, newdata, draws=NULL, seed=NULL, ...) {
+posterior_infectious.epimodel <- function(object, ..., newdata=NULL, draws=NULL, seed=NULL) {
   mc      <- match.call(expand.dots = FALSE)
   mc[[1]] <- quote(posterior_latent)
+  mc$newdata <- newdata
+  mc$draws <- draws
+  mc$seed <- seed
   mc$series <- "infectious"
   return(eval(mc))
 }
@@ -43,9 +49,13 @@ posterior_rt <- function(object, ...) UseMethod("posterior_rt", object)
 
 #' @rdname posterior_rt
 #' @export
-posterior_rt.epimodel <- function(object, newdata, draws=NULL, seed=NULL, adjusted=TRUE,...) {
+posterior_rt.epimodel <- function(object, ..., newdata=NULL, draws=NULL, seed=NULL, adjusted=TRUE) {
   mc      <- match.call(expand.dots = FALSE)
   mc[[1]] <- quote(posterior_latent)
+  mc$newdata <- newdata
+  mc$draws <- draws
+  mc$seed <- seed
+  mc$adjusted <- adjusted
   mc$series <- if (adjusted) "rt" else "rt_unadj"
   return(eval(mc))
 }
@@ -65,7 +75,7 @@ posterior_latent <- function(object, ...) UseMethod("posterior_latent", object)
 #' @rdname posterior_latent
 #' @export
 posterior_latent.epimodel <- function(object, 
-                                      newdata, 
+                                      newdata=NULL, 
                                       series = c("rt", "rt_unadj", "infections", 'infectious'),
                                       draws=NULL, 
                                       seed=NULL, ...) {

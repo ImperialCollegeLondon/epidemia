@@ -19,6 +19,85 @@
 #' @export
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
+#' Plotting the time-varying reproduction rates
+#'
+#' Plots credible intervals for the time-varying reproduction number.
+#' The user can control the level and number of credible intervals and
+#' the plotted group(s).
+#' 
+#' This is a generic function.
+#' 
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
+#' @param group \code{NULL}, string or character vector specifying which groups
+#' to plot. Default is \code{NULL}, which plots all possible groups.
+#' @param levels numeric vector giving the levels of the plotted credible intervals
+#' @param log10_scale whether to plot the reproduction number on a log10-scale.
+#' Logical, default is \code{FALSE}.
+#' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}. Examples include \code{newdata}, which allows 
+#'  predictions or counterfactuals. \code{adjusted=FALSE} prevents application of the population adjustment to the reproduction number.
+#' @return A ggplot object.
+#' @export
+plot_rt_new <- function(object, ...) UseMethod("plot_rt_new", object)
+
+#' @rdname plot_rt_new
+#' @export
+plot_rt_new.epimodel <- function(object, group=NULL, levels=c(50,95), log10_scale=FALSE, ...) {
+
+  print(match.call())
+
+  levels <- .check_levels(levels)
+  if(!is.logical(log10_scale))
+    stop("log10_scale must be of type logical", call. = FALSE)
+
+
+  rt <- posterior_rt(object=object, ...)
+
+  if (!is.null(group)) {
+    w <- !(group %in% names(rt))
+    if (any(w))
+      stop(paste0("group(s) ", group[w], " not found in Rt."), call.=FALSE)
+      rt <- rt[group]
+  }
+
+  # quantiles by group
+  qtl <- lapply(rt, function(.rt) .get_quantiles(.rt, levels))
+  qtl <- data.table::rbindlist(qtl, idcol="group")
+  
+  p <-  ggplot2::ggplot(qtl) + 
+    ggplot2::geom_ribbon(data = qtl, 
+                        ggplot2::aes(x=date, 
+                                      ymin = low, 
+                                      ymax = up,
+                                      group = tag,  
+                                      fill=tag)) + 
+    ggplot2::geom_hline(yintercept = 1, 
+                        color = 'black', 
+                        size = 0.7) + 
+    ggplot2::xlab("") + 
+    ggplot2::ylab(expression(R[t])) + 
+    ggplot2::scale_fill_manual(name = "Credible intervals", 
+                              labels = paste0(levels,"%"), 
+                              values = ggplot2::alpha("deepskyblue4", 
+                                                      0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
+    ggplot2::guides(shape = ggplot2::guide_legend(order = 2), 
+                    col = ggplot2::guide_legend(order = 1), 
+                    fill = ggplot2::guide_legend(order = 0)) +
+    ggplot2::scale_x_date(date_breaks = "2 weeks", 
+                          labels = scales::date_format("%e %b")) + 
+    ggplot2::scale_y_continuous(trans = ifelse(log10_scale, "log10", "identity"),
+                                limits = c(ifelse(log10_scale, NA, 0), NA)) +
+    ggplot2::theme_bw() + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
+                                                      hjust = 1), 
+                  axis.text = ggplot2::element_text(size = 12),
+                  axis.title = ggplot2::element_text(size = 12)) + 
+    ggplot2::theme(legend.position="right") +
+    ggplot2::facet_wrap(~group)
+  
+  return(p)
+}
+
 #' @rdname plot_rt
 #' @export
 plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scale = FALSE, ...) {
@@ -240,7 +319,6 @@ plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), .
 }
 
 # Internal
-
 # checks that all elements of group were modelled in object
 # if group=NULL returns all the groups found in object
 .check_plot_groups <- function(object, group) {
