@@ -146,3 +146,33 @@ justRE <- function(f, response = FALSE) {
                                  ""), ")"), 
               response = response)
 }
+
+
+#' Extract X or Z from an epimodel object
+#' 
+#' @export
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
+#' @param ... Other arguments passed to methods.
+#' @return A matrix.
+#' @export
+get_x <- function(object, ...) UseMethod("get_x")
+
+#' @rdname get_x
+#' @export
+get_z <- function(object, ...) UseMethod("get_z")
+
+#' @export
+get_x.default <- function(object, ...) {
+  object[["x"]] %ORifNULL% model.matrix(object)
+}
+
+#' @export
+get_x.mixed <- function(object, ...) {
+  object$glmod$X %ORifNULL% stop("X not found")
+}
+#' @export
+get_z.mixed <- function(object, ...) {
+  Zt <- object$glmod$reTrms$Zt %ORifNULL% stop("Z not found")
+  Matrix::t(Zt)
+}

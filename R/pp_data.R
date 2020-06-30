@@ -29,7 +29,7 @@ fe_data <- function(object, newdata) {
 #' 
 #' @export
 re_data <- function(object, newdata) {
-  if(is.null(newdata)) return(list(Zt = t(get_z(object)))
+  if(is.null(newdata)) return(list(Zt = Matrix::t(get_z(object))))
   trms <- delete.response(terms(object, random.only=T))
   fr <- model.frame(formula(trms), newdata, na.action = na.fail)
   

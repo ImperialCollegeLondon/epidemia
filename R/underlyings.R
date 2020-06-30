@@ -10,7 +10,7 @@ underlyings <- function(object, ...) UseMethod("underlyings", object)
 underlyings.epimodel <- function(object, ...) {
   stanmat <- as.matrix(object$stanfit)
   colnames(stanmat) <-  object$orig_names
-  x <- object$x
+  
 
   M <- object$standata$M
   N <- object$standata$N
