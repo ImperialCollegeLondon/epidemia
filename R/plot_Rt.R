@@ -13,7 +13,7 @@
 #' Logical, default is \code{FALSE}.
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals. \code{adjusted=FALSE} prevents application of the population adjustment to the reproduction number.
-#' @return A ggplot object.
+#' @return A ggplot object which can be further modified.
 #' @export
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
