@@ -118,8 +118,20 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
   
   # observed data
   df <- object$obs[[type]][["odata"]]
-  w  <- df$group %in% group
+
+  if (is.null(group))
+    w <- df$group %in% names(obs)
+  else
+    w <- df$group %in% group
+
   df <- df[w,]
+
+  if (cumulative) {
+    df <- df %>%
+      dplyr::group_by(group) %>%
+      dplyr::mutate(obs = cumsum(obs))
+    df <- as.data.frame(df)
+  }
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_bar(data = df, 
