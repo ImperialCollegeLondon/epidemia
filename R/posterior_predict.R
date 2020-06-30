@@ -13,7 +13,7 @@
 #' @export posterior_predict
 #' @importFrom rstantools posterior_predict
 #' @export
-posterior_predict.epimodel <- function(object, newdata, draws=NULL, types = NULL, seed=NULL, ...) {
+posterior_predict.epimodel <- function(object, newdata=NULL, draws=NULL, types = NULL, seed=NULL, ...) {
 
   alltypes <- names(object$obs)
   if (is.null(types))
@@ -25,6 +25,10 @@ posterior_predict.epimodel <- function(object, newdata, draws=NULL, types = NULL
   }
   mc      <- match.call(expand.dots = FALSE)
   mc[[1]] <- quote(posterior_sims)
-
+  mc$newdata <- newdata
+  mc$draws <- draws
+  mc$types <- types
+  mc$seed <- seed
+  
   return(eval(mc)$obs[[types]])
 }
