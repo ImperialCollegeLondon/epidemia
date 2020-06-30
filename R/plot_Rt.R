@@ -83,6 +83,7 @@ plot_rt.epimodel <- function(object, group=NULL, levels=c(50,95), log10_scale=FA
 #' of the \code{obs} argument to \code{epim}.
 #' @param posterior_mean If true, the credible intervals are plotted for the posterior mean. Defaults to FALSE, 
 #'  in which case the posterior predictive is plotted.
+#' @param cumulative If true, plots the cumulative observations. Defaults to FALSE>
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
 #' @export
@@ -90,7 +91,8 @@ plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
 #' @rdname plot_obs
 #' @export
-plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE, group=NULL, levels = c(50, 95), ...) {
+plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE, 
+                        group=NULL, cumulative=FALSE, levels = c(50, 95), ...) {
   
   # input checks
   if(!(type %in% names(object$obs)))
@@ -106,6 +108,9 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE, group=NUL
       stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
       obs <- obs[group]
   }
+
+  if (cumulative)
+    obs <- lapply(obs, cumul)
 
   # quantiles by group
   qtl <- lapply(obs, function(.obs) .get_quantiles(.obs, levels))
@@ -156,7 +161,7 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE, group=NUL
 #' The user can control the levels of the intervals and the plotted group(s).
 #' This is a generic function.
 #' 
-#' @inherit plot_rt params return
+#' @inherit plot_obs params return
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_infections}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
 #' @export
@@ -164,7 +169,8 @@ plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 
 #' @rdname plot_infections
 #' @export
-plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), ...) {
+plot_infections.epimodel <- function(object, group = NULL, cumulative=FALSE,
+                              levels = c(50, 95), ...) {
 
   levels <- .check_levels(levels)
 
@@ -176,6 +182,9 @@ plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), .
       stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
       inf <- inf[group]
   }
+
+  if (cumulative)
+    inf <- lapply(inf, cumul)
 
   # quantiles by group
   qtl <- lapply(inf, function(.inf) .get_quantiles(.inf, levels))
@@ -208,6 +217,14 @@ plot_infections.epimodel <- function(object, group = NULL, levels = c(50, 95), .
   
   return(p)
 }
+
+# transform dataframe into cumulatives
+# @param df Dataframe giving series draws.
+cumul <- function(df) {
+  df[,-1] <- apply(df[,-1], 2, cumsum)
+  return(df)
+}
+
 
 # Internal
 
