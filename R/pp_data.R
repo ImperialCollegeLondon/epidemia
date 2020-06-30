@@ -14,15 +14,11 @@ pp_data <- function(object, newdata=NULL, ...) {
 fe_data <- function(object, newdata) {
   if (is.null(newdata)) return(get_x(object))
   trms <- delete.response(terms(object, fixed.only=TRUE))
-  print(trms)
   mf <- model.frame(object, fixed.only=TRUE)
-  print(mf)
   isFac <- vapply(mf, is.factor, FUN.VALUE = TRUE)
   orig_levs <- if (length(isFac) == 0) 
     NULL else lapply(mf[isFac], levels)
 
-  print(orig_levs)
-  
   mfnew <- model.frame(formula(trms), newdata, xlev = orig_levs)
   x <- model.matrix(formula(trms), data = mfnew)
   return(x)
