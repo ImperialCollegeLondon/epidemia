@@ -14,42 +14,44 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
   # subsampled matrix of posterior draws
   stanmat <- subsamp(object, as.matrix(object$stanfit), draws)
 
-  if (!is.null(newdata)) {
+  if (is.null(newdata))
+    groups <- levels(object$data$group)
+  else {
     newdata <- checkData(formula(object), newdata, NULL)
     groups <- levels(newdata$group)
     w <- !(groups %in% object$groups)
     if (any(w))
       stop(paste0("Groups ", groups[w], " not modeled. 'newdata' only supported for existing populations."))
-
-    # construct linear predictor
-    dat <- pp_data(object=object, newdata=newdata, ...)
-    eta <- pp_eta(object, dat, stanmat)
-  }
-  else {
-    x <- object$x
-    eta <- stanmat[,1:ncol(x), drop = FALSE] %*% Matrix::t(x)
   }
 
+  # construct linear predictor
+  dat <- pp_data(object=object, newdata=newdata, ...)
+  eta <- pp_eta(object, dat, stanmat)
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
+
+  # stanmatrix may require relabelling
   stanmat <- pp_stanmat(object, stanmat, groups)
   stanmat <- cbind(stanmat, eta)
 
   standata <- pp_standata(object, newdata)
 
+  #print(list(stanmat=stanmat, standata=standata))
+
   sims <- rstan::gqs(stanmodels$pp_base, 
                      data = standata, 
                      draws=stanmat)
 
+  data = newdata %ORifNULL% object$data
   out <- list()
-  out$rt_unadj <- parse_latent(sims, newdata, "Rt_unadj")
-  out$rt <- parse_latent(sims, newdata, "Rt")
-  out$infections <- parse_latent(sims, newdata, "infections")
+  out$rt_unadj <- parse_latent(sims, data, "Rt_unadj")
+  out$rt <- parse_latent(sims, data, "Rt")
+  out$infections <- parse_latent(sims, data, "infections")
 
   # get posterior predictive
   out$obs <- list()
   types <- names(object$obs)
   for(i in seq_along(types))
-    out$obs$types[i] <- parse_obs(sims, newdata, i)
+    out$obs[[types[i]]] <- parse_obs(sims, data, i)
 
   return(out)
 }
@@ -193,7 +195,9 @@ pp_stanmat <- function(object, stanmat, groups) {
   colnames(stanmat) <- stanms
   # remove redundant indices to avoid name conflicts
   col_rm <- union(setdiff(seeds_idx, seeds_idx_keep),setdiff(noise_idx, noise_idx_keep))
-  stanmat <- stanmat[,-col_rm]
+
+  if (length(col_rm) > 0)
+    stanmat <- stanmat[,-col_rm]
 
   # bug in rstan::gqs means we have to pad parameters if M=1...
   mat <- matrix(0, nrow=nrow(stanmat), ncol= 2 + R)
