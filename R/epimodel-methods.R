@@ -105,9 +105,11 @@ model.frame.epimodel <- function(object, fixed.only=FALSE, ...) {
       vars <- all.vars(trms)
       fr <- fr[vars]
     }
-    return(fr)
+  } else {
+    form <- formula(delete.response(terms(object)))
+    fr <- model.frame(formula=form, data=object$data, drop.unused.levels=TRUE)
   }
-  NextMethod("model.frame")
+  return(fr)
 }
 
 #' formula method for epimodel objects

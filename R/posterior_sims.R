@@ -26,6 +26,7 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
 
   # construct linear predictor
   dat <- pp_data(object=object, newdata=newdata, ...)
+
   eta <- pp_eta(object, dat, stanmat)
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
 
@@ -34,8 +35,6 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
   stanmat <- cbind(stanmat, eta)
 
   standata <- pp_standata(object, newdata)
-
-  #print(list(stanmat=stanmat, standata=standata))
 
   sims <- rstan::gqs(stanmodels$pp_base, 
                      data = standata, 
