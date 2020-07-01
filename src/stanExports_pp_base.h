@@ -41,7 +41,6 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(13, 0, "start", "data/data_indices.stan");
     reader.add_event(23, 10, "end", "data/data_indices.stan");
     reader.add_event(23, 6, "restart", "model_pp_base");
-<<<<<<< HEAD
     reader.add_event(32, 15, "include", "tdata/tdata_reverse.stan");
     reader.add_event(32, 0, "start", "tdata/tdata_reverse.stan");
     reader.add_event(36, 4, "end", "tdata/tdata_reverse.stan");
@@ -55,25 +54,6 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(84, 26, "end", "/tparameters/gen_infections.stan");
     reader.add_event(84, 37, "restart", "model_pp_base");
     reader.add_event(100, 51, "end", "model_pp_base");
-=======
-    reader.add_event(23, 6, "include", "data/data_model.stan");
-    reader.add_event(23, 0, "start", "data/data_model.stan");
-    reader.add_event(34, 11, "end", "data/data_model.stan");
-    reader.add_event(34, 7, "restart", "model_pp_base");
-    reader.add_event(39, 12, "include", "tdata/tdata_reverse.stan");
-    reader.add_event(39, 0, "start", "tdata/tdata_reverse.stan");
-    reader.add_event(43, 4, "end", "tdata/tdata_reverse.stan");
-    reader.add_event(43, 13, "restart", "model_pp_base");
-    reader.add_event(57, 27, "include", "/tparameters/infections_rt.stan");
-    reader.add_event(57, 0, "start", "/tparameters/infections_rt.stan");
-    reader.add_event(60, 3, "end", "/tparameters/infections_rt.stan");
-    reader.add_event(60, 28, "restart", "model_pp_base");
-    reader.add_event(65, 33, "include", "/tparameters/gen_infections.stan");
-    reader.add_event(65, 0, "start", "/tparameters/gen_infections.stan");
-    reader.add_event(91, 26, "end", "/tparameters/gen_infections.stan");
-    reader.add_event(91, 34, "restart", "model_pp_base");
-    reader.add_event(107, 48, "end", "model_pp_base");
->>>>>>> develop
     return reader;
 }
 template <typename T0__>
@@ -759,11 +739,7 @@ public:
                                     stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
                                     ((get_base1(noise, m, r, "noise", 1) * get_base1(means, m, r, "means", 1)) * dot_product(sub_col(infections, n0, m, (i - n0)), tail(get_base1(pvecs_rev, r, "pvecs_rev", 1), (i - n0)))), 
                                     "assigning variable pred");
-<<<<<<< HEAD
                         current_statement_begin__ = 94;
-=======
-                        current_statement_begin__ = 101;
->>>>>>> develop
                         stan::model::assign(pred, 
                                     stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
                                     neg_binomial_2_rng(get_base1(get_base1(pred, r, "pred", 1), i, m, "pred", 2), get_base1(phi, r, "phi", 1), base_rng__), 

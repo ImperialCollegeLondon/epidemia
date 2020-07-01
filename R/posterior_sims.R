@@ -187,7 +187,7 @@ pp_stanmat <- function(object, stanmat, groups) {
   # replace original names for the noise
   noise_idx <- grep(paste0("noise["), colnames(stanmat), fixed=TRUE)
   noise_idx_keep <- sapply(groups, function(x) grep(paste0("noise[", x), colnames(stanmat), fixed=TRUE))
-  combs <- expand.grid(seq_along(groups), R)
+  combs <- expand.grid(seq_along(groups), 1:R)
   stanms[noise_idx_keep] <- paste0("noise[", combs[,1], ",", combs[,2], "]")
   }
 
