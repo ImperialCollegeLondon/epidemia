@@ -279,8 +279,8 @@ check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
 
 # Get total number of posterior parameter draws
 posterior_sample_size <- function(object) {
-  return(object$stanfit@sim$n_save
-         - object$stanfit@sim$warmup2)
+  return(sum(object$stanfit@sim$n_save
+         - object$stanfit@sim$warmup2))
 }
 
 

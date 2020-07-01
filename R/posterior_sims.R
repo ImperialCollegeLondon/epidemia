@@ -127,7 +127,7 @@ parse_obs <- function(sims, data, idx) {
 subsamp <- function(object, mat, draws=NULL) {
 
   max_draws <- posterior_sample_size(object)
-  
+
   draws <- draws %ORifNULL% max_draws
   if (draws > max_draws)
     stop(paste0("'draws' should be <= posterior sample size (",
