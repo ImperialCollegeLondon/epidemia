@@ -228,7 +228,7 @@ epim <-
                 if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
                 c(paste0("seeds[", groups, "]")),
                 "tau",
-                "phi",
+                if (standata$R > 0) paste0("phi[", names(obs), "]"),
                 if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
                 "log-posterior")
 
