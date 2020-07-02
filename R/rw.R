@@ -4,6 +4,7 @@
 #'
 #' @param x A vector coercable to a date.
 #' @param delta Timesteps in days.
+#' @param maxdate Date after which rw will stop moving. Deafult NULL
 #' @return The design matrix.
 #' @examples
 #' x<-c("2020-02-22", "2020-02-23", "2020-02-24", "2020-02-25")
@@ -20,8 +21,8 @@
 #' fit <- do.call("epim", args)
 #' plot_rt(fit, group = "Germany")
 #' }
-#' @export
-rw <- function(x,delta){
+#'@export
+rw <- function(x,delta,maxdate=NULL){
     date <- tryCatch(
     {
         as.Date(x)
@@ -30,7 +31,10 @@ rw <- function(x,delta){
         stop("x not coercible to Date.")
     }
     )
-    ncol <- ceiling(as.integer(max(date)-min(date)+1)/delta)-1
+    if (is.null(maxdate)){
+        maxdate <- max(date)
+    }
+    ncol <- ceiling(as.integer(maxdate-min(date)+1)/delta)-1
     cutoffs <- min(date)+(1:ncol)*delta
     res <- t(sapply(date,function(y) as.integer(y>=cutoffs)))
     dim(res) <- c(length(x),length(cutoffs))
