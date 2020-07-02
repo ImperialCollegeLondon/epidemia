@@ -742,7 +742,7 @@ public:
                         current_statement_begin__ = 94;
                         stan::model::assign(pred, 
                                     stan::model::cons_list(stan::model::index_uni(r), stan::model::cons_list(stan::model::index_uni(i), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list()))), 
-                                    neg_binomial_2_rng(get_base1(get_base1(pred, r, "pred", 1), i, m, "pred", 2), get_base1(phi, r, "phi", 1), base_rng__), 
+                                    neg_binomial_2_rng((get_base1(get_base1(pred, r, "pred", 1), i, m, "pred", 2) + 1e-15), get_base1(phi, r, "phi", 1), base_rng__), 
                                     "assigning variable pred");
                     }
                     }
