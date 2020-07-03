@@ -1,3 +1,6 @@
+# epidemia 0.4.0
+* Features for counterfactual analysis and predictions
+
 # epidemia 0.3.3
 * Added vignette describing priors
 * Description of collinearity issues in 'resolving problems' vignette
