@@ -162,7 +162,7 @@ plot_rt(fm)
 In the above code, we have assumed that the initial reproduction number is close to 3, and have assumed regression parameters for the schools/universities and lockdown NPIs of around 0.5 and 1.5 respectively. Now we simulate daily death counts under this model, which will be used in place of the true death data. 
 ```{r replaceData}
 # use mean data from prior run
-obs <- get_obs(fm, type="deaths")$France
+obs <- posterior_obs(fm, type="deaths")$France
 dates <- obs[,1]
 obs <- as.integer(rowMeans(obs[,-1]))
 
