@@ -1,4 +1,4 @@
-# epidemia 0.3.4
+# epidemia 0.4.0
 * Features for counterfactual analysis and predictions
 
 # epidemia 0.3.3
