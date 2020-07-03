@@ -1,6 +1,5 @@
 # epidemia 0.3.4
-* New default prior scales in `epim`
-* Example added to using priors vignette
+* Features for counterfactual analysis and predictions
 
 # epidemia 0.3.3
 * Added vignette describing priors
