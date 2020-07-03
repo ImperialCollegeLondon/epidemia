@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plotting reproduction number over time — plot_rt • epidemia</title>
+<title>Plotting the time-varying reproduction rates — plot_rt • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,10 +41,10 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Plotting reproduction number over time — plot_rt" />
-<meta property="og:description" content="Plots credible intervals for the time-varying reproduction number.
-The user can control the level and number of credible intervals and
-the plotted group(s)." />
+<meta property="og:title" content="Plotting the time-varying reproduction rates — plot_rt" />
+<meta property="og:description" content="Plots credible intervals for the time-varying reproduction rate.
+The user can control the levels of the intervals and the plotted group(s).
+This is a generic function." />
 
 
 
@@ -139,15 +139,15 @@ the plotted group(s)." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plotting reproduction number over time</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plot_Rt.R'><code>R/plot_Rt.R</code></a></small>
+    <h1>Plotting the time-varying reproduction rates</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plots.R'><code>R/plots.R</code></a></small>
     <div class="hidden name"><code>plot_rt.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Plots credible intervals for the time-varying reproduction number.
-The user can control the level and number of credible intervals and
-the plotted group(s).</p>
+    <p>Plots credible intervals for the time-varying reproduction rate.
+The user can control the levels of the intervals and the plotted group(s).
+This is a generic function.</p>
     </div>
 
     <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_rt.html'>plot_rt</a></span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
@@ -165,7 +165,8 @@ See <code>epimodel-objects</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>not yet implemented</p></td>
+      <td><p>Additional arguments for <code><a href='https://rdrr.io/pkg/epidemia/man/posterior_rt.html'>posterior_rt</a></code>. Examples include <code>newdata</code>, which allows
+predictions or counterfactuals. <code>adjusted=FALSE</code> prevents application of the population adjustment to the reproduction number.</p></td>
     </tr>
     <tr>
       <th>group</th>
@@ -185,10 +186,7 @@ Logical, default is <code>FALSE</code>.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A ggplot object.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>This is a generic function.</p>
+    <p>A ggplot object which can be further modified.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

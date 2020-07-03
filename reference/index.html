@@ -180,21 +180,27 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="get_infections.html">get_infections()</a></code> </p>
+          <p><code><a href="fe_data.html">fe_data()</a></code> </p>
         </td>
-        <td><p>Get the underlying infections over time</p></td>
+        <td><p>Given new data, generates the fixed effects model matrix</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="get_obs.html">get_obs()</a></code> </p>
+          <p><code><a href="formula.epimodel.html">formula(<i>&lt;epimodel&gt;</i>)</a></code> </p>
         </td>
-        <td><p>Get fittedmodel predictions for the observations over time</p></td>
+        <td><p>formula method for epimodel objects</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="get_rt.html">get_rt()</a></code> </p>
+          <p><code><a href="get_x.html">get_x()</a></code> <code><a href="get_x.html">get_z()</a></code> </p>
         </td>
-        <td><p>Get the reproduction number over time</p></td>
+        <td><p>Extract X or Z from an epimodel object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="model.frame.epimodel.html">model.frame(<i>&lt;epimodel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>model.frame method for epimodel objects</p></td>
       </tr><tr>
         
         <td>
@@ -212,7 +218,49 @@
         <td>
           <p><code><a href="plot_rt.html">plot_rt()</a></code> </p>
         </td>
-        <td><p>Plotting reproduction number over time</p></td>
+        <td><p>Plotting the time-varying reproduction rates</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="posterior_infections.html">posterior_infections()</a></code> </p>
+        </td>
+        <td><p>Generic function for getting posterior draws of daily infections over time</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="posterior_infectious.html">posterior_infectious()</a></code> </p>
+        </td>
+        <td><p>Generic function for getting posterior draws of total infectiousness over time</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="posterior_latent.html">posterior_latent()</a></code> </p>
+        </td>
+        <td><p>Generic function for getting posterior draws of a specified latent sequence</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="posterior_predict.epimodel.html">posterior_predict(<i>&lt;epimodel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Method corresponding to Generic <code><a href='https://mc-stan.org/rstantools/reference/posterior_predict.html'>posterior_predict</a></code></p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="posterior_rt.html">posterior_rt()</a></code> </p>
+        </td>
+        <td><p>Generic function for getting posterior draws of the time-varying reproduction rates</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="pp_b_ord.html">pp_b_ord()</a></code> </p>
+        </td>
+        <td><p>reorders the random effect draws to match newdata</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="pp_data.html">pp_data()</a></code> </p>
+        </td>
+        <td><p>Generate the data required for constructing the linear predictor</p></td>
       </tr><tr>
         
         <td>
@@ -231,6 +279,12 @@
           <p><code><a href="prior_summary.html">prior_summary()</a></code> </p>
         </td>
         <td><p>Get details of the priors used</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="re_data.html">re_data()</a></code> </p>
+        </td>
+        <td><p>First attempt at getting random effects from new data</p></td>
       </tr><tr>
         
         <td>

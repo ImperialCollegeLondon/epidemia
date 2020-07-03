@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Creates a design matrix for a random walk — rw • epidemia</title>
+<title>reorders the random effect draws to match newdata — pp_b_ord • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,8 +41,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Creates a design matrix for a random walk — rw" />
-<meta property="og:description" content="Creates a design matrix for a random walk effect in epim." />
+<meta property="og:title" content="reorders the random effect draws to match newdata — pp_b_ord" />
+<meta property="og:description" content="reorders the random effect draws to match newdata" />
 
 
 
@@ -137,59 +137,19 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Creates a design matrix for a random walk</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/rw.R'><code>R/rw.R</code></a></small>
-    <div class="hidden name"><code>rw.Rd</code></div>
+    <h1>reorders the random effect draws to match newdata</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/posterior_sims.R'><code>R/posterior_sims.R</code></a></small>
+    <div class="hidden name"><code>pp_b_ord.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Creates a design matrix for a random walk effect in <a href='https://rdrr.io/pkg/epidemia/man/epim.html'>epim</a>.</p>
+    <p>reorders the random effect draws to match newdata</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/rw.html'>rw</a></span>(<span class='kw'>x</span>, <span class='kw'>delta</span>, maxdate = <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/pp_b_ord.html'>pp_b_ord</a></span>(<span class='kw'>b</span>, <span class='kw'>Z_names</span>)</pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>x</th>
-      <td><p>A vector coercable to a date.</p></td>
-    </tr>
-    <tr>
-      <th>delta</th>
-      <td><p>Timesteps in days.</p></td>
-    </tr>
-    <tr>
-      <th>maxdate</th>
-      <td><p>Date after which rw will stop moving. Deafult NULL</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>The design matrix.</p>
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>x</span><span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-02-22"</span>, <span class='st'>"2020-02-23"</span>, <span class='st'>"2020-02-24"</span>, <span class='st'>"2020-02-25"</span>)
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/rw.html'>rw</a></span>(<span class='kw'>x</span>,delta=<span class='fl'>2</span>)</div><div class='output co'>#&gt;      2020-02-24
-#&gt; [1,]          0
-#&gt; [2,]          0
-#&gt; [3,]          1
-#&gt; [4,]          1</div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/rw.html'>rw</a></span>(<span class='kw'>x</span>,delta=<span class='fl'>1</span>)</div><div class='output co'>#&gt;      2020-02-23 2020-02-24 2020-02-25
-#&gt; [1,]          0          0          0
-#&gt; [2,]          1          0          0
-#&gt; [3,]          1          1          0
-#&gt; [4,]          1          1          1</div><div class='input'><span class='co'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid"</span>)
-<span class='kw'>args</span> <span class='op'>&lt;-</span> <span class='kw'>EuropeCovid</span>
-<span class='kw'>args</span><span class='op'>$</span><span class='kw'>algorithm</span> <span class='op'>&lt;-</span> <span class='st'>"sampling"</span>
-<span class='kw'>args</span><span class='op'>$</span><span class='kw'>group_subset</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Germany"</span>,<span class='st'>"United_Kingdom"</span>)
-<span class='kw'>args</span><span class='op'>$</span><span class='kw'>formula</span> <span class='op'>&lt;-</span> <span class='fu'>R</span>(<span class='kw'>country</span>,<span class='kw'>date</span>) <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>+</span> <span class='kw'>lockdown</span> <span class='op'>+</span>(<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/rw.html'>rw</a></span>(<span class='kw'>date</span>,<span class='fl'>7</span>)<span class='op'>|</span><span class='kw'>country</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span>(mc.cores = <span class='kw'>parallel</span>::<span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
-<span class='kw'>args</span><span class='op'>$</span><span class='kw'>sampling_args</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(iter=<span class='fl'>200</span>,control=<span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(adapt_delta=<span class='fl'>0.95</span>,max_treedepth=<span class='fl'>15</span>))
-<span class='kw'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='kw'>args</span>)
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_rt.html'>plot_rt</a></span>(<span class='kw'>fit</span>, group = <span class='st'>"Germany"</span>)
-}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

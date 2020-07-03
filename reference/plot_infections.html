@@ -43,7 +43,8 @@
 
 <meta property="og:title" content="Plotting the underlying number of infections over time — plot_infections" />
 <meta property="og:description" content="Plots credible intervals for the underlying number of infections.
-The user can control the level and number of credible intervals and the plotted group(s)." />
+The user can control the levels of the intervals and the plotted group(s).
+This is a generic function." />
 
 
 
@@ -139,19 +140,26 @@ The user can control the level and number of credible intervals and the plotted 
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plotting the underlying number of infections over time</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plot_Rt.R'><code>R/plot_Rt.R</code></a></small>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plots.R'><code>R/plots.R</code></a></small>
     <div class="hidden name"><code>plot_infections.Rd</code></div>
     </div>
 
     <div class="ref-description">
     <p>Plots credible intervals for the underlying number of infections.
-The user can control the level and number of credible intervals and the plotted group(s).</p>
+The user can control the levels of the intervals and the plotted group(s).
+This is a generic function.</p>
     </div>
 
     <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
 
 <span class='co'># S3 method for epimodel</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>object</span>, group = <span class='kw'>NULL</span>, levels = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>95</span>), <span class='kw'>...</span>)</pre>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(
+  <span class='kw'>object</span>,
+  group = <span class='kw'>NULL</span>,
+  cumulative = <span class='fl'>FALSE</span>,
+  levels = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>95</span>),
+  <span class='kw'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -163,7 +171,8 @@ See <code>epimodel-objects</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>not yet implemented</p></td>
+      <td><p>Additional arguments for <code><a href='https://rdrr.io/pkg/epidemia/man/posterior_infections.html'>posterior_infections</a></code>. Examples include <code>newdata</code>, which allows
+predictions or counterfactuals.</p></td>
     </tr>
     <tr>
       <th>group</th>
@@ -171,22 +180,18 @@ See <code>epimodel-objects</code>.</p></td>
 to plot. Default is <code>NULL</code>, which plots all possible groups.</p></td>
     </tr>
     <tr>
-      <th>levels</th>
-      <td><p>numeric vector giving the levels of the plotted credible intervals</p></td>
+      <th>cumulative</th>
+      <td><p>If true, plots the cumulative observations. Defaults to FALSE&gt;</p></td>
     </tr>
     <tr>
-      <th>log10_scale</th>
-      <td><p>whether to plot the reproduction number on a log10-scale.
-Logical, default is <code>FALSE</code>.</p></td>
+      <th>levels</th>
+      <td><p>numeric vector giving the levels of the plotted credible intervals</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A ggplot object.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>This is a generic function.</p>
+    <p>A ggplot object which can be further modified.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
