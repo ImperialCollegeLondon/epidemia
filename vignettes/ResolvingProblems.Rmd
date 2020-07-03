@@ -110,6 +110,7 @@ initf <- function(){
     res$noise<- NULL
     res
 }
+args$debug <- F
 args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=15),seed=713,init=initf)
 ```
 
