@@ -215,7 +215,7 @@ will be used in place of the true death data.
 
 ``` r
 # use mean data from prior run
-obs <- get_obs(fm, type="deaths")$France
+obs <- posterior_obs(fm, type="deaths")$France
 dates <- obs[,1]
 obs <- as.integer(rowMeans(obs[,-1]))
 
