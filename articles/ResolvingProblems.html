@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -287,7 +287,7 @@
 ## Running the chains for more iterations may help. See
 ## http://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
 <pre><code>##    user  system elapsed 
-## 814.968   1.289 211.591</code></pre>
+## 806.490   1.276 208.558</code></pre>
 <p>Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit">
 <span class="co"># more informative prior intercept</span>
@@ -296,7 +296,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
 </pre></div>
 <pre><code>##    user  system elapsed 
-## 176.352   0.768  45.633</code></pre>
+## 173.514   0.760  45.648</code></pre>
 <p>This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.</p>
 <p>We now plot the posterior correlations between these two parameters.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit">

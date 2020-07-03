@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -558,14 +558,14 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">200</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>))
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior_PD</span> <span class="op">&lt;-</span> <span class="fl">TRUE</span>
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>))
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>), adjusted=<span class="kw">F</span>)
 </pre></div>
 <p><img src="introduction_files/figure-html/normalPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>And example of using a shifted gamma prior…</p>
 <div class="sourceCode" id="cb23"><pre class="downlit">
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shifted_gamma.html">shifted_gamma</a></span>(shape=<span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale=<span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>))
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>), adjusted=<span class="kw">F</span>)
 </pre></div>
 <p><img src="introduction_files/figure-html/gammaPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>The above plots give a good indication of the implications of different prior families.</p>
@@ -606,10 +606,10 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 </pre></div>
 <pre><code>##           parameters
 ## iterations (Intercept) schools_universities self_isolating_if_ill public_events
-##       [1,]  -0.4057246         -0.008131382           0.025659941      2.791520
-##       [2,]  -0.4264272         -0.007820518          -0.006936063      2.594391
-##       [3,]  -0.7258349          0.002389018          -0.008050662      3.074775
-##       [4,]  -0.7067648          0.031951330          -0.008127220      2.825153</code></pre>
+##       [1,]  -1.0272120          0.010060928          -0.008131561      2.928960
+##       [2,]  -0.8642824         -0.004415475          -0.008131637      2.921049
+##       [3,]  -0.6167007          0.019742760          -0.008128757      2.382360
+##       [4,]  -0.7410157          0.055984385          -0.008131083      2.402676</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
