@@ -12,7 +12,7 @@
 #' @param group \code{NULL}, string or character vector specifying which groups
 #' to plot. Default is \code{NULL}, which plots all possible groups.
 #' @param levels numeric vector giving the levels of the plotted credible intervals
-#' @param log10_scale whether to plot the reproduction number on a log10-scale.
+#' @param log whether to plot the reproduction number on a log10-scale.
 #' Logical, default is \code{FALSE}.
 #' @param ... not yet implemented
 #' @return A ggplot object.
@@ -21,13 +21,13 @@ plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
 #' @rdname plot_rt
 #' @export
-plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scale = FALSE, ...) {
+plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log = FALSE, ...) {
   
   # input checks
   group <- .check_plot_groups(object, group)
   levels <- .check_levels(levels)
-  if(!is.logical(log10_scale))
-    stop("log10_scale must be of type logical", call. = FALSE)
+  if(!is.logical(log))
+    stop("log must be of type logical", call. = FALSE)
   
   # get the Rt by group
   rt <- lapply(group, function(g) get_rt(object)[[g]])
@@ -58,8 +58,8 @@ plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scal
                     fill = ggplot2::guide_legend(order = 0)) +
     ggplot2::scale_x_date(date_breaks = "2 weeks", 
                           labels = scales::date_format("%e %b")) + 
-    ggplot2::scale_y_continuous(trans = ifelse(log10_scale, "log10", "identity"),
-                                limits = c(ifelse(log10_scale, NA, 0), NA)) +
+    ggplot2::scale_y_continuous(trans = ifelse(log, "log10", "identity"),
+                                limits = c(ifelse(log, NA, 0), NA)) +
     ggplot2::theme_bw() + 
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
                                                        hjust = 1), 
@@ -86,7 +86,7 @@ plot_rt.epimodel <- function(object, group = NULL, levels = c(50,95), log10_scal
 #' @param group \code{NULL}, string or character vector specifying which groups
 #' to plot. Default is \code{NULL}, which plots all possible groups.
 #' @param levels numeric vector giving the levels of the plotted credible intervals
-#' @param log10_scale whether to plot the reproduction number on a log10-scale.
+#' @param log whether to plot the reproduction number on a log10-scale.
 #' Logical, default is \code{FALSE}.
 #' @param ... not yet implemented
 #' @return A ggplot object.
@@ -164,7 +164,7 @@ plot_obs.epimodel <- function(object, type, group = NULL, levels = c(50, 95), ..
 #' @param group \code{NULL}, string or character vector specifying which groups
 #' to plot. Default is \code{NULL}, which plots all possible groups.
 #' @param levels numeric vector giving the levels of the plotted credible intervals
-#' @param log10_scale whether to plot the reproduction number on a log10-scale.
+#' @param log whether to plot the reproduction number on a log10-scale.
 #' Logical, default is \code{FALSE}.
 #' @param ... not yet implemented
 #' @return A ggplot object.
