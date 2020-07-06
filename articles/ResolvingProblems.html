@@ -278,23 +278,26 @@
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">10</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
 </pre></div>
-<pre><code>## Warning: There were 1727 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+<pre><code>## Warning: There were 1718 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
 ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded</code></pre>
 <pre><code>## Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
+<pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+## Running the chains for more iterations may help. See
+## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
 <pre><code>##    user  system elapsed 
-## 924.705   1.929 242.628</code></pre>
+## 970.391   4.008 252.317</code></pre>
 <p>Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit">
+<div class="sourceCode" id="cb19"><pre class="downlit">
 <span class="co"># more informative prior intercept</span>
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior_intercept</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">0.5</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">0.5</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
 </pre></div>
 <pre><code>##    user  system elapsed 
-## 175.903   0.886  47.306</code></pre>
+## 169.628   0.733  44.313</code></pre>
 <p>This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.</p>
 <p>We now plot the posterior correlations between these two parameters.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit">
+<div class="sourceCode" id="cb21"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(mfrow=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>,<span class="fl">2</span>))
 <span class="kw">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="kw">fm2</span>)
 <span class="kw">r0</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"(Intercept)"</span>]
@@ -307,7 +310,7 @@
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span>(<span class="kw">r0</span>, <span class="kw">schools_universities</span>, type = <span class="st">"o"</span>)
 </pre></div>
 <p><img src="ResolvingProblems_files/figure-html/unnamed-chunk-3-1.png" width="700"> The left hand plot shows the posterior distribution from <code>fm2</code>, where less informative priors were used. The divergent transitions appear to be caused by the small step-size required to traverse the distribution horizontally/vertically, and the large step size desired for traversing the diagonal; there is a <em>ridge</em> in the posterior. For more information on why this can pose a problem for Hamiltonian Monte Carlo, please refer to <a href="https://mc-stan.org/docs/2_20/stan-users-guide/collinearity-section.html">the stan user guide</a>. Using stronger prior information reduces the posterior correlation and the sampler explores the space better, as shown in the right hand plot.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit">
+<div class="sourceCode" id="cb22"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">fm2</span>, digits=<span class="fl">2</span>)
 </pre></div>
 <pre><code>## 
@@ -315,18 +318,18 @@
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -4.94   3.80 
-## schools_universities  5.45   3.79 
-## lockdown              1.48   0.17 
+## (Intercept)          -4.66   3.94 
+## schools_universities  5.21   4.00 
+## lockdown              1.50   0.16 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]         2.70   0.77 
-## tau                  10.89  11.21 
-## phi[deaths]          18.91   3.20 
-## noise[France,deaths]  1.00   0.10</code></pre>
-<div class="sourceCode" id="cb23"><pre class="downlit">
+## seeds[France]         2.87   0.94 
+## tau                  10.23  10.26 
+## phi[deaths]          19.16   3.23 
+## noise[France,deaths]  0.99   0.10</code></pre>
+<div class="sourceCode" id="cb24"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">fm3</span>, digits=<span class="fl">2</span>)
 </pre></div>
 <pre><code>## 
@@ -334,16 +337,16 @@
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -0.24   0.25 
-## schools_universities  0.68   0.30 
-## lockdown              1.56   0.15 
+## (Intercept)          -0.19   0.27 
+## schools_universities  0.65   0.32 
+## lockdown              1.55   0.15 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]        20.77   7.96 
-## tau                  26.89  19.54 
-## phi[deaths]          19.07   3.18 
+## seeds[France]        22.86   9.47 
+## tau                  29.58  21.36 
+## phi[deaths]          18.95   3.16 
 ## noise[France,deaths]  1.00   0.10</code></pre>
 </div>
   </div>
