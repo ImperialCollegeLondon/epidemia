@@ -1,3 +1,8 @@
+# epidemia 0.5.0
+* pseudo-log scales for `plot_infections` and `plot_observations`
+* control over date range for all plots
+* option to plot smoothed Rt in `plot_rt`
+
 # epidemia 0.4.0
 * Features for counterfactual analysis and predictions
 
