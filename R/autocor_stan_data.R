@@ -9,7 +9,7 @@ get_sdat_autocor <- function(formula, data) {
     res <- parse_all_terms(trms, data)
 
     sdat$ac_nterms <- length(res$nproc)
-    sdat$ac_ntime <- as.numeric(res$ntime)
+    sdat$ac_ntime <- as.array(res$ntime)
     sdat$ac_q <- sum(res$ntime)
     sdat$ac_nproc <- sum(res$nproc)
     # Todo: implement this as an option

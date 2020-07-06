@@ -54,9 +54,18 @@ transformed parameters {
   // transformed phi (half normal distributions)
   vector<lower=0>[R] phi = fabs(z_phi .* prior_scale_for_phi + prior_mean_for_phi);
 
-#include /tparameters/tparameters_ac.stan
 #include /tparameters/infections_rt.stan
+#include /tparameters/tparameters_ac.stan
 #include /tparameters/tparameters_glm.stan
+
+  {
+    int i = 1;
+    for (proc in 1:ac_nproc) { // this treats ac terms as random walks for now (to be extended to AR(p))
+        ac_beta[i:(i+ac_ntime[proc]-1)] = cumulative_sum(ac_noise[i:(i+ac_ntime[proc]-1)]);
+        i += ac_ntime[proc];
+    }
+  }
+  
 #include /tparameters/make_eta.stan
 #include /tparameters/gen_infections.stan
 
