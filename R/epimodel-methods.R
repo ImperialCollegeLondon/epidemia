@@ -34,8 +34,6 @@ VarCorr.epimodel <- function(x, sigma = 1, ...) {
   names(ans) <- nms
   structure(ans, sc = mean(sc), useSc = useSc, class = "VarCorr.merMod")
 }
-
-
   
 .mixed_check <- function(object) {
   if (!is.mixed(object))
