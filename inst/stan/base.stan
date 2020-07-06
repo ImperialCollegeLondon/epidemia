@@ -25,6 +25,8 @@ vector<lower=0>[R] noise_scales;
 transformed data {
   real aux = not_a_number();
   int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
+  int<lower=1> ac_V[ac_terms, N] = make_V(N, ac_terms, ac_v);
+  print(ac_V);
 #include /tdata/tdata_reverse.stan
 #include /tdata/tdata_glm.stan
 
