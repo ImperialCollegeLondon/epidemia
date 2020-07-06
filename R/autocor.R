@@ -57,9 +57,10 @@ terms_rw <- function(x) {
 # representing a design matrix for the walks.
 parse_term <- function(trm, data) {
   trm <- eval(parse(text=trm))
+
   # retrieve the time and group vectors
   time <- if(trm$time=="NA") data$date else data[[trm$time]]
-  group <- if(trm$gr=="NA") "all" else data[[trm$gr]]
+  group <- if(trm$gr=="NA") "all" else droplevels(data[[trm$gr]])
   
   fbygr <- split(time, group)
   ntime <- sapply(fbygr, function(x) length(unique(x)))
@@ -67,7 +68,7 @@ parse_term <- function(trm, data) {
   
   f <- paste0(time,",", group)
   f <- ordered(f, levels=unique(f))
-  Z <- t(as(f, Class="sparseMatrix"))
+  Z <- Matrix::t(as(f, Class="sparseMatrix"))
   
   return(loo::nlist(nproc, ntime, Z))
 }

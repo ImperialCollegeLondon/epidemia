@@ -160,12 +160,8 @@ epim <-
     glmod <- group <- NULL
   }
 
-  if (is_autocor(formula)) {
-    return(get_sdat_autocor(formula, data))
-  }
-  else {
-    # set standata to empty
-  }
+  return(get_sdat_autocor(formula, data))
+
 
   # get standata relating to model pars excluding Rt regression
   standata <- get_sdat_data(data)
