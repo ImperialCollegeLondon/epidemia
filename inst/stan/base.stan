@@ -33,12 +33,12 @@ transformed data {
 for(r in 1:R)
       pvecs_rev[r] = reverse(pvecs[r]);
 
-print(ac_V);
 }
 
 parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
+#include /parameters/parameters_ac.stan
   vector[R] z_phi;
   vector<lower=0>[M] y_raw;
   real<lower=0> tau_raw;
@@ -54,6 +54,7 @@ transformed parameters {
   // transformed phi (half normal distributions)
   vector<lower=0>[R] phi = fabs(z_phi .* prior_scale_for_phi + prior_mean_for_phi);
 
+#include /tparameters/tparameters_ac.stan
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_glm.stan
 #include /tparameters/make_eta.stan
@@ -82,6 +83,7 @@ model {
     noise[,r] ~ normal(1, noise_scales[r]);
 
 #include /model/priors_glm.stan
+#include /model/priors_ac.stan
   if (t > 0) {
     real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
                           regularization, delta, shape, t, p);
