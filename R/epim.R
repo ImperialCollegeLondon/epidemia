@@ -196,7 +196,9 @@ epim <-
             "y",
             "tau2",
             "phi",
-            "noise")
+            "noise",
+            if (length(standata$ac_nterms)) "ac_scale",
+            if (length(standata$ac_nterms)) "ac_beta")
 
   args <- sampling_args
   if (!debug) args$pars <- pars
@@ -226,6 +228,8 @@ epim <-
       Sigma_nms <- unlist(Sigma_nms)
   }
 
+  trms_rw <- terms_rw(formula)
+
   combs <- expand.grid(groups,names(obs))
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
                 colnames(standata$X),
@@ -235,6 +239,8 @@ epim <-
                 "tau",
                 if (standata$R > 0) paste0("phi[", names(obs), "]"),
                 if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
+                if (length(standata$ac_nterms)) paste0("ac_sigma[", terms_rw(formula), "]"),
+                if (length(standata$ac_nterms)) paste0("b[", colnames(parse_all_terms(trms_rw)$Z), "]"),
                 "log-posterior")
 
   orig_names <- fit@sim$fnames_oi
