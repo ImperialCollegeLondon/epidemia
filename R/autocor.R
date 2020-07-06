@@ -63,7 +63,7 @@ parse_term <- function(trm, data) {
   fbygr <- split(time, group)
   ntime <- sapply(fbygr, function(x) length(unique(x)))
   nproc <- length(ntime)
-  prior_scale <- rep(trm$prior_scale, nproc)
+  prior_scale <- rep(as.numeric(trm$prior_scale), nproc)
   
   f <- paste0(time,",", group)
   f <- ordered(f, levels=unique(f))
