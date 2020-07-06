@@ -11,6 +11,7 @@
 #' @param levels numeric vector giving the levels of the plotted credible intervals
 #' @param log whether to plot the reproduction number on a log10-scale.
 #' Logical, default is \code{FALSE}.
+#' @param smooth integer specifying the window used to smooth the Rt values. Default is 1 (no smoothing).
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals. \code{adjusted=FALSE} prevents application of the population adjustment to the reproduction number.
 #' @return A ggplot object which can be further modified.
@@ -19,27 +20,63 @@ plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
 #' @rdname plot_rt
 #' @export
-plot_rt.epimodel <- function(object, group=NULL, levels=c(50,95), log=FALSE, ...) {
+plot_rt.epimodel <- function(object, group=NULL,
+							 dates=NULL, date_breaks="2 weeks", date_format="%Y-%m-%d",
+							 levels=c(50,95), log=FALSE, smooth=1, ...) {
   levels <- .check_levels(levels)
   if(!is.logical(log))
     stop("'log' must be of type logical", call. = FALSE)
-
+  
   rt <- posterior_rt(object=object, ...)
-
+  
+  # check smoothing input
+  min.dates <- min(sapply(rt, function(x) length(x$date)))
+  if(smooth >= min.dates) {
+    warning(paste0("smooth=", smooth, " is too large (one group has ", min.dates, " unique dates) - no smoothing will be performed"),
+            call. = FALSE)
+    smooth <- 1
+  } else if(smooth <=0 | smooth%%1!=0) {
+    warning("smooth must be a positive integer - no smoothing will be performed", call. = FALSE)
+    smooth <- 1
+  }
+  
   if (!is.null(group)) {
     w <- !(group %in% names(rt))
     if (any(w))
       stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
-      rt <- rt[group]
+    rt <- rt[group]
   }
-
+  
+  # do the smoothing
+  if(smooth > 1) {
+    # remove date, smooth samples then reattach dates
+    rt.smoothed <- lapply(rt,
+                          function(x) as.data.frame(cbind(date=x["date"], apply(x %>% dplyr::select(-date), 2,
+                                                                                function(y) zoo::rollmean(y, smooth, fill=NA)))))
+    rt <- lapply(rt.smoothed, function(x) x[complete.cases(x),])
+  }
+  
   # quantiles by group
   qtl <- lapply(rt, function(.rt) .get_quantiles(.rt, levels))
   qtl <- data.table::rbindlist(qtl, idcol="group")
+
+  # date subsetting if required
+  dates <- .check_dates(dates, date_format)
+  if(!is.null(dates)) {
+    date.range <- seq(dates[[1]], dates[[2]], by="day")
+    qtl <- qtl[qtl$date %in% date.range,]
+    if(nrow(qtl)==0)
+      stop("date subsetting removed all data")
+  }
+  
+  if(smooth > 1)
+    ylab <- bquote("smoothed "~R[t]~" ("~.(smooth)~" day window)")
+  else
+    ylab <- expression(R[t])
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_ribbon(data = qtl, 
-                        ggplot2::aes(x=date, 
+                         ggplot2::aes(x=date, 
                                       ymin = low, 
                                       ymax = up,
                                       group = tag,  
@@ -48,23 +85,23 @@ plot_rt.epimodel <- function(object, group=NULL, levels=c(50,95), log=FALSE, ...
                         color = 'black', 
                         size = 0.7) + 
     ggplot2::xlab("") + 
-    ggplot2::ylab(expression(R[t])) + 
+    ggplot2::ylab(ylab) + 
     ggplot2::scale_fill_manual(name = "Credible intervals", 
-                              labels = paste0(levels,"%"), 
-                              values = ggplot2::alpha("deepskyblue4", 
-                                                      0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
+                               labels = paste0(levels,"%"), 
+                               values = ggplot2::alpha("deepskyblue4", 
+                                                       0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
     ggplot2::guides(shape = ggplot2::guide_legend(order = 2), 
                     col = ggplot2::guide_legend(order = 1), 
                     fill = ggplot2::guide_legend(order = 0)) +
-    ggplot2::scale_x_date(date_breaks = "2 weeks", 
+    ggplot2::scale_x_date(date_breaks = date_breaks, 
                           labels = scales::date_format("%e %b")) + 
     ggplot2::scale_y_continuous(trans = ifelse(log, "log10", "identity"),
                                 limits = c(ifelse(log, NA, 0), NA)) +
     ggplot2::theme_bw() + 
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
-                                                      hjust = 1), 
-                  axis.text = ggplot2::element_text(size = 12),
-                  axis.title = ggplot2::element_text(size = 12)) + 
+                                                       hjust = 1), 
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.title = ggplot2::element_text(size = 12)) + 
     ggplot2::theme(legend.position="right") +
     ggplot2::facet_wrap(~group)
   
@@ -83,7 +120,11 @@ plot_rt.epimodel <- function(object, group=NULL, levels=c(50,95), log=FALSE, ...
 #' of the \code{obs} argument to \code{epim}.
 #' @param posterior_mean If true, the credible intervals are plotted for the posterior mean. Defaults to FALSE, 
 #'  in which case the posterior predictive is plotted.
-#' @param cumulative If true, plots the cumulative observations. Defaults to FALSE>
+#' @param dates a vector of (start date, end date) defining the date range to be plotted. Must be coercible to date.
+#' @param date_breaks string giving the distance between date tick labels. Default is "2 weeks". See \url{https://ggplot2.tidyverse.org/reference/scale_date.html}.
+#' @param date_format the date format for coercing \code{dates}. Default is "%Y-%m-%d"
+#' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
+#' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
 #' @export
@@ -92,40 +133,56 @@ plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 #' @rdname plot_obs
 #' @export
 plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE, 
-                        group=NULL, cumulative=FALSE, levels = c(50, 95), ...) {
+                              group=NULL,
+                              dates=NULL, date_breaks="2 weeks", date_format="%Y-%m-%d",
+                              cumulative=FALSE, levels=c(50, 95), log=FALSE, ...) {
   
   # input checks
-  if(!(type %in% names(object$obs)))
-    stop(paste0("obs does not contain any observations for type '", type, "'"))
+  if(!is.null(type)) {
+    if(!(type %in% names(object$obs)))
+      stop(paste0("obs does not contain any observations for type '", type, "'"), call. = FALSE)
+  } else stop("must specify an observation type", call. = FALSE)
   
   levels <- .check_levels(levels)
+  if(!is.logical(log))
+    stop("'log' must be of type logical", call. = FALSE)
   
   obs <- posterior_predict(object=object, types=type, ...)
-
+  
   if (!is.null(group)) {
     w <- !(group %in% names(obs))
     if (any(w))
       stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
-      obs <- obs[group]
+    obs <- obs[group]
   }
-
+  
   if (cumulative)
     obs <- lapply(obs, cumul)
-
+  
   # quantiles by group
   qtl <- lapply(obs, function(.obs) .get_quantiles(.obs, levels))
   qtl <- data.table::rbindlist(qtl, idcol="group")
   
   # observed data
   df <- object$obs[[type]][["odata"]]
-
+  
+  # date subsetting if required
+  dates <- .check_dates(dates, date_format)
+  if(!is.null(dates)) {
+    date.range <- seq(dates[[1]], dates[[2]], by="day")
+    df <- df[df$date %in% date.range,]
+    qtl <- qtl[qtl$date %in% date.range,]
+    if(nrow(qtl)==0 | nrow(df)==0)
+      stop("date subsetting removed all data")
+  }
+  
   if (is.null(group))
     w <- df$group %in% names(obs)
   else
     w <- df$group %in% group
-
+  
   df <- df[w,]
-
+  
   if (cumulative) {
     df <- df %>%
       dplyr::group_by(group) %>%
@@ -147,8 +204,10 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
     ggplot2::xlab("") +
     ggplot2::ylab(type) +
     ggplot2::scale_y_continuous(labels = scales::comma, 
-                                expand=ggplot2::expansion(mult=c(0,0.1))) +
-    ggplot2::scale_x_date(date_breaks = "2 weeks", 
+                                expand = ggplot2::expansion(mult=c(0,0.1)),
+                                trans = ifelse(log, "pseudo_log", "identity"),
+                                limits = c(ifelse(log, NA, 0), NA)) +
+    ggplot2::scale_x_date(date_breaks = date_breaks,
                           labels = scales::date_format("%e %b")) + 
     ggplot2::scale_fill_manual(name = "Credible Intervals", 
                                labels = paste0(levels,"%"), 
@@ -181,10 +240,13 @@ plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 
 #' @rdname plot_infections
 #' @export
-plot_infections.epimodel <- function(object, group = NULL, cumulative=FALSE,
-                              levels = c(50, 95), ...) {
+plot_infections.epimodel <- function(object, group = NULL,
+									 dates=NULL, date_breaks="2 weeks", date_format="%Y-%m-%d",
+									 cumulative=FALSE, levels = c(50, 95), log=FALSE, ...) {
 
   levels <- .check_levels(levels)
+  if(!is.logical(log))
+    stop("'log' must be of type logical", call. = FALSE)
 
   inf <- posterior_infections(object=object, ...)
 
@@ -201,6 +263,15 @@ plot_infections.epimodel <- function(object, group = NULL, cumulative=FALSE,
   # quantiles by group
   qtl <- lapply(inf, function(.inf) .get_quantiles(.inf, levels))
   qtl <- data.table::rbindlist(qtl, idcol="group")
+
+  # date subsetting if required
+  dates <- .check_dates(dates, date_format)
+  if(!is.null(dates)) {
+    date.range <- seq(dates[[1]], dates[[2]], by="day")
+    qtl <- qtl[qtl$date %in% date.range,]
+    if(nrow(qtl)==0)
+      stop("date subsetting removed all data")
+  }
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_ribbon(data = qtl, 
@@ -211,7 +282,9 @@ plot_infections.epimodel <- function(object, group = NULL, cumulative=FALSE,
     ggplot2::xlab("") +
     ggplot2::ylab("Infections") +
     ggplot2::scale_y_continuous(labels = scales::comma, 
-                                expand=ggplot2::expansion(mult=c(0,0.1))) +
+                                expand=ggplot2::expansion(mult=c(0,0.1)),
+                                trans = ifelse(log, "pseudo_log", "identity"),
+                                limits = c(ifelse(log, NA, 0), NA)) +
     ggplot2::scale_x_date(date_breaks = "2 weeks", 
                           labels = scales::date_format("%e %b")) + 
     ggplot2::scale_fill_manual(name = "Credible Intervals", 
@@ -274,4 +347,33 @@ cumul <- function(df) {
   if(any(!dplyr::between(levels, 0, 100)))
     stop("all levels must be between 0 and 100 (inclusive)", call. = FALSE)
   return(sort(levels))
+}
+
+# Internal
+
+# checks date argument. returns NULL if dates are invalid
+.check_dates <- function(dates, date_format) {
+  if(!is.null(dates)) {
+    if(length(dates)==2) {
+      if(!any(is.na(as.Date(dates, format=date_format)))) {
+        dates <- as.Date(dates, format=date_format)
+        if(dates[[1]]>dates[[2]]) {
+          warning("start of date range is before end - reversing dates", call. = FALSE)
+          dates <- rev(dates)
+        } else if (dates[[1]]==dates[[2]]){
+          warning("dates must be different - plotting the entire range", call. = FALSE)
+          return(NULL)
+        }
+        return(dates)
+      } else {
+        warning(paste0("Could not coerce ",
+                       paste0(dates[which(is.na(as.Date(dates, format=date_format)))], collapse=", "),
+                              " to date with specified format - plotting the enire date range"),
+                call. = FALSE)
+      }
+    } else {
+      warning("dates should have format (min date, max date) - plotting the entire date range", call. = FALSE)
+    }
+  }
+  return(NULL)
 }
