@@ -26,7 +26,6 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
 
   # construct linear predictor
   dat <- pp_data(object=object, newdata=newdata, ...)
-
   eta <- pp_eta(object, dat, stanmat)
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
 
@@ -231,6 +230,19 @@ pp_eta <- function(object, data, stanmat) {
     }
     eta <- eta + as.matrix(b %*% data$Zt)
   }
+
+  if (!is.null(data$ac_Z)) {
+    rw_sel <- grep("^rw\\(", colnames(stanmat))
+    rw <- stanmat[, rw_sel, drop=FALSE]
+    if (!is.null(data$ac_Z_names)) {
+      # ToDo: using newdata so must be careful with columns
+      stop("For now, no support for newdata when autocorrelation terms exist.")
+    }
+    print(dim(rw))
+    print(dim(data$ac_Z))
+    eta <- eta + as.matrix(rw %*% Matrix::t(data$ac_Z))
+  }
+
   return(eta)
 }
 

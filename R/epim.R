@@ -229,7 +229,7 @@ epim <-
   }
 
   trms_rw <- terms_rw(formula)
-
+  print(make_rw_nms(trms_rw, data))
   combs <- expand.grid(groups,names(obs))
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
                 colnames(standata$X),
@@ -239,8 +239,8 @@ epim <-
                 "tau",
                 if (standata$R > 0) paste0("phi[", names(obs), "]"),
                 if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
-                if (length(standata$ac_nterms)) paste0("ac_sigma[", terms_rw(formula), "]"),
-                if (length(standata$ac_nterms)) paste0("b[", colnames(parse_all_terms(trms_rw)$Z), "]"),
+                if (length(standata$ac_nterms)) make_rw_sigma_nms(trms_rw, data),
+                if (length(standata$ac_nterms)) make_rw_nms(trms_rw, data),
                 "log-posterior")
 
   orig_names <- fit@sim$fnames_oi
@@ -303,6 +303,30 @@ transformTheta_L <- function(stanfit, cnms) {
   }
 
   return(stanfit)
+}
+
+# construct names for the random walks
+make_rw_nms <- function(trms, data) {
+  nms <- character()
+  for (trm in trms) {
+    trm <- eval(parse(text=trm))
+    # retrieve the time and group vectors
+    time <- if(trm$time=="NA") data$date else data[[trm$time]]
+    group <- if(trm$gr=="NA") "all" else droplevels(data[[trm$gr]])
+    f <- unique(paste0(trm$label, "[", time,",", group, "]"))
+    nms <- c(nms, f[order(f)])
+  }
+  return(nms)
+}
+
+make_rw_sigma_nms <- function(trms, data) {
+  nms <- character()
+  for (trm in trms) {
+    trm <- eval(parse(text=trm))
+    group <- if(trm$gr=="NA") "all" else droplevels(data[[trm$gr]])
+    nms <- c(nms, unique(paste0("sigma:", trm$label, "[", group, "]")))
+  }
+  return(nms)
 }
 
 
