@@ -80,7 +80,7 @@ parse_term <- function(trm, data) {
 parse_all_terms <- function(trms, data) {
   out <- list()
   for (trm in trms)
-    out[[trm]] <- term_spmat(trm, data)
+    out[[trm]] <- parse_term(trm, data)
 
   nproc <- do.call(c, args=lapply(out, function(x) x$nproc))
   ntime <- do.call(c, args=lapply(out, function(x) x$ntime))

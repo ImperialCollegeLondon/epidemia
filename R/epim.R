@@ -99,7 +99,6 @@ epim <-
   
   call    <- match.call(expand.dots = TRUE)
   formula <- checkFormula(formula)
-  print("Stage 1")
   data    <- checkData(formula, data, group_subset)
   groups  <- levels(data$group)
   obs     <- checkObs(obs, data)
@@ -162,7 +161,10 @@ epim <-
   }
 
   if (is_autocor(formula)) {
-    print("Found autocorrelation terms!")
+    return(get_sdat_autocor(formula, data))
+  }
+  else {
+    # set standata to empty
   }
 
   # get standata relating to model pars excluding Rt regression
