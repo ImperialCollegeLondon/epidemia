@@ -18,11 +18,12 @@
 #' args$formula <- R(country, date) ~ 1 + rw(gr=country) + lockdown
 #' }
 #' @export
-rw <- function(time=NA, gr=NA) {
+rw <- function(time=NA, gr=NA, prior_scale=0.2) {
   label <- deparse(match.call())
   time <- deparse(substitute(time))
   gr <- deparse(substitute(gr))
-  out <- loo::nlist(time, gr, label)
+  prior_scale <- deparse(substitute(prior_scale))
+  out <- loo::nlist(time, gr, label, prior_scale)
   class(out) <- c("rw_term")
   return(out)
 }
@@ -62,12 +63,13 @@ parse_term <- function(trm, data) {
   fbygr <- split(time, group)
   ntime <- sapply(fbygr, function(x) length(unique(x)))
   nproc <- length(ntime)
+  prior_scale <- rep(trm$prior_scale, nproc)
   
   f <- paste0(time,",", group)
   f <- ordered(f, levels=unique(f))
   Z <- Matrix::t(as(f, Class="sparseMatrix"))
   
-  return(loo::nlist(nproc, ntime, Z))
+  return(loo::nlist(nproc, ntime, Z, prior_scale))
 }
 
 # Parses a sequence of random walk terms, concatenating 
@@ -83,6 +85,7 @@ parse_all_terms <- function(trms, data) {
   nproc <- do.call(c, args=lapply(out, function(x) x$nproc))
   ntime <- do.call(c, args=lapply(out, function(x) x$ntime))
   Z <- do.call(cbind, args=lapply(out, function(x) x$Z))
-  return(loo::nlist(nproc, ntime, Z))
+  prior_scale <- do.call(c, args=lapply(out, function(x) x$prior_scale))
+  return(loo::nlist(nproc, ntime, Z, prior_scale))
 }
 

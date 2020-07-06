@@ -13,7 +13,7 @@ get_sdat_autocor <- function(formula, data) {
     sdat$ac_q <- sum(res$ntime)
     sdat$ac_nproc <- sum(res$nproc)
     # Todo: implement this as an option
-    sdat$ac_prior_scales <- as.array(rep(1, sdat$ac_nproc))
+    sdat$ac_prior_scales <- as.array(res$prior_scale)
 
     # add sparse matrix representation
     parts <- rstan::extract_sparse_parts(res$Z)

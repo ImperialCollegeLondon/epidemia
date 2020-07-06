@@ -236,11 +236,12 @@ pp_eta <- function(object, data, stanmat) {
     rw <- stanmat[, rw_sel, drop=FALSE]
     if (!is.null(data$ac_Z_names)) {
       # ToDo: using newdata so must be careful with columns
+      print(paste0("colnames(rw): ", colnames(rw)))
+      print(paste0("Z_names: ", data$ac_Z_names))
       stop("For now, no support for newdata when autocorrelation terms exist.")
     }
     eta <- eta + as.matrix(rw %*% Matrix::t(data$ac_Z))
   }
-
   return(eta)
 }
 
