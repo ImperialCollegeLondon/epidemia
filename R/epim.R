@@ -160,11 +160,10 @@ epim <-
     glmod <- group <- NULL
   }
 
-  return(get_sdat_autocor(formula, data))
-
+  standata <- get_sdat_autocor(formula, data)
 
   # get standata relating to model pars excluding Rt regression
-  standata <- get_sdat_data(data)
+  standata <- c(standata, get_sdat_data(data))
   standata <- get_sdat_obs(standata, obs)
   standata <- get_sdat_add_priors(standata, prior_phi, prior_tau)
   standata$si <- padSV(si, standata$NS, 0)
