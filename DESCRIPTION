@@ -71,7 +71,8 @@ Imports:
     ggpubr,
     scales,
     Rdpack,
-    stats
+    stats,
+    zoo
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
