@@ -8,6 +8,7 @@ checkFormula <- function(formula) {
   vars <- all.vars(update(formula, ".~0"))
   if(length(vars) != 2)
     stop("Left hand side of 'formula' must have form 'Rt(code,date)'.")
+  class(formula) <- c("epiformula", "formula")
   return(formula)
 }
 

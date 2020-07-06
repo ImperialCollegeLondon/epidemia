@@ -120,33 +120,7 @@ model.frame.epimodel <- function(object, fixed.only=FALSE, ...) {
 #'   that both default to \code{FALSE}.
 #' 
 formula.epimodel <- function(x, ...) {
-  if (is.mixed(x)) return(formula_mixed(x, ...))
-  x$formula
-}
-
-formula_mixed <- function (x, fixed.only = FALSE, random.only = FALSE, ...) {
-  if (missing(fixed.only) && random.only)
-    fixed.only <- FALSE
-  if (fixed.only && random.only)
-    stop("'fixed.only' and 'random.only' can't both be TRUE.", call. = FALSE)
-  
-  form <- x$formula
-  if (fixed.only) 
-    form[[length(form)]] <- lme4::nobars(form[[length(form)]])
-  if (random.only)
-    form <- justRE(form, response=TRUE)
-    
-  return(form)
-}
-
-### rstanarm helpers ###
-justRE <- function(f, response = FALSE) {
-  response <- if (response && length(f) == 3) f[[2]] else NULL
-  reformulate(paste0("(", vapply(lme4::findbars(f), 
-                                 function(x) paste(deparse(x, 500L), 
-                                                   collapse = " "), 
-                                 ""), ")"), 
-              response = response)
+  return(formula(x$formula, ...))
 }
 
 

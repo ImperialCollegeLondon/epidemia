@@ -1,4 +1,3 @@
-
 #' Fits an Epidemiological Model
 #' 
 #' Fits a Bayesian epidemiological model specified by the \code{formula} argument.
@@ -100,6 +99,7 @@ epim <-
   
   call    <- match.call(expand.dots = TRUE)
   formula <- checkFormula(formula)
+  print("Stage 1")
   data    <- checkData(formula, data, group_subset)
   groups  <- levels(data$group)
   obs     <- checkObs(obs, data)
@@ -111,13 +111,17 @@ epim <-
 
   # check if formula contain terms for partial pooling
   mixed <- is_mixed(formula)
-  
+
+  # formula with no response and no RW terms
+  form <- formula(delete.response(terms(formula)))
+  form <- norws(form)
+
   if (mixed) {
 
     # use lme4::glformula
     call        <- match.call(expand.dots = TRUE)
     mc          <- match.call(expand.dots = FALSE)
-    mc$formula  <- formula(delete.response(terms(formula)))
+    mc$formula  <- form
     mc[[1]]     <- quote(lme4::glFormula)
     mc$control  <- make_glmerControl(
       ignore_lhs = TRUE,  
@@ -146,7 +150,7 @@ epim <-
   } else {
     # create model frame
     mfargs <- list()
-    mfargs$formula <- formula(delete.response(terms(formula)))
+    mfargs$formula <- form
     mfargs$data <- data
     mfargs$drop.unused.levels <- TRUE
     mf <- do.call("model.frame", args = mfargs)
@@ -155,6 +159,10 @@ epim <-
     mt <- attr(mf, "terms")
     x <- model.matrix(object = mt, data = mf)
     glmod <- group <- NULL
+  }
+
+  if (is_autocor(formula)) {
+    print("Found autocorrelation terms!")
   }
 
   # get standata relating to model pars excluding Rt regression
@@ -167,7 +175,7 @@ epim <-
   standata$pop <- as.array(pops$pop)
 
   cargs <- list()
-  cargs$formula <- formula
+  cargs$formula <- form
   cargs$x <- x
   cargs$group <- group 
   cargs$prior <- prior
@@ -262,7 +270,11 @@ epim <-
 }
 
 is_mixed <- function(formula) {
-  !is.null(lme4::findbars(formula))
+  !is.null(lme4::findbars(norws(formula)))
+}
+
+is_autocor <- function(formula) {
+  return(length(terms_rw(formula)) > 0)
 }
 
 transformTheta_L <- function(stanfit, cnms) {
