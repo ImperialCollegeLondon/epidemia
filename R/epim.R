@@ -229,7 +229,6 @@ epim <-
   }
 
   trms_rw <- terms_rw(formula)
-  print(make_rw_nms(trms_rw, data))
   combs <- expand.grid(groups,names(obs))
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
                 colnames(standata$X),
