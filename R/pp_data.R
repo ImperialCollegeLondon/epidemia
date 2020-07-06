@@ -46,7 +46,6 @@ re_data <- function(object, newdata) {
 # 
 # @export
 ac_data <- function(object, newdata) {
-  print("got here")
   trms <- terms_rw(object$formula)
 
   if (is.null(newdata)) {

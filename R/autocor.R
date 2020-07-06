@@ -7,14 +7,11 @@
 #' @param time An optional vector defining the random walk time periods for each 
 #'    date and group. Defaults to NA, in which case the column of 'data' representing the dates 
 #'    is used. 
-#' @param gr Optional vector defining the grouping to used for the random walks. A separate walk is defined 
-#'  for each group individually. Defaults to NA, in which case a common random walk is used for all groups.
+#' @param gr Optional vector defining the grouping to use for the walks. A separate walk is defined 
+#'  for each group. Defaults to NA, in which case a common random walk is used for all groups.
 #' @return A list
 #' @examples
 #' 
-#' x<-c("2020-02-22", "2020-02-23", "2020-02-24", "2020-02-25")
-#' rw(x,delta=2)
-#' rw(x,delta=1)
 #' \dontrun{
 #' data("EuropeCovid")
 #' args <- EuropeCovid

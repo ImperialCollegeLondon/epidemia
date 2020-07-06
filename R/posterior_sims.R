@@ -221,7 +221,7 @@ pp_eta <- function(object, data, stanmat) {
   
   # similar for random effects
   if (!is.null(data$Zt)) {
-    b_sel <- grepl("^b\\[", colnames(stanmat))
+    b_sel <- grepl("^b\\[*\\]$", colnames(stanmat))
     b <- stanmat[, b_sel, drop = FALSE]
     if (is.null(data$Z_names)) {
       b <- b[, !grepl("_NEW_", colnames(b), fixed = TRUE), drop = FALSE]
@@ -232,14 +232,12 @@ pp_eta <- function(object, data, stanmat) {
   }
 
   if (!is.null(data$ac_Z)) {
-    rw_sel <- grep("^rw\\(", colnames(stanmat))
+    rw_sel <- grep("(^(rw)\\([^:]*\\))\\[[^:]*\\]$", colnames(stanmat))
     rw <- stanmat[, rw_sel, drop=FALSE]
     if (!is.null(data$ac_Z_names)) {
       # ToDo: using newdata so must be careful with columns
       stop("For now, no support for newdata when autocorrelation terms exist.")
     }
-    print(dim(rw))
-    print(dim(data$ac_Z))
     eta <- eta + as.matrix(rw %*% Matrix::t(data$ac_Z))
   }
 
