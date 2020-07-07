@@ -232,14 +232,8 @@ pp_eta <- function(object, data, stanmat) {
   }
 
   if (!is.null(data$ac_Z)) {
-    rw_sel <- grep("(^(rw)\\([^:]*\\))\\[[^:]*\\]$", colnames(stanmat))
-    rw <- stanmat[, rw_sel, drop=FALSE]
-    if (!is.null(data$ac_Z_names)) {
-      # ToDo: using newdata so must be careful with columns
-      print(paste0("colnames(rw): ", colnames(rw)))
-      print(paste0("Z_names: ", data$ac_Z_names))
-      stop("For now, no support for newdata when autocorrelation terms exist.")
-    }
+    rw <- new_rw_stanmat(stanmat=stanmat,
+                         newnms=data$ac_Z_names)
     eta <- eta + as.matrix(rw %*% Matrix::t(data$ac_Z))
   }
   return(eta)
@@ -275,7 +269,12 @@ parse_rw_labels <- function(nms) {
 #
 # @param stanmat The original stanmatrix
 # @param znames The new random walk parameters from newdata.
-new_rw_stanmat <- function(stanmat, newnms) {
+new_rw_stanmat <- function(stanmat, newnms=NULL) {
+
+  if (is.null(newnms)) 
+    newnms <- grep(pattern="(^(rw)\\([^:]*\\))\\[[^:]*\\]$", 
+                   x=colnames(stanmat),
+                   value=TRUE)
 
   # df of all parsed terms
   df <- parse_rw_labels(newnms)
