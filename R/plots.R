@@ -8,6 +8,11 @@
 #' @template args-epimodel-object
 #' @param group \code{NULL}, string or character vector specifying which groups
 #' to plot. Default is \code{NULL}, which plots all possible groups.
+#' @param dates a vector of (start date, end date) defining the date range to be plotted. Must be coercible to date if not 
+#' NA. If NA, this means use the lower/upper limit as appropriate. See examples.
+#' @param date_breaks string giving the distance between date tick labels. Default is "2 weeks".
+#' Passed as \code{date_breaks} argument to \code{ggplot::scale_x_date} - see \url{https://ggplot2.tidyverse.org/reference/scale_date.html}
+#' @param date_format the date format for coercing \code{dates}. Default is "%Y-%m-%d"
 #' @param levels numeric vector giving the levels of the plotted credible intervals
 #' @param log whether to plot the reproduction number on a log10-scale.
 #' Logical, default is \code{FALSE}.
@@ -15,6 +20,32 @@
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals. \code{adjusted=FALSE} prevents application of the population adjustment to the reproduction number.
 #' @return A ggplot object which can be further modified.
+#' @examples
+#' \dontrun{
+#' ## load required data
+#' library(epidemia)
+#' data("EuropeCovid")
+#' ## setup sampling
+#' args <- EuropeCovid
+#' args$algorithm <- "sampling"
+#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$group_subset <- c("Italy")
+#' args$formula <- R(country,date) ~  1 + lockdown
+#' args$prior <- rstanarm::normal(location=0,scale=.5)
+#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+#' 
+#' ## run sampling
+#' fit <- do.call("epim", args)
+#' 
+#' ## make plots
+#' plot_rt(fit) # default, plots all groups and dates
+#' plot_rt(fit, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_rt(fit, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_rt(fit, dates=c("2020-20-03", "2020-20-04"), date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' }
 #' @export
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
@@ -61,7 +92,7 @@ plot_rt.epimodel <- function(object, group=NULL,
   qtl <- data.table::rbindlist(qtl, idcol="group")
 
   # date subsetting if required
-  dates <- .check_dates(dates, date_format)
+  dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
   if(!is.null(dates)) {
     date.range <- seq(dates[[1]], dates[[2]], by="day")
     qtl <- qtl[qtl$date %in% date.range,]
@@ -120,13 +151,36 @@ plot_rt.epimodel <- function(object, group=NULL,
 #' of the \code{obs} argument to \code{epim}.
 #' @param posterior_mean If true, the credible intervals are plotted for the posterior mean. Defaults to FALSE, 
 #'  in which case the posterior predictive is plotted.
-#' @param dates a vector of (start date, end date) defining the date range to be plotted. Must be coercible to date.
-#' @param date_breaks string giving the distance between date tick labels. Default is "2 weeks". See \url{https://ggplot2.tidyverse.org/reference/scale_date.html}.
-#' @param date_format the date format for coercing \code{dates}. Default is "%Y-%m-%d"
 #' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
 #' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
+#' @examples
+#' \dontrun{
+#' ## load required data
+#' library(epidemia)
+#' data("EuropeCovid")
+#' ## setup sampling
+#' args <- EuropeCovid
+#' args$algorithm <- "sampling"
+#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$group_subset <- c("Italy")
+#' args$formula <- R(country,date) ~  1 + lockdown
+#' args$prior <- rstanarm::normal(location=0,scale=.5)
+#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+#' 
+#' ## run sampling
+#' fit <- do.call("epim", args)
+#' 
+#' ## make plots
+#' plot_obs(fit, type="deaths") # default, plots all groups and dates
+#' plot_obs(fit, type="deaths", dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_obs(fit, type="deaths", dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_obs(fit, type="deaths", dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_obs(fit, type="deaths", dates=c("2020-03-20", "2020-04-20"), date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_obs(fit, type="deaths", dates=c("2020-03-20", "2020-04-20"), date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_obs(fit, type="deaths", dates=c("2020-20-03", "2020-20-04"), date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' }
 #' @export
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
@@ -167,7 +221,9 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
   df <- object$obs[[type]][["odata"]]
   
   # date subsetting if required
-  dates <- .check_dates(dates, date_format)
+  dates <- .check_dates(dates, date_format,
+                        max(c(max(qtl$date), max(df$date))),
+                        min(c(min(qtl$date), min(df$date))))
   if(!is.null(dates)) {
     date.range <- seq(dates[[1]], dates[[2]], by="day")
     df <- df[df$date %in% date.range,]
@@ -235,6 +291,32 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
 #' @inherit plot_obs params return
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_infections}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
+#' @examples
+#' \dontrun{
+#' ## load required data
+#' library(epidemia)
+#' data("EuropeCovid")
+#' ## setup sampling
+#' args <- EuropeCovid
+#' args$algorithm <- "sampling"
+#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$group_subset <- c("Italy")
+#' args$formula <- R(country,date) ~  1 + lockdown
+#' args$prior <- rstanarm::normal(location=0,scale=.5)
+#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+#' 
+#' ## run sampling
+#' fit <- do.call("epim", args)
+#' 
+#' ## make plots
+#' plot_infections(fit) # default, plots all groups and dates
+#' plot_infections(fit, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_infections(fit, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_infections(fit, dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_infections(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_infections(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_infections(fit, dates=c("2020-20-03", "2020-20-04"), date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' }
 #' @export
 plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 
@@ -265,7 +347,7 @@ plot_infections.epimodel <- function(object, group = NULL,
   qtl <- data.table::rbindlist(qtl, idcol="group")
 
   # date subsetting if required
-  dates <- .check_dates(dates, date_format)
+  dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
   if(!is.null(dates)) {
     date.range <- seq(dates[[1]], dates[[2]], by="day")
     qtl <- qtl[qtl$date %in% date.range,]
@@ -352,11 +434,25 @@ cumul <- function(df) {
 # Internal
 
 # checks date argument. returns NULL if dates are invalid
-.check_dates <- function(dates, date_format) {
+.check_dates <- function(dates, date_format, max_date, min_date) {
   if(!is.null(dates)) {
+    
+    # check two dates are provided (min, max)
     if(length(dates)==2) {
+      
+      # if either is NA then this means we want to plot the whole
+      # range in that direction, so replace with max or min as 
+      # appropriate
+      if(is.na(dates[[1]]))
+        dates[[1]] <- as.character(min_date) # or date is coerced to numeric
+      if(is.na(dates[[2]]))
+        dates[[2]] <- as.character(max_date)
+      
+      # check no NAs introduced by coercion to date
       if(!any(is.na(as.Date(dates, format=date_format)))) {
         dates <- as.Date(dates, format=date_format)
+        
+        # check start date > end date
         if(dates[[1]]>dates[[2]]) {
           warning("start of date range is before end - reversing dates", call. = FALSE)
           dates <- rev(dates)
@@ -370,9 +466,11 @@ cumul <- function(df) {
                        paste0(dates[which(is.na(as.Date(dates, format=date_format)))], collapse=", "),
                               " to date with specified format - plotting the enire date range"),
                 call. = FALSE)
+        return(NULL)
       }
     } else {
       warning("dates should have format (min date, max date) - plotting the entire date range", call. = FALSE)
+      return(NULL)
     }
   }
   return(NULL)
