@@ -229,7 +229,6 @@ epim <-
   }
 
   trms_rw <- terms_rw(formula)
-  return(trms_rw)
   combs <- expand.grid(groups,names(obs))
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
                 colnames(standata$X),
@@ -314,7 +313,7 @@ make_rw_nms <- function(trms, data) {
     time <- if(trm$time=="NA") data$date else data[[trm$time]]
     group <- if(trm$gr=="NA") "all" else droplevels(data[[trm$gr]])
     f <- unique(paste0(trm$label, "[", time,",", group, "]"))
-    nms <- c(nms, f[order(f)])
+    nms <- c(nms, f)
   }
   return(nms)
 }
