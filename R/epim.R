@@ -198,7 +198,7 @@ epim <-
             "phi",
             "noise",
             if (length(standata$ac_nterms)) "ac_scale",
-            if (length(standata$ac_nterms)) "ac_beta")
+            if (length(standata$ac_nterms)) "ac_noise")
 
   args <- sampling_args
   if (!debug) args$pars <- pars

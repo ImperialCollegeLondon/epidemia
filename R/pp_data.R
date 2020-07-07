@@ -54,6 +54,6 @@ ac_data <- function(object, newdata) {
   }
 
   res <- parse_all_terms(trms, newdata)
-  Z_names <- make_rw_nms(trms, newdata)
+  ac_Z_names <- make_rw_nms(trms, newdata)
   return(loo::nlist(ac_Z = res$Z, ac_Z_names))
 }
