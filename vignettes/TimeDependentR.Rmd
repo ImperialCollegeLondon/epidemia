@@ -31,7 +31,8 @@ args <- EuropeCovid
 args$algorithm <- "sampling"
 args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=79881)
 args$group_subset <- c("Italy")
-args$formula <- R(country,date) ~  1+rw(date,7) 
+args$data$week <- format(args$data$date, "%V")
+args$formula <- R(country,date) ~  1+rw(week) 
 fit <- do.call("epim", args)
 ```
 ```{r plotItaly}
@@ -43,7 +44,8 @@ grid.arrange(plot_obs(fit, type="deaths"),plot_infections(fit),plot_rt(fit),nrow
 
 ```{r compute4countries,results='hide',cache=TRUE}
 args <- EuropeCovid
-args$formula <- R(country,date) ~ 1+ rw(date,7)*country
+args$data$week <- format(args$data$date, "%V")
+args$formula <- R(country,date) ~ 1+ rw(week,country)
 args$group_subset <- c("Germany","United_Kingdom","France","Italy")
 args$algorithm <- "sampling"
 args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=74756)
