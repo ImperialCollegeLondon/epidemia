@@ -57,8 +57,8 @@ parse_term <- function(trm, data) {
   trm <- eval(parse(text=trm))
 
   # retrieve the time and group vectors
-  time <- if(trm$time=="NA") data$date else data[[trm$time]]
-  group <- if(trm$gr=="NA") "all" else droplevels(data[[trm$gr]])
+  time <- get_autocor_time(trm, data)
+  group <- get_autocor_gr(trm, data)
   
   fbygr <- split(time, group)
   ntime <- sapply(fbygr, function(x) length(unique(x)))
@@ -71,6 +71,46 @@ parse_term <- function(trm, data) {
   
   return(loo::nlist(nproc, ntime, Z, prior_scale))
 }
+
+get_autocor_gr <- function(trm, data) {
+  if(trm$gr=="NA")
+    group <-  "all" 
+  else {
+    group <- data[[trm$gr]]
+    check_character(group)
+    group <- droplevels(as.factor(group))
+  }
+  
+  w <- grep("(,|\\[|\\])", group, value=TRUE)
+  if (length(w) > 0)
+    stop(paste0("Elements ", w, " prohibited in column ", trm$gr, 
+    ". Commas and square brackets disallowed."))
+  return(group)
+}
+
+get_autocor_time <- function(trm, data) {
+  time <- if(trm$time=="NA") data$date else data[[trm$time]]
+
+  check_integer(time)
+  df <- data.frame(group = data$group,
+                   time =as.integer(time))
+  dfs <- split(df$time, df$group)
+  time_diff <- as.numeric(do.call(c,Map(diff, dfs)))
+  if(any(!(time_diff %in% c(0,1))))
+    stop(paste0("column ", trm$time, " in 'data' is not compatible 
+    with dates implied by 'formula'. Ths vector must be 
+    a) non-decreasing and 
+    b) increment by at most one 
+    for each modeled group."))
+
+  w <- grep("(,|\\[|\\])", time, value=TRUE)
+  if (length(w) > 0)
+    stop(paste0("Elements ", w, " prohibited in column ", trm$time, 
+    ". Commas and square brackets disallowed."))
+
+  return(time)
+}
+
 
 # Parses a sequence of random walk terms, concatenating 
 # the results

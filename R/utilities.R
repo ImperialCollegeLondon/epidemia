@@ -1,4 +1,26 @@
 
+
+check_integer <- function(x, tol=.Machine$double.eps) {
+  s <- substitute(x)
+  x <- as.numeric(x)
+  if (anyNA(x))
+    stop(paste0(s, " should be coercible to numeric."))
+  if (any(abs(x-round(x)) > tol))
+    stop(paste0(s, " is not an integer vector."))
+}
+
+check_numeric <- function(x) {
+  s <- substitute(x)
+  if (anyNA(as.numeric(x)))
+    stop(paste0(s, " should be coercible to numeric"))
+}
+
+check_character <- function(x) {
+  s <- substitute(x)
+  if (anyNA(as.character(x)))
+    stop(paste0(s, " should be coercible to integer."))
+}
+
 # syntactic sugar for the formula
 R <- function(group, date) {}
 

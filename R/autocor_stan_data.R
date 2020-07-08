@@ -20,7 +20,7 @@ get_sdat_autocor <- function(formula, data) {
     sdat$ac_v <- parts$v - 1L
     sdat$ac_nnz <- length(sdat$ac_v)
   } else {
-    sdat$ac_q <- sdat$ac_nproc <- sdat$ac_nnz <- 0
+    sdat$ac_nterms <- sdat$ac_q <- sdat$ac_nproc <- sdat$ac_nnz <- 0
     sdat$ac_prior_scales <- sdat$ac_v <- 
     sdat$ac_ntime <- numeric()
   }
