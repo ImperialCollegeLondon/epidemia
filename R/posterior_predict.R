@@ -23,12 +23,11 @@ posterior_predict.epimodel <- function(object, newdata=NULL, draws=NULL, types =
   if (any(w))
     stop(paste0(types[w], " not a modeled type of observation.", call.=FALSE))
   }
-  mc      <- match.call(expand.dots = FALSE)
-  mc[[1]] <- quote(posterior_sims)
-  mc$newdata <- newdata
-  mc$draws <- draws
-  mc$types <- types
-  mc$seed <- seed
-  
-  return(eval(mc)$obs[[types]])
+
+  out <- posterior_sims(object=object,
+                        newdata=newdata,
+                        draws=draws,
+                        seed=seed,
+                        ...)
+  return(out$obs[[types]])
 }
