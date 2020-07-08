@@ -30,13 +30,12 @@ posterior_infectious <- function(object, ...) UseMethod("posterior_infectious", 
 #' @rdname posterior_infectious
 #' @export
 posterior_infectious.epimodel <- function(object, ..., newdata=NULL, draws=NULL, seed=NULL) {
-  mc      <- match.call(expand.dots = FALSE)
-  mc[[1]] <- quote(posterior_latent)
-  mc$newdata <- newdata
-  mc$draws <- draws
-  mc$seed <- seed
-  mc$series <- "infectious"
-  return(eval(mc))
+  return(posterior_latent(object=object,
+                          newdata=newdata,
+                          draws=draws,
+                          seed=seed,
+                          series="infectious",
+                          ...))
 }
 
 #' Generic function for getting posterior draws of the time-varying reproduction rates
@@ -49,14 +48,12 @@ posterior_rt <- function(object, ...) UseMethod("posterior_rt", object)
 #' @rdname posterior_rt
 #' @export
 posterior_rt.epimodel <- function(object, ..., newdata=NULL, draws=NULL, seed=NULL, adjusted=TRUE) {
-  mc      <- match.call(expand.dots = FALSE)
-  mc[[1]] <- quote(posterior_latent)
-  mc$newdata <- newdata
-  mc$draws <- draws
-  mc$seed <- seed
-  mc$adjusted <- adjusted
-  mc$series <- if (adjusted) "rt" else "rt_unadj"
-  return(eval(mc))
+  return(posterior_latent(object=object,
+                        newdata=newdata,
+                        draws=draws,
+                        seed=seed,
+                        series= if(adjusted) "rt" else "rt_unadj",
+                        ...))
 }
 
 #' Generic function for getting posterior draws of a specified latent sequence
