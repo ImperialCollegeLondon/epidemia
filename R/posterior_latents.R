@@ -76,7 +76,7 @@ posterior_latent <- function(object, ...) UseMethod("posterior_latent", object)
 #' @export
 posterior_latent.epimodel <- function(object, 
                                       newdata=NULL, 
-                                      series = c("rt", "rt_unadj", "infections", 'infectious'),
+                                      series = c("rt", "rt_unadj", "infections"),
                                       draws=NULL, 
                                       seed=NULL, ...) {
   mc      <- match.call(expand.dots = FALSE)

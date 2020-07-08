@@ -80,7 +80,7 @@ get_autocor_gr <- function(trm, data) {
     check_character(group)
     group <- droplevels(as.factor(group))
   }
-  
+
   w <- grep("(,|\\[|\\])", group, value=TRUE)
   if (length(w) > 0)
     stop(paste0("Elements ", w, " prohibited in column ", trm$gr, 
@@ -110,7 +110,6 @@ get_autocor_time <- function(trm, data) {
 
   return(time)
 }
-
 
 # Parses a sequence of random walk terms, concatenating 
 # the results

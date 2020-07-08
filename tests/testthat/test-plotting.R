@@ -24,6 +24,6 @@ test_that("levels out of [0,100] throws error", {
 })
 
 test_that("non-logical log10_scale throws error", {
-  expect_error(plot_rt(example.fit, log10_scale = "wrongtype"), regexp = "log10_scale must be of type logical")
+  expect_error(plot_rt(example.fit, log = "wrongtype"), regexp = "'log' must be of type logical")
 })
 
