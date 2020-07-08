@@ -75,7 +75,11 @@ posterior_latent.epimodel <- function(object,
                                       series = c("rt", "rt_unadj", "infections"),
                                       draws=NULL, 
                                       seed=NULL, ...) {
-  mc      <- match.call(expand.dots = FALSE)
-  mc[[1]] <- quote(posterior_sims)
-  return(eval(mc)[[series]])
+  out <- posterior_sims(object=object,
+                        newdata=newdata,
+                        series=series,
+                        draws=draws,
+                        seed=seed,
+                        ...)
+  return(out[[series]])
 }
