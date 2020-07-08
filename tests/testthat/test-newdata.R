@@ -1,11 +1,10 @@
-context("Test correct data constructed with newdata")
-devtools::load_all()
+context("Correct data constructed with newdata")
+
+load(file = "../data/fm-uk.Rout")
+fm <- uk$fm
+data <- uk$data
 
 test_that("Test identical predictions when using same data that the model was fit with.", {
-  
-  load("../data/fm-uk.Rout")
-  fm <- uk$fm
-  data <- fm$data
   
   # check predictions are the same using same seeds
   res <- posterior_predict(fm, seed=12345)
@@ -21,8 +20,8 @@ test_that("Test identical predictions when using same data that the model was fi
   res_new <- posterior_rt(fm, newdata=data, adjusted=F)
   expect_true(identical(res, res_new))
   
-  res <- posterior_infections(fm, adjusted=F)
-  res_new <- posterior_infections(fm, newdata=data, adjusted=F)
+  res <- posterior_infections(fm)
+  res_new <- posterior_infections(fm, newdata=data)
   expect_true(identical(res, res_new))
 })
 
