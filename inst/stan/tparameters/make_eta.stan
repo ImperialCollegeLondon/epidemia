@@ -30,5 +30,9 @@
   else {
 #include /tparameters/eta_no_intercept.stan
   }
+
+  if (ac_nterms > 0) {
+#include /tparameters/eta_add_ac.stan
+  }
   
 

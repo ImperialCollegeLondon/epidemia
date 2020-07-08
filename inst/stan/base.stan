@@ -20,21 +20,25 @@ vector<lower=0>[R] noise_scales;
 #include /data/hyperparameters.stan
 #include /data/glmer_stuff.stan
 #include /data/glmer_stuff2.stan
+#include /data/data_ac.stan
 }
 
 transformed data {
   real aux = not_a_number();
   int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
+  int<lower=1> ac_V[ac_nterms, N] = make_V(N, ac_nterms, ac_v);
 #include /tdata/tdata_reverse.stan
 #include /tdata/tdata_glm.stan
 
 for(r in 1:R)
       pvecs_rev[r] = reverse(pvecs[r]);
+
 }
 
 parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
+#include /parameters/parameters_ac.stan
   vector[R] z_phi;
   vector<lower=0>[M] y_raw;
   real<lower=0> tau_raw;
@@ -51,7 +55,17 @@ transformed parameters {
   vector<lower=0>[R] phi = fabs(z_phi .* prior_scale_for_phi + prior_mean_for_phi);
 
 #include /tparameters/infections_rt.stan
+#include /tparameters/tparameters_ac.stan
 #include /tparameters/tparameters_glm.stan
+
+  {
+    int i = 1;
+    for (proc in 1:ac_nproc) { // this treats ac terms as random walks for now (to be extended to AR(p))
+        ac_beta[i:(i+ac_ntime[proc]-1)] = cumulative_sum(ac_noise[i:(i+ac_ntime[proc]-1)]);
+        i += ac_ntime[proc];
+    }
+  }
+  
 #include /tparameters/make_eta.stan
 #include /tparameters/gen_infections.stan
 
@@ -78,6 +92,7 @@ model {
     noise[,r] ~ normal(1, noise_scales[r]);
 
 #include /model/priors_glm.stan
+#include /model/priors_ac.stan
   if (t > 0) {
     real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
                           regularization, delta, shape, t, p);

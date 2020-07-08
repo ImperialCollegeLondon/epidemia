@@ -26,7 +26,6 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
 
   # construct linear predictor
   dat <- pp_data(object=object, newdata=newdata, ...)
-
   eta <- pp_eta(object, dat, stanmat)
   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
 
@@ -199,7 +198,7 @@ pp_stanmat <- function(object, stanmat, groups) {
     stanmat <- stanmat[,-col_rm]
 
   # bug in rstan::gqs means we have to pad parameters if M=1...
-  mat <- matrix(0, nrow=nrow(stanmat), ncol= 2 + R)
+  mat <- matrix(0, nrow=nrow(stanmat), ncol= 2+R)
   colnames(mat) <- c(paste0("y[",length(groups)+1,"]"),
                      paste0("phi[",R+1,"]"),
                      paste0("noise[",length(groups)+1,",",1:R,"]"))
@@ -222,7 +221,7 @@ pp_eta <- function(object, data, stanmat) {
   
   # similar for random effects
   if (!is.null(data$Zt)) {
-    b_sel <- grepl("^b\\[", colnames(stanmat))
+    b_sel <- grepl("^b\\[*\\]$", colnames(stanmat))
     b <- stanmat[, b_sel, drop = FALSE]
     if (is.null(data$Z_names)) {
       b <- b[, !grepl("_NEW_", colnames(b), fixed = TRUE), drop = FALSE]
@@ -231,9 +230,91 @@ pp_eta <- function(object, data, stanmat) {
     }
     eta <- eta + as.matrix(b %*% data$Zt)
   }
+
+  if (!is.null(data$ac_Z)) {
+    rw <- new_rw_stanmat(stanmat=stanmat,
+                         newnms=data$ac_Z_names)
+    eta <- eta + as.matrix(rw %*% Matrix::t(data$ac_Z))
+  }
   return(eta)
 }
 
+# extract RW label from parameter names
+get_labels <- function(nms) {
+  return(sub("\\[.*", "", nms))
+}
+
+# extract group label from parameter names
+get_grs <- function(nms) {
+  out <- sub(".*,", "", nms)
+  out <- substr(out, 1, nchar(out)-1)
+  return(out)
+}
+
+# extract time index from parameter names
+get_times <- function(nms) {
+  out <- sub(".*\\[", "", nms)
+  out <- sub(",.*", "", out)
+  return(as.numeric(out))
+}
+
+parse_rw_labels <- function(nms) {
+  return(data.frame(label = get_labels(nms),
+                    gr = get_grs(nms),
+                    time = get_times(nms)))
+}
+
+# Creates a new stanmatrix for random walks
+# from an existing matrix and the new names
+#
+# @param stanmat The original stanmatrix
+# @param znames The new random walk parameters from newdata.
+new_rw_stanmat <- function(stanmat, newnms=NULL) {
+
+  if (is.null(newnms)) 
+    newnms <- grep(pattern="(^(rw)\\([^:]*\\))\\[[^:]*\\]$", 
+                   x=colnames(stanmat),
+                   value=TRUE)
+
+  # df of all parsed terms
+  df <- parse_rw_labels(newnms)
+  df$name <- newnms
+  df$walk <- paste0(df$label, "[", df$gr, "]")
+  df$sigma <- paste0("sigma:",df$walk)
+  
+  # add draws to dataframe
+  draws <- paste0("draw ", 1:nrow(stanmat))
+  locs <- sapply(newnms, function(x) which(x == colnames(stanmat)))
+  locs <- as.numeric(locs)
+  unmtchd <- which(is.na(locs))
+  mtchd <- setdiff(seq_along(newnms), unmtchd)
+  
+  df[mtchd, draws] <- t(stanmat[,na.omit(locs), drop=FALSE])
+  df[unmtchd, draws] <- 0
+  
+  # impute terms for new walk periods
+  sds <- stanmat[,df$sigma[unmtchd]]
+  n <- nrow(sds)
+  m <- ncol(sds)
+  df[unmtchd, draws] <- t(matrix(rnorm(n*m), nrow=n, ncol=m) * sds)
+  
+  # ensure ordered by walk then by time period
+  w <- order(df$walk, df$time)
+  df <- df[w,]
+  
+  # cumulate errors by walk
+  dfs <- split(df, df$walk)
+  f <- function(x) apply(x[,draws], 2, cumsum)
+  dfs <- Map(f, dfs)
+  df[,draws] <- do.call(rbind, dfs)
+  
+  w <- sapply(newnms, function(x) which(x == df$name))
+  w <- as.numeric(w)
+  
+  out <- t(as.matrix(df[w,draws]))
+  colnames(out) <- newnms
+  return(out)
+}
 
 ### Helper from rstanarm ###
 

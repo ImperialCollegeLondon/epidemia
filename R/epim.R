@@ -1,4 +1,3 @@
-
 #' Fits an Epidemiological Model
 #' 
 #' Fits a Bayesian epidemiological model specified by the \code{formula} argument.
@@ -111,13 +110,17 @@ epim <-
 
   # check if formula contain terms for partial pooling
   mixed <- is_mixed(formula)
-  
+
+  # formula with no response and no RW terms
+  form <- formula(delete.response(terms(formula)))
+  form <- norws(form)
+
   if (mixed) {
 
     # use lme4::glformula
     call        <- match.call(expand.dots = TRUE)
     mc          <- match.call(expand.dots = FALSE)
-    mc$formula  <- formula(delete.response(terms(formula)))
+    mc$formula  <- form
     mc[[1]]     <- quote(lme4::glFormula)
     mc$control  <- make_glmerControl(
       ignore_lhs = TRUE,  
@@ -146,7 +149,7 @@ epim <-
   } else {
     # create model frame
     mfargs <- list()
-    mfargs$formula <- formula(delete.response(terms(formula)))
+    mfargs$formula <- form
     mfargs$data <- data
     mfargs$drop.unused.levels <- TRUE
     mf <- do.call("model.frame", args = mfargs)
@@ -157,8 +160,10 @@ epim <-
     glmod <- group <- NULL
   }
 
+  standata <- get_sdat_autocor(formula, data)
+
   # get standata relating to model pars excluding Rt regression
-  standata <- get_sdat_data(data)
+  standata <- c(standata, get_sdat_data(data))
   standata <- get_sdat_obs(standata, obs)
   standata <- get_sdat_add_priors(standata, prior_phi, prior_tau)
   standata$si <- padSV(si, standata$NS, 0)
@@ -167,7 +172,7 @@ epim <-
   standata$pop <- as.array(pops$pop)
 
   cargs <- list()
-  cargs$formula <- formula
+  cargs$formula <- form
   cargs$x <- x
   cargs$group <- group 
   cargs$prior <- prior
@@ -191,7 +196,9 @@ epim <-
             "y",
             "tau2",
             "phi",
-            "noise")
+            "noise",
+            if (length(standata$ac_nterms)) "ac_scale",
+            if (length(standata$ac_nterms)) "ac_noise")
 
   args <- sampling_args
   if (!debug) args$pars <- pars
@@ -221,6 +228,7 @@ epim <-
       Sigma_nms <- unlist(Sigma_nms)
   }
 
+  trms_rw <- terms_rw(formula)
   combs <- expand.grid(groups,names(obs))
   new_names <- c(if (standata$has_intercept) "(Intercept)", 
                 colnames(standata$X),
@@ -230,6 +238,8 @@ epim <-
                 "tau",
                 if (standata$R > 0) paste0("phi[", names(obs), "]"),
                 if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
+                if (length(standata$ac_nterms)) make_rw_sigma_nms(trms_rw, data),
+                if (length(standata$ac_nterms)) make_rw_nms(trms_rw, data),
                 "log-posterior")
 
   orig_names <- fit@sim$fnames_oi
@@ -262,7 +272,11 @@ epim <-
 }
 
 is_mixed <- function(formula) {
-  !is.null(lme4::findbars(formula))
+  !is.null(lme4::findbars(norws(formula)))
+}
+
+is_autocor <- function(formula) {
+  return(length(terms_rw(formula)) > 0)
 }
 
 transformTheta_L <- function(stanfit, cnms) {
@@ -288,6 +302,30 @@ transformTheta_L <- function(stanfit, cnms) {
   }
 
   return(stanfit)
+}
+
+# construct names for the random walks
+make_rw_nms <- function(trms, data) {
+  nms <- character()
+  for (trm in trms) {
+    trm <- eval(parse(text=trm))
+    # retrieve the time and group vectors
+    time <- if(trm$time=="NA") data$date else data[[trm$time]]
+    group <- if(trm$gr=="NA") "all" else droplevels(data[[trm$gr]])
+    f <- unique(paste0(trm$label, "[", time,",", group, "]"))
+    nms <- c(nms, f)
+  }
+  return(nms)
+}
+
+make_rw_sigma_nms <- function(trms, data) {
+  nms <- character()
+  for (trm in trms) {
+    trm <- eval(parse(text=trm))
+    group <- if(trm$gr=="NA") "all" else droplevels(data[[trm$gr]])
+    nms <- c(nms, unique(paste0("sigma:", trm$label, "[", group, "]")))
+  }
+  return(nms)
 }
 
 
