@@ -13,13 +13,12 @@ posterior_infections <- function(object, ...) UseMethod("posterior_infections", 
 #' @rdname posterior_infections
 #' @export
 posterior_infections.epimodel <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
-  mc      <- match.call(expand.dots = FALSE)
-  mc[[1]] <- quote(posterior_latent)
-  mc$newdata <- newdata
-  mc$draws <- draws
-  mc$seed <- seed
-  mc$series <- "infections"
-  return(eval(mc))
+  return(posterior_latent(object=object,
+                          newdata=newdata,
+                          draws=draws,
+                          seed=seed,
+                          series="infections",
+                          ...))
 }
 
 #' Generic function for getting posterior draws of total infectiousness over time
