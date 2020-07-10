@@ -25,7 +25,7 @@ flu$incidence <- c(rep(NA,1),flu$incidence) ## pad before initialisation
 flu$fludate <- as.Date("1918-01-01")+seq(0,along.with=flu$incidence)
 obs <- !is.na(flu$incidence)
 
-args <- list(formula=Rt(country,date)~rw(date,3),
+args <- list(formula=Rt(country,date)~ 0 + rw(prior_scale=0.1),
              data=data.frame(country="A",date=flu$fludate),
              obs=list(
                  incidence=list(

@@ -255,7 +255,10 @@ get_grs <- function(nms) {
 get_times <- function(nms) {
   out <- sub(".*\\[", "", nms)
   out <- sub(",.*", "", out)
-  return(as.numeric(out))
+  out <- tryCatch({as.Date(out)}, 
+                  error=function(cond)
+                    return(as.numeric(out)))
+  return(out)
 }
 
 parse_rw_labels <- function(nms) {
