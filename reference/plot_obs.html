@@ -77,7 +77,7 @@ This is a generic function." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
       </span>
     </div>
 
@@ -160,8 +160,12 @@ This is a generic function.</p>
   type = <span class='kw'>NULL</span>,
   posterior_mean = <span class='fl'>FALSE</span>,
   group = <span class='kw'>NULL</span>,
+  dates = <span class='kw'>NULL</span>,
+  date_breaks = <span class='st'>"2 weeks"</span>,
+  date_format = <span class='st'>"%Y-%m-%d"</span>,
   cumulative = <span class='fl'>FALSE</span>,
   levels = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>95</span>),
+  log = <span class='fl'>FALSE</span>,
   <span class='kw'>...</span>
 )</pre>
 
@@ -194,12 +198,30 @@ in which case the posterior predictive is plotted.</p></td>
 to plot. Default is <code>NULL</code>, which plots all possible groups.</p></td>
     </tr>
     <tr>
+      <th>dates</th>
+      <td><p>a vector of (start date, end date) defining the date range to be plotted. Must be coercible to date if not
+NA. If NA, this means use the lower/upper limit as appropriate. See examples.</p></td>
+    </tr>
+    <tr>
+      <th>date_breaks</th>
+      <td><p>string giving the distance between date tick labels. Default is "2 weeks".
+Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code> - see <a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>https://ggplot2.tidyverse.org/reference/scale_date.html</a></p></td>
+    </tr>
+    <tr>
+      <th>date_format</th>
+      <td><p>the date format for coercing <code>dates</code>. Default is "%Y-%m-%d"</p></td>
+    </tr>
+    <tr>
       <th>cumulative</th>
-      <td><p>If true, plots the cumulative observations. Defaults to FALSE&gt;</p></td>
+      <td><p>If TRUE, plots the cumulative observations. Defaults to FALSE</p></td>
     </tr>
     <tr>
       <th>levels</th>
       <td><p>numeric vector giving the levels of the plotted credible intervals</p></td>
+    </tr>
+    <tr>
+      <th>log</th>
+      <td><p>If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE.</p></td>
     </tr>
     </table>
 
@@ -207,6 +229,32 @@ to plot. Default is <code>NULL</code>, which plots all possible groups.</p></td>
 
     <p>A ggplot object which can be further modified.</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='co'>## load required data</span>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='kw'><a href='https://github.com/ImperialCollegeLondon/epidemia'>epidemia</a></span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid"</span>)
+<span class='co'>## setup sampling</span>
+<span class='kw'>args</span> <span class='op'>&lt;-</span> <span class='kw'>EuropeCovid</span>
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>algorithm</span> <span class='op'>&lt;-</span> <span class='st'>"sampling"</span>
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>sampling_args</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(iter=<span class='fl'>1e3</span>,control=<span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(adapt_delta=<span class='fl'>0.95</span>,max_treedepth=<span class='fl'>15</span>),seed=<span class='fl'>12345</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>group_subset</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Italy"</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>formula</span> <span class='op'>&lt;-</span> <span class='fu'>R</span>(<span class='kw'>country</span>,<span class='kw'>date</span>) <span class='op'>~</span>  <span class='fl'>1</span> <span class='op'>+</span> <span class='kw'>lockdown</span>
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>&lt;-</span> <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(location=<span class='fl'>0</span>,scale=<span class='fl'>.5</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior_intercept</span> <span class='op'>&lt;-</span> <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(location=<span class='fl'>0</span>,scale=<span class='fl'>2</span>)
+
+<span class='co'>## run sampling</span>
+<span class='kw'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='kw'>args</span>)
+
+<span class='co'>## make plots</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>) <span class='co'># default, plots all groups and dates</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), date_breaks=<span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), date_breaks=<span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>), date_format=<span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
