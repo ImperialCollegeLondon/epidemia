@@ -47,8 +47,10 @@ sars$incidence <- c(rep(NA,20),cumsum(sars$incidence)) ## pad before initialisat
 sars$sarsdate <- as.Date("2003-01-01")+seq(0,along.with=sars$incidence)
 obs <- !is.na(sars$incidence)
 
-args <- list(formula=Rt(country,date)~rw(date,3),
-     data=data.frame(country="A",date=sars$sarsdate),
+args <- list(formula=Rt(country,date)~ rw(time=week,prior_scale=0.1),
+     data=data.frame(country="A",
+                     date=sars$sarsdate,
+                     week = format(sars$sarsdate, "%V")),
              obs=list(
                  incidence=list(
                      odata=data.frame(country="A",
@@ -76,7 +78,7 @@ args$sampling_args <- list(iter=100,control=list(adapt_delta=0.95,max_treedepth=
 fitpre <- do.call("epim",args)
 ```
 
-    ## Warning: The largest R-hat is 1.71, indicating chains have not mixed.
+    ## Warning: The largest R-hat is 1.33, indicating chains have not mixed.
     ## Running the chains for more iterations may help. See
     ## http://mc-stan.org/misc/warnings.html#r-hat
 
@@ -135,6 +137,7 @@ initf <- function(){
     res$noise<- NULL
     res
 }
+args$debug <- F
 args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=15),seed=713,init=initf)
 ```
 
@@ -214,8 +217,8 @@ respectively. Now we simulate daily death counts under this model, which
 will be used in place of the true death data.
 
 ``` r
-# use mean data from prior run
-obs <- posterior_obs(fm, type="deaths")$France
+# use posterior data from prior run
+obs <- posterior_predict(fm, type="deaths")$France
 dates <- obs[,1]
 obs <- as.integer(rowMeans(obs[,-1]))
 
@@ -233,57 +236,22 @@ the initial reproduction number and effects.
 ``` r
 # fit the model with uninformative priors
 args$prior_PD <- FALSE
-args$prior_intercept <- rstanarm::normal()
-args$prior <- rstanarm::normal()
+args$prior_intercept <- rstanarm::normal(scale=10)
+args$prior <- rstanarm::normal(scale=10)
 system.time(fm2 <- do.call("epim", args))
 ```
 
-    ## $prior
-    ## $prior$dist
-    ## [1] "normal"
-    ## 
-    ## $prior$location
-    ## [1] 0 0
-    ## 
-    ## $prior$shape
-    ## [1] 0 0
-    ## 
-    ## $prior$scale
-    ## [1] 2.5 2.5
-    ## 
-    ## $prior$shift
-    ## [1] 0 0
-    ## 
-    ## $prior$adjusted_scale
-    ## NULL
-    ## 
-    ## $prior$df
-    ## NULL
-    ## 
-    ## 
-    ## $prior_intercept
-    ## $prior_intercept$dist
-    ## [1] "normal"
-    ## 
-    ## $prior_intercept$location
-    ## [1] 0
-    ## 
-    ## $prior_intercept$scale
-    ## [1] 10
-    ## 
-    ## $prior_intercept$adjusted_scale
-    ## NULL
-    ## 
-    ## $prior_intercept$df
-    ## NULL
-
-    ## Warning: There were 530 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+    ## Warning: There were 1743 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
     ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
 
     ## Warning: Examine the pairs() plot to diagnose sampling problems
 
-    ##    user  system elapsed 
-    ## 906.082   4.690 269.255
+    ## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+    ## Running the chains for more iterations may help. See
+    ## http://mc-stan.org/misc/warnings.html#bulk-ess
+
+    ##     user   system  elapsed 
+    ## 1350.824    4.804  407.395
 
 Notice the warnings over exceeding the maximum-tree depath and the long
 run time. The reason for this will become clear soon. But first we
@@ -292,12 +260,13 @@ initial reproduction number.
 
 ``` r
 # more informative prior intercept
-args$prior_intercept <- rstanarm::normal(scale=0.2)
+args$prior_intercept <- rstanarm::normal(scale=0.5)
+args$prior <- rstanarm::normal(scale=0.5)
 system.time(fm3 <- do.call("epim", args))
 ```
 
     ##    user  system elapsed 
-    ## 214.190   2.253  82.440
+    ## 244.460   1.956  90.479
 
 This seems to more computationally stable. As shown below, the problem
 is caused by posterior correlation between the initial reproduction rate
@@ -344,17 +313,17 @@ print(fm2, digits=2)
     ## -----
     ## coefficients:
     ##                      Median MAD_SD
-    ## (Intercept)          -1.76   1.24 
-    ## schools_universities  2.26   1.28 
-    ## lockdown              1.50   0.14 
+    ## (Intercept)          -5.01   3.98 
+    ## schools_universities  5.53   3.98 
+    ## lockdown              1.50   0.16 
     ## 
     ## Other model parameters:
     ## -----
     ##                      Median MAD_SD
-    ## seeds[France]         4.32   2.59 
-    ## tau                  13.52  12.69 
-    ## phi                  21.36   3.32 
-    ## noise[France,deaths]  1.00   0.10
+    ## seeds[France]         2.65   0.76 
+    ## tau                  11.59  11.72 
+    ## phi[deaths]          19.16   3.22 
+    ## noise[France,deaths]  0.99   0.10
 
 ``` r
 print(fm3, digits=2)
@@ -365,14 +334,14 @@ print(fm3, digits=2)
     ## -----
     ## coefficients:
     ##                      Median MAD_SD
-    ## (Intercept)          0.02   0.13  
-    ## schools_universities 0.53   0.15  
-    ## lockdown             1.40   0.11  
+    ## (Intercept)          -0.22   0.26 
+    ## schools_universities  0.66   0.31 
+    ## lockdown              1.57   0.15 
     ## 
     ## Other model parameters:
     ## -----
     ##                      Median MAD_SD
-    ## seeds[France]        36.18  10.26 
-    ## tau                  34.68  22.11 
-    ## phi                  21.01   3.40 
-    ## noise[France,deaths]  1.01   0.10
+    ## seeds[France]        21.00   8.46 
+    ## tau                  26.81  20.20 
+    ## phi[deaths]          19.23   3.01 
+    ## noise[France,deaths]  1.00   0.10

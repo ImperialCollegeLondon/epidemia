@@ -40,8 +40,10 @@ sars$incidence <- c(rep(NA,20),cumsum(sars$incidence)) ## pad before initialisat
 sars$sarsdate <- as.Date("2003-01-01")+seq(0,along.with=sars$incidence)
 obs <- !is.na(sars$incidence)
 
-args <- list(formula=Rt(country,date)~0+rw(prior_scale=0.1),
-     data=data.frame(country="A",date=sars$sarsdate),
+args <- list(formula=Rt(country,date)~ rw(time=week,prior_scale=0.1),
+     data=data.frame(country="A",
+                     date=sars$sarsdate,
+                     week = format(sars$sarsdate, "%V")),
              obs=list(
                  incidence=list(
                      odata=data.frame(country="A",

@@ -214,14 +214,14 @@ pp_stanmat <- function(object, stanmat, groups) {
 # @param object, data, stanmat  See \code{rstanarm:::pp_eta}
 pp_eta <- function(object, data, stanmat) {
   x <- data$x
-  
+
   # start with fixed effects
   beta <- stanmat[, seq_len(ncol(x)), drop = FALSE]
   eta <- linear_predictor(beta, x)
   
   # similar for random effects
   if (!is.null(data$Zt)) {
-    b_sel <- grepl("^b\\[*\\]$", colnames(stanmat))
+    b_sel <- grepl("^b\\[*", colnames(stanmat))
     b <- stanmat[, b_sel, drop = FALSE]
     if (is.null(data$Z_names)) {
       b <- b[, !grepl("_NEW_", colnames(b), fixed = TRUE), drop = FALSE]
