@@ -1,4 +1,5 @@
 # epidemia 0.5.0
+* Random walk terms parsed separately as input to stan files. Variance parameter sampled in stan, and so can make predictions.
 * pseudo-log scales for `plot_infections` and `plot_observations`
 * control over date range for all plots
 * option to plot smoothed Rt in `plot_rt`
