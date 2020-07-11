@@ -36,7 +36,6 @@ jobs:
         run: |
           install.packages("devtools")
           install.packages("remotes")
-          remotes::install_deps(dependencies = TRUE)
           remotes::install_dev("pkgdown")
         shell: Rscript {0}
 
