@@ -410,9 +410,9 @@ cumul <- function(df) {
   qtl$tag <- matrix(tag, ncol=1, byrow=F)
   
   # compute quantiles
-  f <- function(x) quantile(x, 0.5 - levels/200)
+  f <- function(x) stats::quantile(x, 0.5 - levels/200)
   qtl$low = matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F)
-  f <- function(x) quantile(x, 0.5 + levels/200)
+  f <- function(x) stats::quantile(x, 0.5 + levels/200)
   qtl$up <- matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F)
   return(qtl)
 }

@@ -57,7 +57,7 @@ print.epimodel <- function(x, digits=1, ...) {
 # Helpers from rstanarm
 
 .median_and_madsd <- function(x) {
-  cbind(Median = apply(x, 2, median), MAD_SD = apply(x, 2, mad))
+  cbind(Median = apply(x, 2, stats::median), MAD_SD = apply(x, 2, stats::mad))
 }
 
 .printfr <- function(x, digits, ...) {
