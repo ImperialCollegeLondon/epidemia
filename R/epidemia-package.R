@@ -18,10 +18,11 @@
 #' @useDynLib epidemia, .registration = TRUE
 #' @import methods
 #' @import Rcpp
+#' @import stats
 #' @importFrom rstan sampling
 #' @importFrom rstan vb
 #' @importFrom Rdpack reprompt
-#'
+#' @importFrom utils tail
 #' @references
 #' \insertAllCited()
 #' Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.19.3. https://mc-stan.org

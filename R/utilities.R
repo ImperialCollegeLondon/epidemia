@@ -430,7 +430,7 @@ checkCV <- function(vec, name) {
   if (abs(tail(vec,1) - 1) > 1e-14)
     warning(paste0("Final value in ", name, " was not equal to 1. Have rescaled to form a distribution function."), call. = FALSE)
 
-  return(vec/tail(vec,1))
+  return(vec/utils::tail(vec,1))
 }
 
 

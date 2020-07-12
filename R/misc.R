@@ -182,20 +182,6 @@ make_glmerControl <- function(..., ignore_lhs = FALSE, ignore_x_scale = FALSE) {
                      ...)  
 }
 
-beta_names <- function(x, submodel = NULL, ...) {
-  if (is.null(submodel)) {
-    rxlist <- c(mod2rx("^Long"), mod2rx("^Event"), mod2rx("^Assoc"))
-  } else {
-    rxlist <- c()
-    if ("Long" %in% submodel) rxlist <- c(rxlist, mod2rx("^Long"))
-    if ("Event" %in% submodel) rxlist <- c(rxlist, mod2rx("^Event"))
-    if ("Assoc" %in% submodel) rxlist <- c(rxlist, mod2rx("^Assoc"))
-    miss <- setdiff(submodel, c("Long", "Event", "Assoc"))
-    if (length(miss)) rxlist <- c(rxlist, sapply(miss, mod2rx))
-  }
-  unlist(lapply(rxlist, function(y) grep(y, x, ...)))
-}
-
 extract_pars <- function(object, stanmat = NULL, means = FALSE) {
   validate_stanmvreg_object(object)
   M <- get_M(object)
