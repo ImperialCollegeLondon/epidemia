@@ -475,3 +475,7 @@ cumul <- function(df) {
   }
   return(NULL)
 }
+
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
