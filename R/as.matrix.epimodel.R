@@ -94,13 +94,8 @@ collect_pars <- function(x, pars = NULL, regex_pars = NULL) {
   unique(pars)
 }
 
+
 grep_for_pars <- function(x, regex_pars) {
-  validate_stanreg_object(x)
-  if (used.optimizing(x)) {
-    warning("'regex_pars' ignored for models fit using algorithm='optimizing'.",
-            call. = FALSE)
-    return(NULL)
-  }
   stopifnot(is.character(regex_pars))
   out <- unlist(lapply(seq_along(regex_pars), function(j) {
     grep(regex_pars[j], rownames(x$stan_summary), value = TRUE) 

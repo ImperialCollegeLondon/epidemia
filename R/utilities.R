@@ -299,9 +299,9 @@ checkPops <- function(pops, levels) {
     }
   )
   if(any(is.na(pops$group)))
-    stop(paste0("NAs exist in ", name, "$", oldnames[[1]], " after coercion to factor"), call. = FALSE)
+    stop(paste0("NAs exist in column ", oldnames[[1]], " of 'pops' after coercion to factor"), call. = FALSE)
   if(any(is.na(pops$pop)))
-    stop(paste0("NAs exist in ", name, "$", oldnames[[2]], " after coercion to integer"), call. = FALSE)
+    stop(paste0("NAs exist in column", oldnames[[2]], " of 'pops' after coercion to integer"), call. = FALSE)
   
   # removing rows not represented in response groups
   pops <- pops[pops$group %in% levels,]

@@ -182,23 +182,6 @@ make_glmerControl <- function(..., ignore_lhs = FALSE, ignore_x_scale = FALSE) {
                      ...)  
 }
 
-extract_pars <- function(object, stanmat = NULL, means = FALSE) {
-  validate_stanmvreg_object(object)
-  M <- get_M(object)
-  if (is.null(stanmat)) 
-    stanmat <- as.matrix(object$stanfit)
-  if (means) 
-    stanmat <- t(colMeans(stanmat)) # return posterior means
-  nms   <- collect_nms(colnames(stanmat), M, stub = get_stub(object))
-  beta  <- lapply(1:M, function(m) stanmat[, nms$y[[m]], drop = FALSE])
-  ebeta <- stanmat[, nms$e, drop = FALSE]
-  abeta <- stanmat[, nms$a, drop = FALSE]
-  bhcoef <- stanmat[, nms$e_extra, drop = FALSE]
-  b     <- lapply(1:M, function(m) stanmat[, nms$y_b[[m]], drop = FALSE])
-  loo::nlist(beta, ebeta, abeta, bhcoef, b, stanmat)
-}
-
-
 groups <- function(x) {
   if (!is.null(x)) {
     as.integer(as.factor(x)) 
