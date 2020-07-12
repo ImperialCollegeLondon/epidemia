@@ -28,26 +28,26 @@ get_sdat_data <- function(data) {
 get_sdat_obs <- function(sdat, obs) {
   R <- length(obs)
   if (R) {
-      f <- function(x) {
+      f1 <- function(x) {
         if (x$ptype == "density")
           padSV(x$pvec, sdat$NS, 0)
         else 
           padV(x$pvec, sdat$NS, tail(x$pvec,1))
       }
-      pvecs <- as.array(lapply(obs, f))
+      pvecs <- as.array(lapply(obs, f1))
 
       # matrix of mean rates for each observation type
-      f     <- function(x) x$rates$means$mean
-      means <- lapply(obs, f)
+      f2     <- function(x) x$rates$means$mean
+      means <- lapply(obs, f2)
       means <- do.call("cbind", args=means)
 
       # matrix of rates for each observation type
-      f             <- function(x) x$rates$scale
-      noise_scales  <- lapply(obs, f)
+      f3            <- function(x) x$rates$scale
+      noise_scales  <- lapply(obs, f3)
       noise_scales  <- do.call("c", args=noise_scales)
 
     # create matrix of observations for stan
-      f <- function(x, i) {
+      f4 <- function(x, i) {
         df        <- x$odata
         g <- function(x) which(x == sdat$groups)[1]
 
@@ -56,7 +56,7 @@ get_sdat_obs <- function(sdat, obs) {
         df$type   <- i
         df
       }
-      obs <- do.call("rbind", args=Map(f, obs, seq_along(obs)))
+      obs <- do.call("rbind", args=Map(f4, obs, seq_along(obs)))
     } else {
       obs           <- data.frame()
       pvecs         <- array(0, dim=c(0,sdat$NS))
@@ -83,6 +83,10 @@ get_sdat_obs <- function(sdat, obs) {
 # @param prior_phi, prior_tau See \code{\link{epim}}
 # @param R Number of observation types
 get_sdat_add_priors <- function(sdat, prior_phi, prior_tau) {
+
+  # for passing R CMD Check
+  prior_mean_for_phi <- prior_scale_for_phi <- 
+  prior_scale_for_tau <- NULL
 
   prior_phi_stuff <- handle_glm_prior(prior = prior_phi,
                                       nvars = sdat$R,
