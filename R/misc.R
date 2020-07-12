@@ -127,26 +127,6 @@ set_prior_scale <- function(scale, default, link) {
   return(scale)
 }
 
-
-polr_linkinv <- function(x) {
-  if (is.stanreg(x) && is(x, "polr")) {
-    method <- x$method
-  } else if (is.character(x) && length(x) == 1L) {
-    method <- x
-  } else {
-    stop("'x' should be a stanreg object created by stan_polr ", 
-         "or a single string.")
-  }
-  if (is.null(method) || method == "logistic") 
-    method <- "logit"
-  
-  if (method == "loglog")
-    return(pgumbel)
-  
-  make.link(method)$linkinv
-}
-
-
 make_stan_summary <- function(stanfit) {
   levs <- c(0.5, 0.8, 0.95)
   qq <- (1 - levs) / 2

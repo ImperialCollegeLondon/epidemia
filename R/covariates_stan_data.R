@@ -25,7 +25,7 @@ gen_covariates_sdat <-
   x_stuff <- process_x(x, center)
 
   # local bindings to satisfy R CMD Check
-  has_intercept <- xtemp <- xbar <- prior_shape <- prior_shife <-
+  has_intercept <- xtemp <- xbar <- prior_shape <- prior_shift <-
     prior_df <- prior_df_for_intercept  <- prior_dist <- 
     prior_dist_for_intercept <- prior_mean <- prior_mean_for_intercept <- 
     prior_scale <- prior_scale_for_intercept <- prior_autoscale <- 

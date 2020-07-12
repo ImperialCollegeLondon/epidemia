@@ -62,6 +62,8 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
 # @inherits posterior_infections return
 parse_latent <- function(sims, data, nme) {
 
+  starts <- NC <- NULL
+
   # get useful quantities
   sdat <- get_sdat_data(data)
   for (name in names(sdat))
@@ -91,6 +93,8 @@ parse_latent <- function(sims, data, nme) {
 # @inherits parse_latent param sims, data, return
 # @param idx index of the latent observation series to return
 parse_obs <- function(sims, data, idx) {
+
+  starts <- NC <- NULL
 
   sims <- rstan::extract(sims, "pred")[[1]]
 

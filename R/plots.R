@@ -107,11 +107,11 @@ plot_rt.epimodel <- function(object, group=NULL,
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_ribbon(data = qtl, 
-                         ggplot2::aes(x=date, 
-                                      ymin = low, 
-                                      ymax = up,
-                                      group = tag,  
-                                      fill=tag)) + 
+                         ggplot2::aes_string(x="date", 
+                                             ymin="low", 
+                                             ymax="up",
+                                             group="tag",  
+                                             fill="tag")) + 
     ggplot2::geom_hline(yintercept = 1, 
                         color = 'black', 
                         size = 0.7) + 
@@ -248,15 +248,15 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_bar(data = df, 
-                      ggplot2::aes(x = date, y = obs, fill = "reported"),
+                      ggplot2::aes_string(x = "date", y = "obs", fill = "reported"),
                       fill = "coral4", 
                       stat='identity', 
                       alpha=0.5) + 
     ggplot2::geom_ribbon(data = qtl, 
-                         ggplot2::aes(x = date,
-                                      ymin=low, 
-                                      ymax=up, 
-                                      fill=tag)) +
+                         ggplot2::aes_string(x="date",
+                                             ymin="low", 
+                                             ymax="up", 
+                                             fill="tag")) +
     ggplot2::xlab("") +
     ggplot2::ylab(type) +
     ggplot2::scale_y_continuous(labels = scales::comma, 
@@ -357,10 +357,10 @@ plot_infections.epimodel <- function(object, group = NULL,
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_ribbon(data = qtl, 
-                         ggplot2::aes(x = date,
-                                      ymin=low, 
-                                      ymax=up, 
-                                      fill=tag)) +
+                         ggplot2::aes(x="date",
+                                      ymin="low", 
+                                      ymax="up", 
+                                      fill="tag")) +
     ggplot2::xlab("") +
     ggplot2::ylab("Infections") +
     ggplot2::scale_y_continuous(labels = scales::comma, 

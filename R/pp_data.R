@@ -34,7 +34,7 @@ re_data <- function(object, newdata) {
   trms <- delete.response(terms(object, random.only=T))
   fr <- model.frame(formula(trms), newdata, na.action = na.fail)
   
-  re.form <- justRE(formula(object, m = m))
+  re.form <- justRE(formula(object))
   re_trms <- lme4::mkReTrms(lme4::findbars(re.form[[2]]), fr)
 
   Z_names <- make_b_nms(re_trms, stub=NULL)
