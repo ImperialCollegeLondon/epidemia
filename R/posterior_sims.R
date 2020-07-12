@@ -35,7 +35,7 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
 
   standata <- pp_standata(object, newdata)
 
-  sims <- rstan::gqs(stanmodels$pp_base, 
+  sims <- rstan::gqs(stanmodels$epidemia_pp_base, 
                      data = standata, 
                      draws=stanmat)
 

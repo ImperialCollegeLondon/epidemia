@@ -7,12 +7,12 @@
 using namespace Rcpp;
 
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4base_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4pp_base_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4epidemia_base_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4epidemia_pp_base_mod();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rcpp_module_boot_stan_fit4base_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4base_mod, 0},
-    {"_rcpp_module_boot_stan_fit4pp_base_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4pp_base_mod, 0},
+    {"_rcpp_module_boot_stan_fit4epidemia_base_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4epidemia_base_mod, 0},
+    {"_rcpp_module_boot_stan_fit4epidemia_pp_base_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4epidemia_pp_base_mod, 0},
     {NULL, NULL, 0}
 };
 

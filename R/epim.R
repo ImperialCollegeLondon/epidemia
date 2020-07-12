@@ -202,7 +202,7 @@ epim <-
 
   args <- sampling_args
   if (!debug) args$pars <- pars
-  args$object <- stanmodels$base
+  args$object <- stanmodels$epidemia_base
   args$data <- standata
 
   if (algorithm == "sampling") 
