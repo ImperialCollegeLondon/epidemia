@@ -24,6 +24,15 @@ gen_covariates_sdat <-
 
   x_stuff <- process_x(x, center)
 
+  # local bindings to satisfy R CMD Check
+  has_intercept <- xtemp <- 
+    prior_df <- prior_df_for_intercept  <- prior_dist <- 
+    prior_dist_for_intercept <- prior_mean <- prior_mean_for_intercept <- 
+    prior_scale <- prior_scale_for_intercept <- prior_autoscale <- 
+    prior_autoscale_for_intercept <- global_prior_scale <- 
+    global_prior_df <- slab_df <- slab_scale <- NULL
+
+
   for (i in names(x_stuff)) # xtemp, xbar, has_intercept
     assign(i, x_stuff[[i]])
   nvars <- ncol(xtemp)
