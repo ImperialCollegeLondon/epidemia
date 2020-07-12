@@ -66,12 +66,12 @@ ngrps.mixed <- function(object, ...) vapply(.flist(object), nlevels, 1)
 #' Terms method for epimodel objects
 #' @export
 #' @param object, fixed.only, random.only, ... See \code{\link{lme4:::terms.merMod}}
-terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...) {
+terms.epimodel <- function (x, fixed.only = TRUE, random.only = FALSE, ...) {
 
-  if (!is.mixed(object))
+  if (!is.mixed(x))
     return(NextMethod("terms"))
 
-  fr <- object$glmod$fr
+  fr <- x$glmod$fr
   if (missing(fixed.only) && random.only) 
     fixed.only <- FALSE
   if (fixed.only && random.only) 
@@ -79,11 +79,11 @@ terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...)
   
   tt <- attr(fr, "terms")
   if (fixed.only) {
-    tt <- terms.formula(formula(object, fixed.only = TRUE))
+    tt <- terms.formula(formula(x, fixed.only = TRUE))
     attr(tt, "predvars") <- attr(terms(fr), "predvars.fixed")
   }
   if (random.only) {
-    tt <- terms.formula(lme4::subbars(formula(object, random.only = TRUE)))
+    tt <- terms.formula(lme4::subbars(formula(x, random.only = TRUE)))
     attr(tt, "predvars") <- attr(terms(fr), "predvars.random")
   }
   return(tt)
@@ -92,20 +92,20 @@ terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...)
 #' model.frame method for epimodel objects
 #' 
 #' @export
-#' @param object, ... See \code{formula} and \code{...} from \code{\link[stats]{model.frame}}.
+#' @param formula, ... See \code{formula} and \code{...} from \code{\link[stats]{model.frame}}.
 #' @param fixed.only See \code{\link[lme4]{model.frame.merMod}}.
 #' 
-model.frame.epimodel <- function(object, fixed.only=FALSE, ...) {
-  if (is.mixed(object)) {
-    fr <- object$glmod$fr
+model.frame.epimodel <- function(formula, fixed.only=FALSE, ...) {
+  if (is.mixed(formula)) {
+    fr <- formula$glmod$fr
     if (fixed.only) {
-      trms <- delete.response(terms(object, fixed.only=TRUE))
+      trms <- delete.response(terms(formula, fixed.only=TRUE))
       vars <- all.vars(trms)
       fr <- fr[vars]
     }
   } else {
-    form <- formula(delete.response(terms(object)))
-    fr <- model.frame(formula=form, data=object$data, drop.unused.levels=TRUE)
+    form <- formula(delete.response(terms(formula)))
+    fr <- model.frame(formula=form, data=formula$data, drop.unused.levels=TRUE)
   }
   return(fr)
 }

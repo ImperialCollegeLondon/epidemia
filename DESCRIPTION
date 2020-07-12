@@ -66,6 +66,7 @@ Imports:
     rstantools (>= 2.0.0),
     lme4,
     ggplot2,
+    Matrix,
     scales,
     Rdpack,
     stats,
