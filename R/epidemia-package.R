@@ -9,8 +9,6 @@
 #'      package \insertCite{rstanarm}{epidemia}.
 #'      \pkg{epidemia} uses \pkg{rstan} \insertCite{rstan}{epidemia} as the backend for fitting the models.
 #'      The primary model fitting function in \pkg{epidemia} is \code{\link[epidemia]{epim}}.
-#' 
-#' @details
 #'
 #' @docType package
 #' @name epidemia-package

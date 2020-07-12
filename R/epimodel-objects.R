@@ -5,6 +5,11 @@
 #' 
 #' The workhorse function \code{epim} of the \pkg{epidemia} package returns an object 
 #' of class `epimodel`. This is heavily based on the \code{stanreg} class in \pkg{rstanarm} 
-#' (see \code{\link{stanreg-objects}}). The internals are unimportant, but it is 
+#' (see \code{\link[rstanarm]{stanreg-objects}}). The internals are unimportant, but it is 
 #'  helpful to read the documentation to understand how to use methods operating on \code{epimodel}
 #' objects. 
+#' 
+#' @name epimodel-objects
+#' @seealso \code{\link{epimodel-methods}}
+#' 
+NULL

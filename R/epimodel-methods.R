@@ -65,7 +65,7 @@ ngrps.mixed <- function(object, ...) vapply(.flist(object), nlevels, 1)
 
 #' Terms method for epimodel objects
 #' @export
-#' @param object, fixed.only, random.only, ... See \code{\link{lme4:::terms.merMod}}
+#' @param x, fixed.only, random.only, ... See \code{\link[lme4]{terms.merMod}}
 terms.epimodel <- function (x, fixed.only = TRUE, random.only = FALSE, ...) {
 
   if (!is.mixed(x))
