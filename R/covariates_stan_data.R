@@ -206,18 +206,17 @@ pad_reTrms <- function(Ztlist, cnms, flist) {
 }
 
 
-make_b_nms <- function(group, m = NULL, stub = "Long") {
+make_b_nms <- function(group, stub = "Long") {
   group_nms <- names(group$cnms)
   b_nms <- character()
-  m_stub <- if (!is.null(m)) get_m_stub(m, stub = stub) else NULL
   for (i in seq_along(group$cnms)) {
     nm <- group_nms[i]
     nms_i <- paste(group$cnms[[i]], nm)
     levels(group$flist[[nm]]) <- gsub(" ", "_", levels(group$flist[[nm]]))
     if (length(nms_i) == 1) {
-      b_nms <- c(b_nms, paste0(m_stub, nms_i, ":", levels(group$flist[[nm]])))
+      b_nms <- c(b_nms, paste0(nms_i, ":", levels(group$flist[[nm]])))
     } else {
-      b_nms <- c(b_nms, c(t(sapply(paste0(m_stub, nms_i), paste0, ":", 
+      b_nms <- c(b_nms, c(t(sapply(nms_i, paste0, ":", 
                                    levels(group$flist[[nm]])))))
     }
   }
