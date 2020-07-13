@@ -74,7 +74,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
       </span>
     </div>
 
@@ -107,6 +107,9 @@
     </li>
     <li>
       <a href="../articles/introduction.html">Flexible Epidemic Modeling with epidemia</a>
+    </li>
+    <li>
+      <a href="../articles/plotting.html">Plotting with epidemia</a>
     </li>
     <li>
       <a href="../articles/priors.html">Using Prior Distributions</a>
@@ -265,7 +268,7 @@ seeded infections at the beginning of the epidemic. Must be a call to <code><a h
     </tr>
     <tr>
       <th>prior_PD</th>
-      <td><p>Same as in <code>glm</code>. If <code>TRUE</code>, samples parameters from the prior disribution.
+      <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. If <code>TRUE</code>, samples parameters from the prior disribution.
 Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
@@ -281,7 +284,7 @@ for example <code><a href='https://rdrr.io/pkg/rstan/man/stanmodel-method-sampli
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class <code>epimodel</code>.</p>
+    <p>An object of class "epimodel".</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code>epim</code> is the primary model fitting function in <span class="pkg">epidemia</span>, and fits models

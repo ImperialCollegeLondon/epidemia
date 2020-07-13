@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Changelog • epidemia</title>
+<title>Fitted Epidemiological Model Objects — epimodel-objects • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,7 +41,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Changelog" />
+<meta property="og:title" content="Fitted Epidemiological Model Objects — epimodel-objects" />
+<meta property="og:description" content="An S3 class representing a fitted epidemiological model." />
 
 
 
@@ -60,7 +61,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-news">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -139,91 +140,34 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1 data-toc-skip>Changelog <small></small></h1>
-      <small>Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
+    <h1>Fitted Epidemiological Model Objects</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/epimodel-objects.R'><code>R/epimodel-objects.R</code></a></small>
+    <div class="hidden name"><code>epimodel-objects.Rd</code></div>
     </div>
 
-    <div id="epidemia-052" class="section level1">
-<h1 class="page-header" data-toc-text="0.5.2">
-<a href="#epidemia-052" class="anchor"></a>epidemia 0.5.2</h1>
-<ul>
-<li>Passes R CMD Check with no notes or warnings</li>
-</ul>
-</div>
-    <div id="epidemia-051" class="section level1">
-<h1 class="page-header" data-toc-text="0.5.1">
-<a href="#epidemia-051" class="anchor"></a>epidemia 0.5.1</h1>
-<ul>
-<li>Renamed stan files to avoid errors with Rstan 2.12.</li>
-<li>Plotting vignette</li>
-</ul>
-</div>
-    <div id="epidemia-050" class="section level1">
-<h1 class="page-header" data-toc-text="0.5.0">
-<a href="#epidemia-050" class="anchor"></a>epidemia 0.5.0</h1>
-<ul>
-<li>Random walk terms parsed separately as input to stan files. Variance parameter sampled in stan, and so can make predictions.</li>
-<li>pseudo-log scales for <code>plot_infections</code> and <code>plot_observations</code>
-</li>
-<li>control over date range for all plots</li>
-<li>option to plot smoothed Rt in <code>plot_rt</code>
-</li>
-</ul>
-</div>
-    <div id="epidemia-040" class="section level1">
-<h1 class="page-header" data-toc-text="0.4.0">
-<a href="#epidemia-040" class="anchor"></a>epidemia 0.4.0</h1>
-<ul>
-<li>Features for counterfactual analysis and predictions</li>
-</ul>
-</div>
-    <div id="epidemia-033" class="section level1">
-<h1 class="page-header" data-toc-text="0.3.3">
-<a href="#epidemia-033" class="anchor"></a>epidemia 0.3.3</h1>
-<ul>
-<li>Added vignette describing priors</li>
-<li>Description of collinearity issues in ‘resolving problems’ vignette</li>
-<li>Form for potential beta testers</li>
-</ul>
-</div>
-    <div id="epidemia-032" class="section level1">
-<h1 class="page-header" data-toc-text="0.3.2">
-<a href="#epidemia-032" class="anchor"></a>epidemia 0.3.2</h1>
-<ul>
-<li>Citation file</li>
-<li>Fixes to documentation in website</li>
-</ul>
-</div>
-    <div id="epidemia-031" class="section level1">
-<h1 class="page-header" data-toc-text="0.3.1">
-<a href="#epidemia-031" class="anchor"></a>epidemia 0.3.1</h1>
-<ul>
-<li>Website fixes</li>
-<li>Separate index for website and github</li>
-</ul>
-</div>
-    <div id="epidemia-030" class="section level1">
-<h1 class="page-header" data-toc-text="0.3.0">
-<a href="#epidemia-030" class="anchor"></a>epidemia 0.3.0</h1>
-<ul>
-<li>Website and more extensive vignettes</li>
-</ul>
-</div>
-    <div id="epidemia-020" class="section level1">
-<h1 class="page-header" data-toc-text="0.2.0">
-<a href="#epidemia-020" class="anchor"></a>epidemia 0.2.0</h1>
-<ul>
-<li>Initial version.</li>
-</ul>
-</div>
-  </div>
+    <div class="ref-description">
+    <p>An S3 class representing a fitted epidemiological model.</p>
+    </div>
 
+
+
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The workhorse function <code>epim</code> of the <span class="pkg">epidemia</span> package returns an object
+of class <code>epimodel</code>. This is heavily based on the <code>stanreg</code> class in <span class="pkg">rstanarm</span>
+(see <code><a href='https://mc-stan.org/rstanarm/reference/stanreg-objects.html'>stanreg-objects</a></code>). The internals are unimportant, but it is
+helpful to read the documentation to understand how to use methods operating on <code>epimodel</code>
+objects.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code>epimodel-methods</code></p></div>
+
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
     </nav>
   </div>
-
 </div>
 
 

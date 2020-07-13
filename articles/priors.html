@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
       </span>
     </div>
 
@@ -65,6 +65,9 @@
     </li>
     <li>
       <a href="../articles/introduction.html">Flexible Epidemic Modeling with epidemia</a>
+    </li>
+    <li>
+      <a href="../articles/plotting.html">Plotting with epidemia</a>
     </li>
     <li>
       <a href="../articles/priors.html">Using Prior Distributions</a>
@@ -166,8 +169,8 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: 
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000339 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.39 seconds.
+## Chain 1: Gradient evaluation took 0.000357 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.57 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -181,11 +184,15 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: Begin stochastic gradient ascent.
 ## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-## Chain 1:    100         -442.109             1.000            1.000
-## Chain 1:    200         -429.136             0.515            1.000
-## Chain 1:    300         -425.642             0.346            0.030
-## Chain 1:    400         -427.904             0.261            0.030
-## Chain 1:    500         -424.833             0.210            0.008   MEDIAN ELBO CONVERGED
+## Chain 1:    100         -498.962             1.000            1.000
+## Chain 1:    200         -429.492             0.581            1.000
+## Chain 1:    300         -437.262             0.393            0.162
+## Chain 1:    400         -434.087             0.297            0.162
+## Chain 1:    500         -428.542             0.240            0.018
+## Chain 1:    600         -427.678             0.200            0.018
+## Chain 1:    700         -429.364             0.172            0.013
+## Chain 1:    800         -427.312             0.151            0.013
+## Chain 1:    900         -427.362             0.135            0.007   MEDIAN ELBO CONVERGED
 ## Chain 1: 
 ## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
 ## Chain 1: COMPLETED.</code></pre>
@@ -216,8 +223,8 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: 
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000337 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.37 seconds.
+## Chain 1: Gradient evaluation took 0.000239 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.39 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -231,19 +238,17 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: Begin stochastic gradient ascent.
 ## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-## Chain 1:    100         -561.172             1.000            1.000
-## Chain 1:    200         -443.278             0.633            1.000
-## Chain 1:    300         -427.933             0.434            0.266
-## Chain 1:    400         -427.721             0.326            0.266
-## Chain 1:    500         -434.102             0.263            0.036
-## Chain 1:    600         -424.758             0.223            0.036
-## Chain 1:    700         -425.146             0.191            0.022
-## Chain 1:    800         -425.241             0.168            0.022
-## Chain 1:    900         -433.897             0.151            0.020
-## Chain 1:   1000         -425.969             0.138            0.020
-## Chain 1:   1100         -425.710             0.038            0.019
-## Chain 1:   1200         -425.605             0.011            0.015
-## Chain 1:   1300         -428.829             0.009            0.008   MEAN ELBO CONVERGED   MEDIAN ELBO CONVERGED
+## Chain 1:    100         -571.110             1.000            1.000
+## Chain 1:    200         -487.691             0.586            1.000
+## Chain 1:    300         -455.147             0.414            0.171
+## Chain 1:    400         -427.310             0.327            0.171
+## Chain 1:    500         -425.537             0.262            0.071
+## Chain 1:    600         -425.448             0.219            0.071
+## Chain 1:    700         -425.812             0.188            0.065
+## Chain 1:    800         -425.419             0.164            0.065
+## Chain 1:    900         -431.162             0.147            0.013
+## Chain 1:   1000         -427.953             0.133            0.013
+## Chain 1:   1100         -425.545             0.034            0.007   MEDIAN ELBO CONVERGED
 ## Chain 1: 
 ## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
 ## Chain 1: COMPLETED.</code></pre>

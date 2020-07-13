@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
       </span>
     </div>
 
@@ -65,6 +65,9 @@
     </li>
     <li>
       <a href="../articles/introduction.html">Flexible Epidemic Modeling with epidemia</a>
+    </li>
+    <li>
+      <a href="../articles/plotting.html">Plotting with epidemia</a>
     </li>
     <li>
       <a href="../articles/priors.html">Using Prior Distributions</a>
@@ -281,14 +284,14 @@
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">10</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
 </pre></div>
-<pre><code>## Warning: There were 1728 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+<pre><code>## Warning: There were 1741 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
 ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded</code></pre>
 <pre><code>## Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
 <pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 ## Running the chains for more iterations may help. See
 ## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
 <pre><code>##    user  system elapsed 
-## 998.828  10.257 306.696</code></pre>
+## 828.368   5.466 224.075</code></pre>
 <p>Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit">
 <span class="co"># more informative prior intercept</span>
@@ -297,7 +300,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
 </pre></div>
 <pre><code>##    user  system elapsed 
-## 183.748   0.857  50.141</code></pre>
+## 180.958   5.253  59.560</code></pre>
 <p>This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.</p>
 <p>We now plot the posterior correlations between these two parameters.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit">
@@ -321,17 +324,17 @@
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -4.85   3.89 
-## schools_universities  5.37   3.90 
-## lockdown              1.49   0.17 
+## (Intercept)          -5.12   4.06 
+## schools_universities  5.65   4.05 
+## lockdown              1.46   0.16 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]         2.70   0.89 
-## tau                   9.90   9.67 
-## phi[deaths]          19.07   3.22 
-## noise[France,deaths]  0.99   0.10</code></pre>
+## seeds[France]         2.74   0.81 
+## tau                  11.91  12.06 
+## phi[deaths]          19.22   3.24 
+## noise[France,deaths]  0.99   0.11</code></pre>
 <div class="sourceCode" id="cb25"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">fm3</span>, digits=<span class="fl">2</span>)
 </pre></div>
@@ -340,16 +343,16 @@
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -0.21   0.28 
-## schools_universities  0.65   0.33 
-## lockdown              1.56   0.15 
+## (Intercept)          -0.21   0.25 
+## schools_universities  0.68   0.32 
+## lockdown              1.53   0.15 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]        21.21   9.08 
-## tau                  26.71  18.92 
-## phi[deaths]          19.00   3.00 
+## seeds[France]        21.81   8.33 
+## tau                  28.32  19.88 
+## phi[deaths]          19.22   3.10 
 ## noise[France,deaths]  1.00   0.10</code></pre>
 </div>
   </div>
