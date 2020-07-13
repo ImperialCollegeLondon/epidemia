@@ -357,10 +357,10 @@ plot_infections.epimodel <- function(object, group = NULL,
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_ribbon(data = qtl, 
-                         ggplot2::aes(x="date",
-                                      ymin="low", 
-                                      ymax="up", 
-                                      fill="tag")) +
+                         ggplot2::aes_string(x="date",
+                                             ymin="low", 
+                                             ymax="up", 
+                                             fill="tag")) +
     ggplot2::xlab("") +
     ggplot2::ylab("Infections") +
     ggplot2::scale_y_continuous(labels = scales::comma, 
