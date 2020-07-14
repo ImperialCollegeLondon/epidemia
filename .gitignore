@@ -27,6 +27,11 @@
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
+vignettes/*.R
+vignettes/*.html
+vignettes/*.md
+vignettes/*_files
+vignettes/*.build.*
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
@@ -50,5 +55,8 @@ inst/include/*.o
 src/*.o
 src/*.cc
 *.so
+
+# avoid rstantools generated files
+src/stanExports*.h
 
 docs
