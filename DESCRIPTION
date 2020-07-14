@@ -83,7 +83,8 @@ Suggests:
     testthat,
     knitr,
     gridExtra,
-    bookdown
+    bookdown,
+    EpiEstim
 VignetteBuilder:
     knitr
 RdMacros:
