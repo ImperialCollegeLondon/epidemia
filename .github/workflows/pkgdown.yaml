@@ -36,6 +36,7 @@ jobs:
         run: |
           install.packages("devtools")
           install.packages("remotes")
+          install.packages("EpiEstim")
           remotes::install_dev("pkgdown")
         shell: Rscript {0}
 
