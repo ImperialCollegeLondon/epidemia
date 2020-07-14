@@ -1,6 +1,7 @@
 
 # epidemia 0.5.2
-* Passes R CMD Check with no notes or warnings
+* Passes R CMD Check with no warnings
+* Updated installation instructions
 
 # epidemia 0.5.1
 * Renamed stan files to avoid errors with Rstan 2.12.
