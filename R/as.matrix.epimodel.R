@@ -1,7 +1,7 @@
 
 #' Extract posterior samples
 #' 
-#' Get parameters samples for a fitted model object of class \code{epimodel}.
+#' Get parameter samples from a fitted model object of class \code{epimodel}.
 #' 
 #' \code{as.matrix}, \code{as.array} and \code{as.data.frame} each return
 #' a sample of parameter draws from objects of class \code{epimodel}. The 
@@ -11,8 +11,9 @@
 #' for a general explanation of these methods.
 #' @templateVar epimodelArg x
 #' @template args-epimodel-object
-#' @param pars Please see \link[rstanarm]{as.matrix.stanreg}
-#' @param regex_pars Please see \link[rstanarm]{as.matrix.stanreg}
+#' @param ... Not used.
+#' @param pars Character vector of parameter names to return. Same as \link[rstanarm]{as.matrix.stanreg}
+#' @param regex_pars Character vector of regular expressions against which to match parameter names.Same as \link[rstanarm]{as.matrix.stanreg}
 #' @return A \code{matrix}, \code{array} or \code{data.frame} object.
 #' @export
 as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {

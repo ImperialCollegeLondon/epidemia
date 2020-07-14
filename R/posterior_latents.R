@@ -5,6 +5,7 @@
 #' @param newdata If provided, the original \code{data} used in \code{object} is overidden. Useful both for conterfactual and prediction analysis
 #' @param draws Number of posterior draws to use. Defaults to the number of parameter draws in the fitted model.
 #' @param seed An optional seed.
+#' @param ... Not used.
 #' @return A named list, each element of which corresponds to a modeled population. Each element is itself a dataframe with 
 #' \code{nrow(newdata)} rows and \code{draws+1} columns. First column gives dates, subsequent are different draws of the series.
 #' @export

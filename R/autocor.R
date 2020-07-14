@@ -1,15 +1,18 @@
-#' Adds random walks to the parameterization of the time-varying reproduction number.
+#' Adds random walks with independent Gaussian steps to the parameterization of the time-varying reproduction number.
 #'
 #' A call to \code{rw} can be used in the 'formula' argument of \code{epim}, allowing 
 #' random walks for the reproduction number. Does not evaluate arguments. Simply creates a 
 #' list with the information needed for the stan data to be parsed correctly.
 #'
-#' @param time An optional vector defining the random walk time periods for each 
-#'    date and group. Defaults to NA, in which case the column of 'data' representing the dates 
+#' @param time An optional name defining the random walk time periods for each 
+#'    date and group. This must be a column name found in the \code{data} argument to \code{epim}. 
+#'    Defaults to NA, in which case the dates column implied by the \code{formula} argument to \code{epim} 
 #'    is used. 
-#' @param gr Optional vector defining the grouping to use for the walks. A separate walk is defined 
+#' @param gr Same as for \code{time}, except this defines the grouping to use for the random walks. A separate walk is defined 
 #'  for each group. Defaults to NA, in which case a common random walk is used for all groups.
-#' @return A list
+#' @param  prior_scale The steps of the walks are independent zero mean normal with an unknown scale hyperparameter. This scale is given 
+#'  a half-normal prior. \code{prior_scale} sets the scale parameter of this hyperprior.
+#' @return A list to be parsed internally.
 #' @examples
 #' 
 #' \dontrun{

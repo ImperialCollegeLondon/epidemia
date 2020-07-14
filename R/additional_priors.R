@@ -9,12 +9,18 @@
 #' \insertCite{Flaxman2020;textual}{epidemia}.  \code{shifted_gamma} can be used as the \code{prior} argument 
 #' to \code{epim}.
 #' 
+#' @param shape,scale Sets the shape and scale parameters of the Gamma prior.
+#' @param shift The Gamma prior can be shifted to allow for negative support.
+#' @param autoscale Same as in \code{\link[rstanarm]{priors}}.
+#' 
+#' @return A named list to be parsed internally by \code{\link[epidemia]{epim}}.
+#' 
 #' @examples
 #' 
 #' library(epidemia)
 #' data(EuropeCovid)
 #' args <- EuropeCovid
-#' args$prior = shifted_gamma(shape=1, scale = 1, shift = -0.5)
+#' args$prior <- shifted_gamma(shape=1, scale=1, shift=-0.5)
 #' 
 #' @references
 #' \insertAllCited{}

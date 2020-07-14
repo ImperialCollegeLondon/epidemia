@@ -325,7 +325,7 @@ new_rw_stanmat <- function(stanmat, newnms=NULL) {
 
 ### Helper from rstanarm ###
 
-#' reorders the random effect draws to match newdata
+# reorders the random effect draws to match newdata
 pp_b_ord <- function(b, Z_names) {
   b_ord <- function(x) {
     m <- grep(paste0("b[", x, "]"), colnames(b), fixed = TRUE)

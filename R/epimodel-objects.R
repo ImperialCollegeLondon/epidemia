@@ -10,6 +10,5 @@
 #' objects. 
 #' 
 #' @name epimodel-objects
-#' @seealso \code{\link{epimodel-methods}}
 #' 
 NULL

@@ -58,7 +58,8 @@
 #' Defaults to \code{FALSE}.
 #' @param sampling_args An (optional) named list of parameters to pass to the \pkg{rstan} function used for model fitting,
 #'  for example \code{rstan::sampling}.
-#' @param ... 
+#' @param ... Not used.
+#' @param stan_data,debug Mainly for internal use. Will be removed in future versions.
 #' @examples
 #' \dontrun{
 #' data("EuropeCovid")
