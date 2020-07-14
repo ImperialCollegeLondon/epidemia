@@ -1,7 +1,7 @@
-#' @rdname ngrps-methods
+#' Returns the levels for each grouping factor in the fitted object
+#' 
+#' @inherit lme4::ngrps params return
 #' @export
-#' @export ngrps
-#' @importFrom lme4 ngrps
 #' 
 ngrps.mixed <- function(object, ...) vapply(.flist(object), nlevels, 1)
 

@@ -17,6 +17,8 @@
 #' @import methods
 #' @import Rcpp
 #' @import stats
+#' @import rstantools
+#' @importFrom lme4 ngrps
 #' @importFrom rstan sampling
 #' @importFrom rstan vb
 #' @importFrom Rdpack reprompt
@@ -27,3 +29,12 @@
 #' Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.19.3. https://mc-stan.org
 #'
 NULL
+
+#' @export 
+lme4::ngrps
+
+#' @export 
+rstantools::posterior_predict
+
+#' @export 
+rstantools::prior_summary

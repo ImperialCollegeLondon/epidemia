@@ -1,17 +1,7 @@
-
-#' Get details of the priors used
+#' Returns a summary of the prior distributions used
 #' 
-#' Details of the priors used. Please see
-#' \code{\link[rstanarm]{prior_summary}} for 
-#' more details
-#' 
-#' @inheritParams print.epimodel
-#' 
-#' @export
-prior_summary <- function(object, ...) UseMethod("prior_summary", object)
-
-
-#' @rdname prior_summary
+#' @inherit rstantools::prior_summary params return
+#' @param digits Number of digits used for rounding.
 #' @export
 prior_summary.epimodel <- function(object, digits=2, ...) {
   x <- object[["prior.info"]]

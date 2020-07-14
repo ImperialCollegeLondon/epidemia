@@ -153,7 +153,7 @@ plot_rt.epimodel <- function(object, group=NULL,
 #'  in which case the posterior predictive is plotted.
 #' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
 #' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
-#' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict}}. Examples include \code{newdata}, which allows 
+#' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
 #' @examples
 #' \dontrun{
