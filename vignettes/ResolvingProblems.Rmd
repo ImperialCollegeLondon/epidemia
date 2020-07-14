@@ -29,6 +29,7 @@ First we load the data.
 
 ```{r}
 library(epidemia)
+library(EpiEstim)
 data("SARS2003")
 options(mc.cores = parallel::detectCores())
 print(SARS2003)
