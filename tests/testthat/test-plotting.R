@@ -73,3 +73,20 @@ test_that("date subsetting",{
                  regexp = "Could not coerce 2020-05-04, 2020-05-14 to date with specified format - plotting the enire date range")
   
 })
+
+test_that(".check_dates works as expected", {
+  date_format <- "%Y-%m-%d"
+  expect_equal(.check_dates(c("2020-03-09", "2020-04-06"), date_format, "2020-06-06", "2020-02-06"),
+               as.Date(c("2020-03-09","2020-04-06")))
+  expect_equal(.check_dates(c("2020-03-09", NA), date_format, "2020-06-06", "2020-02-06"),
+               as.Date(c("2020-03-09","2020-06-06")))
+  expect_equal(.check_dates(c(NA, "2020-04-06"), date_format, "2020-06-06", "2020-02-06"),
+               as.Date(c("2020-02-06","2020-04-06")))
+  expect_equal(.check_dates(as.Date(c("2020-03-09", "2020-04-06")), date_format, "2020-06-06", "2020-02-06"),
+               as.Date(c("2020-03-09","2020-04-06")))
+  expect_equal(.check_dates(as.Date(c("2020-03-09", NA)), date_format, "2020-06-06", "2020-02-06"),
+               as.Date(c("2020-03-09","2020-06-06")))
+  expect_equal(.check_dates(as.Date(c(NA, "2020-04-06")), date_format, "2020-06-06", "2020-02-06"),
+               as.Date(c("2020-02-06","2020-04-06")))
+  expect_warning(.check_dates(c(NA, as.Date("2020-04-06")), date_format, "2020-06-06", "2020-02-06"))
+})
