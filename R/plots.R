@@ -443,10 +443,23 @@ cumul <- function(df) {
       # if either is NA then this means we want to plot the whole
       # range in that direction, so replace with max or min as 
       # appropriate
-      if(is.na(dates[[1]]))
-        dates[[1]] <- as.character(min_date) # or date is coerced to numeric
-      if(is.na(dates[[2]]))
-        dates[[2]] <- as.character(max_date)
+      
+      if(is.character(dates)) {
+        if(is.na(dates[[1]]))
+          dates[[1]] <- as.character(min_date) # or date is coerced to numeric
+        if(is.na(dates[[2]]))
+          dates[[2]] <- as.character(max_date)
+      } else if(lubridate::is.Date(dates)) {
+        if(is.na(dates[[1]]))
+          dates[[1]] <- as.Date(min_date, format=date_format) # or date is coerced to numeric
+        if(is.na(dates[[2]]))
+          dates[[2]] <- as.Date(max_date, format=date_format)
+      } else {
+        warning(sprintf("dates have invalid value %s (class %s). This may be due to passing NA values and Date objects in the same vector. Resolve by coercing NA using as.Date(). The entire date range will be plotted.",
+                        paste(dates, collapse=", "), class(dates)),
+                call. = FALSE)
+        return(NULL)
+      }
       
       # check no NAs introduced by coercion to date
       if(!any(is.na(as.Date(dates, format=date_format)))) {
@@ -455,16 +468,16 @@ cumul <- function(df) {
         # check start date > end date
         if(dates[[1]]>dates[[2]]) {
           warning("start of date range is before end - reversing dates", call. = FALSE)
-          dates <- rev(dates)
-        } else if (dates[[1]]==dates[[2]]){
+          return(rev(dates))
+        } else if (dates[[1]]==dates[[2]]) {
           warning("dates must be different - plotting the entire range", call. = FALSE)
           return(NULL)
-        }
-        return(dates)
+        } else return(dates)
+        
       } else {
         warning(paste0("Could not coerce ",
                        paste0(dates[which(is.na(as.Date(dates, format=date_format)))], collapse=", "),
-                              " to date with specified format - plotting the enire date range"),
+                       " to date with specified format - plotting the enire date range"),
                 call. = FALSE)
         return(NULL)
       }
@@ -472,8 +485,7 @@ cumul <- function(df) {
       warning("dates should have format (min date, max date) - plotting the entire date range", call. = FALSE)
       return(NULL)
     }
-  }
-  return(NULL)
+  } else return(dates)
 }
 
 #' @importFrom magrittr %>%
