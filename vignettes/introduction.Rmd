@@ -111,15 +111,15 @@ plot_rt(fit)
 
 ## A Single Population
 
-Let $t_0$ be an integer representing the first date at which infections are non-zero in the population, and let $T$ be the number of consecutive days over which to simulate the epidemic.
+Let $t_0$ be an integer representing the first date at which we start modelling the epidemc, and let $T$ be the number of consecutive days over which to simulate the epidemic.
 
-The basic idea behind the model is that the observed quantities (daily deaths, incidence rates etc.) are a function of the latent infections in the population over time. These infections are in turn a function of the *time-varying reproduction number*. This number may be explained by a number of covariates; for example non-pharmaceutical interventions, or changes in mobility over time.
+The basic idea behind the model is that the observed quantities (daily deaths, incidence rates etc.) are a function of the latent infections in the population over time. These infections are in turn a function of the *time-varying reproduction number* $R_t$. This number may be explained by a number of covariates; for example non-pharmaceutical interventions, or changes in mobility over time.
 
 The remainder of this section is organized as follows. First, the model for the sequence of time-varying reproduction numbers is described. Infections are then modeled in terms of this sequence. Finally, the observed data is modeled as a function of these latent infections. 
 
 ### Latent Time-Varying Reproduction Number 
 
-Let $R_{0},\ldots,R_{T}$ be a non-negative time series representing the *unadjusted* time-varying reproduction number over the period considered. Intuitively, $R_t$ s a measure of the intensity of infectious interactions occurring in the population at time $t_0 + t$. The term *unadjusted* is used to make explicit that $R_t$ is not interpreted as the rate of infection at a given point in time. This would require an adjustment for the size of the susceptible population. This adjustment is made later in the model for infections. $R_t$ is modeled as
+Let $R_{0},\ldots,R_{T}$ be a non-negative time series representing the *unadjusted* time-varying reproduction number over the period considered. Intuitively, $R_t$ is a measure of the intensity of infectious interactions occurring in the population at time $t_0 + t$. The term *unadjusted* is used to make explicit that $R_t$ is not interpreted as the rate of infection at a given point in time. This would require an adjustment for the size of the susceptible population. This adjustment is made later in the model for infections. $R_t$ is modeled as
 \begin{equation}
 R_t = 2A f\left(X_t^{'}\beta + W_t \right),
 (\#eq:rt)
