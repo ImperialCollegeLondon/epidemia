@@ -174,7 +174,7 @@ Given initial condition $I(t-1)=I_{t-1}$, the exact solution to this ODE at time
 
 ### Observations
 
-Data is observed from $L$ observation processes $Y_t^{(1)} \ldots Y_{t}^{(L)}$, with the subscript $t$ ranging between $1$ and $T$. These processes do not need to be fully observed; i.e. data may be missing for a subset of time periods. The typical example of such data would be daily death (as used in @Flaxman2020) or case incidence data. However, you are not limited to this. In general,
+Data is observed from $L$ processes $Y_t^{(1)} \ldots Y_{t}^{(L)}$ with the subscript $t$ ranging between $1$ and $T$. These processes do not need to be fully observed; i.e. data may be missing for a subset of time periods. The typical example of such data would be daily death (as used in @Flaxman2020) or case incidence data. However, you are not limited to this. In general,
 
 * $Y_t^{(l)}$ should represent the count of a particular type of 'event' at time $t$. 
 * This event is assumed to occur at most once per member of the population; an example would be hospitalization data. This assumption excludes the processes from representing cumulative observations - which would require a more complex dependence structure than presented here.
@@ -188,7 +188,7 @@ y_t^{(l)} + \frac{{\left(y_t^{(l)}\right)}^2}{\phi_l},
 $$
 where $\phi_l$ is a dispersion parameter distributed $\phi_l \sim \mathcal{N}^+(0,\sigma^2_{\phi_l})$ for some hyperparameter $\sigma^2_{\phi_l} > 0$. The expected value $y_{t}^{(l)}$ is then modeled as a function of
 
-* $I_{0}, \ldots, I_{t-1}$, the previous infections,
+* previous infections,
 * $\pi^{(l)} = (\pi^{(l)}_1, \pi^{(l)}_2, \ldots)$, a discrete distribution on $\mathbb{Z}^+$ representing the time distribution from an infection event to an observation event,
 * and a proportion $\alpha_l$, assumed to be a time constant quantity representing the rate of infections which will eventually record as an observation of type $l$.
 
@@ -196,28 +196,53 @@ To give intuition on the above quantities, suppose for now that the $l$^th^ obse
 
 The functional form for $y_{t}^{(l)}$ is then simply
 $$
-y_{t}^{(l)} := \alpha_l \sum_{\tau=0}^{t-1} (I_{\tau} - I_{\tau-1})\pi^{(l)}_{t-\tau}.
+y_{t}^{(l)} := \alpha_l \sum_{i=0}^{t-1} \Delta I_{i}\pi^{(l)}_{t-i}.
 $$
-The distribution $\pi^{(l)}$ is *treated as known*, however in future versions of epidemia we may allow it to be learnt. One possibility in this direction would be to view $\pi^{(l)}$ as a discretization of a continuous parametric distribution. The parameters could be given priors and learnt. The Gamma distribution is a suitable candidate for this.
+The distribution $\pi^{(l)}$ is *treated as known*, however in future versions of epidemia we may allow it to be parameterized by unknown quantities. One possibility in this direction would be to view $\pi^{(l)}$ as a discretization of a continuous parametric distribution. The parameters could be given priors to represent our uncertainty over the interval. The Gamma distribution may be a suitable candidate for this.
 
 The proportion $\alpha_l$ is treated as unknown, and given a normal prior truncated to the unit interval. To be precise
 \begin{equation}
 \alpha_l \sim \mathcal{N}_{[0,1]}(\mu_l, \sigma^2_{\alpha_l}),
 (\#eq:alpha)
 \end{equation}
-for given hyperparameters $\mu_l$ and $\sigma^2_{\alpha_l}$. In future versions of epidemia, these proportions may instead be assigned Beta priors.
+for given hyperparameters $\mu_l$ and $\sigma_{\alpha_l}$. In future versions of epidemia, these proportions may themselves be modeled to allow for changes over time. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$.
+
+
 
 ## Multiple Populations
 
-Extending to multiple populations is done by allowing some parameters to be pooled, while keeping others group specific. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$.
+Extending to multiple populations is done by allowing partial pooling of model parameters. Suppose now that there are $M$ non-overlapping populations with differing start dates $t^{(m)}_0$ and epidemic lengths $T_m$.
 
-We begin by discussing the model parameters outside of \@ref(eq:rt). We replace \@ref(eq:alpha) with
+As before, start by considering the model for the time-varying reproduction numbers. Fix $t$ and now let
+$$
+R_t := (R_{t,1}, \ldots R_{t,M}),
+$$
+where $R_{t,m}$ is the unadjusted reproduction number at time $t$ for population $m$.
+\begin{equation}
+R_t := 2Af\left(\eta_t\right),
+(\#eq:rtpooled)
+\end{equation}
+where $\eta_t$ is a linear predictor decomposable as
+$$
+\eta_t = X_t\beta + Z_t b + Q \gamma_t.
+$$
+We now describe each of these components of $\eta_t$ in turn.
+
+* $X_t$ is a $M \times p$ model matrix for $t$^th^ period, and for the $p$ *pooled* coefficients $\beta$,
+* $Z_t$ is a $M \times q$ model matrix for $t$^th^ period, and for $q$ group specific effects $b$, and
+* $Q$ is a $M \times v$ model matrix, where $v$ is the total number of random walks. $Q$ is binary and invariant over time, and simply maps each population to a subset of the random walks. $\gamma_t$ represents the values of each walk at time $t$.
+
+The parameterization given by \@ref(eq:rtpooled) is very flexible. The user can choose which parameters to pool and which to retain as group-level effects. Moreover, multiple random walks can be specified and shared between populations, or according to some other grouping variable.
+
+The model for the $M$ infection series remains largely the same. The parameter $\tau$ is pooled between all populations. 
+
+For the observation model, we replace  \@ref(eq:alpha) with
 $$
 \alpha_{l,m} \sim \mathcal{N}_{[0,1]}(\mu_{l,m}, \sigma^2_{\alpha_l}),
 $$
-so that \@ref(eq:alpha) is replicated for each group, except that each observation type has a shared hyperparameter $\sigma^2_{\alpha_l}$. The dispersion parameters $\phi_l$ are on the other hand pooled, and $\pi^{(l)}$ are assumed the same for each group.
+so that \@ref(eq:alpha) is replicated for each population. Notice that the hyperparameters $\sigma^2_{\alpha_l}$ are shared at the population level. 
 
-The remaining parameters relate to the parameterisation of the time-varying reproduction numbers. Collect these into a vector $R$ with total length $T' := \sum_{m=1}^M T_m$, and consider the parameterization of $R$ in terms of covariates given in \@ref(eq:rt). This approach allows flexible pooling of parameters through $\beta$, while still permitting between group variation using the group-effects $b$. 
+The dispersion parameters $\phi_l$ are pooled, and the distributions $\pi^{(l)}$ are assumed the same for each population.
 
 # R Implementation
 
