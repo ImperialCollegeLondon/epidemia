@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
       </span>
     </div>
 
@@ -95,7 +95,7 @@
 
       
 
-      </header><script src="ResolvingProblems_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Resolving Problems</h1>
@@ -111,13 +111,14 @@
 <div id="sars-2003---using-cumulatives-to-obtain-starting-values-for-mcmc" class="section level2">
 <h2 class="hasAnchor">
 <a href="#sars-2003---using-cumulatives-to-obtain-starting-values-for-mcmc" class="anchor"></a>SARS 2003 - using cumulatives to obtain starting values for MCMC</h2>
-<p>We use the SARS data from 2003 as an example.</p>
+<p>We use the SARS data from 2003 as an example. This is provided in <span class="citation">@EpiEstim</span>.</p>
 <p>In the example below, the sampler would have difficulties converging with the default random starting values of rstan. It usually stays in a part of the parameter space where all of the population gets infected.</p>
 <p>Below is one approach how to resolve this. This is at the moment hard-coded. Future versions of epidemia may provide a more convenient way of doing this.</p>
 <p>We first fit the model to cumulative counts to get starting values for the main run (the fit to cumulative counts will not be correct itself due an assumed independence of the cumulative counts).</p>
 <p>First we load the data.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">EpiEstim</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"SARS2003"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">SARS2003</span>)
@@ -141,7 +142,7 @@
 <span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2003-01-01"</span>)<span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,along.with=<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
 <span class="kw">obs</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
 
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span> <span class="fu"><a href="../reference/rw.html">rw</a></span>(time=<span class="kw">week</span>,prior_scale=<span class="fl">0.1</span>),
+<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span> <span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/rw.html">rw</a></span>(time=<span class="kw">week</span>,prior_scale=<span class="fl">0.1</span>),
      data=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,
                      date=<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span>,
                      week = <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span>, <span class="st">"%V"</span>)),
@@ -230,8 +231,8 @@
 <p>And here are the resulting fits.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),
-             <span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),
+             <span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
              nrow=<span class="fl">2</span>)
 </pre></div>
 <p><img src="ResolvingProblems_files/figure-html/SARScumulativeplot-1.png" width="700"></p>
@@ -260,12 +261,12 @@
 
 <span class="kw">fm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 <span class="co"># look at prior predictive distribution</span>
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fm</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fm</span>)
 </pre></div>
 <p><img src="ResolvingProblems_files/figure-html/priorSampling-1.png" width="700"> In the above code, we have assumed that the initial reproduction number is close to 3, and have assumed regression parameters for the schools/universities and lockdown NPIs of around 0.5 and 1.5 respectively. Now we simulate daily death counts under this model, which will be used in place of the true death data.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit">
 <span class="co"># use posterior data from prior run</span>
-<span class="kw">obs</span> <span class="op">&lt;-</span> <span class="fu">posterior_predict</span>(<span class="kw">fm</span>, type=<span class="st">"deaths"</span>)<span class="op">$</span><span class="kw">France</span>
+<span class="kw">obs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstantools/reference/posterior_predict.html">posterior_predict</a></span>(<span class="kw">fm</span>, type=<span class="st">"deaths"</span>)<span class="op">$</span><span class="kw">France</span>
 <span class="kw">dates</span> <span class="op">&lt;-</span> <span class="kw">obs</span>[,<span class="fl">1</span>]
 <span class="kw">obs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowMeans</a></span>(<span class="kw">obs</span>[,<span class="op">-</span><span class="fl">1</span>]))
 
@@ -284,14 +285,14 @@
 <span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">10</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
 </pre></div>
-<pre><code>## Warning: There were 1741 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+<pre><code>## Warning: There were 1781 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
 ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded</code></pre>
 <pre><code>## Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
 <pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 ## Running the chains for more iterations may help. See
 ## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
 <pre><code>##    user  system elapsed 
-## 828.368   5.466 224.075</code></pre>
+## 941.529   5.804 305.067</code></pre>
 <p>Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit">
 <span class="co"># more informative prior intercept</span>
@@ -300,7 +301,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
 </pre></div>
 <pre><code>##    user  system elapsed 
-## 180.958   5.253  59.560</code></pre>
+## 194.190   1.969  68.124</code></pre>
 <p>This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.</p>
 <p>We now plot the posterior correlations between these two parameters.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit">
@@ -308,12 +309,12 @@
 <span class="kw">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="kw">fm2</span>)
 <span class="kw">r0</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"(Intercept)"</span>]
 <span class="kw">schools_universities</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"schools_universities"</span>]
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span>(<span class="kw">r0</span>, <span class="kw">schools_universities</span>, type = <span class="st">"o"</span>)
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="kw">r0</span>, <span class="kw">schools_universities</span>, type = <span class="st">"o"</span>)
 
 <span class="kw">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="kw">fm3</span>)
 <span class="kw">r0</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"(Intercept)"</span>]
 <span class="kw">schools_universities</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"schools_universities"</span>]
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span>(<span class="kw">r0</span>, <span class="kw">schools_universities</span>, type = <span class="st">"o"</span>)
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="kw">r0</span>, <span class="kw">schools_universities</span>, type = <span class="st">"o"</span>)
 </pre></div>
 <p><img src="ResolvingProblems_files/figure-html/unnamed-chunk-3-1.png" width="700"> The left hand plot shows the posterior distribution from <code>fm2</code>, where less informative priors were used. The divergent transitions appear to be caused by the small step-size required to traverse the distribution horizontally/vertically, and the large step size desired for traversing the diagonal; there is a <em>ridge</em> in the posterior. For more information on why this can pose a problem for Hamiltonian Monte Carlo, please refer to <a href="https://mc-stan.org/docs/2_20/stan-users-guide/collinearity-section.html">the stan user guide</a>. Using stronger prior information reduces the posterior correlation and the sampler explores the space better, as shown in the right hand plot.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit">
@@ -324,17 +325,17 @@
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -5.12   4.06 
-## schools_universities  5.65   4.05 
-## lockdown              1.46   0.16 
+## (Intercept)          -4.55   3.73 
+## schools_universities  5.06   3.79 
+## lockdown              1.52   0.17 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]         2.74   0.81 
-## tau                  11.91  12.06 
-## phi[deaths]          19.22   3.24 
-## noise[France,deaths]  0.99   0.11</code></pre>
+## seeds[France]         2.69   0.83 
+## tau                  10.25  10.04 
+## phi[deaths]          19.07   3.34 
+## noise[France,deaths]  1.00   0.10</code></pre>
 <div class="sourceCode" id="cb25"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">fm3</span>, digits=<span class="fl">2</span>)
 </pre></div>
@@ -343,17 +344,17 @@
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -0.21   0.25 
-## schools_universities  0.68   0.32 
-## lockdown              1.53   0.15 
+## (Intercept)          -0.23   0.27 
+## schools_universities  0.67   0.31 
+## lockdown              1.57   0.15 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]        21.81   8.33 
-## tau                  28.32  19.88 
-## phi[deaths]          19.22   3.10 
-## noise[France,deaths]  1.00   0.10</code></pre>
+## seeds[France]        20.62   8.94 
+## tau                  26.92  18.57 
+## phi[deaths]          19.18   3.10 
+## noise[France,deaths]  1.01   0.10</code></pre>
 </div>
   </div>
 

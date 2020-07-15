@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Method corresponding to Generic <code><a href='https://mc-stan.org/rstantools/reference/posterior_predict.html'>posterior_predict</a></code> — posterior_predict.epimodel • epidemia</title>
+<title>Draws samples from the posterior predictive distribution of the observations — posterior_predict.epimodel • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,10 +41,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Method corresponding to Generic <code><a href='https://mc-stan.org/rstantools/reference/posterior_predict.html'>posterior_predict</a></code> — posterior_predict.epimodel" />
-<meta property="og:description" content="Generate data from the posterior predictive distribution. This is useful for
-assessing the fit of a model. Alternatively this can be used for assessing
-counterfactuals or for prediction using the newdata argument." />
+<meta property="og:title" content="Draws samples from the posterior predictive distribution of the observations — posterior_predict.epimodel" />
+<meta property="og:description" content="Draws samples from the posterior predictive distribution of the observations" />
 
 
 
@@ -76,7 +74,7 @@ counterfactuals or for prediction using the newdata argument." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
       </span>
     </div>
 
@@ -142,19 +140,17 @@ counterfactuals or for prediction using the newdata argument." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Method corresponding to Generic <code><a href='https://mc-stan.org/rstantools/reference/posterior_predict.html'>posterior_predict</a></code></h1>
+    <h1>Draws samples from the posterior predictive distribution of the observations</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/posterior_predict.R'><code>R/posterior_predict.R</code></a></small>
     <div class="hidden name"><code>posterior_predict.epimodel.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Generate data from the posterior predictive distribution. This is useful for
-assessing the fit of a model. Alternatively this can be used for assessing
-counterfactuals or for prediction using the newdata argument.</p>
+    <p>Draws samples from the posterior predictive distribution of the observations</p>
     </div>
 
     <pre class="usage"><span class='co'># S3 method for epimodel</span>
-<span class='fu'>posterior_predict</span>(
+<span class='fu'><a href='https://mc-stan.org/rstantools/reference/posterior_predict.html'>posterior_predict</a></span>(
   <span class='kw'>object</span>,
   newdata = <span class='kw'>NULL</span>,
   draws = <span class='kw'>NULL</span>,
@@ -182,19 +178,21 @@ See <code><a href='https://rdrr.io/pkg/epidemia/man/epimodel-objects.html'>epimo
     <tr>
       <th>types</th>
       <td><p>A character vector specifying the observation types to consider. If NULL, uses all
-types. Defaults to NULL.</p></td>
+types. Defaults to NULL.
+Generate data from the posterior predictive distribution. This is useful for
+assessing the fit of a model. Alternatively this can be used for assessing
+counterfactuals or for prediction using the newdata argument.</p></td>
     </tr>
     <tr>
       <th>seed</th>
       <td><p>An optional seed.</p></td>
     </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Not used.</p></td>
+    </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A named list, each element of which corresponds to an observation type. Each observation type is itself a named list, with elements
-corresponding to modeled populations; each of which is a dataframe with
-<code><a href='https://rdrr.io/r/base/nrow.html'>nrow(newdata)</a></code> rows and <code>draws+1</code> columns. First column gives dates, subsequent are different draws of the observation series.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

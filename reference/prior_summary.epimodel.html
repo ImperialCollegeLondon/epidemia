@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generic function for getting posterior draws of the time-varying reproduction rates — posterior_rt • epidemia</title>
+<title>Returns a summary of the prior distributions used — prior_summary.epimodel • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,8 +41,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Generic function for getting posterior draws of the time-varying reproduction rates — posterior_rt" />
-<meta property="og:description" content="Generic function for getting posterior draws of the time-varying reproduction rates" />
+<meta property="og:title" content="Returns a summary of the prior distributions used — prior_summary.epimodel" />
+<meta property="og:description" content="Returns a summary of the prior distributions used" />
 
 
 
@@ -140,61 +140,43 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generic function for getting posterior draws of the time-varying reproduction rates</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/posterior_latents.R'><code>R/posterior_latents.R</code></a></small>
-    <div class="hidden name"><code>posterior_rt.Rd</code></div>
+    <h1>Returns a summary of the prior distributions used</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/prior_summary.R'><code>R/prior_summary.R</code></a></small>
+    <div class="hidden name"><code>prior_summary.epimodel.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Generic function for getting posterior draws of the time-varying reproduction rates</p>
+    <p>Returns a summary of the prior distributions used</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/posterior_rt.html'>posterior_rt</a></span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
-
-<span class='co'># S3 method for epimodel</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/posterior_rt.html'>posterior_rt</a></span>(
-  <span class='kw'>object</span>,
-  <span class='kw'>...</span>,
-  newdata = <span class='kw'>NULL</span>,
-  draws = <span class='kw'>NULL</span>,
-  seed = <span class='kw'>NULL</span>,
-  adjusted = <span class='fl'>TRUE</span>
-)</pre>
+    <pre class="usage"><span class='co'># S3 method for epimodel</span>
+<span class='fu'><a href='https://mc-stan.org/rstantools/reference/prior_summary.html'>prior_summary</a></span>(<span class='kw'>object</span>, digits = <span class='fl'>2</span>, <span class='kw'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A fitted model object returned by <code>epim</code>.
-See <code><a href='https://rdrr.io/pkg/epidemia/man/epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
+      <td><p>The object to use.</p></td>
+    </tr>
+    <tr>
+      <th>digits</th>
+      <td><p>Number of digits used for rounding.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Not used.</p></td>
-    </tr>
-    <tr>
-      <th>newdata</th>
-      <td><p>If provided, the original <code>data</code> used in <code>object</code> is overidden. Useful both for conterfactual and prediction analysis</p></td>
-    </tr>
-    <tr>
-      <th>draws</th>
-      <td><p>Number of posterior draws to use. Defaults to the number of parameter draws in the fitted model.</p></td>
-    </tr>
-    <tr>
-      <th>seed</th>
-      <td><p>An optional seed.</p></td>
-    </tr>
-    <tr>
-      <th>adjusted</th>
-      <td><p>Flag whether to return the adjusted reproduction rates. Defaults to TRUE.</p></td>
+      <td><p>Arguments passed to methods. See the methods in the <span class="pkg">rstanarm</span>
+package for examples.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A named list, each element of which corresponds to a modeled population. Each element is itself a dataframe with
-<code><a href='https://rdrr.io/r/base/nrow.html'>nrow(newdata)</a></code> rows and <code>draws+1</code> columns. First column gives dates, subsequent are different draws of the series.</p>
+    <p><code><a href='https://mc-stan.org/rstantools/reference/prior_summary.html'>prior_summary()</a></code> methods should return an object containing
+information about the prior distribution(s) used for the given model.
+The structure of this object will depend on the method.</p>
+<p>The default method just returns <code>object$prior.info</code>, which is
+<code>NULL</code> if there is no <code>'prior.info'</code> element.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

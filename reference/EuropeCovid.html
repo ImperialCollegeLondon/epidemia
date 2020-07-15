@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generic function for getting posterior draws of the time-varying reproduction rates — posterior_rt • epidemia</title>
+<title>Covid-19 data for European countries — EuropeCovid • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,8 +41,11 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Generic function for getting posterior draws of the time-varying reproduction rates — posterior_rt" />
-<meta property="og:description" content="Generic function for getting posterior draws of the time-varying reproduction rates" />
+<meta property="og:title" content="Covid-19 data for European countries — EuropeCovid" />
+<meta property="og:description" content="A dataset providing, among other things, recorded daily deaths in 11 European countries up until 05/05/2020.
+Additional data is given, corresponding to arguments required for fitting models with epim.
+The data is designed to closely match that used in Flaxman et al. (2020)
+." />
 
 
 
@@ -140,61 +143,42 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generic function for getting posterior draws of the time-varying reproduction rates</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/posterior_latents.R'><code>R/posterior_latents.R</code></a></small>
-    <div class="hidden name"><code>posterior_rt.Rd</code></div>
+    <h1>Covid-19 data for European countries</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/data.R'><code>R/data.R</code></a></small>
+    <div class="hidden name"><code>EuropeCovid.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Generic function for getting posterior draws of the time-varying reproduction rates</p>
+    <p>A dataset providing, among other things, recorded daily deaths in 11 European countries up until 05/05/2020.
+Additional data is given, corresponding to arguments required for fitting models with <code>epim</code>.
+The data is designed to closely match that used in Flaxman et al. (2020)
+.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/posterior_rt.html'>posterior_rt</a></span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
+    <pre class="usage"><span class='kw'>EuropeCovid</span></pre>
 
-<span class='co'># S3 method for epimodel</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/posterior_rt.html'>posterior_rt</a></span>(
-  <span class='kw'>object</span>,
-  <span class='kw'>...</span>,
-  newdata = <span class='kw'>NULL</span>,
-  draws = <span class='kw'>NULL</span>,
-  seed = <span class='kw'>NULL</span>,
-  adjusted = <span class='fl'>TRUE</span>
-)</pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>object</th>
-      <td><p>A fitted model object returned by <code>epim</code>.
-See <code><a href='https://rdrr.io/pkg/epidemia/man/epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>Not used.</p></td>
-    </tr>
-    <tr>
-      <th>newdata</th>
-      <td><p>If provided, the original <code>data</code> used in <code>object</code> is overidden. Useful both for conterfactual and prediction analysis</p></td>
-    </tr>
-    <tr>
-      <th>draws</th>
-      <td><p>Number of posterior draws to use. Defaults to the number of parameter draws in the fitted model.</p></td>
-    </tr>
-    <tr>
-      <th>seed</th>
-      <td><p>An optional seed.</p></td>
-    </tr>
-    <tr>
-      <th>adjusted</th>
-      <td><p>Flag whether to return the adjusted reproduction rates. Defaults to TRUE.</p></td>
-    </tr>
-    </table>
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <p>A named list. Each field corresponds to an argument of <code>epim</code>,
+and is formatted as such. The fields are:</p><dl>
+<dt>data</dt><dd><p>A data frame giving indicators of certain non-pharmaceutical interventions in each country.</p></dd>
+<dt>obs</dt><dd><p>A named list containing reported daily deaths for each country, the distribution of time to death,
+and the prior mean IFR for each country.</p></dd>
+<dt>pops</dt><dd><p>A data frame with populations of each country.</p></dd>
+<dt>si</dt><dd><p>The serial interval of covid-19 assumed in Flaxman et al. (2020)
+.</p></dd>
 
-    <p>A named list, each element of which corresponds to a modeled population. Each element is itself a dataframe with
-<code><a href='https://rdrr.io/r/base/nrow.html'>nrow(newdata)</a></code> rows and <code>draws+1</code> columns. First column gives dates, subsequent are different draws of the series.</p>
+</dl>
+
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van
+Elsland SL, FitzJohn RG, Gaythorpe KAM, Geidelberg L, Grassly NC, Green WD, Hallett T, Hamlet A, Hinsley W, Jeffrey B, Knock E, Laydon DJ, Nedjati-Gilani G, Nouvellet P, Parag KV, Siveroni I, Thompson HA, Verity R, Volz E, Walters CE, Wang H, Wang Y, Watson OJ, Winskill P, Xi X, Walker PGT, Ghani AC, Donnelly CA, Riley SM, Vollmer MAC, Ferguson NM, Okell LC, Bhatt S, Team ICCR (2020).
+&#8220;Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.&#8221;
+<em>Nature</em>.
+ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038/s41586-020-2405-7</a>
+, <a href='https://doi.org/10.1038/s41586-020-2405-7'>https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

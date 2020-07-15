@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
       </span>
     </div>
 
@@ -95,7 +95,7 @@
 
       
 
-      </header><script src="IncidenceOnly_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Modelling of R with only Incidence data</h1>
@@ -112,9 +112,10 @@
 <div id="flu-1918" class="section level2">
 <h2 class="hasAnchor">
 <a href="#flu-1918" class="anchor"></a>Flu 1918</h2>
-<p>We use the Flu data from 1918 as an example.</p>
+<p>We use Flu data from 1918 as an example. This is provided in <span class="citation">@EpiEstim</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">EpiEstim</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"Flu1918"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">Flu1918</span>)
@@ -134,7 +135,7 @@
 <span class="kw">flu</span><span class="op">$</span><span class="kw">fludate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"1918-01-01"</span>)<span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,along.with=<span class="kw">flu</span><span class="op">$</span><span class="kw">incidence</span>)
 <span class="kw">obs</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="kw">flu</span><span class="op">$</span><span class="kw">incidence</span>)
 
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="fu"><a href="../reference/rw.html">rw</a></span>(time=<span class="kw">week</span>,prior_scale=<span class="fl">0.1</span>),
+<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/rw.html">rw</a></span>(time=<span class="kw">week</span>,prior_scale=<span class="fl">0.1</span>),
              data=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,
                              date=<span class="kw">flu</span><span class="op">$</span><span class="kw">fludate</span>,
                              week=<span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="kw">flu</span><span class="op">$</span><span class="kw">fludate</span>, <span class="st">"%V"</span>)),
@@ -163,8 +164,8 @@
 </pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),
-             <span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),
+             <span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
              nrow=<span class="fl">2</span>)
 </pre></div>
 <p><img src="IncidenceOnly_files/figure-html/plotflu-1.png" width="700"></p>

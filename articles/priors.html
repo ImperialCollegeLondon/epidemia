@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
       </span>
     </div>
 
@@ -95,7 +95,7 @@
 
       
 
-      </header><script src="priors_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Using Prior Distributions</h1>
@@ -169,8 +169,8 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: 
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000357 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.57 seconds.
+## Chain 1: Gradient evaluation took 0.000333 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.33 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -184,21 +184,23 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: Begin stochastic gradient ascent.
 ## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-## Chain 1:    100         -498.962             1.000            1.000
-## Chain 1:    200         -429.492             0.581            1.000
-## Chain 1:    300         -437.262             0.393            0.162
-## Chain 1:    400         -434.087             0.297            0.162
-## Chain 1:    500         -428.542             0.240            0.018
-## Chain 1:    600         -427.678             0.200            0.018
-## Chain 1:    700         -429.364             0.172            0.013
-## Chain 1:    800         -427.312             0.151            0.013
-## Chain 1:    900         -427.362             0.135            0.007   MEDIAN ELBO CONVERGED
+## Chain 1:    100         -455.503             1.000            1.000
+## Chain 1:    200         -426.846             0.534            1.000
+## Chain 1:    300         -427.346             0.356            0.067
+## Chain 1:    400         -430.365             0.269            0.067
+## Chain 1:    500         -426.008             0.217            0.010
+## Chain 1:    600         -425.626             0.181            0.010
+## Chain 1:    700         -430.524             0.157            0.010
+## Chain 1:    800         -425.506             0.139            0.011
+## Chain 1:    900         -425.495             0.123            0.010
+## Chain 1:   1000         -426.189             0.111            0.010
+## Chain 1:   1100         -426.056             0.011            0.007   MEDIAN ELBO CONVERGED
 ## Chain 1: 
 ## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
 ## Chain 1: COMPLETED.</code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit">
 <span class="co"># default prior scale not adjusted</span>
-<span class="fu"><a href="../reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fm</span>)
+<span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fm</span>)
 </pre></div>
 <pre><code>## Priors for model 'fm' 
 ## ------
@@ -223,8 +225,8 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: 
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000239 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.39 seconds.
+## Chain 1: Gradient evaluation took 0.000183 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.83 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -238,23 +240,19 @@ If an adjustment has been made, this will show both the originally specified pri
 ## Chain 1: 
 ## Chain 1: Begin stochastic gradient ascent.
 ## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-## Chain 1:    100         -571.110             1.000            1.000
-## Chain 1:    200         -487.691             0.586            1.000
-## Chain 1:    300         -455.147             0.414            0.171
-## Chain 1:    400         -427.310             0.327            0.171
-## Chain 1:    500         -425.537             0.262            0.071
-## Chain 1:    600         -425.448             0.219            0.071
-## Chain 1:    700         -425.812             0.188            0.065
-## Chain 1:    800         -425.419             0.164            0.065
-## Chain 1:    900         -431.162             0.147            0.013
-## Chain 1:   1000         -427.953             0.133            0.013
-## Chain 1:   1100         -425.545             0.034            0.007   MEDIAN ELBO CONVERGED
+## Chain 1:    100         -576.008             1.000            1.000
+## Chain 1:    200         -450.464             0.639            1.000
+## Chain 1:    300         -429.152             0.443            0.279
+## Chain 1:    400         -426.413             0.334            0.279
+## Chain 1:    500         -427.804             0.268            0.050
+## Chain 1:    600         -426.418             0.224            0.050
+## Chain 1:    700         -426.190             0.192            0.006   MEDIAN ELBO CONVERGED
 ## Chain 1: 
 ## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
 ## Chain 1: COMPLETED.</code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit">
 <span class="co"># notice the rescaled prior for lockdown</span>
-<span class="fu"><a href="../reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fm2</span>)
+<span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fm2</span>)
 </pre></div>
 <pre><code>## Priors for model 'fm2' 
 ## ------
@@ -273,7 +271,7 @@ If an adjustment has been made, this will show both the originally specified pri
 <div id="additional-priors" class="section level1">
 <h1 class="hasAnchor">
 <a href="#additional-priors" class="anchor"></a><span class="header-section-number">3</span> Additional Priors</h1>
-<p><strong>epidemia</strong> offers additional priors on top of those in <strong>rstanarm</strong>. Currently there is just one, <code>shifted_gamma</code>, which can only be used for the <code>prior</code> argument. The addition of this prior is motivated by the priors used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. This essentially allows for
+<p><strong>epidemia</strong> offers additional priors on top of those in <strong>rstanarm</strong>. Currently there is just one, <code>shifted_gamma</code>, which can only be used for the <code>prior</code> argument. The addition of this prior is motivated by the priors used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>. This essentially allows for
 <span class="math display">\[\begin{equation}
 \beta_i \sim \text{Gamma}(\alpha,\theta) - \eta,
 \end{equation}\]</span>
@@ -291,7 +289,7 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <a href="#references" class="anchor"></a>References</h1>
 <div id="refs" class="references">
 <div id="ref-Flaxman2020">
-<p>Flaxman, Seth, Swapnil Mishra, Axel Gandy, H Juliette T Unwin, Thomas A Mellan, Helen Coupland, Charles Whittaker, et al. 2020. “Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.” <em>Nature</em>. <a href="https://doi.org/10.1038/s41586-020-2405-7">https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
+<p>Flaxman, Seth, Swapnil Mishra, Axel Gandy, H Juliette T Unwin, Thomas A Mellan, Helen Coupland, Charles Whittaker, et al. 2020. “Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.” <em>Nature</em>. <a href="https://doi.org/10.1038/s41586-020-2405-7" class="uri">https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
 </div>
 </div>
 </div>

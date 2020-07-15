@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generic function for getting posterior draws of the time-varying reproduction rates — posterior_rt • epidemia</title>
+<title>Returns the levels for each grouping factor in the fitted object — ngrps.mixed • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,8 +41,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Generic function for getting posterior draws of the time-varying reproduction rates — posterior_rt" />
-<meta property="og:description" content="Generic function for getting posterior draws of the time-varying reproduction rates" />
+<meta property="og:title" content="Returns the levels for each grouping factor in the fitted object — ngrps.mixed" />
+<meta property="og:description" content="Returns the levels for each grouping factor in the fitted object" />
 
 
 
@@ -140,61 +140,35 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generic function for getting posterior draws of the time-varying reproduction rates</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/posterior_latents.R'><code>R/posterior_latents.R</code></a></small>
-    <div class="hidden name"><code>posterior_rt.Rd</code></div>
+    <h1>Returns the levels for each grouping factor in the fitted object</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/epimodel-methods.R'><code>R/epimodel-methods.R</code></a></small>
+    <div class="hidden name"><code>ngrps.mixed.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Generic function for getting posterior draws of the time-varying reproduction rates</p>
+    <p>Returns the levels for each grouping factor in the fitted object</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/posterior_rt.html'>posterior_rt</a></span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
-
-<span class='co'># S3 method for epimodel</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/posterior_rt.html'>posterior_rt</a></span>(
-  <span class='kw'>object</span>,
-  <span class='kw'>...</span>,
-  newdata = <span class='kw'>NULL</span>,
-  draws = <span class='kw'>NULL</span>,
-  seed = <span class='kw'>NULL</span>,
-  adjusted = <span class='fl'>TRUE</span>
-)</pre>
+    <pre class="usage"><span class='co'># S3 method for mixed</span>
+<span class='fu'><a href='https://rdrr.io/pkg/lme4/man/ngrps.html'>ngrps</a></span>(<span class='kw'>object</span>, <span class='kw'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A fitted model object returned by <code>epim</code>.
-See <code><a href='https://rdrr.io/pkg/epidemia/man/epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
+      <td><p>an <code>R</code> object, see Details.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Not used.</p></td>
-    </tr>
-    <tr>
-      <th>newdata</th>
-      <td><p>If provided, the original <code>data</code> used in <code>object</code> is overidden. Useful both for conterfactual and prediction analysis</p></td>
-    </tr>
-    <tr>
-      <th>draws</th>
-      <td><p>Number of posterior draws to use. Defaults to the number of parameter draws in the fitted model.</p></td>
-    </tr>
-    <tr>
-      <th>seed</th>
-      <td><p>An optional seed.</p></td>
-    </tr>
-    <tr>
-      <th>adjusted</th>
-      <td><p>Flag whether to return the adjusted reproduction rates. Defaults to TRUE.</p></td>
+      <td><p>currently ignored.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A named list, each element of which corresponds to a modeled population. Each element is itself a dataframe with
-<code><a href='https://rdrr.io/r/base/nrow.html'>nrow(newdata)</a></code> rows and <code>draws+1</code> columns. First column gives dates, subsequent are different draws of the series.</p>
+    <p>The number of levels (of a factor) or vector of number of levels for
+  each &#8220;grouping factor&#8221; of a</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

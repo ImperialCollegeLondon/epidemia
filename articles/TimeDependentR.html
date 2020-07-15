@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
       </span>
     </div>
 
@@ -95,7 +95,7 @@
 
       
 
-      </header><script src="TimeDependentR_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Time-dependent Modelling of R</h1>
@@ -128,7 +128,7 @@
 <span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">600</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.98</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">7988</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">week</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="kw">args</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">date</span>, <span class="st">"%V"</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span>  <span class="fl">1</span><span class="op">+</span><span class="fu"><a href="../reference/rw.html">rw</a></span>(<span class="kw">week</span>) 
+<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span>  <span class="fl">1</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/rw.html">rw</a></span>(<span class="kw">week</span>) 
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 </pre></div>
 <pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
@@ -136,7 +136,7 @@
 ## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>),<span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>),<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),nrow=<span class="fl">2</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>),<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>),<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),nrow=<span class="fl">2</span>)
 </pre></div>
 <p><img src="TimeDependentR_files/figure-html/plotItaly-1.png" width="700"></p>
 </div>
@@ -146,22 +146,22 @@
 <div class="sourceCode" id="cb5"><pre class="downlit">
 <span class="kw">args</span> <span class="op">&lt;-</span> <span class="kw">EuropeCovid</span>
 <span class="kw">args</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">week</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="kw">args</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">date</span>, <span class="st">"%V"</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span> <span class="fl">1</span><span class="op">+</span> <span class="fu"><a href="../reference/rw.html">rw</a></span>(<span class="kw">week</span>,<span class="kw">country</span>)
+<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span> <span class="fl">1</span><span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/rw.html">rw</a></span>(<span class="kw">week</span>,<span class="kw">country</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Germany"</span>,<span class="st">"United_Kingdom"</span>,<span class="st">"France"</span>,<span class="st">"Italy"</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">algorithm</span> <span class="op">&lt;-</span> <span class="st">"sampling"</span>
 <span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">600</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">74756</span>)
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 </pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>)
 </pre></div>
 <p><img src="TimeDependentR_files/figure-html/plot4countries_rt-1.png" width="700"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>)
 </pre></div>
 <p><img src="TimeDependentR_files/figure-html/plot4countries_infections-1.png" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,type=<span class="st">"deaths"</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,type=<span class="st">"deaths"</span>)
 </pre></div>
 <p><img src="TimeDependentR_files/figure-html/plot4countries_obs-1.png" width="700"></p>
 </div>
@@ -180,7 +180,7 @@
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 </pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>),<span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>),<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),nrow=<span class="fl">2</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>),<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>),<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),nrow=<span class="fl">2</span>)
 </pre></div>
 <p><img src="TimeDependentR_files/figure-html/plotsplineUK-1.png" width="700"></p>
 </div>

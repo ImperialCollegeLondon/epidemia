@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
       </span>
     </div>
 
@@ -102,19 +102,21 @@
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#epidemia" class="anchor"></a>epidemia</h1></div>
 <p>The epidemia package allows researchers to flexibly specify and fit Bayesian epidemiological models in the style of <a href="https://www.nature.com/articles/s41586-020-2405-7">Flaxman et al. (2020)</a>. The package leverages R’s formula interface to paramaterize the time-varying reproduction rate as a function of covariates. Multiple populations can be modeled simultaneously with hierarchical models. The design of the package has been inspired by, and has borrowed from, <a href="https://mc-stan.org/rstanarm/">rstanarm</a> (Goodrich et al. 2020). epidemia uses <a href="https://mc-stan.org/rstan/">rstan</a> (Stan Development Team 2020) as the backend for fitting models.</p>
-<p>This is an early beta release of the package. If you are interested in taking part in beta testing, please <a href="https://forms.gle/PT4JtLs4e3KdLkdp7">fill out this form</a>.</p>
 <div id="disclaimer" class="section level2">
 <h2 class="hasAnchor">
 <a href="#disclaimer" class="anchor"></a>Disclaimer</h2>
-<p>As a beta release, there will be regular updates with additional features and more extensive testing. Any feedback is greatly appreciated</p>
-<ul>
-<li>in particular if you find bugs, find the documentation unclear, or have feature requests, please report them <a href="https://github.com/ImperialCollegeLondon/epidemia/issues">here</a>.</li>
-</ul>
+<p>This is an early beta release of the package. As a beta release, there will be regular updates with additional features and more extensive testing. Any feedback is greatly appreciated - in particular if you find bugs, find the documentation unclear, or have feature requests, please report them <a href="https://github.com/ImperialCollegeLondon/epidemia/issues">here</a>.</p>
+<p>This version of epidemia could be subject to future changes to the interface.</p>
 </div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>Once you have access to the repository, clone it and install from source. We recommend avoiding installation of any vignettes as these are computationally demanding, and are best viewed online.</p>
+<p>The latest development version of the package can be installed using</p>
+<div class="sourceCode" id="cb1"><pre class="downlit">
+<span class="co">#install.packages(devtools)</span>
+<span class="kw">devtools</span>::<span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span>(<span class="st">"ImperialCollegeLondon/epidemia"</span>)
+</pre></div>
+<p>Vignettes are not currently included in the package because they are computationally demanding, and are best viewed online.</p>
 </div>
 <div id="getting-started" class="section level2">
 <h2 class="hasAnchor">
@@ -136,7 +138,7 @@
 <div id="usage" class="section level2">
 <h2 class="hasAnchor">
 <a href="#usage" class="anchor"></a>Usage</h2>
-<div class="sourceCode" id="cb1"><pre class="downlit">
+<div class="sourceCode" id="cb2"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
 <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores=<span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 
@@ -148,17 +150,19 @@
 <span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">1e3</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">12345</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>, <span class="kw">date</span>) <span class="op">~</span> <span class="kw">schools_universities</span> <span class="op">+</span> <span class="kw">self_isolating_if_ill</span> <span class="op">+</span>
   <span class="kw">public_events</span> <span class="op">+</span> <span class="kw">lockdown</span> <span class="op">+</span> <span class="kw">social_distancing_encouraged</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shifted_gamma.html">shifted_gamma</a></span>(shape = <span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale = <span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
+<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/shifted_gamma.html">shifted_gamma</a></span>(shape = <span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale = <span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 </pre></div>
-<p><img src="reference/figures/plot-1.png"></p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
+<div class="sourceCode" id="cb3"><pre class="downlit">
 <span class="co"># Inspect Rt</span>
-<span class="fu"><a href="reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
-<span class="co"># And deaths</span>
-<span class="fu"><a href="reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">25</span>,<span class="fl">50</span>,<span class="fl">75</span>,<span class="fl">95</span>))
+<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">50</span>,<span class="fl">80</span>,<span class="fl">95</span>))
 </pre></div>
-<p><img src="reference/figures/plot-2.png"></p>
+<p><img src="reference/figures/plot-1.png"><!-- --></p>
+<div class="sourceCode" id="cb4"><pre class="downlit">
+<span class="co"># And deaths</span>
+<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">50</span>,<span class="fl">80</span>,<span class="fl">95</span>))
+</pre></div>
+<p><img src="reference/figures/plot-2.png"><!-- --></p>
 </div>
 </div>
   </div>
