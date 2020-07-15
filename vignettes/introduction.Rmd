@@ -117,50 +117,64 @@ The basic idea behind the model is that the observed quantities (daily deaths, i
 
 The remainder of this section is organized as follows. First, the model for the sequence of time-varying reproduction numbers is described. Infections are then modeled in terms of this sequence. Finally, the observed data is modeled as a function of these latent infections. 
 
-### Time-varying reproduction number 
+### Latent Time-Varying Reproduction Number 
 
-Let $R := (R_{0},\ldots,R_{T})$ be a non-negative sequence representing the *unadjusted* time-varying reproduction number over the period considered.  Intuitively, $R_t$ measures the intensity of infectious interactions occuring in the population at time $t_0 + t$. The term *unadjusted* is used to make explicit that the sequence being modeled has not been adjusted for the size of the susceptible population. This adjustment is made later in the model for infections. The sequence is parameterized as
+Let $R_{0},\ldots,R_{T}$ be a non-negative time series representing the *unadjusted* time-varying reproduction number over the period considered. Intuitively, $R_t$ s a measure of the intensity of infectious interactions occurring in the population at time $t_0 + t$. The term *unadjusted* is used to make explicit that $R_t$ is not interpreted as the rate of infection at a given point in time. This would require an adjustment for the size of the susceptible population. This adjustment is made later in the model for infections. $R_t$ is modeled as
 \begin{equation}
-R = 2A f\left(X\beta + Zb\right)
+R_t = 2A f\left(X_t^{'}\beta + W_t \right),
 (\#eq:rt)
 \end{equation}
-where $A$ is a constant, $X$ and $Z$ are $T \times p$ and $T \times q$ model matrices and where $f$ is the standard logistic function $f(a) := \exp(a)/(1+\exp(a))$. The $p$-dimensional $\beta$ represents pooled coefficients, while the $q$-dimensional $b$ represent group-specific effects. When both $p$ and $q$ are greater than zero, this is known as *partial pooling*.
+where $A$ is a constant, $X_t$ is a $p$-dimensional set of regressors, and $f$ is the standard logistic function. Note that \@ref(eq:rt) implies that $R_t$ cannot be greater than $2A$. Therefore $A$ must be chosen carefully to ensure a plausible upper-bound for the series.
 
-The parameters $\beta$ are assigned a prior distribution. This is flexible, and leverages the framework offered by **rstanarm**. Multiple different prior families are available. The group specific parameters $b$ are treated as zero mean multivariate normal. Prior specifications are described in more detail in Section \@ref(prior-arguments).
+In the most general case, $W_t$ is the sum of independent random walks whose increments may occur at different time indices. Therefore 
+\begin{equation}
+W_t := \sum_{k=1}^{K} W^{(k)}_{t'_k},
+\end{equation}
+and each $t'_k = t'_k(t)$ may transform the time index. As an example, to model a weekly random walk $t'_k(t)$ would be the week corresponding to date $t_0+t$. The individual walks each satisfy
+\begin{equation}
+    W_{t'}^{(k)} = W_{t'-1}^{(k)} + \epsilon^{(k)}_{t'},
+\end{equation}
+where $\epsilon^{(k)}_{t'} \sim N(0, \sigma_k^2)$. Each $\sigma_k$ is given and independent half normal prior, such that $\sigma_k = |X|$ where $X \sim N(0, \sigma^0_k)$ for a given hyperparameter $\sigma^0_k > 0$.
 
-The vector $R$ is latent and unobserved. The quantities we do observe are linked to $R$ through its effect on the underlying infections, which we now describe.
+The parameters $\beta$ are assigned a prior distribution. This is flexible, and leverages the framework offered by **rstanarm**. Multiple different prior families are available. Prior specifications are described in more detail in Section \@ref(prior-arguments).
 
+Recall that the time series $R_t$ is latent and unobserved. The quantities we do observe are linked to it through its effect on the underlying infections in the population, which we now describe.
 
-### Infections
+### Latent Infections
 
-Let $I_{0}, \ldots I_{T}$ be a sequence where $I_{t}$ represents the cumulative infections that have occurred by $t_0 + t$. The first $N_0$ days are seeded such that the prior on the incremental infections during this initial period is  
+The evolution of infected individuals over time is modeled using a discrete renewal process. New infections today are taken to be a function of previous infections, a generation distribution, and the series $R_t$ described above.
+
+Let $I_t$ be the (unobserved) cumulative infections that have occured at or before $t_0+t$. Since $t_0$ is taken to be the first day at which infections occur, it must be the case that $I_{-1} = 0$. For the remainder of this article, we let $\Delta I_t := I_t - I_{t-1}$ be the number of new infections at a given period.
+
+Infections during the first $n_0>0$ days are seeded such that
 $$
-I_t - I_{t-1} \sim \text{Exponential}(1/\tau),
+\Delta I_t \sim \text{Exponential}(\tau^{-1}),
 $$
-for $t=0,\ldots, N_0-1$ and with $I_{-1}=0$, and where apriori $\tau \sim \text{Exponential}(\lambda_0)$ for some $\lambda_0 > 0$. 
+for all $0\leq t<n_0$. The parameter $\tau$ is given an exponential prior with a rate hyperparameter $\lambda_0>0$.
 
-$I_t$ for $t \geq N_0$ is modeled as the *exact* solution to an ordinary differential equation denoted by $I(t)$. Before describing this ODE, first let $s := (s_1,s_2,\ldots)$ be a distribution on $\mathbb{Z}^+$ representing the serial interval of the disease being modeled.
+We are left to model the infections after the seeding period. Recall that this will be a function of both previous infections and a generation distribution. The generation distribution is unknown. Therefore as in @Flaxman2020, we assume that is is the same as the serial interval of the disease. The serial interval can be represented by a distribution $s := (s_1,s_2,\ldots)$ over the time from disease onset to a secondary onset. The effect of previous infections and the serial interval on new infections is captured entirely through a discrete convolution function
+$$
+c_t := \sum_{i=0}^{t}\Delta I_i s_{t-i}.
+$$
+Modeling new infections required knowing the size $P$ of the susceptible population. This is used to adjust new infections for the number of susceptible individual remaining in the population. The model assumes that no reinfection can occur, so that infected individuals are permanently removed from the susceptible population.
 
-The ODE $I(t)$ satisfies 
-$$
-I'(t) =  \left(\frac{P-I(t)}{P} \right)R_{\lfloor t \rfloor}c_{\lfloor t \rfloor},
-$$
-with initial condition $I(N_0-1) = I_{N_0-1}$ and where $c_t$ is a weighted summation over previous infections
-$$
-c_{t} = \sum_{\tau=0}^{t} (I(\tau) - I(\tau-1)) s_{t-\tau}.
-$$
+New infections are modeled by
+\begin{equation}
+\Delta I_t = (P - I_{t-1})\left( 1 -\exp\left(-\frac{R_tc_t}{P}\right)\right),
+(\#eq:inf)
+\end{equation}
+for all $t \geq n_0$. This satisfies intuitive properties. If $R_t = 0$ or if nobody is susceptible, there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to P$, i.e. everyone that is susceptible is infected today.
 
-Given the value of $I_{t-1}$, the exact solution to the above ODE at period $t$ can be shown to be 
-$$
-I_t = I_{t-1} + (P - I_{t-1})\left( 1 -\exp\left(-\frac{R_tc_t}{P}\right)\right),
-$$
-where $P$ is the population size. This satisfies intuitive properties. If $R_t = 0$, then there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to P$, i.e. everyone is infected tomorrow.
+The reader may notice that \@ref(eq:inf) differs from the update used in @Flaxman2020. This new update has the advantage of ensuring that cumulative infections never exceed the total population size. Its use can be justified as the solution of an ODE $I(t)$ satisfying 
 
-Please note that this infection model departs from @Flaxman2020, and has the advantage of ensuring that cumulative infections are always bounded by the population size.
+$$
+I'(t) =  \left(\frac{P-I(t)}{P} \right)R_{\lfloor t \rfloor}c_{\lfloor t \rfloor}.
+$$
+Given initial condition $I(t-1)=I_{t-1}$, the exact solution to this ODE at time $t$ is simply $I_t$ as defined through \@ref(eq:inf).
 
 ### Observations
 
-Data is observed from $L$ observation processes $Y_t^{(1)} \ldots Y_{t}^{(L)}$, with the subscript $t$ ranging between $1$ and $T$. These processes do not need to be fully observed; i.e. data may be missing for a subset of time periods. The typical example of such data would be daily death (as used in @Flaxman2020) or incidence data. However, you are not limited to this. In general,
+Data is observed from $L$ observation processes $Y_t^{(1)} \ldots Y_{t}^{(L)}$, with the subscript $t$ ranging between $1$ and $T$. These processes do not need to be fully observed; i.e. data may be missing for a subset of time periods. The typical example of such data would be daily death (as used in @Flaxman2020) or case incidence data. However, you are not limited to this. In general,
 
 * $Y_t^{(l)}$ should represent the count of a particular type of 'event' at time $t$. 
 * This event is assumed to occur at most once per member of the population; an example would be hospitalization data. This assumption excludes the processes from representing cumulative observations - which would require a more complex dependence structure than presented here.
