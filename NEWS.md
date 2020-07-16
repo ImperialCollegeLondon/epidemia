@@ -1,4 +1,7 @@
 
+# epidemia 0.5.3
+* Improved model description in introduction vignette
+
 # epidemia 0.5.2
 * Passes R CMD Check with no warnings
 * Updated installation instructions
