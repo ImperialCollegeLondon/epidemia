@@ -15,46 +15,6 @@ vignette: |
   \usepackage[utf8]{inputenc}
 ---
 
-<style type="text/css">
-body{ /* Normal */
-font-size: 16px;
-}
-td { /* Table */
-font-size: 14px;
-}
-h1.title {
-font-size: 38px;
-color: Black;
-}
-h1 { /* Header 1 */
-font-size: 28px;
-color: Black;
-}
-h2 { /* Header 2 */
-font-size: 22px;
-color: DarkBlue;
-}
-h3 { /* Header 3 */
-font-size: 18px;
-color: DarkBlue;
-}
-}
-h3 { /* Header 4 */
-font-size: 16px;
-color: DarkBlue;
-}
-h4 { /* Header 4 */
-font-size: 16px;
-color: DarkBlue;
-}
-code.r{ /* Code block */
-font-size: 12px;
-}
-pre { /* Code block - determines code spacing between lines */
-font-size: 14px;
-}
-</style>
-
 **Note:** *This vignette is a work in progress, and will be regularly updated.*
 
 **epidemia** is an R-package for fitting Bayesian epidemic models in the style of @Flaxman2020. Here we detail these models and give users enough information to start fitting them independently.
@@ -111,66 +71,86 @@ plot_rt(fit)
 
 ## A Single Population
 
-Let $t_0$ be an integer representing the first date at which we start modelling the epidemc, and let $T$ be the number of consecutive days over which to simulate the epidemic.
+Let $t_0$ be an integer representing the first date at which the epidemic is modeled, and $T$ be the number of consecutive days over which to simulate the epidemic.
 
-The basic idea behind the model is that the observed quantities (daily deaths, incidence rates etc.) are a function of the latent infections in the population over time. These infections are in turn a function of the *time-varying reproduction number* $R_t$. This number may be explained by a number of covariates; for example non-pharmaceutical interventions, or changes in mobility over time.
-
-The remainder of this section is organized as follows. First, the model for the sequence of time-varying reproduction numbers is described. Infections are then modeled in terms of this sequence. Finally, the observed data is modeled as a function of these latent infections. 
-
-### Latent Time-Varying Reproduction Number 
-
-Let $R_{0},\ldots,R_{T}$ be a non-negative time series representing the *unadjusted* time-varying reproduction number over the period considered. Intuitively, $R_t$ is a measure of the intensity of infectious interactions occurring in the population at time $t_0 + t$. The term *unadjusted* is used to make explicit that $R_t$ is not interpreted as the rate of infection at a given point in time. This would require an adjustment for the size of the susceptible population. This adjustment is made later in the model for infections. $R_t$ is modeled as
+The basic idea behind the model is that the observed quantities (daily deaths, incidence rates etc.) are a function of the latent cumulative infections in the population over time, which we denote by $I(t)$. This is assumed to  evolve according to
 \begin{equation}
-R_t = 2A f\left(X_t^{'}\beta + W_t \right),
+I'(t) =  \left(\frac{S_0-I(t)}{S_0} \right)C_{\lfloor t \rfloor}R_{\lfloor t \rfloor},
+(\#eq:ode)
+\end{equation}
+where 
+
+* $S_0$ is the susceptible population at $t_0$,
+* $C_t$ is a measure of the 'total infectiousness' at $t_0 + t$. Each infected individual has a level of infectiousness depending on the date at which they were initially infected. $C_t$ simply aggregates this across all infected individuals. More on this in Section \@ref(infections),
+* $R_t$ is the *unadjusted* time-varying reproduction rate, and intuitively measures the intensity of infectious interactions at $t_0 + t$.
+
+$R_t$ is latent, just like the underlying infections. The key idea is that it may intuitively be explained by a number of covariates; for example non-pharmaceutical interventions, or changes in mobility over time. i.e. reduced mobility may imply fewer interactions between pairs of infected and susceptible individuals, which is captured through a reduced reproduction number.
+
+The remainder of Section \@ref(model-overview) discusses each component of the model in greater depth, starting with the model for $R_t$. Section \@ref(infections) considers the infection model, paying particular attention to initial conditions (seeding), and the simulation of $I(t)$ at discrete intervals. Finally in Section \@ref(observations) the observed data is modeled as a function of these latent infections. 
+
+### Time-Varying Reproduction Number 
+
+Recall that $R_t$ is defined as the *unadjusted* time-varying reproduction rate. The term *unadjusted* is used to make explicit that it is not interpreted as the average number of new infections $I'(t)/I(t)$ at a given point in time. This would require an adjustment for the size of the susceptible population, which is done within the parentheses in the right-hand-side of \@ref(eq:ode). $R_t$ is modeled as
+\begin{equation}
+R_t = 2R' f\left(\eta_t\right),
 (\#eq:rt)
 \end{equation}
-where $A$ is a constant, $X_t$ is a $p$-dimensional set of regressors, and $f$ is the standard logistic function. Note that \@ref(eq:rt) implies that $R_t$ cannot be greater than $2A$. Therefore $A$ must be chosen carefully to ensure a plausible upper-bound for the series.
+where $R'$ is a constant, $f$ is the standard logistic function (inverse logit), and $\eta_t$ is a linear predictor.
 
-In the most general case, $W_t$ is the sum of independent random walks whose increments may occur at different time indices. Therefore 
+When $\eta_0 = 0$, the constant $R'$ has the special interpretation of being the initial reproduction number. In general however, $\eta_t$ will contain an intercept so that $R_0$ can be treated as unknown. Note that \@ref(eq:rt) implies that $R_t$ cannot be greater than $2R'$. Therefore $R'$ must be chosen carefully to ensure a plausible upper-bound for the series.
+
+In the most general case $\eta_t$ can include pooled coefficients, group specific effects, and autocorrelation terms. While this may seem like overkill for a single population, it is extremely useful when we extend to multiple populations (Section \@ref(multiple-populations)). For this reason, we describe this in full generality here. $\eta_t$ can be decomposed as
 \begin{equation}
-W_t := \sum_{k=1}^{K} W^{(k)}_{t'_k},
+\eta_t = X'_t\beta + Z'_t b + Q'_t\gamma_t
+(\#eq:eta)
 \end{equation}
-and each $t'_k = t'_k(t)$ may transform the time index. As an example, to model a weekly random walk $t'_k(t)$ would be the week corresponding to date $t_0+t$. The individual walks each satisfy
+where
+
+* $X_t$ is a $p$-dimensional set of regressors for *pooled* coefficients $\beta$,
+* $Z_t$ is a $q$-dimensional vector and for group specific effects $b$, and
+* $Q_t$ is a $v$-dimensional binary vector specifying a subset of the autocorrelation processes $\gamma_t$ to include for that period.
+
+The parameters $\beta$ are assigned a prior distribution. This is flexible, and leverages the framework offered by **rstanarm**. Multiple different prior families are available. The group specific parameters $b$ are treated as zero mean multivariate normal. Prior specifications are described in more detail in Section \@ref(prior-arguments).
+
+$\gamma_t$ is a vector giving the value of each of the $v$ autocorrelation processes for period $t$. At the moment, epidemia only supports random walk processes, however this may be extended in future versions. Each walk is assumed to be independent. $\gamma_t$ can be written as
+$$
+\gamma_t = (\gamma^{(1)}_{t'_1(t)}, \ldots, \gamma^{(v)}_{t'_v(t)}),
+$$
+where each $\gamma^{(k)}_{t}$ is an independent random walk whose increments may occur at different time indices. That is to say that each $t'_k$ may transform the time index. This is useful, for example, for modeling a weekly random walk, in which case $t'_k(t)$ would give the week corresponding to date $t_0+t$. The individual walks each satisfy
 \begin{equation}
-    W_{t'}^{(k)} = W_{t'-1}^{(k)} + \epsilon^{(k)}_{t'},
+    \gamma_{t'}^{(k)} = \gamma_{t'-1}^{(k)} + \epsilon^{(k)}_{t'},
 \end{equation}
-where $\epsilon^{(k)}_{t'} \sim N(0, \sigma_k^2)$. Each $\sigma_k$ is given and independent half normal prior, such that $\sigma_k = |X|$ where $X \sim N(0, \sigma^0_k)$ for a given hyperparameter $\sigma^0_k > 0$.
+where $\epsilon^{(k)}_{t'} \sim N(0, \sigma_k^2)$. Each $\sigma_k$ is given an independent half normal prior, such that $\sigma_k = |X|$ where $X \sim N(0, \sigma^0_k)$ for a given hyperparameter $\sigma^0_k > 0$.
 
-The parameters $\beta$ are assigned a prior distribution. This is flexible, and leverages the framework offered by **rstanarm**. Multiple different prior families are available. Prior specifications are described in more detail in Section \@ref(prior-arguments).
+Recall that the time series $R_t$ is latent and hence unobserved. The quantities we do observe are linked to it through its effect on the underlying infections in the population, which we now describe.
 
-Recall that the time series $R_t$ is latent and unobserved. The quantities we do observe are linked to it through its effect on the underlying infections in the population, which we now describe.
+### Infections
 
-### Latent Infections
+The evolution of infected individuals over time is modeled using a discrete renewal process. New infections today are taken to be a function of previous infections, a generation distribution, and the series $R_t$ described above. This is summarized by \@ref(eq:ode).
 
-The evolution of infected individuals over time is modeled using a discrete renewal process. New infections today are taken to be a function of previous infections, a generation distribution, and the series $R_t$ described above.
+We are only interested in the cumulative infections at discrete intervals. In particular, we simulate the series $I_t := I(t)$, for $t=0,\ldots,T$. Our model assumes that $t_0$ is the first day at which infections occur, and so we define $I_{-1}=0$. For the remainder of this article $\Delta I_t := I_t - I_{t-1}$ refers to the number of new infections at a given period.
 
-Let $I_t$ be the (unobserved) cumulative infections that have occured at or before $t_0+t$. Since $t_0$ is taken to be the first day at which infections occur, it must be the case that $I_{-1} = 0$. For the remainder of this article, we let $\Delta I_t := I_t - I_{t-1}$ be the number of new infections at a given period.
-
-Infections during the first $n_0>0$ days are seeded such that
+Before evolving infections according to \@ref(eq:ode), we need to specify initial conditions. This is done through seeding infections for the first $n_0 > 0$ days of the epidemic through letting
 $$
 \Delta I_t \sim \text{Exponential}(\tau^{-1}),
 $$
-for all $0\leq t<n_0$. The parameter $\tau$ is given an exponential prior with a rate hyperparameter $\lambda_0>0$.
+for all $0\leq t<n_0$. The parameter $\tau$ is given an exponential prior with a rate hyperparameter $\lambda_0>0$. This allows the number of infections in the first $n_0$ days to be learnt by the model.
 
-We are left to model the infections after the seeding period. Recall that this will be a function of both previous infections and a generation distribution. The generation distribution is unknown. Therefore as in @Flaxman2020, we assume that is is the same as the serial interval of the disease. The serial interval can be represented by a distribution $s := (s_1,s_2,\ldots)$ over the time from disease onset to a secondary onset. The effect of previous infections and the serial interval on new infections is captured entirely through a discrete convolution function
+Infections after the seeding period evolve according to \@ref(eq:ode). However this quantity remains ill-defined, as we have yet to define $C_t$, the total infectiousness at period $t_0+t$. This is a function of both previous infections and the generation distribution of the disease. This generation distribution is typically unknown. Therefore, as in @Flaxman2020, we assume that it is the same as the serial interval; represented by a distribution $s := (s_1,s_2,\ldots)$ over the time from disease onset to a secondary onset. $C_t$ is then given by the discrete convolution
 $$
-c_t := \sum_{i=0}^{t}\Delta I_i s_{t-i}.
+C_t := \sum_{i=0}^{t}\Delta I_i s_{t-i}.
 $$
-Modeling new infections required knowing the size $P$ of the susceptible population. This is used to adjust new infections for the number of susceptible individual remaining in the population. The model assumes that no reinfection can occur, so that infected individuals are permanently removed from the susceptible population.
 
-New infections are modeled by
+Implicit in \@ref(eq:ode) is the assumption that no reinfection can occur, so that infected individuals are permanently removed from the susceptible population. This assumption may be relaxed in future versions of epidemia.
+
+Consider \@ref(eq:ode) restricted to the period $[0, 1]$. Since both $t \to R_{\lfloor t\rfloor}$ and $t \to C_{\lfloor t\rfloor}$ are constant over this period, \@ref(eq:ode) reduces to an easily solvable first-order linear ODE with constant coefficients. Generalizing this argument to other time periods shows that given $I_{t-1}$,
 \begin{equation}
-\Delta I_t = (P - I_{t-1})\left( 1 -\exp\left(-\frac{R_tc_t}{P}\right)\right),
+\Delta I_t = (S_0 - I_{t-1})\left( 1 -\exp\left(-\frac{R_tC_t}{S_0}\right)\right),
 (\#eq:inf)
 \end{equation}
-for all $t \geq n_0$. This satisfies intuitive properties. If $R_t = 0$ or if nobody is susceptible, there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to P$, i.e. everyone that is susceptible is infected today.
+for all $t \geq n_0$. This satisfies intuitive properties. If $R_t = 0$ or if nobody is susceptible, there are no new infections. Fixing $c_t > 0$ and letting $R_t \to \infty$ implies that $I_t \to S_0$, i.e. everyone that is susceptible is infected today.
 
-The reader may notice that \@ref(eq:inf) differs from the update used in @Flaxman2020. This new update has the advantage of ensuring that cumulative infections never exceed the total population size. Its use can be justified as the solution of an ODE $I(t)$ satisfying 
-
-$$
-I'(t) =  \left(\frac{P-I(t)}{P} \right)R_{\lfloor t \rfloor}c_{\lfloor t \rfloor}.
-$$
-Given initial condition $I(t-1)=I_{t-1}$, the exact solution to this ODE at time $t$ is simply $I_t$ as defined through \@ref(eq:inf).
+The reader may notice that \@ref(eq:inf) differs from the update used in @Flaxman2020. This new update has the advantage of ensuring that cumulative infections never exceed the total population size. 
 
 ### Observations
 
@@ -218,23 +198,17 @@ $$
 R_t := (R_{t,1}, \ldots R_{t,M}),
 $$
 where $R_{t,m}$ is the unadjusted reproduction number at time $t$ for population $m$.
+
+$R_t$ follows the same form as in \@ref(eq:rt) with $\eta_t$ now being  
 \begin{equation}
-R_t := 2Af\left(\eta_t\right),
-(\#eq:rtpooled)
+\eta_t = X_t\beta + Z_t b + Q_t\gamma_t,
+(\#eq:etapooled)
 \end{equation}
-where $\eta_t$ is a linear predictor decomposable as
-$$
-\eta_t = X_t\beta + Z_t b + Q \gamma_t.
-$$
-We now describe each of these components of $\eta_t$ in turn.
+where $X_t$, $Z_t$ and $Q_t$ are $M \times p$, $M \times q$ and $M \times v$ model matrices for the pooled coefficients, group specific effects and autocorrelation terms respectively.
 
-* $X_t$ is a $M \times p$ model matrix for $t$^th^ period, and for the $p$ *pooled* coefficients $\beta$,
-* $Z_t$ is a $M \times q$ model matrix for $t$^th^ period, and for $q$ group specific effects $b$, and
-* $Q$ is a $M \times v$ model matrix, where $v$ is the total number of random walks. $Q$ is binary and invariant over time, and simply maps each population to a subset of the random walks. $\gamma_t$ represents the values of each walk at time $t$.
+The parameterization implied by \@ref(eq:etapooled) is very flexible. The user can choose which parameters to pool and which to retain as group-level effects. Moreover, multiple random walks can be specified and shared between populations, or according to some other grouping variable like region, or even by grouping different time periods.
 
-The parameterization given by \@ref(eq:rtpooled) is very flexible. The user can choose which parameters to pool and which to retain as group-level effects. Moreover, multiple random walks can be specified and shared between populations, or according to some other grouping variable.
-
-The model for the $M$ infection series remains largely the same. The parameter $\tau$ is pooled between all populations. 
+The model for the $M$ infection processes remains largely the same. The parameter $\tau$ is pooled between all populations. 
 
 For the observation model, we replace  \@ref(eq:alpha) with
 $$
@@ -246,7 +220,7 @@ The dispersion parameters $\phi_l$ are pooled, and the distributions $\pi^{(l)}$
 
 # R Implementation
 
-**epidemia** is designed to fit the models described in Section \@ref(model-overview). In particular, it uses R's formula interface to parameterize the time-varying reproduction number in terms of a number of covariates (see \@ref(eq:rt)). The implementation of this shares many similarities with the `stan_glmer` function in **rstanarm** and the **glmer** function in **lme4**.
+**epidemia** is designed to fit the models described in Section \@ref(model-overview). In particular, it uses R's formula interface to parameterize the time-varying reproduction number in terms of a number of covariates (see \@ref(eq:etapooled)). The implementation of this shares many similarities with the `stan_glmer` function in **rstanarm** and the **glmer** function in **lme4**.
 
 ## Model fitting using `epim`
 
@@ -274,19 +248,19 @@ df <- data.frame(Arguments = c("formula",
                                "prior_tau",
                                "prior_PD",
                                "sampling_args"),
-                 Description = c("Specifies the model \\@ref(eq:rt) for the unadjusted time-varying reproduction number. See [glmer](https://www.rdocumentation.org/packages/lme4/versions/1.1-23/topics/glmer) for more details.",
+                 Description = c("Specifies the model \\@ref(eq:etapooled) for the unadjusted time-varying reproduction number. See [glmer](https://www.rdocumentation.org/packages/lme4/versions/1.1-23/topics/glmer) for more details.",
                                  "The data used in the model specified by 'formula'. Each term in `formula` must have a corresponding column in `data`. See [glmer](https://www.rdocumentation.org/packages/lme4/versions/1.1-23/topics/glmer) for more details.",
                                  "All available observations and hyperparamters for the observation model (Section \\@ref(observations)). Each element of `obs` represents its own type of observation. More on this below.",
                                  "Population of each modeled group. The first column represents the group and the second giving the corresponding population.",
                                  "A vector representing the serial interval of the disease. This should be a simplex vector - i.e. all elements are non-negative and sum to one. The $n$^th^ element gives the probability an individual infects another $n$ days after disease onset.",
-                                 "Number of days $N_0$ for which to seed infections at the start of the epidemic. Defaults to 6L",
+                                 "Number of days $n_0$ for which to seed infections at the start of the epidemic. Defaults to 6L",
                                  "The algorithm used to fit the model. Must be one of 'sampling', 'meanfield' or 'fullrank', which correspond to `rstan` sampling methods. See [sampling](https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html) and [vb](https://mc-stan.org/rstan/reference/stanmodel-method-vb.html).",
                                  "An optional vector specifying a subset of groups to model. Elements should correspond to the group levels specified through the `data` argument.",
-                                 "If `TRUE` then all covariates in \\@ref(eq:rt) are centered (shifted to have mean zero). **WARNING**: *the priors are then interpreted as priors on the centered covariates*. Defaults to `FALSE`.",
+                                 "If `TRUE` then all covariates in \\@ref(eq:etapooled) are centered (shifted to have mean zero). **WARNING**: *the priors are then interpreted as priors on the centered covariates*. Defaults to `FALSE`.",
                                  " The prior distribution on $\\beta$, excluding any possible intercept.",
                                  "Prior on the intercept if one has been specified in the model implied by `formula`.",
                                  "Prior on the covariance matrix of the group-specific parameters $b$. Only used if the formula has at least one 'random-effects' term, i.e. `(a|b)`.",
-                                 "Set the constant $A$, introduced in \\@ref(eq:rt). This will determine the maximum possible unadjusted $R_t$ (to be clear, not neccessarily $A$). Defaults to 3.28.",
+                                 "Set the constant $R'$, introduced in \\@ref(eq:rt). This will determine the maximum possible unadjusted $R_t$ (to be clear, not neccessarily $R'$). Defaults to 3.28.",
                                  "Prior on the vector $(\\phi_1, \\ldots, \\phi_L)$, the parameter controling variability of the observations around their mean values.",
                                  "Prior on $\\tau$, the parameter controling the variability in the seeded cases.",
                                  "Flag whether to sample from the prior distribution. Same as [stan_lm](https://mc-stan.org/rstanarm/reference/stan_lm.html). Defaults to `FALSE`.",
@@ -314,7 +288,7 @@ knitr::kable(df, caption = "Formal arguments for the epim function", booktabs=TR
 Most of the arguments listed in Table \@ref(tab:epimArgs) are self-explanatory. However the first three and also the prior arguments require further explanation. We tackle each of these in turn.
 
 #### `formula` Argument
-This specifies the model for the *unadjusted* time-varying reproduction number, given by \@ref(eq:rt). The LHS takes the form `R(group,date)`. This is just syntactic sugar to make explicit that the model is for the reproduction number for a given population and date.
+This specifies the model for the *unadjusted* time-varying reproduction number, given by \@ref(eq:etapooled). The LHS takes the form `R(group,date)`. This is just syntactic sugar to make explicit that the model is for the reproduction number for a given population and date.
 
 The right hand side can include both pooled and unpooled coefficients. For more details on interpreting different formulas, please see [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). 
 
@@ -324,7 +298,7 @@ colnames(EuropeCovid$data)
 ```
 Suppose for simplicity that the value of all covariates at the start date of each group is zero, so that the intercept can be interpreted as determining the starting reproduction number $R_0$ of the disease (this is indeed the case for the Europe example). Then
 
-* `R(country, date) ~ 0 + lockdown` This is a no-intercept model. The effect is to set an exact $R_0$ which is *the same for all countries*. This potentially changes at dates for which `lockdown` become non-zero (i.e. after the intervention come into place). The starting value is precisely $A$ defined in \@ref(eq:rt). 
+* `R(country, date) ~ 0 + lockdown` This is a no-intercept model. The effect is to set an exact $R_0$ which is *the same for all countries*. This potentially changes at dates for which `lockdown` become non-zero (i.e. after the intervention come into place). The starting value is precisely $R'$ defined in \@ref(eq:rt). 
 
 * `R(country, date) ~ 1 + lockdown` The intercept is the same for all countries. This implies a common distribution for $R_0$, which is set by `prior_intercept`.
 
@@ -386,11 +360,11 @@ Following @Flaxman2020, this is a discretization of the distribution of $\text{G
 
 #### Prior arguments
 
-Prior distributions should be specified for the parameters in \@ref(eq:rt), and for additional model parameters. 
+Prior distributions should be specified for the parameters in \@ref(eq:etapooled), and for additional model parameters. 
 
 *Please note that the current default priors may not be appropriate, and should not be relied upon. In future versions of the package, we hope to set good default priors.*
 
-The priors for $\beta$ (see \@ref(eq:rt)) are set using the `prior` and `prior_intercept` arguments. These will only have an effect if the formula specifies covariates and an intercept respectively. These function  similarly to the same arguments in[`stan_lm`](https://mc-stan.org/rstanarm/reference/stan_lm.html). To understand which families can be used please refer to [rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html). 
+The priors for $\beta$ (see \@ref(eq:etapooled)) are set using the `prior` and `prior_intercept` arguments. These will only have an effect if the formula specifies covariates and an intercept respectively. These function  similarly to the same arguments in[`stan_lm`](https://mc-stan.org/rstanarm/reference/stan_lm.html). To understand which families can be used please refer to [rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html). 
 
 There is one caveat: which is that we offer additional priors. Currently there is just one, `shifted_gamma`, which can only be used for the `prior` argument. The addition of this prior is motivated by the priors used in @Flaxman2020. This essentially allows for 
 \begin{equation}
