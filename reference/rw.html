@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Adds random walks to the parameterization of the time-varying reproduction number. — rw • epidemia</title>
+<title>Adds random walks with independent Gaussian steps to the parameterization of the time-varying reproduction number. — rw • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,7 +41,7 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Adds random walks to the parameterization of the time-varying reproduction number. — rw" />
+<meta property="og:title" content="Adds random walks with independent Gaussian steps to the parameterization of the time-varying reproduction number. — rw" />
 <meta property="og:description" content="A call to rw can be used in the 'formula' argument of epim, allowing
 random walks for the reproduction number. Does not evaluate arguments. Simply creates a
 list with the information needed for the stan data to be parsed correctly." />
@@ -76,7 +76,7 @@ list with the information needed for the stan data to be parsed correctly." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
       </span>
     </div>
 
@@ -142,7 +142,7 @@ list with the information needed for the stan data to be parsed correctly." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Adds random walks to the parameterization of the time-varying reproduction number.</h1>
+    <h1>Adds random walks with independent Gaussian steps to the parameterization of the time-varying reproduction number.</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/autocor.R'><code>R/autocor.R</code></a></small>
     <div class="hidden name"><code>rw.Rd</code></div>
     </div>
@@ -160,20 +160,26 @@ list with the information needed for the stan data to be parsed correctly.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>time</th>
-      <td><p>An optional vector defining the random walk time periods for each
-date and group. Defaults to NA, in which case the column of 'data' representing the dates
+      <td><p>An optional name defining the random walk time periods for each
+date and group. This must be a column name found in the <code>data</code> argument to <code>epim</code>.
+Defaults to NA, in which case the dates column implied by the <code>formula</code> argument to <code>epim</code>
 is used.</p></td>
     </tr>
     <tr>
       <th>gr</th>
-      <td><p>Optional vector defining the grouping to use for the walks. A separate walk is defined
+      <td><p>Same as for <code>time</code>, except this defines the grouping to use for the random walks. A separate walk is defined
 for each group. Defaults to NA, in which case a common random walk is used for all groups.</p></td>
+    </tr>
+    <tr>
+      <th>prior_scale</th>
+      <td><p>The steps of the walks are independent zero mean normal with an unknown scale hyperparameter. This scale is given
+a half-normal prior. <code>prior_scale</code> sets the scale parameter of this hyperprior.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list</p>
+    <p>A list to be parsed internally.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

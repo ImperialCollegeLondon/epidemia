@@ -74,7 +74,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
       </span>
     </div>
 
@@ -234,6 +234,10 @@ function to use for fitting the model.</p></td>
 specified through the <code>data</code> argument.</p></td>
     </tr>
     <tr>
+      <th>stan_data, debug</th>
+      <td><p>Mainly for internal use. Will be removed in future versions.</p></td>
+    </tr>
+    <tr>
       <th>center</th>
       <td><p>If <code>TRUE</code> then the covariates for the \(R_t\) regression are centered to have mean zero. All of the priors are then interpreted as
 prior on the centered covariates. Defaults to <code>FALSE</code>.</p></td>
@@ -278,7 +282,7 @@ for example <code><a href='https://rdrr.io/pkg/rstan/man/stanmodel-method-sampli
     </tr>
     <tr>
       <th>...</th>
-      <td></td>
+      <td><p>Not used.</p></td>
     </tr>
     </table>
 

@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
       </span>
     </div>
 
@@ -181,7 +181,7 @@ font-size: 14px;
 <a href="#reproduction-number" class="anchor"></a><span class="header-section-number">2.1</span> Reproduction number</h2>
 <p>Calling <code>plot_rt</code> with no arguments other than the fitted <code>epimodel</code> plots the repdoduction for every group for the entire date range for which the model was fitted. The 50% and 95% credible intervals are plotted.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>)
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-2-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
@@ -190,7 +190,7 @@ font-size: 14px;
 <a href="#observations" class="anchor"></a><span class="header-section-number">2.2</span> Observations</h2>
 <p>To plot observations, the name of the observation type must also be specified using the <code>type</code> argument.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>)
+<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/plotItaly-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
@@ -198,7 +198,7 @@ font-size: 14px;
 <h2 class="hasAnchor">
 <a href="#number-of-infections" class="anchor"></a><span class="header-section-number">2.3</span> Number of infections</h2>
 <div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>)
+<span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-3-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
@@ -208,7 +208,7 @@ font-size: 14px;
 <a href="#plotting-a-subset-of-the-groups" class="anchor"></a><span class="header-section-number">3</span> Plotting a subset of the groups</h1>
 <p>Use the <code>group</code> argument to plot a subset of the available group. For example, we can plot the repduction number for just Austria and Germany.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, group=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Austria"</span>, <span class="st">"Germany"</span>))
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, group=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Austria"</span>, <span class="st">"Germany"</span>))
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-4-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
@@ -224,21 +224,21 @@ font-size: 14px;
 <code>date_format</code>: passed as the the <code>format</code> argument to <code>as.Date</code> when coercing <code>dates</code> to class <code>Date</code>. Default is “%Y-%m-%d”. This date format should match the date format in the data used to fit the model.</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"2020-03-09"</span>, <span class="st">"2020-04-06"</span>), date_breaks=<span class="st">"1 week"</span>)
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"2020-03-09"</span>, <span class="st">"2020-04-06"</span>), date_breaks=<span class="st">"1 week"</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-5-1.png" width="864" style="display: block; margin: auto;"></p>
 <p>The same plot with a different date format:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"09-03-20"</span>, <span class="st">"06-04-20"</span>), date_format=<span class="st">"%d-%m-%y"</span>, date_breaks=<span class="st">"1 week"</span>)
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"09-03-20"</span>, <span class="st">"06-04-20"</span>), date_format=<span class="st">"%d-%m-%y"</span>, date_breaks=<span class="st">"1 week"</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-6-1.png" width="864" style="display: block; margin: auto;"></p>
 <p>To restrict the dates from one direction only, set the appropriate element of <code>dates</code> to <code>NA</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"09-03-20"</span>, <span class="fl">NA</span>))
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"09-03-20"</span>, <span class="fl">NA</span>))
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-7-1.png" width="864" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">NA</span>, <span class="st">"2020-04-06"</span>))
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">NA</span>, <span class="st">"2020-04-06"</span>))
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-8-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
@@ -247,11 +247,11 @@ font-size: 14px;
 <a href="#plotting-cumulative-quantities" class="anchor"></a><span class="header-section-number">5</span> Plotting cumulative quantities</h1>
 <p>For obsersevations and infections set <code>cumulative=TRUE</code> to plot the cumulative quantitity.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>, cumulative=<span class="fl">TRUE</span>)
+<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>, cumulative=<span class="fl">TRUE</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-9-1.png" width="864" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>, cumulative=<span class="fl">TRUE</span>)
+<span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>, cumulative=<span class="fl">TRUE</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-10-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
@@ -261,7 +261,7 @@ font-size: 14px;
 <p>The reproduction number can be smoothed by taking the mean value over a rolling window. The size of this window is controlled using the <code>smooth</code> argument to <code>plot_rt</code>. It is an integer giving the size of the window in days. The default value of 1 corresponds to no smoothing.</p>
 <p>The smoothing is applied separately to each posterior draw.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, smooth=<span class="fl">7</span>)
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, smooth=<span class="fl">7</span>)
 </pre></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-11-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>

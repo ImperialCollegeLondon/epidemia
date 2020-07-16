@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
       </span>
     </div>
 
@@ -150,17 +150,17 @@
 <span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">1e3</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">12345</span>)
 <span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>, <span class="kw">date</span>) <span class="op">~</span> <span class="kw">schools_universities</span> <span class="op">+</span> <span class="kw">self_isolating_if_ill</span> <span class="op">+</span>
   <span class="kw">public_events</span> <span class="op">+</span> <span class="kw">lockdown</span> <span class="op">+</span> <span class="kw">social_distancing_encouraged</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/shifted_gamma.html">shifted_gamma</a></span>(shape = <span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale = <span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
+<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shifted_gamma.html">shifted_gamma</a></span>(shape = <span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale = <span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
 <span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
 </pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit">
 <span class="co"># Inspect Rt</span>
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">50</span>,<span class="fl">80</span>,<span class="fl">95</span>))
+<span class="fu"><a href="reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">50</span>,<span class="fl">80</span>,<span class="fl">95</span>))
 </pre></div>
 <p><img src="reference/figures/plot-1.png"><!-- --></p>
 <div class="sourceCode" id="cb4"><pre class="downlit">
 <span class="co"># And deaths</span>
-<span class="fu"><a href="https://rdrr.io/pkg/epidemia/man/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">50</span>,<span class="fl">80</span>,<span class="fl">95</span>))
+<span class="fu"><a href="reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>, group = <span class="st">"United_Kingdom"</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">50</span>,<span class="fl">80</span>,<span class="fl">95</span>))
 </pre></div>
 <p><img src="reference/figures/plot-2.png"><!-- --></p>
 </div>
