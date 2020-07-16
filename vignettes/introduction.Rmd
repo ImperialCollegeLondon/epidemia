@@ -90,7 +90,7 @@ The remainder of Section \@ref(model-overview) discusses each component of the m
 
 ### Time-Varying Reproduction Number 
 
-Recall that $R_t$ is defined as the *unadjusted* time-varying reproduction rate. The term *unadjusted* is used to make explicit that it is not interpreted as the average number of new infections $I'(t)/I(t)$ at a given point in time. This would require an adjustment for the size of the susceptible population, which is done within the parentheses in the right-hand-side of \@ref(eq:ode). $R_t$ is modeled as
+Recall that $R_t$ is defined as the *unadjusted* time-varying reproduction rate. The term *unadjusted* is used to make explicit that it is not interpreted as the expected number of new infections per infected individual at a given point in time. This would require an adjustment for the size of the susceptible population, which is done within the parentheses in the right-hand-side of \@ref(eq:ode). $R_t$ is modeled as
 \begin{equation}
 R_t = 2R' f\left(\eta_t\right),
 (\#eq:rt)
