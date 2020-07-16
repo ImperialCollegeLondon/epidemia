@@ -12,5 +12,8 @@
 ^pkgdown$
 ^README\.Rmd$
 ^\.github$
-.covrignore
-^vignettes
+^\.covrignore$
+^vignettes$
+^man-roxygen$
+^index\.Rmd$
+^index\.md$
