@@ -87,7 +87,5 @@ Suggests:
     gridExtra,
     bookdown,
     EpiEstim
-VignetteBuilder:
-    knitr
 RdMacros:
     Rdpack
