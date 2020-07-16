@@ -237,12 +237,21 @@ Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code>
 
 <span class='co'>## make plots</span>
 <span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>) <span class='co'># default, plots all groups and dates</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), date_breaks=<span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), date_breaks=<span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>), date_format=<span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), 
+                date_breaks=<span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
+                date_breaks=<span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>), 
+                date_format=<span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
