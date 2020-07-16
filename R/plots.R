@@ -42,9 +42,15 @@
 #' plot_rt(fit, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
 #' plot_rt(fit, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
 #' plot_rt(fit, dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
-#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
-#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
-#' plot_rt(fit, dates=c("2020-20-03", "2020-20-04"), date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' plot_rt(fit, 
+#'         dates=c("2020-03-20", "2020-04-20"), 
+#'         date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_rt(fit, 
+#'         dates=c("2020-03-20", "2020-04-20"), 
+#'         date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_rt(fit, 
+#'         dates=c("2020-20-03", "2020-20-04"), 
+#'         date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
 #' }
 #' @export
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
@@ -174,12 +180,26 @@ plot_rt.epimodel <- function(object, group=NULL,
 #' 
 #' ## make plots
 #' plot_obs(fit, type="deaths") # default, plots all groups and dates
-#' plot_obs(fit, type="deaths", dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-#' plot_obs(fit, type="deaths", dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_obs(fit, type="deaths", dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
-#' plot_obs(fit, type="deaths", dates=c("2020-03-20", "2020-04-20"), date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
-#' plot_obs(fit, type="deaths", dates=c("2020-03-20", "2020-04-20"), date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
-#' plot_obs(fit, type="deaths", dates=c("2020-20-03", "2020-20-04"), date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' plot_obs(fit, type="deaths", 
+#'               dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-03-20", "2020-04-20"), 
+#'          date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-03-20", "2020-04-20"), 
+#'          date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-20-03", "2020-20-04"), 
+#'          date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
 #' }
 #' @export
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
@@ -310,12 +330,21 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
 #' 
 #' ## make plots
 #' plot_infections(fit) # default, plots all groups and dates
-#' plot_infections(fit, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-#' plot_infections(fit, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_infections(fit, dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
-#' plot_infections(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
-#' plot_infections(fit, dates=c("2020-03-20", "2020-04-20"), date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
-#' plot_infections(fit, dates=c("2020-20-03", "2020-20-04"), date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_infections(fit, 
+#'                 dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20"), 
+#'                 date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20"),
+#'                 date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_infections(fit, 
+#'                 dates=c("2020-20-03", "2020-20-04"), 
+#'                 date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
 #' }
 #' @export
 plot_infections <- function(object, ...) UseMethod("plot_infections", object)
