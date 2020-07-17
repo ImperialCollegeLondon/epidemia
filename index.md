@@ -40,7 +40,7 @@ devtools::install_github("ImperialCollegeLondon/epidemia")
 ```
 will install the latest development version of **epidemia**.
 
-If using windows, you can alternatively install the [binary](releases/latest).
+If using windows, you can alternatively install the [binary](https://github.com/ImperialCollegeLondon/epidemia/releases/latest).
 
 Vignettes are not currently included in the package because they are
 computationally demanding, and are best viewed online.
