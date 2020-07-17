@@ -25,13 +25,22 @@ This version of epidemia could be subject to future changes to the
 interface.
 
 ## Installation
+epidemia requires R v3.5.0 or above. The latest version of R can be downloaded 
+[here](https://cloud.r-project.org/bin/).
 
-The latest development version of the package can be installed using
+The package can be installed directly from 
+github. However, this requires you to have the C++ toolchain. To ensure that this 
+is working, please first install **rstan** by following these 
+[installation instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
 
+After installing **rstan**, running
 ``` r
 #install.packages(devtools)
 devtools::install_github("ImperialCollegeLondon/epidemia")
 ```
+will install the latest development version of **epidemia**.
+
+If using windows, you can alternatively install the [binary](releases/latest).
 
 Vignettes are not currently included in the package because they are
 computationally demanding, and are best viewed online.
