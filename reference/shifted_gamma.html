@@ -149,7 +149,7 @@
     <p>A gamma prior distribution which can be shifted.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a></span>(shape = <span class='fl'>1</span>, scale = <span class='fl'>1</span>, shift = <span class='fl'>0</span>, autoscale = <span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='fu'>shifted_gamma</span>(shape = <span class='fl'>1</span>, scale = <span class='fl'>1</span>, shift = <span class='fl'>0</span>, autoscale = <span class='fl'>TRUE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -170,7 +170,7 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A named list to be parsed internally by <code><a href='https://rdrr.io/pkg/epidemia/man/epim.html'>epim</a></code>.</p>
+    <p>A named list to be parsed internally by <code>epim</code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><span class="pkg">rstanarm</span> provides a set of distributions (see <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a></code>) which
@@ -194,7 +194,7 @@ ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='kw'><a href='https://github.com/ImperialCollegeLondon/epidemia'>epidemia</a></span>)
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='kw'>EuropeCovid</span>)
 <span class='kw'>args</span> <span class='op'>&lt;-</span> <span class='kw'>EuropeCovid</span>
-<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a></span>(shape=<span class='fl'>1</span>, scale=<span class='fl'>1</span>, shift=<span class='op'>-</span><span class='fl'>0.5</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>&lt;-</span> <span class='fu'>shifted_gamma</span>(shape=<span class='fl'>1</span>, scale=<span class='fl'>1</span>, shift=<span class='op'>-</span><span class='fl'>0.5</span>)
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

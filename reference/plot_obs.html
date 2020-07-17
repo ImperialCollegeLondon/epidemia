@@ -155,10 +155,10 @@ The user can control the levels of the intervals and the plotted group(s).
 This is a generic function.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
+    <pre class="usage"><span class='fu'>plot_obs</span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
 
 <span class='co'># S3 method for epimodel</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(
+<span class='fu'>plot_obs</span>(
   <span class='kw'>object</span>,
   type = <span class='kw'>NULL</span>,
   posterior_mean = <span class='fl'>FALSE</span>,
@@ -178,11 +178,11 @@ This is a generic function.</p>
     <tr>
       <th>object</th>
       <td><p>A fitted model object returned by <code>epim</code>.
-See <code><a href='https://rdrr.io/pkg/epidemia/man/epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
+See <code>epimodel-objects</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments for <code><a href='https://rdrr.io/pkg/epidemia/man/posterior_predict.epimodel.html'>posterior_predict.epimodel</a></code>. Examples include <code>newdata</code>, which allows
+      <td><p>Additional arguments for <code>posterior_predict.epimodel</code>. Examples include <code>newdata</code>, which allows
 predictions or counterfactuals.</p></td>
     </tr>
     <tr>
@@ -250,24 +250,24 @@ Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code>
 <span class='kw'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='kw'>args</span>)
 
 <span class='co'>## make plots</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>) <span class='co'># default, plots all groups and dates</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, 
+<span class='fu'>plot_obs</span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>) <span class='co'># default, plots all groups and dates</span>
+<span class='fu'>plot_obs</span>(<span class='kw'>fit</span>, type=<span class='st'>"deaths"</span>, 
               dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, 
+<span class='fu'>plot_obs</span>(<span class='kw'>fit</span>, 
          type=<span class='st'>"deaths"</span>, 
          dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, 
+<span class='fu'>plot_obs</span>(<span class='kw'>fit</span>, 
          type=<span class='st'>"deaths"</span>, 
          dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, 
+<span class='fu'>plot_obs</span>(<span class='kw'>fit</span>, 
          type=<span class='st'>"deaths"</span>, 
          dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), 
          date_breaks=<span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, 
+<span class='fu'>plot_obs</span>(<span class='kw'>fit</span>, 
          type=<span class='st'>"deaths"</span>, 
          dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), 
          date_breaks=<span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_obs.html'>plot_obs</a></span>(<span class='kw'>fit</span>, 
+<span class='fu'>plot_obs</span>(<span class='kw'>fit</span>, 
          type=<span class='st'>"deaths"</span>, 
          dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>), 
          date_format=<span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>

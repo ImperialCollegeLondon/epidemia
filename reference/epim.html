@@ -149,7 +149,7 @@
     <p>Fits a Bayesian epidemiological model specified by the <code>formula</code> argument.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/epim.html'>epim</a></span>(
+    <pre class="usage"><span class='fu'>epim</span>(
   <span class='kw'>formula</span>,
   <span class='kw'>data</span>,
   <span class='kw'>obs</span>,
@@ -245,7 +245,7 @@ prior on the centered covariates. Defaults to <code>FALSE</code>.</p></td>
     <tr>
       <th>prior</th>
       <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. In addition to the <span class="pkg">rstanarm</span> provided <a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a>,
-a <a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a> can be used. <strong>Note:</strong> If <code>autoscale=TRUE</code> (Default) in the call to the prior distribution then
+a shifted_gamma can be used. <strong>Note:</strong> If <code>autoscale=TRUE</code> (Default) in the call to the prior distribution then
 automatic rescaling of the prior may take place.</p></td>
     </tr>
     <tr>
@@ -315,10 +315,10 @@ ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038
 <span class='kw'>args</span> <span class='op'>&lt;-</span> <span class='kw'>EuropeCovid</span>
 <span class='kw'>args</span><span class='op'>$</span><span class='kw'>algorithm</span> <span class='op'>&lt;-</span> <span class='st'>"sampling"</span>
 <span class='kw'>args</span><span class='op'>$</span><span class='kw'>formula</span> <span class='op'>&lt;-</span> <span class='fu'>R</span>(<span class='kw'>country</span>,<span class='kw'>date</span>) <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>+</span> <span class='kw'>lockdown</span>
-<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a></span>(shape = <span class='fl'>1</span><span class='op'>/</span><span class='fl'>6</span>, scale = <span class='fl'>1</span>, shift = <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.05</span>)<span class='op'>/</span><span class='fl'>6</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>&lt;-</span> <span class='fu'>shifted_gamma</span>(shape = <span class='fl'>1</span><span class='op'>/</span><span class='fl'>6</span>, scale = <span class='fl'>1</span>, shift = <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.05</span>)<span class='op'>/</span><span class='fl'>6</span>)
 
 <span class='kw'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='kw'>args</span>)
-<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_rt.html'>plot_rt</a></span>(<span class='kw'>fit</span>, group = <span class='st'>"Germany"</span>)
+<span class='fu'>plot_rt</span>(<span class='kw'>fit</span>, group = <span class='st'>"Germany"</span>)
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
