@@ -29,7 +29,7 @@ epidemia requires R v3.5.0 or above. The latest version of R can be downloaded
 [here](https://cloud.r-project.org/bin/).
 
 The package can be installed directly from 
-github. However, this requires you to have the C++ toolchain. To ensure that this 
+github. However, this requires you to have a working C++ toolchain. To ensure that this 
 is working, please first install **rstan** by following these 
 [installation instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
 
