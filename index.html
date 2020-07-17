@@ -111,11 +111,15 @@
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>The latest development version of the package can be installed using</p>
+<p>epidemia requires R v3.5.0 or above. The latest version of R can be downloaded <a href="https://cloud.r-project.org/bin/">here</a>.</p>
+<p>The package can be installed directly from github. However, this requires you to have a working C++ toolchain. To ensure that this is working, please first install <strong>rstan</strong> by following these <a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">installation instructions</a>.</p>
+<p>After installing <strong>rstan</strong>, running</p>
 <div class="sourceCode" id="cb1"><pre class="downlit">
 <span class="co">#install.packages(devtools)</span>
 <span class="kw">devtools</span>::<span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span>(<span class="st">"ImperialCollegeLondon/epidemia"</span>)
 </pre></div>
+<p>will install the latest development version of <strong>epidemia</strong>.</p>
+<p>If using windows, you can alternatively install the <a href="releases/latest">binary</a>.</p>
 <p>Vignettes are not currently included in the package because they are computationally demanding, and are best viewed online.</p>
 </div>
 <div id="getting-started" class="section level2">
