@@ -1,4 +1,4 @@
-context("Test plotting")
+context("Test forecast evaluations")
 
 # load data
 test_data <- readRDS("../data/forecast-test-data.rds")

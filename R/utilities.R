@@ -265,16 +265,16 @@ checkObsDF <- function(data, df, name) {
 # @param nc The minimum number of columns expected.
 checkDF <- function(df, name, nc) {
   if(!is.data.frame(df))
-    stop(paste0(name, " must be a dataframe."))
+    stop(paste0(name, " must be a dataframe."), call. = FALSE)
   
   if(nrow(df)==0)
-    stop(paste0(name, " has zero rows"))
+    stop(paste0(name, " has zero rows"), call. = FALSE)
   
   if(ncol(df) < nc)
-    stop(paste0("Not enough columns in ", name, " - at least ", nc, " are required"))
+    stop(paste0("Not enough columns in ", name, " - at least ", nc, " are required"), call. = FALSE)
   
   if(any(is.na.data.frame(df[,1:nc])))
-    stop(paste0("NAs exist in ", name))
+    stop(paste0("NAs exist in ", name), call. = FALSE)
   
   as.data.frame(df[,1:nc])
 }
@@ -310,7 +310,7 @@ checkPops <- function(pops, levels) {
   missing.levels <- !(levels %in% pops$group)
   if (any(missing.levels)) {
     missing.levels <- levels[missing.levels]
-    stop(paste0("Levels in 'formula' response missing in 'pops': ", paste0(missing.levels, collapse=", ")))
+    stop(paste0("Levels in 'formula' response missing in 'pops': ", paste0(missing.levels, collapse=", ")), call. = FALSE)
   }
 
   if(any(duplicated(pops$group)))
@@ -336,19 +336,19 @@ checkRates <- function(levels, rates, name) {
     stop(paste0(name," must be a list.", call.=FALSE))
   
   if(is.null(rates$means))
-    stop(paste0(name,"$means not found. "))
+    stop(paste0(name,"$means not found. ", call.=FALSE))
   
   if(nrow(rates$means)==0)
-    stop(paste0(name,"$means has zero rows"))
+    stop(paste0(name,"$means has zero rows", call.=FALSE))
   
   means <- rates$means
 
   if(is.null(rates$scale)) {
-    warning(paste0(name, "$scale not found, using default value of 0.1"))
+    warning(paste0(name, "$scale not found, using default value of 0.1"), call. = FALSE)
     scale = 0.1
   }
   else if(!is.numeric(rates$scale) || length(rates$scale) != 1)
-    stop(paste0(name, "$scale must be a numeric of length 1."))
+    stop(paste0(name, "$scale must be a numeric of length 1."), call. = FALSE)
   else
     scale = rates$scale
 
@@ -363,7 +363,8 @@ checkRates <- function(levels, rates, name) {
       means
     },
     error = function(cond) {
-      stop(paste0("Columns of ", name, "$means are not coercible to required classes [factor, numeric]. Original message: ", cond))
+      stop(paste0("Columns of ", name, "$means are not coercible to required classes [factor, numeric]. Original message: ", cond),
+           call. = FALSE)
     }
   )
   if(any(is.na(means$mean)))
@@ -376,7 +377,7 @@ checkRates <- function(levels, rates, name) {
 
   # requiring all levels have an associated population
   if (!all(levels %in% means$group))
-    stop(paste0("Levels in 'formula' response missing in ", name, "$means"))
+    stop(paste0("Levels in 'formula' response missing in ", name, "$means"), call. = FALSE)
 
   if(any(duplicated(means$group)))
     stop(paste0("Values for a given group must be unique. Please check ", name, "$means"), call. = FALSE)
@@ -402,7 +403,7 @@ checkV <- function(vec, name) {
   # do the coercion then check for NAs
   out <- tryCatch(as.numeric(vec),
     error = function(cond) {
-      stop(paste0(name, " could not be coerced to a numeric vector. Original message: ", cond))
+      stop(paste0(name, " could not be coerced to a numeric vector. Original message: ", cond), call. = FALSE)
     })
   if(any(is.na(out)))
     stop(paste0("NAs exist in ", name, " after coercion to numeric"), call. = FALSE)
