@@ -24,7 +24,6 @@ get_sdat_data <- function(data) {
 #
 # @param sdat The result of get_sdat_data
 # @param obs The result of checkObs
-# @param max_sim Maximum simulation periods
 get_sdat_obs <- function(sdat, obs) {
   R <- length(obs)
   if (R) {
