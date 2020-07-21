@@ -14,9 +14,10 @@ This vignette describes how changes in $R_t$ can be modelled with just incidence
 
 ## Flu 1918
 
-We use the Flu data from 1918 as an example. 
+We use Flu data from 1918 as an example. This is provided in @EpiEstim.
 ```{r Flu1918comp}
 library(epidemia)
+library(EpiEstim)
 data("Flu1918")
 options(mc.cores = parallel::detectCores())
 print(Flu1918)

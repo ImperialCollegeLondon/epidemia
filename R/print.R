@@ -7,6 +7,7 @@
 #' @templateVar epimodelArg x
 #' @template args-epimodel-object
 #' @param digits Number of decimal places to print.
+#' @param ... Not used.
 #' @export
 print.epimodel <- function(x, digits=1, ...) {
 
@@ -20,7 +21,6 @@ print.epimodel <- function(x, digits=1, ...) {
 
   coef_mat <- mat[, nms, drop = FALSE]
   estimates <- .median_and_madsd(coef_mat)
-
 
   if (mixed) {
     estimates <- estimates[!grepl("^Sigma\\[", rownames(estimates)),, drop=FALSE]

@@ -12,7 +12,7 @@ vignette: >
 
 ## SARS 2003  - using cumulatives to obtain starting values for MCMC
 
-We use the SARS data from 2003 as an example. 
+We use the SARS data from 2003 as an example. This is provided in @EpiEstim. 
 
 In the example below, the sampler would have difficulties converging with the
 default random starting values of rstan. It usually stays in a part of the parameter space where all of the population gets infected. 
@@ -29,6 +29,7 @@ First we load the data.
 
 ```{r}
 library(epidemia)
+library(EpiEstim)
 data("SARS2003")
 options(mc.cores = parallel::detectCores())
 print(SARS2003)

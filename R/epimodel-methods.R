@@ -1,3 +1,102 @@
+#' Returns the levels for each grouping factor in the fitted object
+#' 
+#' @inherit lme4::ngrps params return
+#' @export
+#' 
+ngrps.mixed <- function(object, ...) vapply(.flist(object), nlevels, 1)
+
+#' Terms method for epimodel objects
+#' @export
+#' @param x,fixed.only,random.only,... See \code{\link[lme4]{terms.merMod}}
+#' 
+terms.epimodel <- function (x, fixed.only=TRUE, random.only=FALSE, ...) {
+
+  if (!is.mixed(x))
+    return(NextMethod("terms"))
+
+  fr <- x$glmod$fr
+  if (missing(fixed.only) && random.only) 
+    fixed.only <- FALSE
+  if (fixed.only && random.only) 
+    stop("can't specify 'only fixed' and 'only random' terms")
+  
+  tt <- attr(fr, "terms")
+  if (fixed.only) {
+    tt <- terms.formula(formula(x, fixed.only = TRUE))
+    attr(tt, "predvars") <- attr(terms(fr), "predvars.fixed")
+  }
+  if (random.only) {
+    tt <- terms.formula(lme4::subbars(formula(x, random.only = TRUE)))
+    attr(tt, "predvars") <- attr(terms(fr), "predvars.random")
+  }
+  return(tt)
+}
+
+#' model.frame method for epimodel objects. Please see  \code{\link[stats]{model.frame}} 
+#' for more details.
+#' 
+#' @export
+#' @templateVar epimodelArg formula
+#' @template args-epimodel-object
+#' @param ... See \code{\link[stats]{model.frame}}.
+#' @param fixed.only See \code{\link[lme4]{model.frame.merMod}}.
+#' 
+model.frame.epimodel <- function(formula, fixed.only=FALSE, ...) {
+  if (is.mixed(formula)) {
+    fr <- formula$glmod$fr
+    if (fixed.only) {
+      trms <- delete.response(terms(formula, fixed.only=TRUE))
+      vars <- all.vars(trms)
+      fr <- fr[vars]
+    }
+  } else {
+    form <- formula(delete.response(terms(formula)))
+    fr <- model.frame(formula=form, data=formula$data, drop.unused.levels=TRUE)
+  }
+  return(fr)
+}
+
+#' formula method for epimodel objects
+#' 
+#' @export
+#' @param x An epimodel object.
+#' @param ... Can contain \code{fixed.only} and \code{random.only} arguments 
+#'   that both default to \code{FALSE}.
+#' 
+formula.epimodel <- function(x, ...) {
+  return(formula(x$formula, ...))
+}
+
+
+#' Extract X or Z from an epimodel object
+#' 
+#' @export
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
+#' @param ... Other arguments passed to methods.
+#' @return A matrix.
+#' @export
+get_x <- function(object, ...) UseMethod("get_x")
+
+#' @rdname get_x
+#' @export
+get_z <- function(object, ...) UseMethod("get_z")
+
+#' @export
+get_x.default <- function(object, ...) {
+  object[["x"]] %ORifNULL% model.matrix(object)
+}
+
+#' @export
+get_x.mixed <- function(object, ...) {
+  object$glmod$X %ORifNULL% stop("X not found")
+}
+#' @export
+get_z.mixed <- function(object, ...) {
+  Zt <- object$glmod$reTrms$Zt %ORifNULL% stop("Z not found")
+  Matrix::t(Zt)
+}
+
 
 VarCorr.epimodel <- function(x, sigma = 1, ...) {
   cnms <- .cnms(x)
@@ -53,100 +152,4 @@ VarCorr.epimodel <- function(x, sigma = 1, ...) {
 .flist.epimodel <- function(object, ...) {
   .mixed_check(object)
   as.list(object$glmod$reTrms$flist)
-}
-
-
-#' @rdname ngrps-methods
-#' @export
-#' @export ngrps
-#' @importFrom lme4 ngrps
-#' 
-ngrps.mixed <- function(object, ...) vapply(.flist(object), nlevels, 1)
-
-#' Terms method for epimodel objects
-#' @export
-#' @param object, fixed.only, random.only, ... See \code{\link{lme4:::terms.merMod}}
-terms.epimodel <- function (object, fixed.only = TRUE, random.only = FALSE, ...) {
-
-  if (!is.mixed(object))
-    return(NextMethod("terms"))
-
-  fr <- object$glmod$fr
-  if (missing(fixed.only) && random.only) 
-    fixed.only <- FALSE
-  if (fixed.only && random.only) 
-    stop("can't specify 'only fixed' and 'only random' terms")
-  
-  tt <- attr(fr, "terms")
-  if (fixed.only) {
-    tt <- terms.formula(formula(object, fixed.only = TRUE))
-    attr(tt, "predvars") <- attr(terms(fr), "predvars.fixed")
-  }
-  if (random.only) {
-    tt <- terms.formula(lme4::subbars(formula(object, random.only = TRUE)))
-    attr(tt, "predvars") <- attr(terms(fr), "predvars.random")
-  }
-  return(tt)
-}
-
-#' model.frame method for epimodel objects
-#' 
-#' @export
-#' @param object, ... See \code{formula} and \code{...} from \code{\link[stats]{model.frame}}.
-#' @param fixed.only See \code{\link[lme4]{model.frame.merMod}}.
-#' 
-model.frame.epimodel <- function(object, fixed.only=FALSE, ...) {
-  if (is.mixed(object)) {
-    fr <- object$glmod$fr
-    if (fixed.only) {
-      trms <- delete.response(terms(object, fixed.only=TRUE))
-      vars <- all.vars(trms)
-      fr <- fr[vars]
-    }
-  } else {
-    form <- formula(delete.response(terms(object)))
-    fr <- model.frame(formula=form, data=object$data, drop.unused.levels=TRUE)
-  }
-  return(fr)
-}
-
-#' formula method for epimodel objects
-#' 
-#' @export
-#' @param x An epimodel object.
-#' @param ... Can contain \code{fixed.only} and \code{random.only} arguments 
-#'   that both default to \code{FALSE}.
-#' 
-formula.epimodel <- function(x, ...) {
-  return(formula(x$formula, ...))
-}
-
-
-#' Extract X or Z from an epimodel object
-#' 
-#' @export
-#' @templateVar epimodelArg object
-#' @template args-epimodel-object
-#' @param ... Other arguments passed to methods.
-#' @return A matrix.
-#' @export
-get_x <- function(object, ...) UseMethod("get_x")
-
-#' @rdname get_x
-#' @export
-get_z <- function(object, ...) UseMethod("get_z")
-
-#' @export
-get_x.default <- function(object, ...) {
-  object[["x"]] %ORifNULL% model.matrix(object)
-}
-
-#' @export
-get_x.mixed <- function(object, ...) {
-  object$glmod$X %ORifNULL% stop("X not found")
-}
-#' @export
-get_z.mixed <- function(object, ...) {
-  Zt <- object$glmod$reTrms$Zt %ORifNULL% stop("Z not found")
-  Matrix::t(Zt)
 }

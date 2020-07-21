@@ -54,11 +54,12 @@
 #'  of the observed data around its mean. Must be a call to \code{\link[rstanarm]{normal}}, which again is transformed to a half normal distribution.
 #' @param prior_tau The prior for \eqn{\tau}.This parameter is described in the introductory vignette, and controls the variability in the number of
 #'  seeded infections at the beginning of the epidemic. Must be a call to \code{\link[rstanarm]{exponential}}.
-#' @param prior_PD Same as in \code{\link[rstanarm]{glm}}. If \code{TRUE}, samples parameters from the prior disribution. 
+#' @param prior_PD Same as in \code{\link[rstanarm]{stan_glm}}. If \code{TRUE}, samples parameters from the prior disribution. 
 #' Defaults to \code{FALSE}.
 #' @param sampling_args An (optional) named list of parameters to pass to the \pkg{rstan} function used for model fitting,
 #'  for example \code{rstan::sampling}.
-#' @param ... 
+#' @param ... Not used.
+#' @param stan_data,debug Mainly for internal use. Will be removed in future versions.
 #' @examples
 #' \dontrun{
 #' data("EuropeCovid")
@@ -71,7 +72,7 @@
 #' fit <- do.call("epim", args)
 #' plot_rt(fit, group = "Germany")
 #' }
-#' @return An object of class \code{\link{epimodel}}. 
+#' @return An object of class "epimodel". 
 #' @references 
 #' \insertAllCited{}
 #' @export

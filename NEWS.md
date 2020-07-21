@@ -1,3 +1,15 @@
+
+# epidemia 0.5.3
+* Improved model description in introduction vignette
+
+# epidemia 0.5.2
+* Passes R CMD Check with no warnings
+* Updated installation instructions
+
+# epidemia 0.5.1
+* Renamed stan files to avoid errors with Rstan 2.12.
+* Plotting vignette
+
 # epidemia 0.5.0
 * Random walk terms parsed separately as input to stan files. Variance parameter sampled in stan, and so can make predictions.
 * pseudo-log scales for `plot_infections` and `plot_observations`

@@ -36,7 +36,8 @@ jobs:
         run: |
           install.packages("devtools")
           install.packages("remotes")
-          remotes::install_dev("pkgdown")
+          install.packages("EpiEstim")
+          install.packages("pkgdown")
         shell: Rscript {0}
 
       - name: Install tbb

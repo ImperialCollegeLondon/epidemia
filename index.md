@@ -12,21 +12,37 @@ package has been inspired by, and has borrowed from,
 epidemia uses [rstan](https://mc-stan.org/rstan/) (Stan Development Team
 2020) as the backend for fitting models.
 
-This is an early beta release of the package. If you are interested in
-taking part in beta testing, please [fill out this form](https://forms.gle/PT4JtLs4e3KdLkdp7).
-
 ## Disclaimer
 
-As a beta release, there will be regular updates with additional
-features and more extensive testing. Any feedback is greatly appreciated
-- in particular if you find bugs, find the documentation unclear, or
-have feature requests, please report them
+This is an early beta release of the package. As a beta release, there
+will be regular updates with additional features and more extensive
+testing. Any feedback is greatly appreciated - in particular if you find
+bugs, find the documentation unclear, or have feature requests, please
+report them
 [here](https://github.com/ImperialCollegeLondon/epidemia/issues).
 
-## Installation
+This version of epidemia could be subject to future changes to the
+interface.
 
-Once you have access to the repository, clone it and install from
-source. We recommend avoiding installation of any vignettes as these are
+## Installation
+epidemia requires R v3.5.0 or above. The latest version of R can be downloaded 
+[here](https://cloud.r-project.org/bin/).
+
+The package can be installed directly from 
+github. However, this requires you to have a working C++ toolchain. To ensure that this 
+is working, please first install **rstan** by following these 
+[installation instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
+
+After installing **rstan**, running
+``` r
+#install.packages(devtools)
+devtools::install_github("ImperialCollegeLondon/epidemia")
+```
+will install the latest development version of **epidemia**.
+
+If using windows, you can alternatively install the [binary](https://github.com/ImperialCollegeLondon/epidemia/releases/latest).
+
+Vignettes are not currently included in the package because they are
 computationally demanding, and are best viewed online.
 
 ## Getting Started
@@ -38,7 +54,7 @@ The best way to get started is to read the
     epidemia](articles/introduction.html) is the main vignette,
     introducing the model framework and the primary model fitting
     function `epim`.
-  - [Using Priors](articles/priors.html) gives important details behind 
+  - [Using Priors](articles/priors.html) gives important details behind
     using prior distributions for model paramters.
   - [Incidence Only](articles/IncidenceOnly.html) gives examples of
     fitting models using only incidence data and a discrete serial
@@ -72,13 +88,16 @@ args$prior <- shifted_gamma(shape = 1/6, scale = 1, shift = -log(1.05)/6)
 fit <- do.call("epim", args)
 ```
 
-![](reference/figures/plot-1.png)
-
 ``` r
 # Inspect Rt
-plot_rt(fit, group = "United_Kingdom", levels = c(25,50,75,95))
-# And deaths
-plot_obs(fit, type = "deaths", group = "United_Kingdom", levels = c(25,50,75,95))
+plot_rt(fit, group = "United_Kingdom", levels = c(20,50,80,95))
 ```
 
-![](reference/figures/plot-2.png)
+![](reference/figures/plot-1.png)<!-- -->
+
+``` r
+# And deaths
+plot_obs(fit, type = "deaths", group = "United_Kingdom", levels = c(20,50,80,95))
+```
+
+![](reference/figures/plot-2.png)<!-- -->
