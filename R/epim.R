@@ -59,7 +59,9 @@
 #' @param sampling_args An (optional) named list of parameters to pass to the \pkg{rstan} function used for model fitting,
 #'  for example \code{rstan::sampling}.
 #' @param ... Not used.
-#' @param stan_data,debug Mainly for internal use. Will be removed in future versions.
+#' @param stan_data Mainly for internal use. Will be removed in future versions.
+#' @param init_run For certain datasets the sampler can find itself trapped in a local mode where herd immunity is achieved. If TRUE, a short MCMC 
+#'  run fitting to cumulative data is used to initialize the parameters for the main sampler.
 #' @examples
 #' \dontrun{
 #' data("EuropeCovid")
@@ -95,7 +97,7 @@ epim <-
            prior_tau = rstanarm::exponential(rate = 0.03),
            prior_PD = FALSE,
            sampling_args = list(),
-           debug = FALSE,
+           init_run = FALSE,
            ...) {
   
   call    <- match.call(expand.dots = TRUE)
@@ -161,36 +163,6 @@ epim <-
     glmod <- group <- NULL
   }
 
-  standata <- get_sdat_autocor(formula, data)
-
-  # get standata relating to model pars excluding Rt regression
-  standata <- c(standata, get_sdat_data(data))
-  print(obs)
-
-
-  standata <- get_sdat_add_priors(standata, prior_phi, prior_tau)
-  standata$si <- padSV(si, standata$NS, 0)
-  standata$r0 <- r0
-  standata$N0 <- seed_days
-  standata$pop <- as.array(pops$pop)
-  standata <- get_sdat_obs(standata, obs)
-
-  init_run <- TRUE
-  if (init_run) {
-    # fit first to cumulative data
-    cobs <- list()
-    for (elem in obs) {
-      elem$odata$obs <- cumsum(elem$odata$obs)
-      elem$pvec <- cumsum(elem$pvec)
-      elem$ptype <- "distribution"
-      cobs <- c(cobs, elem)
-    }
-    names(cobs) <- names(obs)
-
-  print(cobs)
-  print(obs)
-  }
-
   cargs <- list()
   cargs$formula <- form
   cargs$x <- x
@@ -201,6 +173,68 @@ epim <-
   cargs$prior_PD <- prior_PD
   cargs$link <- "logit"
   cargs$center <- center
+
+  standata <- get_sdat_autocor(formula, data)
+
+  # get standata relating to model pars excluding Rt regression
+  standata <- c(standata, get_sdat_data(data))
+
+  standata$si <- padSV(si, standata$NS, 0)
+  standata$r0 <- r0
+  standata$N0 <- seed_days
+  standata$pop <- as.array(pops$pop)
+
+  args <- sampling_args
+  args$object <- stanmodels$epidemia_base
+
+  if (init_run) {
+    # fit first to cumulative data
+    cobs <- list()
+    print("gor here")
+    for (elem in obs) {
+      elem$odata$obs <- cumsum(elem$odata$obs)
+      elem$pvec <- cumsum(elem$pvec)
+      elem$ptype <- "distribution"
+      cobs <- c(cobs, list(elem))
+    }
+    standata_init <- get_sdat_obs(standata, obs)
+    standata_init <- get_sdat_add_priors(standata_init, prior_phi, prior_tau)
+    standata_init <- c(standata_init,
+                do.call("gen_covariates_sdat", args=cargs))
+
+    args <- list(iter=100, chains=1)
+    args$object <- stanmodels$epidemia_base
+    args$data <- standata_init
+
+    print("Prefit to obtain good starting values")
+    prefit <- do.call("sampling", args)
+
+    initf <- function(){
+        i <- sample(1:50,1)
+        res <- lapply(rstan::extract(prefit),
+                      function(x) {
+                          if (length(dim(x))==1){
+                              as.array(x[i])
+                          }
+                          else if (length(dim(x))==2)
+                              x[i,]
+                          else x[i,,]
+                      }
+                      )
+        for (j in names(res)){
+            if (length(res[j])==1)
+                res[[j]] <- as.array(res[[j]])
+        }
+        res$tau_raw <- c(res$tau_raw)
+        res$noise<- NULL
+        res$z_phi<- NULL
+        res
+    }   
+  }
+
+
+  standata <- get_sdat_obs(standata, obs)
+  standata <- get_sdat_add_priors(standata, prior_phi, prior_tau)
   standata <- c(standata,
                 do.call("gen_covariates_sdat", args=cargs))
 
@@ -221,8 +255,9 @@ epim <-
             if (length(standata$ac_nterms)) "ac_noise")
 
   args <- sampling_args
-  if (!debug) args$pars <- pars
+  if (init_run) args$init <- initf
   args$object <- stanmodels$epidemia_base
+  args$pars <- pars
   args$data <- standata
 
   if (algorithm == "sampling") 
@@ -263,7 +298,7 @@ epim <-
                 "log-posterior")
 
   orig_names <- fit@sim$fnames_oi
-  if(!debug) fit@sim$fnames_oi <- new_names
+  fit@sim$fnames_oi <- new_names
 
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[ , !sel, drop = FALSE]
