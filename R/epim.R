@@ -165,12 +165,31 @@ epim <-
 
   # get standata relating to model pars excluding Rt regression
   standata <- c(standata, get_sdat_data(data))
-  standata <- get_sdat_obs(standata, obs)
+  print(obs)
+
+
   standata <- get_sdat_add_priors(standata, prior_phi, prior_tau)
   standata$si <- padSV(si, standata$NS, 0)
   standata$r0 <- r0
   standata$N0 <- seed_days
   standata$pop <- as.array(pops$pop)
+  standata <- get_sdat_obs(standata, obs)
+
+  init_run <- TRUE
+  if (init_run) {
+    # fit first to cumulative data
+    cobs <- list()
+    for (elem in obs) {
+      elem$odata$obs <- cumsum(elem$odata$obs)
+      elem$pvec <- cumsum(elem$pvec)
+      elem$ptype <- "distribution"
+      cobs <- c(cobs, elem)
+    }
+    names(cobs) <- names(obs)
+
+  print(cobs)
+  print(obs)
+  }
 
   cargs <- list()
   cargs$formula <- form
