@@ -82,7 +82,6 @@ args$formula <- R(country,date) ~  1 + lockdown
 args$prior <- rstanarm::normal(location=0,scale=.5)
 args$prior_intercept <- rstanarm::normal(location=0,scale=2)
 fit <- do.call("epim", args)
-
 ```
 
 # Default plotting behaviour

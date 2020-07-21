@@ -407,13 +407,13 @@ cumul <- function(df) {
   
   qtl <- data.frame(date = rep(dates, length(nms)))
   tag <- sapply(nms, function(x) rep(x, ncol(df)))
-  qtl$tag <- matrix(tag, ncol=1, byrow=F)
+  qtl$tag <- as.character(matrix(tag, ncol=1, byrow=F))
   
   # compute quantiles
   f <- function(x) quantile(x, 0.5 - levels/200)
-  qtl$low = matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F)
+  qtl$low = as.numeric(matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F))
   f <- function(x) quantile(x, 0.5 + levels/200)
-  qtl$up <- matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F)
+  qtl$up <- as.numeric(matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F))
   return(qtl)
 }
 

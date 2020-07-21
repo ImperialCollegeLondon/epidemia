@@ -1,0 +1,200 @@
+---
+title: "Evaluating forecasts in epidemia"
+output:
+  bookdown::html_document2:
+    theme: cerulean
+link-citations: yes
+pkgdown:
+  as_is: true
+fig_width: 9 
+fig_height: 6
+bibliography: ../inst/REFERENCES.bib
+vignette: |
+  %\VignetteIndexEntry{Plotting with epidemia} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  \usepackage[utf8]{inputenc}
+---
+
+<style type="text/css">
+body{ /* Normal */
+font-size: 16px;
+}
+td { /* Table */
+font-size: 14px;
+}
+h1.title {
+font-size: 38px;
+color: Black;
+}
+h1 { /* Header 1 */
+font-size: 28px;
+color: Black;
+}
+h2 { /* Header 2 */
+font-size: 22px;
+color: DarkBlue;
+}
+h3 { /* Header 3 */
+font-size: 18px;
+color: DarkBlue;
+}
+}
+h3 { /* Header 4 */
+font-size: 16px;
+color: DarkBlue;
+}
+h4 { /* Header 4 */
+font-size: 16px;
+color: DarkBlue;
+}
+code.r{ /* Code block */
+font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+font-size: 14px;
+}
+</style>
+
+This vignette shows how to evaluate a models forecasts and credible intervals in *epidemia*.
+
+Two ways of evaluating a fitted model are
+
+1. the accuracy of its forecasts
+2. the mean coverage of its credible intervals over a period of time
+
+Point 1 tells us about how close the models predictions are to reality. This is useful for model checking and model comparison, as a model that produces wildly inaccurate forecasts has probably not captured the important features of the epidemic. The second point tells us about the calibration of the uncertainty. If the uncertainty is well-calibrated then we can expect the (e.g.) 95% credible intervals should contain the observed data close to 95% of the time.
+
+In **epidemia** both of these calculations are performed by the `evaluate_forecast` function.
+
+# Definition of quantities
+
+## Forecast error metrics
+
+We evaluate model forecasts for our model using three metrics. The first metric is the mean absolute error, which is given by
+$$
+    \text{MAE}_{t,m} = \dfrac{1}{S} \sum_{s=1}^S | \widehat{y}_{t,m}^s - y_{t,m} | \,,
+$$
+where $\widehat{y}_{t,m}^1,\ldots,\widehat{y}_{t,m}^S$ are  $S$ posterior predictive samples of some quantity on day $t$ in group $m$ and $y_{t,m}$ is the observed value of the corresponding quantity. The median absolute error replaces the mean over samples with the median.
+
+The continuous ranked probability score (CRPS) is a generalisation of MAE to probabilistic forecasts and is estimated using
+$$
+    \text{CRPS}_{t,m} = \dfrac{1}{S} \sum_{s=1}^S | \widehat{y}_{t,m}^s - y_{t,m} |- \dfrac{1}{2S^2} \sum_{j=1}^S \sum_{k=1}^S |\widehat{y}_{t,m}^j - \widehat{y}_{t,m}^k| \,.
+$$
+
+## Coverage of the credible intervals
+
+The mean coverage of the 95\% credible interval in a time period starting at time $t_0$ with length $L$ is given by
+$$
+    \frac{1}{L}\sum_{t=t_0+1}^{t_0+1+L} {{1}} \left( y_{t,m} \in \left[p_{2.5}(\{\widehat{y}^s_{t,m}\}_{s=1}^S), p_{97.5}(\{\widehat{y}^s_{t,m}\}_{s=1}^S) \right] \right) \,,
+$$
+where ${{1}}(\cdot)$ is the indicator function and $p_{z}(\{\widehat{y}^s_{t,m}\}_{s=1}^S)$ is the $z$-th percentile of the samples on day $t$ in group $m$.
+
+Care should be taken when calculating the mean coverage over a small number of days as they may not provide sufficient resolution to evaluate a given credible interval. This is demonstrated below.
+
+# Basic Usage
+
+We start by fitting a model, the results of which we are going to plot. The model is fitted for three countries: Italy, Austria and Germany.
+
+Note that we manipulate the data in `EuropeCovid` such that we hold-out the last two weeks of data to use for forecasting.
+
+```{r message=FALSE}
+library(epidemia)
+data("EuropeCovid")
+options(mc.cores = parallel::detectCores())
+
+# filter out the last two weeks of data so that the model only sees up to 4 April 2020
+forecast_start_date <- as.Date("2020-04-21", format="%Y-%m-%d")
+
+fit_data <- EuropeCovid
+fit_data$data <- fit_data$data[fit_data$data$date < forecast_start_date,]
+fit_data$obs$deaths$odata <- fit_data$obs$deaths$odata[fit_data$obs$deaths$odata$date < forecast_start_date,]
+
+# collect arguments for 'epim'
+args <- fit_data
+args$algorithm <- "sampling"
+args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+args$group_subset <- c("Italy", "Austria", "Germany")
+args$formula <- R(country,date) ~  1 + lockdown
+args$prior <- rstanarm::normal(location=0,scale=.5)
+args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+fit <- do.call("epim", args)
+```
+
+
+## Required arugments to `evaluate_forecast`
+
+We pass the fitted `epim` object to `evaluate_forecast` along with the following objects:
+
+* `newdata`: a dataframe containing the data (dates and covariates) for drawing posterior samples. The formatting should match that of the \code{newdata} argument to \code{posterior_predict}.
+* `observations`: a dataframe of observations to compare with the posterior samples. One column must contain the groups (with the column name matching the `group` column in the formula used to fit the model) and another must be coercible to class `Date`. The final column must contain the observations.
+* `type`: the name of the observations. This should match the appropriate column name in `observations`.
+
+## Additional arguments to `evaluate_forecast`
+
+* `group`: used to subset the groups that are evaluated. Default value is `NULL`, in which case all groups are plotted.
+* `metric_names`: the error metrics included in the plot. Default value is `NULL`, which plots the continuous ranked probability score (CRPS), the mean absolute error and median absolute error.
+* `levels`: numeric vector giving the levels of the credible intervals whose coverage will be calculated. Default is the 50% and 95% credible intervals.
+* `coverage_periods`: the forecast length over which to calculate the mean coverage. The forecast starts on the day after the final day the model has been fitted on. The posterior - the period for which the model was fitted - is also plotted. Default is `c("1 week", "2 weeks")`, which calculates the mean coverage over the first week and first two weeks of the forecast.
+* `cov_by_group`: whether to facet by group in the coverage plot. Default is `FALSE`, which plots all the groups together.
+
+```{r}
+observations <- EuropeCovid$obs$deaths$odata %>% dplyr::filter(country %in%  c("Italy", "Austria", "Germany"))
+newdata <- EuropeCovid$data %>% dplyr::filter(country %in%  c("Italy", "Austria", "Germany"))
+
+out <- evaluate_forecast(fit, newdata=newdata, observations=observations, type="deaths")
+```
+
+# Returned objects from `evaluate_forecast`
+
+For both the forecast error and the mean coverage, `evaluate_forecast` returns a plot (with the suffix `_plot`) and the corresponding data (with the suffix `_data`). These are stored in a list with names
+
+* `error_plot`: the daily forecast error (as quantified by one of the selected metrics)
+* `error_data` the corresponding data used to make the plot
+* `coverage_plot`: the mean coverage over the posterior and any forecast periods specified by the user
+* `coverage_data`: the corresponding data.
+
+## Forecast error
+
+An example `error_plot` is shown below. It contains the daily continuous ranked probability score, mean absolute error and median absolute error for each group. The black dashed line indicates the last day of the posterior. The days beyond the dashed line are in the forecast period.
+
+```{r}
+out$error_plot
+```
+
+We can remove lines from the plot using the `metric_names` argument:
+
+```{r}
+out <- evaluate_forecast(fit, newdata=newdata, observations=observations, type="deaths", metric_names="crps")
+out$error_plot
+```
+
+Use the `group` argument to plot a subset of the groups:
+
+```{r}
+out <- evaluate_forecast(fit, newdata=newdata, observations=observations, type="deaths", metric_names="crps", group="Italy")
+out$error_plot
+```
+
+## Coverage of the credible intervals
+
+An example `coverage_plot` is shown below. It contains the mean coverage over the posterior and any forecast period specified using the `coverage_periods` arguments.
+
+```{r}
+out$coverage_plot
+```
+
+We can plot the mean coverage by group by setting `cov_by_group=TRUE`:
+
+```{r}
+out <- evaluate_forecast(fit, newdata=newdata, observations=observations, type="deaths", levels=c(25, 50, 95), cov_by_group = TRUE)
+out$coverage_plot
+```
+
+Note that the `coverage_data` is unchanged - only the plot is different.
+
+Use the `levels` argument to change the credible intervals:
+
+```{r}
+out <- evaluate_forecast(fit, newdata=newdata, observations=observations, type="deaths", levels=c(25, 50, 95))
+out$coverage_plot
+```

@@ -48,6 +48,11 @@ The best way to get started is to read the
     walk.
   - [Resolving Problems](articles/ResolvingProblems.html) will
     demonstrate how to resolve common computational problems when using the package.
+  - [Plotting](articles/plotting.html) gives examples of the different visualisation
+    options available in epidemia.
+  - [Forecast evaluation](articles/foreacst_evaluation.html) shows how to evaluate a
+    model's forecast using its prediction error and the mean coverage of the credible
+    intervals.
 
 ## Usage
 
