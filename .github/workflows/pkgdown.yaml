@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_deps(dependencies = TRUE, upgrade="never")
+          remotes::install_deps(dependencies = TRUE, type="binary")
           install.packages("devtools")
           install.packages("EpiEstim")
           install.packages("pkgdown")
