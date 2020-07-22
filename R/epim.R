@@ -114,64 +114,32 @@ function(formula, data, obs, pops, si, seed_days = 6,
   m           <- match(c("algorithm", "stan_data", "sampling_args", 
   "init_run", "..."), names(sdat), 0L)
   sdat        <- sdat[-m]
-  sdat[[1L]]  <- quote(parse_stan_data)
+  sdat[[1L]]  <- quote(standata_all)
   sdat$group  <- group
   sdat$x      <- x
   sdat$link   <- "logit" # not used yet
 
-
-  return()
-  
-
-
-  
-
-  cargs <- list()
-  cargs$formula <- form
-  cargs$x <- x
-  cargs$group <- group 
-  cargs$prior <- prior
-  cargs$prior_intercept <- prior_intercept
-  cargs$prior_covariance <- prior_covariance
-  cargs$prior_PD <- prior_PD
-  cargs$link <- "logit"
-  cargs$center <- center
-
-  standata <- get_sdat_autocor(formula, data)
-
-  # get standata relating to model pars excluding Rt regression
-  standata <- c(standata, get_sdat_data(data))
-
-  standata$si <- padSV(si, standata$NS, 0)
-  standata$r0 <- r0
-  standata$N0 <- seed_days
-  standata$pop <- as.array(pops$pop)
-
-  args <- sampling_args
-  args$object <- stanmodels$epidemia_base
-
-  if (init_run) {
-    # fit first to cumulative data
+  if (init_run) { 
+    print("Prefit to obtain reasonable starting values")
     cobs <- list()
-    print("gor here")
     for (elem in obs) {
       elem$odata$obs <- cumsum(elem$odata$obs)
       elem$pvec <- cumsum(elem$pvec)
       elem$ptype <- "distribution"
       cobs <- c(cobs, list(elem))
     }
-    standata_init <- get_sdat_obs(standata, cobs)
-    standata_init <- get_sdat_add_priors(standata_init, prior_phi, prior_tau)
-    standata_init <- c(standata_init,
-                do.call("gen_covariates_sdat", args=cargs))
 
-    args <- list(iter=100, chains=1)
-    args$object <- stanmodels$epidemia_base
-    args$data <- standata_init
+    # replace obs with cobs for initial fit
+    sdat_init     <- sdat
+    sdat_init$obs <- cobs
+    sdat_init     <- eval(sdat_init, parent.frame())
 
-    print("Prefit to obtain good starting values")
+    args          <- list(iter=100, chains=1)
+    args$object   <- stanmodels$epidemia_base
+    args$data     <- sdat_init
     prefit <- do.call("sampling", args)
 
+    # function defining parameter initialisation
     initf <- function(){
         i <- sample(1:50,1)
         res <- lapply(rstan::extract(prefit),
@@ -195,40 +163,38 @@ function(formula, data, obs, pops, si, seed_days = 6,
     }   
   }
 
-
-  standata <- get_sdat_obs(standata, obs)
-  standata <- get_sdat_add_priors(standata, prior_phi, prior_tau)
-  standata <- c(standata,
-                do.call("gen_covariates_sdat", args=cargs))
-
-
-  if (stan_data) return(standata)
-  algorithm <- match.arg(algorithm)
+  sdat     <- eval(sdat, parent.frame())
+  if (stan_data) # mainly for debugging purposes
+    return(sdat)
 
   # parameters to keep track of
-  pars <- c(if (standata$has_intercept) "alpha", 
-            "beta",
-            if (length(group)) "b",
-            if (standata$len_theta_L) "theta_L",
-            "y",
-            "tau2",
-            "phi",
-            "noise",
-            if (length(standata$ac_nterms)) "ac_scale",
-            if (length(standata$ac_nterms)) "ac_noise")
+  pars <- c(
+    if (sdat$has_intercept) "alpha", 
+    "beta",
+    if (length(group)) "b",
+    if (sdat$len_theta_L) "theta_L",
+    "y", "tau2", "phi", "noise",
+    if (length(sdat$ac_nterms)) "ac_scale",
+    if (length(sdat$ac_nterms)) "ac_noise"
+    )
 
-  args <- sampling_args
-  if (init_run) args$init <- initf
+
+  args        <- sampling_args
   args$object <- stanmodels$epidemia_base
-  args$pars <- pars
-  args$data <- standata
+  args$pars   <- pars
+  args$data   <- sdat
 
-  if (algorithm == "sampling") 
-    fit <- do.call("sampling", args)
-  else 
-    fit <- do.call("vb", args)
+  if (init_run) 
+    args$init <- initf
 
-  if (standata$len_theta_L) {
+  algorithm <- match.arg(algorithm)
+  sampling  <- algorithm == "sampling"
+
+  fit <- ifelse(sampling,
+    do.call("sampling", args),
+    do.call("vb", args))
+
+  if (sdat$len_theta_L) {
       cnms <- group$cnms
       fit <- transformTheta_L(fit, cnms)
 
@@ -248,17 +214,18 @@ function(formula, data, obs, pops, si, seed_days = 6,
 
   trms_rw <- terms_rw(formula)
   combs <- expand.grid(groups,names(obs))
-  new_names <- c(if (standata$has_intercept) "(Intercept)", 
-                colnames(standata$X),
-                if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
-                if (standata$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
-                c(paste0("seeds[", groups, "]")),
-                "tau",
-                if (standata$R > 0) paste0("phi[", names(obs), "]"),
-                if (standata$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
-                if (length(standata$ac_nterms)) make_rw_sigma_nms(trms_rw, data),
-                if (length(standata$ac_nterms)) make_rw_nms(trms_rw, data),
-                "log-posterior")
+  new_names <- c(
+    if (sdat$has_intercept) "(Intercept)", 
+    colnames(sdat$X),
+    if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
+    if (sdat$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
+    c(paste0("seeds[", groups, "]")),
+    "tau",
+    if (sdat$R > 0) paste0("phi[", names(obs), "]"),
+    if (sdat$R > 0) paste0("noise[", combs[,1], ",", combs[,2], "]"),
+    if (length(sdat$ac_nterms)) make_rw_sigma_nms(trms_rw, data),
+    if (length(sdat$ac_nterms)) make_rw_nms(trms_rw, data),
+    "log-posterior")
 
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names
@@ -269,23 +236,11 @@ function(formula, data, obs, pops, si, seed_days = 6,
   if (length(z))
     colnames(z) <- b_names(names(fit), value = TRUE)
 
-  out <- loo::nlist(stanfit = fit, 
-               formula,
-               x = cbind(x,z),
-               data,
-               obs,
-               r0,
-               seed_days,
-               si,
-               pops,
-               call,
-               algorithm, 
-               terms = if(mixed) NULL else mt,
-               glmod,
-               standata,
-               orig_names,
-               groups)
-
+  out <- loo::nlist(
+    stanfit = fit, formula, x = cbind(x,z), data, obs, r0, seed_days, si, pops, 
+    call, algorithm, terms = if(mixed) NULL else mt, glmod, standata=sdat, 
+    orig_names, groups
+    )
   return(epimodel(out))
 }
 
