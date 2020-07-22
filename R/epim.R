@@ -111,57 +111,13 @@ epim <-
   if (seed_days < 1)
     stop("'seed_days' must be greater than zero", call. = FALSE)
 
-  # check if formula contain terms for partial pooling
-  mixed <- is_mixed(formula)
+  out <- parse_mm(
+    formula=formula,
+    data=data
+  )
 
-  # formula with no response and no RW terms
-  form <- formula(delete.response(terms(formula)))
-  form <- norws(form)
-
-  if (mixed) {
-
-    # use lme4::glformula
-    call        <- match.call(expand.dots = TRUE)
-    mc          <- match.call(expand.dots = FALSE)
-    mc$formula  <- form
-    mc[[1]]     <- quote(lme4::glFormula)
-    mc$control  <- make_glmerControl(
-      ignore_lhs = TRUE,  
-      ignore_x_scale = FALSE
-    )
-    ## removing non-lme4::glFormula arguments
-    mc$prior <- mc$r0 <- mc$prior_phi <- mc$prior_tau <-
-    mc$group_subset <- mc$sampling_args <- mc$obs <- mc$pops <- 
-    mc$si <- mc$algorithm <- mc$"..." <- mc$stan_data <-
-    mc$prior_intercept <- mc$prior_covariance <- NULL
-    mc$data     <- data
-    mc$na.action <- na.fail
-    glmod       <- eval(mc, parent.frame())
-    x           <- glmod$X
-
-    if ("b" %in% colnames(x)) {
-      stop("stan_glmer does not allow the name 'b' for predictor variables.", 
-           call. = FALSE)
-    }
-    group <- glmod$reTrms
-    group <-
-      pad_reTrms(Ztlist = group$Ztlist,
-                cnms = group$cnms,
-                flist = group$flist)
-    
-  } else {
-    # create model frame
-    mfargs <- list()
-    mfargs$formula <- form
-    mfargs$data <- data
-    mfargs$drop.unused.levels <- TRUE
-    mf <- do.call("model.frame", args = mfargs)
-    
-    # create model matrix
-    mt <- attr(mf, "terms")
-    x <- model.matrix(object = mt, data = mf)
-    glmod <- group <- NULL
-  }
+  for (i in names(out)) 
+    assign(i, out[[i]])
 
   cargs <- list()
   cargs$formula <- form
@@ -197,7 +153,7 @@ epim <-
       elem$ptype <- "distribution"
       cobs <- c(cobs, list(elem))
     }
-    standata_init <- get_sdat_obs(standata, obs)
+    standata_init <- get_sdat_obs(standata, cobs)
     standata_init <- get_sdat_add_priors(standata_init, prior_phi, prior_tau)
     standata_init <- c(standata_init,
                 do.call("gen_covariates_sdat", args=cargs))
@@ -325,6 +281,68 @@ epim <-
 
   return(epimodel(out))
 }
+
+
+# Parses formula and data into a list of objects required 
+# for fitting the model.
+#
+# @param formula model formula
+# @param data contains data required to construct model objects from formula
+parse_mm <- function(formula, data) {
+
+  # check if formula contain terms for partial pooling
+  mixed <- is_mixed(formula)
+
+  # formula with no response and no autocorrelation terms
+  form <- formula(delete.response(terms(formula)))
+  form <- norws(form)
+
+  mf          <- match.call(expand.dots = FALSE)
+  mf$formula  <- form
+  mf$data     <- data
+  mc$na.action  <- na.fail
+
+  if (mixed) {
+    mf[[1L]]    <- quote(lme4::glFormula)
+    mf$control  <- make_glmerControl(
+      ignore_lhs = TRUE,  
+      ignore_x_scale = FALSE)
+    glmod         <- eval(mf, parent.frame())
+    x             <- glmod$X
+
+    if ("b" %in% colnames(x)) 
+      stop("epim does not allow the name 'b' for predictor variables.", 
+           call. = FALSE)
+    
+    group <- glmod$reTrms
+    group <-
+      pad_reTrms(Ztlist = group$Ztlist,
+                 cnms = group$cnms,
+                 flist = group$flist)
+    mt <- NULL
+    
+  } else {
+    mf[[1L]]    <- quote(stats::model.frame)
+    mf$drop.unused.levels <- TRUE
+    mf <- eval(mf, parent.frame())
+    mt <- attr(mf, "terms")
+    x <- model.matrix(object = mt, data = mf)
+    glmod <- group <- NULL
+  }
+
+  if ("rw" %in% colnames(x)) 
+      stop("epim does not allow the name 'rw' for predictor variables.", 
+           call. = FALSE)
+
+  return(loo::nlist(
+    x,
+    mt,
+    glmod,
+    group
+  ))
+}
+
+
 
 is_mixed <- function(formula) {
   !is.null(lme4::findbars(norws(formula)))
