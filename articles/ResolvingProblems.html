@@ -95,7 +95,7 @@
 
       
 
-      </header><div class="row">
+      </header><script src="ResolvingProblems_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Resolving Problems</h1>
@@ -116,13 +116,11 @@
 <p>Below is one approach how to resolve this. This is at the moment hard-coded. Future versions of epidemia may provide a more convenient way of doing this.</p>
 <p>We first fit the model to cumulative counts to get starting values for the main run (the fit to cumulative counts will not be correct itself due an assumed independence of the cumulative counts).</p>
 <p>First we load the data.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">EpiEstim</span>)
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">epidemia</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">EpiEstim</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"SARS2003"</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
-<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">SARS2003</span>)
-</pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
+<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">SARS2003</span>)</pre></body></html></div>
 <pre><code>## $incidence
 ##   [1]   1   0   0   1   0   0   2   0   2   2   1   1   1   0   0   0   4   1
 ##  [19]   2   4  13  23  35  26  12  17  19  17  28  23  27  27  11  21  21  25
@@ -136,41 +134,37 @@
 ## [13] 0.049 0.038 0.028 0.021 0.015 0.011 0.008 0.005 0.004 0.003 0.002 0.001
 ## [25] 0.001</code></pre>
 <p>Then we set up and run the model for cumulative observed cases.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="kw">sars</span> <span class="op">&lt;-</span> <span class="kw">SARS2003</span>
-<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">NA</span>,<span class="fl">20</span>),<span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span>(<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)) <span class="co">## pad before initialisation</span>
-<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2003-01-01"</span>)<span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,along.with=<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
-<span class="kw">obs</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">sars</span> <span class="kw">&lt;-</span> <span class="no">SARS2003</span>
+<span class="no">sars</span>$<span class="no">incidence</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">NA</span>,<span class="fl">20</span>),<span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span>(<span class="no">sars</span>$<span class="no">incidence</span>)) <span class="co">## pad before initialisation</span>
+<span class="no">sars</span>$<span class="no">sarsdate</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2003-01-01"</span>)+<span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,<span class="kw">along.with</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">incidence</span>)
+<span class="no">obs</span> <span class="kw">&lt;-</span> !<span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">sars</span>$<span class="no">incidence</span>)
 
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span> <span class="fu"><a href="../reference/rw.html">rw</a></span>(time=<span class="kw">week</span>,prior_scale=<span class="fl">0.1</span>),
-     data=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,
-                     date=<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span>,
-                     week = <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span>, <span class="st">"%V"</span>)),
-             obs=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-                 incidence=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-                     odata=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,
-                                      date=<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span>[<span class="kw">obs</span>],incidence=<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>[<span class="kw">obs</span>]),
-                     rates=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(means=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="st">"A"</span>),<span class="fl">1</span>),
-                                scale=<span class="fl">.01</span>),
-                     pvec=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">.25</span>,<span class="fl">.5</span>,<span class="fl">.75</span>,<span class="fl">1</span>),
-                     ptype=<span class="st">"distribution"</span>
+<span class="no">args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">formula</span><span class="kw">=</span><span class="fu">Rt</span>(<span class="no">country</span>,<span class="no">date</span>)~ <span class="fu"><a href="../reference/rw.html">rw</a></span>(<span class="kw">time</span><span class="kw">=</span><span class="no">week</span>,<span class="kw">prior_scale</span><span class="kw">=</span><span class="fl">0.1</span>),
+     <span class="kw">data</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">country</span><span class="kw">=</span><span class="st">"A"</span>,
+                     <span class="kw">date</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">sarsdate</span>,
+                     <span class="kw">week</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="no">sars</span>$<span class="no">sarsdate</span>, <span class="st">"%V"</span>)),
+             <span class="kw">obs</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+                 <span class="kw">incidence</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+                     <span class="kw">odata</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">country</span><span class="kw">=</span><span class="st">"A"</span>,
+                                      <span class="kw">date</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">sarsdate</span>[<span class="no">obs</span>],<span class="kw">incidence</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">incidence</span>[<span class="no">obs</span>]),
+                     <span class="kw">rates</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">means</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="st">"A"</span>),<span class="fl">1</span>),
+                                <span class="kw">scale</span><span class="kw">=</span><span class="fl">.01</span>),
+                     <span class="kw">pvec</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">.25</span>,<span class="fl">.5</span>,<span class="fl">.75</span>,<span class="fl">1</span>),
+                     <span class="kw">ptype</span><span class="kw">=</span><span class="st">"distribution"</span>
                  )
              ),
-             seed_days=<span class="fl">7</span>,
-             algorithm=<span class="st">"sampling"</span>,
-             r0=<span class="fl">3</span>,
-             pops=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,pop=<span class="fl">1e6</span>),
-             si=<span class="kw">sars</span><span class="op">$</span><span class="kw">si</span>,
-             prior = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>,scale=<span class="fl">.2</span>),
-             prior_intercept = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>,scale=<span class="fl">.5</span>),
-             prior_tau = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">exponential</a></span>(rate=<span class="fl">4</span>)             
-     )
-</pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">debug</span><span class="op">=</span><span class="fl">TRUE</span> <span class="co">## to get original parameter values</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">100</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">77239</span>,chains=<span class="fl">1</span>)
-<span class="kw">fitpre</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>,<span class="kw">args</span>)
-</pre></div>
+             <span class="kw">seed_days</span><span class="kw">=</span><span class="fl">7</span>,
+             <span class="kw">algorithm</span><span class="kw">=</span><span class="st">"sampling"</span>,
+             <span class="kw">r0</span><span class="kw">=</span><span class="fl">3</span>,
+             <span class="kw">pops</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">country</span><span class="kw">=</span><span class="st">"A"</span>,<span class="kw">pop</span><span class="kw">=</span><span class="fl">1e6</span>),
+             <span class="kw">si</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">si</span>,
+             <span class="kw">prior</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">.2</span>),
+             <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">.5</span>),
+             <span class="kw">prior_tau</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">exponential</a></span>(<span class="kw">rate</span><span class="kw">=</span><span class="fl">4</span>)
+     )</pre></body></html></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">args</span>$<span class="no">debug</span><span class="kw">=</span><span class="fl">TRUE</span> <span class="co">## to get original parameter values</span>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">100</span>,<span class="kw">control</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">adapt_delta</span><span class="kw">=</span><span class="fl">0.95</span>,<span class="kw">max_treedepth</span><span class="kw">=</span><span class="fl">15</span>),<span class="kw">seed</span><span class="kw">=</span><span class="fl">77239</span>,<span class="kw">chains</span><span class="kw">=</span><span class="fl">1</span>)
+<span class="no">fitpre</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>,<span class="no">args</span>)</pre></body></html></div>
 <pre><code>## Warning: The largest R-hat is 1.22, indicating chains have not mixed.
 ## Running the chains for more iterations may help. See
 ## http://mc-stan.org/misc/warnings.html#r-hat</code></pre>
@@ -183,58 +177,50 @@
 <pre><code>## Warning: Markov chains did not converge! Do not analyze results!</code></pre>
 <p>The above run may give some error messages, but they can be ignored as this run is only used to get starting values for the chains of the main run.</p>
 <p>Now update the model to work with individually reported cases.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="kw">sars</span> <span class="op">&lt;-</span> <span class="kw">SARS2003</span>
-<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">NA</span>,<span class="fl">20</span>),<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>) <span class="co">## pad before initialisation</span>
-<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2003-01-01"</span>)<span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,along.with=<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
-<span class="kw">obs</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">obs</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-    incidence=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-        odata=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,
-                         date=<span class="kw">sars</span><span class="op">$</span><span class="kw">sarsdate</span>[<span class="kw">obs</span>],incidence=<span class="kw">sars</span><span class="op">$</span><span class="kw">incidence</span>[<span class="kw">obs</span>]),
-        rates=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(means=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="st">"A"</span>),<span class="fl">1</span>),
-                   scale=<span class="fl">.01</span>),
-        pvec=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>),
-        ptype=<span class="st">"density"</span>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">sars</span> <span class="kw">&lt;-</span> <span class="no">SARS2003</span>
+<span class="no">sars</span>$<span class="no">incidence</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">NA</span>,<span class="fl">20</span>),<span class="no">sars</span>$<span class="no">incidence</span>) <span class="co">## pad before initialisation</span>
+<span class="no">sars</span>$<span class="no">sarsdate</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2003-01-01"</span>)+<span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,<span class="kw">along.with</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">incidence</span>)
+<span class="no">obs</span> <span class="kw">&lt;-</span> !<span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">sars</span>$<span class="no">incidence</span>)
+<span class="no">args</span>$<span class="no">obs</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+    <span class="kw">incidence</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+        <span class="kw">odata</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">country</span><span class="kw">=</span><span class="st">"A"</span>,
+                         <span class="kw">date</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">sarsdate</span>[<span class="no">obs</span>],<span class="kw">incidence</span><span class="kw">=</span><span class="no">sars</span>$<span class="no">incidence</span>[<span class="no">obs</span>]),
+        <span class="kw">rates</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">means</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="st">"A"</span>),<span class="fl">1</span>),
+                   <span class="kw">scale</span><span class="kw">=</span><span class="fl">.01</span>),
+        <span class="kw">pvec</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>),
+        <span class="kw">ptype</span><span class="kw">=</span><span class="st">"density"</span>
     )
-)
-</pre></div>
+)</pre></body></html></div>
 <p>Next we prepare the initialisation values. This is very crude at the moment and better ways probably do exist.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit">
-<span class="kw">initf</span> <span class="op">&lt;-</span> <span class="fu">function</span>(){
-    <span class="kw">i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span>(<span class="fl">1</span><span class="op">:</span><span class="fl">50</span>,<span class="fl">1</span>)
-    <span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw">rstan</span>::<span class="fu"><a href="https://rdrr.io/pkg/rstan/man/stanfit-method-extract.html">extract</a></span>(<span class="kw">fitpre</span><span class="op">$</span><span class="kw">stanfit</span>),
-                  <span class="fu">function</span>(<span class="kw">x</span>) {
-                      <span class="co">if</span> (<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="kw">x</span>))<span class="op">==</span><span class="fl">1</span>){
-                          <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="kw">x</span>[<span class="kw">i</span>])
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">initf</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(){
+    <span class="no">i</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span>(<span class="fl">1</span>:<span class="fl">50</span>,<span class="fl">1</span>)
+    <span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="kw pkg">rstan</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-method-extract.html">extract</a></span>(<span class="no">fitpre</span>$<span class="no">stanfit</span>),
+                  <span class="kw">function</span>(<span class="no">x</span>) {
+                      <span class="kw">if</span> (<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">x</span>))<span class="kw">==</span><span class="fl">1</span>){
+                          <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="no">x</span>[<span class="no">i</span>])
                       }
-                      <span class="co">else</span> <span class="co">if</span> (<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="kw">x</span>))<span class="op">==</span><span class="fl">2</span>)
-                          <span class="kw">x</span>[<span class="kw">i</span>,]
-                      <span class="co">else</span> <span class="kw">x</span>[<span class="kw">i</span>,,]
+                      <span class="kw">else</span> <span class="kw">if</span> (<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">x</span>))<span class="kw">==</span><span class="fl">2</span>)
+                          <span class="no">x</span>[<span class="no">i</span>,]
+                      <span class="kw">else</span> <span class="no">x</span>[<span class="no">i</span>,,]
                   }
                   )
-    <span class="co">for</span> (<span class="kw">j</span> <span class="co">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="kw">res</span>)){
-        <span class="co">if</span> (<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="kw">res</span>[<span class="kw">j</span>])<span class="op">==</span><span class="fl">1</span>)
-            <span class="kw">res</span>[[<span class="kw">j</span>]] <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="kw">res</span>[[<span class="kw">j</span>]])
+    <span class="kw">for</span> (<span class="no">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="no">res</span>)){
+        <span class="kw">if</span> (<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">res</span>[<span class="no">j</span>])<span class="kw">==</span><span class="fl">1</span>)
+            <span class="no">res</span><span class="kw">[[</span><span class="no">j</span>]] <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="no">j</span>]])
     }
-    <span class="kw">res</span><span class="op">$</span><span class="kw">tau_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="kw">res</span><span class="op">$</span><span class="kw">tau_raw</span>)
-    <span class="kw">res</span><span class="op">$</span><span class="kw">noise</span><span class="op">&lt;-</span> <span class="kw">NULL</span>
-    <span class="kw">res</span>
+    <span class="no">res</span>$<span class="no">tau_raw</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">res</span>$<span class="no">tau_raw</span>)
+    <span class="no">res</span>$<span class="no">noise</span><span class="kw">&lt;-</span> <span class="kw">NULL</span>
+    <span class="no">res</span>
 }
-<span class="kw">args</span><span class="op">$</span><span class="kw">debug</span> <span class="op">&lt;-</span> <span class="kw">F</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">1000</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">713</span>,init=<span class="kw">initf</span>)
-</pre></div>
+<span class="no">args</span>$<span class="no">debug</span> <span class="kw">&lt;-</span> <span class="no">F</span>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">1000</span>,<span class="kw">control</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">adapt_delta</span><span class="kw">=</span><span class="fl">0.95</span>,<span class="kw">max_treedepth</span><span class="kw">=</span><span class="fl">15</span>),<span class="kw">seed</span><span class="kw">=</span><span class="fl">713</span>,<span class="kw">init</span><span class="kw">=</span><span class="no">initf</span>)</pre></body></html></div>
 <p>Now we starte the main sampling run.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit">
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>,<span class="kw">args</span>)
-</pre></div>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>,<span class="no">args</span>)</pre></body></html></div>
 <p>And here are the resulting fits.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),
-             <span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
-             nrow=<span class="fl">2</span>)
-</pre></div>
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">gridExtra</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>),
+             <span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>,<span class="st">"incidence"</span>),
+             <span class="kw">nrow</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
 <p><img src="ResolvingProblems_files/figure-html/SARScumulativeplot-1.png" width="700"></p>
 </div>
 <div id="collinearity" class="section level2">
@@ -244,119 +230,102 @@
 <p>Take the example of modeling the effect of several non-pharmaceutical interventions (NPIs). There are two primary reasons why these effects can be highly confounded. Most obviously, the interventions will often take place in quick succession, and so they will be highly collinear. The second cause is the time distribution from infection to an event - for example a death. This is often such that conditional on observing a death at a particular time, there is a wide range of plausible dates at which the individual was infected. Any effects on the reproduction number from interventions occuring close to one-another will be smoothed over in the death data, and the signal as to which intervention actually had an effect becomes weaker.</p>
 <p>One possible remedy for this is to pool the effects over different groups. This incorporates more data to delineate each effect. Another approach is to regularize the problem by using more informative priors. Of course this should be done in a principled manner; for example by using results from previous studies.</p>
 <p>In this section, we illustrate this phenomenon with a simulated dataset. The code below simulates death data using an assumed initial reproduction number, and assumed effect sizes for the <code>schools_universities</code> and <code>lockdown</code> NPIs. The aim will be to recover the parameters under which the data was simulated.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)
-<span class="kw">EuropeCovid</span><span class="op">$</span><span class="kw">data</span>[<span class="kw">EuropeCovid</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">country</span> <span class="op">==</span> <span class="st">"France"</span> <span class="op">&amp;</span> <span class="kw">EuropeCovid</span><span class="op">$</span><span class="kw">data</span><span class="op">$</span><span class="kw">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2020-03-01"</span>), <span class="st">"schools_universities"</span>] <span class="op">=</span> <span class="fl">1</span>
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="kw">EuropeCovid</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="st">"France"</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">algorithm</span> <span class="op">&lt;-</span> <span class="st">"sampling"</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter = <span class="fl">1e3</span>, seed=<span class="fl">12345</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>, <span class="kw">date</span>) <span class="op">~</span> <span class="kw">schools_universities</span> <span class="op">+</span> <span class="kw">lockdown</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_PD</span> <span class="op">&lt;-</span> <span class="fl">TRUE</span>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)
+<span class="no">EuropeCovid</span>$<span class="no">data</span>[<span class="no">EuropeCovid</span>$<span class="no">data</span>$<span class="no">country</span> <span class="kw">==</span> <span class="st">"France"</span> <span class="kw">&amp;</span> <span class="no">EuropeCovid</span>$<span class="no">data</span>$<span class="no">date</span> <span class="kw">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2020-03-01"</span>), <span class="st">"schools_universities"</span>] <span class="kw">=</span> <span class="fl">1</span>
+<span class="no">args</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid</span>
+<span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="st">"France"</span>
+<span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"sampling"</span>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span> <span class="kw">=</span> <span class="fl">1e3</span>, <span class="kw">seed</span><span class="kw">=</span><span class="fl">12345</span>)
+<span class="no">args</span>$<span class="no">formula</span> <span class="kw">&lt;-</span> <span class="fu">R</span>(<span class="no">country</span>, <span class="no">date</span>) ~ <span class="no">schools_universities</span> + <span class="no">lockdown</span>
+<span class="no">args</span>$<span class="no">prior_PD</span> <span class="kw">&lt;-</span> <span class="fl">TRUE</span>
 
 <span class="co"># set some reasonable prior values</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">r0</span> <span class="op">&lt;-</span> <span class="fl">3</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_intercept</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>, scale = <span class="fl">0.01</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">1.5</span>), scale=<span class="fl">0.01</span>)
+<span class="no">args</span>$<span class="no">r0</span> <span class="kw">&lt;-</span> <span class="fl">3</span>
+<span class="no">args</span>$<span class="no">prior_intercept</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>, <span class="kw">scale</span> <span class="kw">=</span> <span class="fl">0.01</span>)
+<span class="no">args</span>$<span class="no">prior</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">1.5</span>), <span class="kw">scale</span><span class="kw">=</span><span class="fl">0.01</span>)
 
-<span class="kw">fm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
+<span class="no">fm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)
 <span class="co"># look at prior predictive distribution</span>
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fm</span>)
-</pre></div>
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fm</span>)</pre></body></html></div>
 <p><img src="ResolvingProblems_files/figure-html/priorSampling-1.png" width="700"> In the above code, we have assumed that the initial reproduction number is close to 3, and have assumed regression parameters for the schools/universities and lockdown NPIs of around 0.5 and 1.5 respectively. Now we simulate daily death counts under this model, which will be used in place of the true death data.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit">
-<span class="co"># use posterior data from prior run</span>
-<span class="kw">obs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstantools/reference/posterior_predict.html">posterior_predict</a></span>(<span class="kw">fm</span>, type=<span class="st">"deaths"</span>)<span class="op">$</span><span class="kw">France</span>
-<span class="kw">dates</span> <span class="op">&lt;-</span> <span class="kw">obs</span>[,<span class="fl">1</span>]
-<span class="kw">obs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowMeans</a></span>(<span class="kw">obs</span>[,<span class="op">-</span><span class="fl">1</span>]))
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="co"># use posterior data from prior run</span>
+<span class="no">obs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstantools/reference/posterior_predict.html">posterior_predict</a></span>(<span class="no">fm</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"deaths"</span>)$<span class="no">France</span>
+<span class="no">dates</span> <span class="kw">&lt;-</span> <span class="no">obs</span>[,<span class="fl">1</span>]
+<span class="no">obs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowMeans</a></span>(<span class="no">obs</span>[,-<span class="fl">1</span>]))
 
 <span class="co"># replace France deaths data with simulated data</span>
-<span class="kw">deaths</span> <span class="op">&lt;-</span> <span class="kw">args</span><span class="op">$</span><span class="kw">obs</span><span class="op">$</span><span class="kw">deaths</span>
-<span class="kw">w</span> <span class="op">&lt;-</span> <span class="kw">deaths</span><span class="op">$</span><span class="kw">odata</span><span class="op">$</span><span class="kw">country</span> <span class="op">==</span> <span class="st">"France"</span>
-<span class="kw">deaths</span><span class="op">$</span><span class="kw">odata</span> <span class="op">&lt;-</span> <span class="kw">deaths</span><span class="op">$</span><span class="kw">odata</span>[<span class="kw">w</span>,]
-<span class="kw">deaths</span><span class="op">$</span><span class="kw">odata</span><span class="op">$</span><span class="kw">deaths</span> <span class="op">&lt;-</span> <span class="kw">obs</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">obs</span><span class="op">$</span><span class="kw">deaths</span> <span class="op">&lt;-</span> <span class="kw">deaths</span>
-</pre></div>
+<span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="no">args</span>$<span class="no">obs</span>$<span class="no">deaths</span>
+<span class="no">w</span> <span class="kw">&lt;-</span> <span class="no">deaths</span>$<span class="no">odata</span>$<span class="no">country</span> <span class="kw">==</span> <span class="st">"France"</span>
+<span class="no">deaths</span>$<span class="no">odata</span> <span class="kw">&lt;-</span> <span class="no">deaths</span>$<span class="no">odata</span>[<span class="no">w</span>,]
+<span class="no">deaths</span>$<span class="no">odata</span>$<span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="no">obs</span>
+<span class="no">args</span>$<span class="no">obs</span>$<span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="no">deaths</span></pre></body></html></div>
 <p>Fitting the model to the simulared data with uninformative priors for the initial reproduction number and effects.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit">
-<span class="co"># fit the model with uninformative priors</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_PD</span> <span class="op">&lt;-</span> <span class="fl">FALSE</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_intercept</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">10</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">10</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
-</pre></div>
-<pre><code>## Warning: There were 1714 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="co"># fit the model with uninformative priors</span>
+<span class="no">args</span>$<span class="no">prior_PD</span> <span class="kw">&lt;-</span> <span class="fl">FALSE</span>
+<span class="no">args</span>$<span class="no">prior_intercept</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">scale</span><span class="kw">=</span><span class="fl">10</span>)
+<span class="no">args</span>$<span class="no">prior</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">scale</span><span class="kw">=</span><span class="fl">10</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="no">fm2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>))</pre></body></html></div>
+<pre><code>## Warning: There were 1672 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
 ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded</code></pre>
 <pre><code>## Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
 <pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 ## Running the chains for more iterations may help. See
 ## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
-<pre><code>## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## http://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
 <pre><code>##    user  system elapsed 
-## 921.527   3.736 295.747</code></pre>
+## 625.683   3.305 194.164</code></pre>
 <p>Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit">
-<span class="co"># more informative prior intercept</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_intercept</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">0.5</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale=<span class="fl">0.5</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="kw">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>))
-</pre></div>
+<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="co"># more informative prior intercept</span>
+<span class="no">args</span>$<span class="no">prior_intercept</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">scale</span><span class="kw">=</span><span class="fl">0.5</span>)
+<span class="no">args</span>$<span class="no">prior</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">scale</span><span class="kw">=</span><span class="fl">0.5</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="no">fm3</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>))</pre></body></html></div>
 <pre><code>##    user  system elapsed 
-## 191.556   1.444  60.875</code></pre>
+## 127.408   1.263  41.522</code></pre>
 <p>This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.</p>
 <p>We now plot the posterior correlations between these two parameters.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(mfrow=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>,<span class="fl">2</span>))
-<span class="kw">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="kw">fm2</span>)
-<span class="kw">r0</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"(Intercept)"</span>]
-<span class="kw">schools_universities</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"schools_universities"</span>]
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="kw">r0</span>, <span class="kw">schools_universities</span>, type = <span class="st">"o"</span>)
+<div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span>(<span class="kw">mfrow</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>,<span class="fl">2</span>))
+<span class="no">mat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="no">fm2</span>)
+<span class="no">r0</span> <span class="kw">&lt;-</span> <span class="no">mat</span>[,<span class="fl">1</span>,<span class="st">"(Intercept)"</span>]
+<span class="no">schools_universities</span> <span class="kw">&lt;-</span> <span class="no">mat</span>[,<span class="fl">1</span>,<span class="st">"schools_universities"</span>]
+<span class="fu"><a href="https://rdrr.io/r/base/plot.html">plot</a></span>(<span class="no">r0</span>, <span class="no">schools_universities</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"o"</span>)
 
-<span class="kw">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="kw">fm3</span>)
-<span class="kw">r0</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"(Intercept)"</span>]
-<span class="kw">schools_universities</span> <span class="op">&lt;-</span> <span class="kw">mat</span>[,<span class="fl">1</span>,<span class="st">"schools_universities"</span>]
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.html">plot</a></span>(<span class="kw">r0</span>, <span class="kw">schools_universities</span>, type = <span class="st">"o"</span>)
-</pre></div>
+<span class="no">mat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html">as.array</a></span>(<span class="no">fm3</span>)
+<span class="no">r0</span> <span class="kw">&lt;-</span> <span class="no">mat</span>[,<span class="fl">1</span>,<span class="st">"(Intercept)"</span>]
+<span class="no">schools_universities</span> <span class="kw">&lt;-</span> <span class="no">mat</span>[,<span class="fl">1</span>,<span class="st">"schools_universities"</span>]
+<span class="fu"><a href="https://rdrr.io/r/base/plot.html">plot</a></span>(<span class="no">r0</span>, <span class="no">schools_universities</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"o"</span>)</pre></body></html></div>
 <p><img src="ResolvingProblems_files/figure-html/unnamed-chunk-3-1.png" width="700"> The left hand plot shows the posterior distribution from <code>fm2</code>, where less informative priors were used. The divergent transitions appear to be caused by the small step-size required to traverse the distribution horizontally/vertically, and the large step size desired for traversing the diagonal; there is a <em>ridge</em> in the posterior. For more information on why this can pose a problem for Hamiltonian Monte Carlo, please refer to <a href="https://mc-stan.org/docs/2_20/stan-users-guide/collinearity-section.html">the stan user guide</a>. Using stronger prior information reduces the posterior correlation and the sampler explores the space better, as shown in the right hand plot.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">fm2</span>, digits=<span class="fl">2</span>)
-</pre></div>
+<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">fm2</span>, <span class="kw">digits</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
 <pre><code>## 
 ## Rt regression parameters:
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -4.91   4.18 
-## schools_universities  5.43   4.22 
-## lockdown              1.49   0.17 
+## (Intercept)          -5.15   4.12 
+## schools_universities  5.66   4.12 
+## lockdown              1.51   0.16 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]         2.76   0.90 
-## tau                  11.24  10.47 
-## phi[deaths]          19.11   3.13 
+## seeds[France]         2.65   0.80 
+## tau                  10.48  10.04 
+## phi[deaths]          19.26   3.38 
 ## noise[France,deaths]  0.99   0.10</code></pre>
-<div class="sourceCode" id="cb26"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">fm3</span>, digits=<span class="fl">2</span>)
-</pre></div>
+<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">fm3</span>, <span class="kw">digits</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
 <pre><code>## 
 ## Rt regression parameters:
 ## -----
 ## coefficients:
 ##                      Median MAD_SD
-## (Intercept)          -0.22   0.27 
-## schools_universities  0.67   0.32 
-## lockdown              1.54   0.15 
+## (Intercept)          -0.24   0.25 
+## schools_universities  0.69   0.29 
+## lockdown              1.56   0.15 
 ## 
 ## Other model parameters:
 ## -----
 ##                      Median MAD_SD
-## seeds[France]        21.41   9.13 
-## tau                  26.69  18.70 
-## phi[deaths]          19.24   3.17 
+## seeds[France]        20.18   8.14 
+## tau                  26.32  19.02 
+## phi[deaths]          19.23   3.06 
 ## noise[France,deaths]  1.00   0.10</code></pre>
 </div>
   </div>
@@ -376,7 +345,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

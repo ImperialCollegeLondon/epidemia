@@ -95,7 +95,7 @@
 
       
 
-      </header><div class="row">
+      </header><script src="introduction_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Flexible Epidemic Modeling with epidemia</h1>
@@ -109,56 +109,44 @@
     
     
 <p><strong>Note:</strong> <em>This vignette is a work in progress, and will be regularly updated.</em></p>
-<p><strong>epidemia</strong> is an R-package for fitting Bayesian epidemic models in the style of <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>. Here we detail these models and give users enough information to start fitting them independently.</p>
+<p><strong>epidemia</strong> is an R-package for fitting Bayesian epidemic models in the style of <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. Here we detail these models and give users enough information to start fitting them independently.</p>
 <p>The document is organized as follows. Section <a href="#example-usage">1</a> provides basic examples with minimal description, so that users can quickly get a feel for the package. Section <a href="#model-overview">2</a> gives a formal framework for the models within the scope of the package. Understanding this framework is essential for making the most of the flexibility offered by <strong>epidemia</strong>. Section <a href="#r-implementation">3</a> discusses the details of <code>epim</code>; the primary model fitting function in the package. <code>epim</code> is designed to be flexible, and therefore has a number of arguments. This can be intimidating, so we describe these arguments in a lot of detail. Finally Section <a href="#a-more-complete-example">4</a> highlights some of the more useful features of the package.</p>
 <p><strong>epidemia</strong> contains an example dataset <code>EuropeCovid</code>, which contains data on the daily deaths from Covid-19 recorded in 11 European countries. This will be used as a running example throughout the vignette.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">epidemia</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
-</pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())</pre></body></html></div>
 <p>The line <code><a href="https://rdrr.io/r/base/options.html">options(mc.cores = parallel::detectCores())</a></code> is important if MCMC sampling is used, as it allows different chains to be run in parallel, rather than sequentially.</p>
 <div id="example-usage" class="section level1">
 <h1 class="hasAnchor">
 <a href="#example-usage" class="anchor"></a><span class="header-section-number">1</span> Example Usage</h1>
 <p>Here we provide code snippets showing basic usage of <strong>epidemia</strong>. Below considers fitting a model to the Italian data, and demonstrates usage of various arguments to <code>epim</code>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="co"># collect arguments for 'epim'</span>
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="kw">EuropeCovid</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">algorithm</span> <span class="op">&lt;-</span> <span class="st">"sampling"</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">1e3</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">12345</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span>  <span class="fl">1</span> <span class="op">+</span> <span class="kw">lockdown</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>,scale=<span class="fl">.5</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_intercept</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>,scale=<span class="fl">2</span>)
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-</pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>), <span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>), <span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),nrow=<span class="fl">3</span>)
-</pre></div>
+<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="co"># collect arguments for 'epim'</span>
+<span class="no">args</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid</span>
+<span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"sampling"</span>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">1e3</span>,<span class="kw">control</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">adapt_delta</span><span class="kw">=</span><span class="fl">0.95</span>,<span class="kw">max_treedepth</span><span class="kw">=</span><span class="fl">15</span>),<span class="kw">seed</span><span class="kw">=</span><span class="fl">12345</span>)
+<span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>)
+<span class="no">args</span>$<span class="no">formula</span> <span class="kw">&lt;-</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~  <span class="fl">1</span> + <span class="no">lockdown</span>
+<span class="no">args</span>$<span class="no">prior</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">.5</span>)
+<span class="no">args</span>$<span class="no">prior_intercept</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">2</span>)
+<span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">gridExtra</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"deaths"</span>), <span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="no">fit</span>), <span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>),<span class="kw">nrow</span><span class="kw">=</span><span class="fl">3</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/plotItaly-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>Often we would like to model more than one population. Here is an example of using multiple populations, where the regression for the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using <code>(1 + lockdown | country)</code> in place of <code>(1 | country)</code> in <code>args$formula</code> below.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="co"># collect arguments for 'epim'</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>, <span class="st">"United_Kingdom"</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span>  <span class="fl">0</span> <span class="op">+</span> (<span class="fl">1</span><span class="op">|</span><span class="kw">country</span>) <span class="op">+</span> <span class="kw">lockdown</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_covariance</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">decov</a></span>(scale=<span class="fl">0.1</span>) 
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-</pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type = <span class="st">"deaths"</span>)
-</pre></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="co"># collect arguments for 'epim'</span>
+<span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>, <span class="st">"United_Kingdom"</span>)
+<span class="no">args</span>$<span class="no">formula</span> <span class="kw">&lt;-</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~  <span class="fl">0</span> + (<span class="fl">1</span><span class="kw">|</span><span class="no">country</span>) + <span class="no">lockdown</span>
+<span class="no">args</span>$<span class="no">prior_covariance</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">decov</a></span>(<span class="kw">scale</span><span class="kw">=</span><span class="fl">0.1</span>)
+<span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"deaths"</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/plotIU-1.png" width="1152" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>)
-</pre></div>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/plotIU-2.png" width="1152" style="display: block; margin: auto;"></p>
 </div>
 <div id="model-overview" class="section level1">
 <h1 class="hasAnchor">
 <a href="#model-overview" class="anchor"></a><span class="header-section-number">2</span> Model Overview</h1>
-<p><span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span> introduced a hierarchical Bayesian approach for epidemic modeling, and applied it to assessing the effect of non-pharmaceutical interventions on the covid-19 pandemic in 11 European countries. <strong>epidemia</strong> is designed to fit models which are largely extensions of this approach. There are however important differences which will be emphasized as we go along. The model is first described as it applies to a single population. Extensions to multiple populations are considered in the subsequent section.</p>
+<p><span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span> introduced a hierarchical Bayesian approach for epidemic modeling, and applied it to assessing the effect of non-pharmaceutical interventions on the covid-19 pandemic in 11 European countries. <strong>epidemia</strong> is designed to fit models which are largely extensions of this approach. There are however important differences which will be emphasized as we go along. The model is first described as it applies to a single population. Extensions to multiple populations are considered in the subsequent section.</p>
 <div id="a-single-population" class="section level2">
 <h2 class="hasAnchor">
 <a href="#a-single-population" class="anchor"></a><span class="header-section-number">2.1</span> A Single Population</h2>
@@ -225,7 +213,7 @@ where <span class="math inline">\(\epsilon^{(k)}_{t'} \sim N(0, \sigma_k^2)\)</s
 \Delta I_t \sim \text{Exponential}(\tau^{-1}),
 \]</span>
 for all <span class="math inline">\(0\leq t&lt;n_0\)</span>. The parameter <span class="math inline">\(\tau\)</span> is given an exponential prior with a rate hyperparameter <span class="math inline">\(\lambda_0&gt;0\)</span>. This allows the number of infections in the first <span class="math inline">\(n_0\)</span> days to be learnt by the model.</p>
-<p>Infections after the seeding period evolve according to <a href="#eq:ode">(2.1)</a>. However this quantity remains ill-defined, as we have yet to define <span class="math inline">\(C_t\)</span>, the total infectiousness at period <span class="math inline">\(t_0+t\)</span>. This is a function of both previous infections and the generation distribution of the disease. This generation distribution is typically unknown. Therefore, as in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>, we assume that it is the same as the serial interval; represented by a distribution <span class="math inline">\(s := (s_1,s_2,\ldots)\)</span> over the time from disease onset to a secondary onset. <span class="math inline">\(C_t\)</span> is then given by the discrete convolution
+<p>Infections after the seeding period evolve according to <a href="#eq:ode">(2.1)</a>. However this quantity remains ill-defined, as we have yet to define <span class="math inline">\(C_t\)</span>, the total infectiousness at period <span class="math inline">\(t_0+t\)</span>. This is a function of both previous infections and the generation distribution of the disease. This generation distribution is typically unknown. Therefore, as in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, we assume that it is the same as the serial interval; represented by a distribution <span class="math inline">\(s := (s_1,s_2,\ldots)\)</span> over the time from disease onset to a secondary onset. <span class="math inline">\(C_t\)</span> is then given by the discrete convolution
 <span class="math display">\[
 C_t := \sum_{i=0}^{t}\Delta I_i s_{t-i}.
 \]</span></p>
@@ -236,12 +224,12 @@ C_t := \sum_{i=0}^{t}\Delta I_i s_{t-i}.
 \tag{2.4}
 \end{equation}\]</span>
 for all <span class="math inline">\(t \geq n_0\)</span>. This satisfies intuitive properties. If <span class="math inline">\(R_t = 0\)</span> or if nobody is susceptible, there are no new infections. Fixing <span class="math inline">\(c_t &gt; 0\)</span> and letting <span class="math inline">\(R_t \to \infty\)</span> implies that <span class="math inline">\(I_t \to S_0\)</span>, i.e. everyone that is susceptible is infected today.</p>
-<p>The reader may notice that <a href="#eq:inf">(2.4)</a> differs from the update used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>. This new update has the advantage of ensuring that cumulative infections never exceed the total population size.</p>
+<p>The reader may notice that <a href="#eq:inf">(2.4)</a> differs from the update used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. This new update has the advantage of ensuring that cumulative infections never exceed the total population size.</p>
 </div>
 <div id="observations" class="section level3">
 <h3 class="hasAnchor">
 <a href="#observations" class="anchor"></a><span class="header-section-number">2.1.3</span> Observations</h3>
-<p>Data is observed from <span class="math inline">\(L\)</span> processes <span class="math inline">\(Y_t^{(1)} \ldots Y_{t}^{(L)}\)</span> with the subscript <span class="math inline">\(t\)</span> ranging between <span class="math inline">\(1\)</span> and <span class="math inline">\(T\)</span>. These processes do not need to be fully observed; i.e. data may be missing for a subset of time periods. The typical example of such data would be daily death (as used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>) or case incidence data. However, you are not limited to this. In general,</p>
+<p>Data is observed from <span class="math inline">\(L\)</span> processes <span class="math inline">\(Y_t^{(1)} \ldots Y_{t}^{(L)}\)</span> with the subscript <span class="math inline">\(t\)</span> ranging between <span class="math inline">\(1\)</span> and <span class="math inline">\(T\)</span>. These processes do not need to be fully observed; i.e. data may be missing for a subset of time periods. The typical example of such data would be daily death (as used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>) or case incidence data. However, you are not limited to this. In general,</p>
 <ul>
 <li>
 <span class="math inline">\(Y_t^{(l)}\)</span> should represent the count of a particular type of ‘event’ at time <span class="math inline">\(t\)</span>.</li>
@@ -314,6 +302,11 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 <table class="table">
 <caption>
 <span id="tab:epimArgs">Table 3.1: </span>Formal arguments for the epim function</caption>
+<colgroup>
+<col width="5%">
+<col width="91%">
+<col width="3%">
+</colgroup>
 <thead><tr class="header">
 <th align="left">Arguments</th>
 <th align="left">Description</th>
@@ -377,7 +370,7 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 </tr>
 <tr class="even">
 <td align="left">prior_covariance</td>
-<td align="left">Prior on the covariance matrix of the group-specific parameters <span class="math inline">\(b\)</span>. Only used if the formula has at least one ‘random-effects’ term, i.e. <code>(a|b)</code>.</td>
+<td align="left">Prior on the covariance matrix of the group-specific parameters <span class="math inline">\(b\)</span>. Only used if the formula has at least one ‘random-effects’ term, i.e. <code>(a&amp;#124;b)</code>.</td>
 <td align="left">list</td>
 </tr>
 <tr class="odd">
@@ -414,9 +407,7 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 <p>This specifies the model for the <em>unadjusted</em> time-varying reproduction number, given by <a href="#eq:etapooled">(2.6)</a>. The LHS takes the form <code>R(group,date)</code>. This is just syntactic sugar to make explicit that the model is for the reproduction number for a given population and date.</p>
 <p>The right hand side can include both pooled and unpooled coefficients. For more details on interpreting different formulas, please see <a href="https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf">here</a>.</p>
 <p>We briefly give an intepretation for specific models in the context of the Europe data. First note that terms in the formula must correspond to column names in <code>data</code>, which are</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="kw">EuropeCovid</span><span class="op">$</span><span class="kw">data</span>)
-</pre></div>
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">EuropeCovid</span>$<span class="no">data</span>)</pre></body></html></div>
 <pre><code>## [1] "country"                      "date"                        
 ## [3] "schools_universities"         "self_isolating_if_ill"       
 ## [5] "public_events"                "lockdown"                    
@@ -432,21 +423,17 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 <h4 class="hasAnchor">
 <a href="#data-argument" class="anchor"></a><span class="header-section-number">3.1.1.2</span> <code>data</code> argument</h4>
 <p>This argument provides any data specified by the formula. It must contain at least two columns which give the modeled populations and simulation dates. In the Europe example, the columns <code>country</code> and <code>date</code> serve this purpose. The <code>country</code> column must be coercible to class <code>factor</code>, and the levels of this column determine the possible populations to model.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="kw">data</span> <span class="op">&lt;-</span> <span class="kw">EuropeCovid</span><span class="op">$</span><span class="kw">data</span>
-<span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span>(<span class="kw">data</span><span class="op">$</span><span class="kw">country</span>)
-</pre></div>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">data</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid</span>$<span class="no">data</span>
+<span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span>(<span class="no">data</span>$<span class="no">country</span>)</pre></body></html></div>
 <pre><code>##  [1] "Austria"        "Belgium"        "Denmark"        "France"        
 ##  [5] "Germany"        "Italy"          "Norway"         "Spain"         
 ##  [9] "Sweden"         "Switzerland"    "United_Kingdom"</code></pre>
 <p>If specified, only the populations given in the <code>group_subset</code> argument are modeled. Otherwise, all levels are used.</p>
 <p>The <code>dates</code> column must be coercible to a ‘Date’ vector. Dates must be consecutive for each modeled group. The first date is taken to be the start date <span class="math inline">\(t^{(m)}_0\)</span> of the epidemic in that population, and the final date is taken to be <span class="math inline">\(t^{(m)} + T\)</span>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit">
-<span class="kw">agg</span> <span class="op">&lt;-</span> <span class="fu">function</span>(<span class="kw">x</span>,<span class="kw">f</span>) <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="kw">x</span><span class="op">$</span><span class="kw">date</span>, by=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">x</span><span class="op">$</span><span class="kw">country</span>), FUN=<span class="kw">f</span>)
-<span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="fu">agg</span>(<span class="kw">data</span>, <span class="kw">min</span>),
-               <span class="fu">agg</span>(<span class="kw">data</span>, <span class="kw">max</span>)[,<span class="fl">2</span>]),
-         <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"country"</span>, <span class="st">"start"</span>, <span class="st">"date"</span>))
-</pre></div>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">agg</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">x</span>,<span class="no">f</span>) <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html">aggregate</a></span>(<span class="no">x</span>$<span class="no">date</span>, <span class="kw">by</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">x</span>$<span class="no">country</span>), <span class="kw">FUN</span><span class="kw">=</span><span class="no">f</span>)
+<span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="fu">agg</span>(<span class="no">data</span>, <span class="no">min</span>),
+               <span class="fu">agg</span>(<span class="no">data</span>, <span class="no">max</span>)[,<span class="fl">2</span>]),
+         <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"country"</span>, <span class="st">"start"</span>, <span class="st">"date"</span>))</pre></body></html></div>
 <pre><code>##           country      start       date
 ## 1         Austria 2020-02-22 2020-05-05
 ## 2         Belgium 2020-02-18 2020-05-05
@@ -459,7 +446,7 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 ## 9          Sweden 2020-02-18 2020-05-05
 ## 10    Switzerland 2020-02-14 2020-05-05
 ## 11 United_Kingdom 2020-02-13 2020-05-05</code></pre>
-<p>Following <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>, the start dates shown above are thirty days prior to the first date for which more than 10 cumulative deaths were observed in the given country. They are <em>not learnt by the model</em>, rather they are assumed and specified by the user.</p>
+<p>Following <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, the start dates shown above are thirty days prior to the first date for which more than 10 cumulative deaths were observed in the given country. They are <em>not learnt by the model</em>, rather they are assumed and specified by the user.</p>
 </div>
 <div id="obs-argument" class="section level4">
 <h4 class="hasAnchor">
@@ -477,13 +464,9 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 <li><p><strong>pvec</strong>: The probability vector <span class="math inline">\(\pi_l\)</span> described in Section <a href="#observations">2.1.3</a>.</p></li>
 </ul>
 <p>The <code>EuropeCovid</code> data contains an example of the <code>obs</code> argument. It uses only one type of observation, death data, and so <span class="math inline">\(L=1\)</span> in this case, and of course <code>EuropeCovid$obs</code>must has length one.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit">
-<span class="kw">deaths</span> <span class="op">&lt;-</span> <span class="kw">EuropeCovid</span><span class="op">$</span><span class="kw">obs</span><span class="op">$</span><span class="kw">deaths</span>
-</pre></div>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid</span>$<span class="no">obs</span>$<span class="no">deaths</span></pre></body></html></div>
 <p>We can inspect the observed deaths as follows.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="kw">deaths</span><span class="op">$</span><span class="kw">odata</span>)
-</pre></div>
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">deaths</span>$<span class="no">odata</span>)</pre></body></html></div>
 <pre><code>##   country       date deaths
 ## 1 Austria 2020-02-22      0
 ## 2 Austria 2020-02-23      0
@@ -492,9 +475,7 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 ## 5 Austria 2020-02-26      0
 ## 6 Austria 2020-02-27      0</code></pre>
 <p>It is also instructive to look at <code>$rates</code> component.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit">
-<span class="kw">deaths</span><span class="op">$</span><span class="kw">rates</span>
-</pre></div>
+<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="no">deaths</span>$<span class="no">rates</span></pre></body></html></div>
 <pre><code>## $means
 ##           country         ifr
 ## 1         Denmark 0.010207470
@@ -516,11 +497,9 @@ so that <a href="#eq:alpha">(2.5)</a> is replicated for each population. Notice 
 ## [1] 0.1</code></pre>
 <p>This shows the assumed values for the hyperparameters <span class="math inline">\(\alpha_{l,m}\)</span> and <span class="math inline">\(\sigma_{\alpha_l}\)</span> described above. Note the differing prior expected value of the IFR between groups. This is partially a result of differing age demographics.</p>
 <p>Finally, we visualise the distribution of time from disease onset to death.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/graphics/barplot.html">barplot</a></span>(<span class="kw">deaths</span><span class="op">$</span><span class="kw">pvec</span>, names.arg=<span class="fl">1</span><span class="op">:</span><span class="fl">101</span>)
-</pre></div>
+<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/graphics/barplot.html">barplot</a></span>(<span class="no">deaths</span>$<span class="no">pvec</span>, <span class="kw">names.arg</span><span class="kw">=</span><span class="fl">1</span>:<span class="fl">101</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/pvec-1.png" width="672" style="display: block; margin: auto;">
-Following <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>, this is a discretization of the distribution of <span class="math inline">\(\text{Gamma}(1.35,3.77) + \text{Gamma}(4.94,3.60)\)</span>, where the notation <span class="math inline">\(\text{Gamma}(\alpha, \theta)\)</span> refers to a Gamma random variable with shape <span class="math inline">\(\alpha\)</span> and scale <span class="math inline">\(\theta\)</span>.</p>
+Following <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, this is a discretization of the distribution of <span class="math inline">\(\text{Gamma}(1.35,3.77) + \text{Gamma}(4.94,3.60)\)</span>, where the notation <span class="math inline">\(\text{Gamma}(\alpha, \theta)\)</span> refers to a Gamma random variable with shape <span class="math inline">\(\alpha\)</span> and scale <span class="math inline">\(\theta\)</span>.</p>
 </div>
 <div id="prior-arguments" class="section level4">
 <h4 class="hasAnchor">
@@ -528,7 +507,7 @@ Following <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020
 <p>Prior distributions should be specified for the parameters in <a href="#eq:etapooled">(2.6)</a>, and for additional model parameters.</p>
 <p><em>Please note that the current default priors may not be appropriate, and should not be relied upon. In future versions of the package, we hope to set good default priors.</em></p>
 <p>The priors for <span class="math inline">\(\beta\)</span> (see <a href="#eq:etapooled">(2.6)</a>) are set using the <code>prior</code> and <code>prior_intercept</code> arguments. These will only have an effect if the formula specifies covariates and an intercept respectively. These function similarly to the same arguments in<a href="https://mc-stan.org/rstanarm/reference/stan_lm.html"><code>stan_lm</code></a>. To understand which families can be used please refer to <a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm’s priors</a>.</p>
-<p>There is one caveat: which is that we offer additional priors. Currently there is just one, <code>shifted_gamma</code>, which can only be used for the <code>prior</code> argument. The addition of this prior is motivated by the priors used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>. This essentially allows for
+<p>There is one caveat: which is that we offer additional priors. Currently there is just one, <code>shifted_gamma</code>, which can only be used for the <code>prior</code> argument. The addition of this prior is motivated by the priors used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. This essentially allows for
 <span class="math display">\[\begin{equation}
 \beta_i \sim \text{Gamma}(\alpha,\theta) - \eta,
 \end{equation}\]</span>
@@ -544,37 +523,27 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <h1 class="hasAnchor">
 <a href="#a-more-complete-example" class="anchor"></a><span class="header-section-number">4</span> A More Complete Example</h1>
 <p>Here we demonstrate how to specify different prior distributions in practice, using the Europe data restricted to Germany and the United Kingdom as an example. In particular, we demonstrate the utility of the <code>prior_PD</code> flag for sampling from the prior predictive distribution. This allows you to easily visualise the prior assumptions on the reproduction number. Various methods that can be used on fitted models (<code>epimodel</code>) are demonstrated.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Germany"</span>, <span class="st">"United_Kingdom"</span>)
-</pre></div>
-<p>Similar to <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>, we specify the following model.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">formula</span> <span class="op">&lt;-</span> <span class="fu">R</span>(<span class="kw">country</span>,<span class="kw">date</span>) <span class="op">~</span> (<span class="fl">1</span> <span class="op">|</span> <span class="kw">country</span>) <span class="op">+</span> <span class="kw">schools_universities</span> <span class="op">+</span> <span class="kw">self_isolating_if_ill</span> <span class="op">+</span> <span class="kw">public_events</span> <span class="op">+</span> <span class="kw">lockdown</span> <span class="op">+</span> <span class="kw">social_distancing_encouraged</span>
-</pre></div>
+<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Germany"</span>, <span class="st">"United_Kingdom"</span>)</pre></body></html></div>
+<p>Similar to <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, we specify the following model.</p>
+<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="no">args</span>$<span class="no">formula</span> <span class="kw">&lt;-</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~ (<span class="fl">1</span> <span class="kw">|</span> <span class="no">country</span>) + <span class="no">schools_universities</span> + <span class="no">self_isolating_if_ill</span> + <span class="no">public_events</span> + <span class="no">lockdown</span> + <span class="no">social_distancing_encouraged</span></pre></body></html></div>
 <p>This model allows a separate initial reproduction number for each country, and includes 6 different non-pharamceutical interventions (NPIs) to explain the changes to the number over time.</p>
 <div id="prior-specification" class="section level2">
 <h2 class="hasAnchor">
 <a href="#prior-specification" class="anchor"></a><span class="header-section-number">4.1</span> Prior Specification</h2>
-<p>Here we focus on specifying the <code>prior</code> argument. This controls the prior distribution of the coefficients in the regression. Any of the rstanarm priors can be used. We have also added a <code>shifted_gamma</code> prior to replicate the prior in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020">2020</a>)</span>.</p>
+<p>Here we focus on specifying the <code>prior</code> argument. This controls the prior distribution of the coefficients in the regression. Any of the rstanarm priors can be used. We have also added a <code>shifted_gamma</code> prior to replicate the prior in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>.</p>
 <p>To quickly visualise the effect of the prior distribution we can used the <code>prior_PD</code> flag to <code>epim</code>. If <code>TRUE</code> epim will sample all parameters from their prior distribution. We specify the prior for the intercept as follows.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_intercept</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>, scale = <span class="fl">0.5</span>)
-</pre></div>
-<div class="sourceCode" id="cb22"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(scale = <span class="fl">0.5</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">algorithm</span> <span class="op">&lt;-</span> <span class="st">"sampling"</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">200</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>))
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_PD</span> <span class="op">&lt;-</span> <span class="fl">TRUE</span>
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>), adjusted=<span class="kw">F</span>)
-</pre></div>
+<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="no">args</span>$<span class="no">prior_intercept</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>, <span class="kw">scale</span> <span class="kw">=</span> <span class="fl">0.5</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="no">args</span>$<span class="no">prior</span> <span class="kw">&lt;-</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">scale</span> <span class="kw">=</span> <span class="fl">0.5</span>)
+<span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"sampling"</span>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">200</span>,<span class="kw">control</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">adapt_delta</span><span class="kw">=</span><span class="fl">0.95</span>,<span class="kw">max_treedepth</span><span class="kw">=</span><span class="fl">15</span>))
+<span class="no">args</span>$<span class="no">prior_PD</span> <span class="kw">&lt;-</span> <span class="fl">TRUE</span>
+<span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">levels</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>), <span class="kw">adjusted</span><span class="kw">=</span><span class="no">F</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/normalPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>And example of using a shifted gamma prior…</p>
-<div class="sourceCode" id="cb23"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shifted_gamma.html">shifted_gamma</a></span>(shape=<span class="fl">1</span><span class="op">/</span><span class="fl">6</span>, scale=<span class="fl">1</span>, shift = <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)<span class="op">/</span><span class="fl">6</span>)
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, levels = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>), adjusted=<span class="kw">F</span>)
-</pre></div>
+<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="no">args</span>$<span class="no">prior</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/shifted_gamma.html">shifted_gamma</a></span>(<span class="kw">shape</span><span class="kw">=</span><span class="fl">1</span>/<span class="fl">6</span>, <span class="kw">scale</span><span class="kw">=</span><span class="fl">1</span>, <span class="kw">shift</span> <span class="kw">=</span> -<span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)/<span class="fl">6</span>)
+<span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)
+<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">levels</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">20</span>,<span class="fl">40</span>,<span class="fl">60</span>,<span class="fl">80</span>,<span class="fl">95</span>), <span class="kw">adjusted</span><span class="kw">=</span><span class="no">F</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/gammaPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>The above plots give a good indication of the implications of different prior families.</p>
 </div>
@@ -583,18 +552,12 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <a href="#methods-for-epimodels" class="anchor"></a><span class="header-section-number">4.2</span> Methods for <code>epimodels</code>
 </h2>
 <p>Fitting the model to the data…</p>
-<div class="sourceCode" id="cb24"><pre class="downlit">
-<span class="kw">args</span><span class="op">$</span><span class="kw">prior_PD</span> <span class="op">=</span> <span class="fl">FALSE</span>
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-</pre></div>
+<div class="sourceCode" id="cb24"><html><body><pre class="r"><span class="no">args</span>$<span class="no">prior_PD</span> <span class="kw">=</span> <span class="fl">FALSE</span>
+<span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)</pre></body></html></div>
 <p>Printing the object gives a brief summary of estimated coefficients and standard errors. This is very similar to the print method for <a href="http://mc-stan.org/rstanarm/reference/stanreg-objects.html"><code>stanreg</code></a> objects.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">fit</span>, digits = <span class="fl">2</span>)
-</pre></div>
+<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">fit</span>, <span class="kw">digits</span> <span class="kw">=</span> <span class="fl">2</span>)</pre></body></html></div>
 <p>You can retrieve the prior distributions used easily with the following.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit">
-<span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="kw">fit</span>)
-</pre></div>
+<div class="sourceCode" id="cb26"><html><body><pre class="r"><span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="no">fit</span>)</pre></body></html></div>
 <pre><code>## Priors for model 'fit' 
 ## ------
 ## Intercept
@@ -608,16 +571,14 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 ## ------
 ## See help('prior_summary.epimodel') for more details</code></pre>
 <p>Often it will be useful to obtain the MCMC draws for the raw parameters. This can be done using <code>as.matrix</code>, <code>as.array</code>, or <code>as.data.frame</code>. Here is an example of using <code>as.matrix</code>.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit">
-<span class="kw">draws</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="kw">fit</span>)
-<span class="kw">draws</span>[<span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span>]
-</pre></div>
+<div class="sourceCode" id="cb28"><html><body><pre class="r"><span class="no">draws</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fit</span>)
+<span class="no">draws</span>[<span class="fl">1</span>:<span class="fl">4</span>,<span class="fl">1</span>:<span class="fl">4</span>]</pre></body></html></div>
 <pre><code>##           parameters
 ## iterations (Intercept) schools_universities self_isolating_if_ill public_events
-##       [1,]  -0.7802212         -0.003856012           0.095970274      2.239367
-##       [2,]  -0.6279753          0.390539741           0.002127599      2.379804
-##       [3,]  -1.0996355          0.041580123          -0.004532937      2.120497
-##       [4,]  -0.6882631          0.132473732          -0.006290879      2.276980</code></pre>
+##       [1,]  -1.0472632            0.8675644          -0.008112102      1.962822
+##       [2,]  -0.7756159            0.6038782          -0.008106337      1.938226
+##       [3,]  -0.8876422            0.7545170          -0.008107687      1.865935
+##       [4,]  -0.6276007            0.2372184          -0.007939844      2.378882</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
@@ -625,7 +586,7 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <a href="#references" class="anchor"></a>References</h1>
 <div id="refs" class="references">
 <div id="ref-Flaxman2020">
-<p>Flaxman, Seth, Swapnil Mishra, Axel Gandy, H Juliette T Unwin, Thomas A Mellan, Helen Coupland, Charles Whittaker, et al. 2020. “Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.” <em>Nature</em>. <a href="https://doi.org/10.1038/s41586-020-2405-7" class="uri">https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
+<p>Flaxman, Seth, Swapnil Mishra, Axel Gandy, H Juliette T Unwin, Thomas A Mellan, Helen Coupland, Charles Whittaker, et al. 2020. “Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.” <em>Nature</em>. <a href="https://doi.org/10.1038/s41586-020-2405-7">https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
 </div>
 </div>
 </div>
@@ -644,7 +605,7 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

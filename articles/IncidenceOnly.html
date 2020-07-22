@@ -95,7 +95,7 @@
 
       
 
-      </header><div class="row">
+      </header><script src="IncidenceOnly_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Modelling of R with only Incidence data</h1>
@@ -113,13 +113,11 @@
 <h2 class="hasAnchor">
 <a href="#flu-1918" class="anchor"></a>Flu 1918</h2>
 <p>We use Flu data from 1918 as an example. This is provided in <span class="citation">@EpiEstim</span>.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">EpiEstim</span>)
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">epidemia</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">EpiEstim</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"Flu1918"</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
-<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="kw">Flu1918</span>)
-</pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
+<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">Flu1918</span>)</pre></body></html></div>
 <pre><code>## $incidence
 ##  [1]   5   1   6  15   2   3   8   7   2  15   4  17   4  10  31  11  13  36  13
 ## [20]  33  17  15  32  27  70  58  32  69  54  80 405 192 243 204 280 229 304 265
@@ -129,45 +127,39 @@
 ## 
 ## $si_distr
 ##  [1] 0.000 0.233 0.359 0.198 0.103 0.053 0.027 0.014 0.007 0.003 0.002 0.001</code></pre>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="kw">flu</span> <span class="op">&lt;-</span> <span class="kw">Flu1918</span>
-<span class="kw">flu</span><span class="op">$</span><span class="kw">incidence</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">NA</span>,<span class="fl">1</span>),<span class="kw">flu</span><span class="op">$</span><span class="kw">incidence</span>) <span class="co">## pad before initialisation</span>
-<span class="kw">flu</span><span class="op">$</span><span class="kw">fludate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"1918-01-01"</span>)<span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,along.with=<span class="kw">flu</span><span class="op">$</span><span class="kw">incidence</span>)
-<span class="kw">obs</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="kw">flu</span><span class="op">$</span><span class="kw">incidence</span>)
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">flu</span> <span class="kw">&lt;-</span> <span class="no">Flu1918</span>
+<span class="no">flu</span>$<span class="no">incidence</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">NA</span>,<span class="fl">1</span>),<span class="no">flu</span>$<span class="no">incidence</span>) <span class="co">## pad before initialisation</span>
+<span class="no">flu</span>$<span class="no">fludate</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"1918-01-01"</span>)+<span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>,<span class="kw">along.with</span><span class="kw">=</span><span class="no">flu</span>$<span class="no">incidence</span>)
+<span class="no">obs</span> <span class="kw">&lt;-</span> !<span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">flu</span>$<span class="no">incidence</span>)
 
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(formula=<span class="fu">Rt</span>(<span class="kw">country</span>,<span class="kw">date</span>)<span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="fu"><a href="../reference/rw.html">rw</a></span>(time=<span class="kw">week</span>,prior_scale=<span class="fl">0.1</span>),
-             data=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,
-                             date=<span class="kw">flu</span><span class="op">$</span><span class="kw">fludate</span>,
-                             week=<span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="kw">flu</span><span class="op">$</span><span class="kw">fludate</span>, <span class="st">"%V"</span>)),
-             obs=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-                 incidence=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-                     odata=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,
-                                      date=<span class="kw">flu</span><span class="op">$</span><span class="kw">fludate</span>[<span class="kw">obs</span>],incidence=<span class="kw">flu</span><span class="op">$</span><span class="kw">incidence</span>[<span class="kw">obs</span>]),
-                     rates=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(means=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="st">"A"</span>),<span class="fl">1</span>),
-                                scale=<span class="fl">.01</span>),
-                     pvec=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>)
+<span class="no">args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">formula</span><span class="kw">=</span><span class="fu">Rt</span>(<span class="no">country</span>,<span class="no">date</span>)~ <span class="fl">0</span> + <span class="fu"><a href="../reference/rw.html">rw</a></span>(<span class="kw">time</span><span class="kw">=</span><span class="no">week</span>,<span class="kw">prior_scale</span><span class="kw">=</span><span class="fl">0.1</span>),
+             <span class="kw">data</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">country</span><span class="kw">=</span><span class="st">"A"</span>,
+                             <span class="kw">date</span><span class="kw">=</span><span class="no">flu</span>$<span class="no">fludate</span>,
+                             <span class="kw">week</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span>(<span class="no">flu</span>$<span class="no">fludate</span>, <span class="st">"%V"</span>)),
+             <span class="kw">obs</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+                 <span class="kw">incidence</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+                     <span class="kw">odata</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">country</span><span class="kw">=</span><span class="st">"A"</span>,
+                                      <span class="kw">date</span><span class="kw">=</span><span class="no">flu</span>$<span class="no">fludate</span>[<span class="no">obs</span>],<span class="kw">incidence</span><span class="kw">=</span><span class="no">flu</span>$<span class="no">incidence</span>[<span class="no">obs</span>]),
+                     <span class="kw">rates</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">means</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="st">"A"</span>),<span class="fl">1</span>),
+                                <span class="kw">scale</span><span class="kw">=</span><span class="fl">.01</span>),
+                     <span class="kw">pvec</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>,<span class="fl">.25</span>)
                  )
              ),
-             seed_days=<span class="fl">7</span>,
-             algorithm=<span class="st">"sampling"</span>,
-             r0=<span class="fl">3</span>,
-             pops=<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(country=<span class="st">"A"</span>,pop=<span class="fl">1e6</span>),
-             si=<span class="kw">flu</span><span class="op">$</span><span class="kw">si</span>,
-             prior = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>,scale=<span class="fl">.2</span>),
-             prior_intercept = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>,scale=<span class="fl">.5</span>),
-             prior_tau = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">exponential</a></span>(rate=<span class="fl">4</span>)             
+             <span class="kw">seed_days</span><span class="kw">=</span><span class="fl">7</span>,
+             <span class="kw">algorithm</span><span class="kw">=</span><span class="st">"sampling"</span>,
+             <span class="kw">r0</span><span class="kw">=</span><span class="fl">3</span>,
+             <span class="kw">pops</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">country</span><span class="kw">=</span><span class="st">"A"</span>,<span class="kw">pop</span><span class="kw">=</span><span class="fl">1e6</span>),
+             <span class="kw">si</span><span class="kw">=</span><span class="no">flu</span>$<span class="no">si</span>,
+             <span class="kw">prior</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">.2</span>),
+             <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">.5</span>),
+             <span class="kw">prior_tau</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">exponential</a></span>(<span class="kw">rate</span><span class="kw">=</span><span class="fl">4</span>)
              )
-<span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">1000</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">713</span>)
-</pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>,<span class="kw">args</span>)
-</pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">gridExtra</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>),
-             <span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>,<span class="st">"incidence"</span>),
-             nrow=<span class="fl">2</span>)
-</pre></div>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">1000</span>,<span class="kw">control</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">adapt_delta</span><span class="kw">=</span><span class="fl">0.95</span>,<span class="kw">max_treedepth</span><span class="kw">=</span><span class="fl">15</span>),<span class="kw">seed</span><span class="kw">=</span><span class="fl">713</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>,<span class="no">args</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">gridExtra</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span>(<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>),
+             <span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>,<span class="st">"incidence"</span>),
+             <span class="kw">nrow</span><span class="kw">=</span><span class="fl">2</span>)</pre></body></html></div>
 <p><img src="IncidenceOnly_files/figure-html/plotflu-1.png" width="700"></p>
 </div>
   </div>
@@ -187,7 +179,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>
