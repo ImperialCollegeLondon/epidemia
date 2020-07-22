@@ -79,26 +79,15 @@
 #' \insertAllCited{}
 #' @export
 epim <- 
-  function(formula, 
-           data,
-           obs,
-           pops,
-           si,
-           seed_days = 6,
-           algorithm = c("sampling", "meanfield", "fullrank"),
-           group_subset = NULL,
-           stan_data = FALSE,
-           center = FALSE,
-           prior = rstanarm::normal(scale=.5),
-           prior_intercept = rstanarm::normal(scale=.5),
-           prior_covariance = rstanarm::decov(scale=.5),
-           r0 = 3.28,
-           prior_phi = rstanarm::normal(location=0, scale = 5),
-           prior_tau = rstanarm::exponential(rate = 0.03),
-           prior_PD = FALSE,
-           sampling_args = list(),
-           init_run = FALSE,
-           ...) {
+function(formula, data, obs, pops, si, seed_days = 6, 
+  algorithm = c("sampling", "meanfield", "fullrank"), group_subset = NULL, 
+  stan_data = FALSE, center = FALSE, prior = rstanarm::normal(scale=.5),
+  prior_intercept = rstanarm::normal(scale=.5), 
+  prior_covariance = rstanarm::decov(scale=.5), r0 = 3.28, 
+  prior_phi = rstanarm::normal(location=0, scale = 5), 
+  prior_tau = rstanarm::exponential(rate = 0.03), prior_PD = FALSE, 
+  sampling_args = list(), init_run = FALSE, ...) 
+{
   
   call    <- match.call(expand.dots = TRUE)
   formula <- checkFormula(formula)
@@ -111,6 +100,7 @@ epim <-
   if (seed_days < 1)
     stop("'seed_days' must be greater than zero", call. = FALSE)
 
+  # get objects required for fitting the model
   out <- parse_mm(
     formula=formula,
     data=data
@@ -118,6 +108,31 @@ epim <-
 
   for (i in names(out)) 
     assign(i, out[[i]])
+
+parse_stan_data <- function(formula, obs, pops, si, seed_days, group_subset,
+  center, prior, prior_intercept, prior_covariance, r0, prior_phi, prior_tau,
+  prior_PD, group, x, link)
+
+  sdat <- match.call(expand.dots = FALSE)
+  print(sdat)
+  m <- match(c("algorithm", "stan_data", "sampling_args", "init_run", "..."),
+    sdat, 0L)
+  print(m)
+  sdat <- sdat[-m]
+  sdat[[1L]] <- quote(parse_stan_data)
+  print(sdat)
+
+  sdat$group <- group
+  sdat$x <- x
+  sdat$link <- "logit" # not used yet
+
+  print(sdat)
+
+  return()
+  
+
+
+  
 
   cargs <- list()
   cargs$formula <- form
