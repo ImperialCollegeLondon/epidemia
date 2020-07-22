@@ -18,16 +18,21 @@
 #' Conditional on an observation "event" (i.e. a single death or 
 #' hospitalisation etc.), the nth element represents the probability that the 
 #' individual was infected exactly n days prior to this.
-epiobs <- function(formula, data, prior, prior_intercept, offset, pvec) {
+#' @export
+epiobs <- function(formula, data, prior, prior_intercept, offset, pvec, ...) {
 
   call <- match.call(expand.dots=TRUE)
-  formula <- checkFormula(formula)
-  data <- checkData(formula, data)
-
-
-
+  formula <- check_obs_formula(formula)
+  data <- check_obs_data(formula, data)
+  
+  return(loo::nlist(
+    call,
+    formula,
+    obs   = data[,.get_obs(formula)],
+    gr    = data[,.get_group(formula)],
+    time  = data[,.get_time(formula)]
+  ))
 }
-
 
 # Check 'formula' passed to epiobs meets requirements for constructing 
 # the object
@@ -35,16 +40,23 @@ epiobs <- function(formula, data, prior, prior_intercept, offset, pvec) {
 # @param formula
 check_obs_formula <- function(formula) {
   if (!inherits(formula, "formula"))
-    stop("'formula' must have class formula.", call. = FALSE)
+    stop("'formula' must have class formula.", call.=FALSE)
+
+  if (is_mixed(formula))
+    stop("random effects terms found in 'formula', but are not currently 
+      supported", call.=FALSE)
+
+  if (is_autocor(formula))
+    stop("autocorrelation terms found in 'formula', but are not currently 
+    supported", call.=FALSE)
   
   # check left hand side for correct form
-  lhs <- deparse(terms(formula)[[2]])
-  match <- grepl(pattern = "^(\\w)+\\((\\w)+, (\\w)+\\)$", x=lhs)
+  match <- grepl(pattern="^(\\w)+\\((\\w)+, (\\w)+\\)$", 
+    x=deparse(lhs(formula)))
   if(!match)
     stop ("left hand side 'formula' does not have required form.")
   return(formula)
 }
-
 
 # Performs a series of checks on the 'data' argument passed to epiobs
 # constructor.
@@ -55,37 +67,40 @@ check_obs_data <- function(formula, data) {
   stopifnot(is.data.frame(data))
 
   vars <- all.vars(formula)
-  vars <- c(vars, get_obs(formula))
+  vars <- c(vars, .get_obs(formula))
   not_in_df <- !(vars %in% colnames(data))
   if (any(not_in_df))
-    stop(paste(c("Could not find column(s) ", vars[not_in_df], " in 'data'"), collapse=" "), call.=FALSE)
+    stop(paste(c("Could not find column(s) ", vars[not_in_df], " in 'data'"), 
+      collapse=" "), call.=FALSE)
 
   data <- data[,vars]  # remove redundant columns
-  group <- get_group(formula)
-  time <- get_time(formula)
+  group <- .get_group(formula)
+  time <- .get_time(formula)
 
   data <- tryCatch(
     {
-      data[,group] <- droplevels(as.factor(data[,group))
+      data[,group] <- droplevels(as.factor(data[,group]))
       data[,time] <- as.Date(data[,time])
       data
     },
     error = function(cond) {
-      stop(paste0("Columns ", group, " and ", time, " are not coercible to Factor and Date Respectively. Original message: ", cond))
+      stop(paste0("Columns ", group, " and ", time, " are not coercible to 
+        Factor and Date Respectively. Original message: ", cond))
     }
   )
 
   if(anyNA(data[,group]))
     stop(paste0("NAs exist in data$", group, " after coercion to factor"), call. = FALSE)
-  if(anyNA(data[,date]))
+  if(anyNA(data[,time]))
     stop(paste0("NAs exist in data$", time, " after coercion to Date"), call. = FALSE)
 
   return(data)
 }
 
+
 # Get name of observation column from formula
 # @param x A formula
-get_obs <- function(x) {
+.get_obs <- function(x) {
   out <- deparse(lhs(x))
   out <- sub("\\(.*","", out)
   return (out)
@@ -93,14 +108,14 @@ get_obs <- function(x) {
 
 # Get name of group column from formula
 # @param x A formula
-get_group <- function(x) {
+.get_group <- function(x) {
   out <- deparse(lhs(x))
   out <- sub(".*\\(", "", out)
   out <- sub(",.*", "", out)
   return (out)
 }
 
-get_time <- function(x) {
+.get_time <- function(x) {
   out <- deparse(lhs(x))
   out <- sub("\\).*", "",out)
   out <- sub(".*, ", "", out)
