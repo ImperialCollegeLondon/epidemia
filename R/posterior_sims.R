@@ -160,7 +160,7 @@ pp_standata <- function(object, newdata=NULL) {
   pops  <- checkPops(object$pops, groups)
 
   out <- standata_data(newdata)
-  out <- standata_obs(out, obs)
+  out <- add_standata_obs(out, obs)
   out$pop <- as.array(pops$pop)
   out$si <- pad(sdat$si, out$NS, 0, TRUE)
   out$r0 <- sdat$r0

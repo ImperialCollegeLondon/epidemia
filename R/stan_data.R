@@ -56,7 +56,7 @@ standata_autocor <- function(formula, data) {
     out$ac_nnz  <- length(out$ac_v)
   } else {
     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0
-    out$ac_prior_scales <- out$ac_v <- ut$ac_ntime <- numeric()
+    out$ac_prior_scales <- out$ac_v <- out$ac_ntime <- numeric()
   }
   return(out)
 }
