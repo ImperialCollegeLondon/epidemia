@@ -14,7 +14,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r@master
         with:
-          r-version: '4.0.0' # because lag exists for mac os binary
+          r-version: '4.0.2' # because lag exists for mac os binary
 
       - uses: r-lib/actions/setup-pandoc@master
 
