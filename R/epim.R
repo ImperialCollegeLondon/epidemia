@@ -101,23 +101,24 @@ function(formula, data, obs, pops, si, seed_days = 6,
     stop("'seed_days' must be greater than zero", call. = FALSE)
 
   # get objects required for fitting the model
-  out <- parse_mm(
-    formula=formula,
-    data=data
-  )
-
+  out <- parse_mm(formula=formula, data=data)
   for (i in names(out)) 
     assign(i, out[[i]])
 
 
-  sdat        <- match.call(expand.dots = FALSE)
-  m           <- match(c("algorithm", "stan_data", "sampling_args", 
-  "init_run", "..."), names(sdat), 0L)
-  sdat        <- sdat[-m]
-  sdat[[1L]]  <- quote(standata_all)
-  sdat$group  <- group
-  sdat$x      <- x
-  sdat$link   <- "logit" # not used yet
+  sdat                  <- match.call(expand.dots=FALSE)
+  fml                   <- formals()
+  dft                   <- fml[setdiff(names(fml), names(sdat))]
+  sdat[names(dft)]      <- dft
+  rm                    <- c("algorithm", "stan_data", "sampling_args", 
+    "init_run", "...")
+  sdat[rm]              <- NULL
+  checked               <- loo::nlist(formula, data, obs, pops, si)
+  sdat[names(checked)]  <- checked
+  sdat[[1L]]            <- quote(epidemia:::standata_all)
+  sdat$group            <- group
+  sdat$x                <- x
+  sdat$link             <- "logit" # not used yet
 
   if (init_run) { 
     print("Prefit to obtain reasonable starting values")
@@ -163,7 +164,7 @@ function(formula, data, obs, pops, si, seed_days = 6,
     }   
   }
 
-  sdat     <- eval(sdat, parent.frame())
+  sdat <- eval(sdat, parent.frame())
   if (stan_data) # mainly for debugging purposes
     return(sdat)
 
@@ -178,7 +179,6 @@ function(formula, data, obs, pops, si, seed_days = 6,
     if (length(sdat$ac_nterms)) "ac_noise"
     )
 
-
   args        <- sampling_args
   args$object <- stanmodels$epidemia_base
   args$pars   <- pars
@@ -190,9 +190,11 @@ function(formula, data, obs, pops, si, seed_days = 6,
   algorithm <- match.arg(algorithm)
   sampling  <- algorithm == "sampling"
 
-  fit <- ifelse(sampling,
-    do.call("sampling", args),
-    do.call("vb", args))
+  fit <- 
+  if(sampling)
+    do.call("sampling", args)
+  else
+    do.call("vb", args)
 
   if (sdat$len_theta_L) {
       cnms <- group$cnms
@@ -212,6 +214,7 @@ function(formula, data, obs, pops, si, seed_days = 6,
       Sigma_nms <- unlist(Sigma_nms)
   }
 
+
   trms_rw <- terms_rw(formula)
   combs <- expand.grid(groups,names(obs))
   new_names <- c(
@@ -230,6 +233,7 @@ function(formula, data, obs, pops, si, seed_days = 6,
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names
 
+
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[ , !sel, drop = FALSE]
   z <- group$Z
@@ -238,7 +242,7 @@ function(formula, data, obs, pops, si, seed_days = 6,
 
   out <- loo::nlist(
     stanfit = fit, formula, x = cbind(x,z), data, obs, r0, seed_days, si, pops, 
-    call, algorithm, terms = if(mixed) NULL else mt, glmod, standata=sdat, 
+    call, algorithm, terms = mt, glmod, standata=sdat, 
     orig_names, groups
     )
   return(epimodel(out))

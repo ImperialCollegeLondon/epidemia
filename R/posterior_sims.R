@@ -65,7 +65,7 @@ parse_latent <- function(sims, data, nme) {
   starts <- NC <- NULL
 
   # get useful quantities
-  sdat <- get_sdat_data(data)
+  sdat <- standata_data(data)
   for (name in names(sdat))
     assign(name, sdat[[name]])
   ends    <- starts + NC - 1
@@ -99,7 +99,7 @@ parse_obs <- function(sims, data, idx) {
   sims <- rstan::extract(sims, "pred")[[1]]
 
   # get useful quantities
-  sdat <- get_sdat_data(data)
+  sdat <- standata_data(data)
   for (name in names(sdat))
     assign(name, sdat[[name]])
   ends    <- starts + NC - 1
@@ -159,15 +159,15 @@ pp_standata <- function(object, newdata=NULL) {
   obs    <- checkObs(object$obs, newdata)
   pops  <- checkPops(object$pops, groups)
 
-  standata <- get_sdat_data(newdata)
-  standata <- get_sdat_obs(standata, obs)
-  standata$pop <- as.array(pops$pop)
-  standata$si <- padSV(sdat$si, standata$NS, 0)
-  standata$r0 <- sdat$r0
-  standata$N0 <- sdat$N0
-  standata$N <- nrow(newdata)
+  out <- standata_data(newdata)
+  out <- standata_obs(out, obs)
+  out$pop <- as.array(pops$pop)
+  out$si <- pad(sdat$si, out$NS, 0, TRUE)
+  out$r0 <- sdat$r0
+  out$N0 <- sdat$N0
+  out$N <- nrow(newdata)
 
-  return(standata)
+  return(out)
 }
 
 # Parses a matrix of posterior draws into form required for rstan::gqs

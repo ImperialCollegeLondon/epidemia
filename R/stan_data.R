@@ -12,7 +12,6 @@ standata_all <- function(formula, data, obs, pops, si, seed_days,
 
   out <- standata_autocor(formula, data)
   out <- c(out, standata_data(data)) 
-
   out$si  <- pad(si, out$NS, 0, TRUE)
   out$r0  <- r0
   out$N0  <- seed_days
@@ -22,9 +21,9 @@ standata_all <- function(formula, data, obs, pops, si, seed_days,
   out <- add_standata_mpriors(out, prior_phi, prior_tau)
 
   call        <- match.call(expand.dots=FALSE)
-  call[[1L]]  <- quote(standata_covariates)
+  call[[1L]]  <- quote(epidemia:::standata_covariates)
   m           <- match(c("formula", "x", "group", "prior", "prior_intercept", 
-    "prior_covariance", "prior_PD", "logit", "center"), names(call), 0L)
+    "prior_covariance", "prior_PD", "logit", "center", "link"), names(call), 0L)
   call        <- call[c(1L, m)]
   call        <- eval(call, parent.frame()) 
   out         <- c(out, call)
