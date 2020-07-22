@@ -14,6 +14,9 @@
 #' with `group` representing a factor vector indicating group membership (i.e. country, state, age cohort), 
 #' and `date` being a vector of Date objects.
 #' @param data A dataframe with columns corresponding to the terms appearing in 'formula'. See [lm].
+#' @param obs A list of lists giving available observations and a model for the observations. Each element of `obs`
+#'  is itself be a named list containing the following elements
+#' * `data`: A dataframe rep
 #' @param obs A list of lists giving available observations. Each element of 'obs' must itself be a names 
 #' list containing the following three elements
 #' * `odata`: A three column dataframe representing some type of observed data that is a function of the true 

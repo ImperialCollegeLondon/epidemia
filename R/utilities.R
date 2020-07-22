@@ -27,9 +27,13 @@ R <- function(group, date) {}
 checkFormula <- function(formula) {
   if(!inherits(formula,"formula"))
     stop("'formula' must have class formula.", call. = FALSE)
-  vars <- all.vars(update(formula, ".~0"))
-  if(length(vars) != 2)
-    stop("Left hand side of 'formula' must have form 'Rt(code,date)'.")
+  
+   # check left hand side for correct form
+  lhs <- deparse(terms(formula)[[2]])
+  match <- grepl(pattern = "^R\\((\\w)+, (\\w)+\\)$", x=lhs)
+  if(!match)
+    stop ("left hand side 'formula' does not have required form.")
+    
   class(formula) <- c("epiformula", "formula")
   return(formula)
 }
