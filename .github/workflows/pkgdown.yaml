@@ -20,7 +20,7 @@ jobs:
 
       - name: Query dependencies
         run: |
-          install.packages('remotes')
+          install.packages('remotes', type="binary")
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
           writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
         shell: Rscript {0}
@@ -35,9 +35,9 @@ jobs:
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE, type="binary")
-          install.packages("devtools")
-          install.packages("EpiEstim")
-          install.packages("pkgdown")
+          install.packages("devtools", type="binary")
+          install.packages("EpiEstim", type="binary")
+          install.packages("pkgdown", type="binary")
         shell: Rscript {0}
 
       - name: Install tbb
