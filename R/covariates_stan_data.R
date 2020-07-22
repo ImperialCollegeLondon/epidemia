@@ -7,9 +7,14 @@
 # This function is called inside \code{epim}, and is internal.
 #
 # @returns A named list
-gen_covariates_sdat <- 
-  function(formula, x, link, group=NULL, prior, prior_intercept, 
-           prior_covariance, prior_PD, center, ...) {
+standata_covariates 
+  <- function(formula, x, link, group=NULL, prior, prior_intercept, 
+           prior_covariance, prior_PD, center, ...) 
+{
+
+  # formula with no response and no autocorrelation terms
+  formula <- formula(delete.response(terms(formula)))
+  formula <- norws(formula)
 
   if (is.null(prior)) 
     prior <- list()
