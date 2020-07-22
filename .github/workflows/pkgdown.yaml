@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-	  remotes::install_deps(dependencies = TRUE)
+          remotes::install_deps(dependencies = TRUE)
           install.packages("devtools")
           install.packages("EpiEstim")
           install.packages("pkgdown")
@@ -48,7 +48,7 @@ jobs:
 
       - name: Prepare git for pkgdown commit
         run: |
-	  git config --local user.email "actions@github.com"
+          git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
 
       - name: Deploy package
