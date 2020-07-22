@@ -109,24 +109,16 @@ function(formula, data, obs, pops, si, seed_days = 6,
   for (i in names(out)) 
     assign(i, out[[i]])
 
-parse_stan_data <- function(formula, obs, pops, si, seed_days, group_subset,
-  center, prior, prior_intercept, prior_covariance, r0, prior_phi, prior_tau,
-  prior_PD, group, x, link)
 
-  sdat <- match.call(expand.dots = FALSE)
-  print(sdat)
-  m <- match(c("algorithm", "stan_data", "sampling_args", "init_run", "..."),
-    sdat, 0L)
-  print(m)
-  sdat <- sdat[-m]
-  sdat[[1L]] <- quote(parse_stan_data)
-  print(sdat)
+  sdat        <- match.call(expand.dots = FALSE)
+  m           <- match(c("algorithm", "stan_data", "sampling_args", 
+  "init_run", "..."), names(sdat), 0L)
+  sdat        <- sdat[-m]
+  sdat[[1L]]  <- quote(parse_stan_data)
+  sdat$group  <- group
+  sdat$x      <- x
+  sdat$link   <- "logit" # not used yet
 
-  sdat$group <- group
-  sdat$x <- x
-  sdat$link <- "logit" # not used yet
-
-  print(sdat)
 
   return()
   
@@ -315,7 +307,7 @@ parse_mm <- function(formula, data) {
   mf          <- match.call(expand.dots = FALSE)
   mf$formula  <- form
   mf$data     <- data
-  mc$na.action  <- na.fail
+  mf$na.action  <- na.fail
 
   if (mixed) {
     mf[[1L]]    <- quote(lme4::glFormula)
