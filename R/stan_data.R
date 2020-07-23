@@ -23,42 +23,37 @@ standata_all <- function(rt,
   out$pop <- as.array(pops$pop)
   out <- c(out, standata_model_priors(prior_tau))
 
-
-
-
+  out <- c(out, standata_obs(obs, out$groups, out$NS))
 
 }
 
 
+# standata_all <- function(formula, data, obs, pops, si, seed_days,
+#                          group_subset, center, prior, prior_intercept,
+#                          prior_covariance, r0, prior_phi, prior_tau,
+#                          prior_PD, group, x, link) {
+#   out <- standata_autocor(formula, data)
+#   out <- c(out, standata_data(data))
+#   out$si <- pad(si, out$NS, 0, TRUE)
+#   out$r0 <- r0
+#   out$N0 <- seed_days
+#   out$pop <- as.array(pops$pop)
 
+#   out <- add_standata_obs(out, obs)
+#   out <- add_standata_mpriors(out, prior_phi, prior_tau)
 
+#   call <- match.call(expand.dots = FALSE)
+#   call[[1L]] <- quote(epidemia:::standata_covariates)
+#   m <- match(c(
+#     "formula", "x", "group", "prior", "prior_intercept",
+#     "prior_covariance", "prior_PD", "logit", "center", "link"
+#   ), names(call), 0L)
+#   call <- call[c(1L, m)]
+#   call <- eval(call, parent.frame())
+#   out <- c(out, call)
 
-standata_all <- function(formula, data, obs, pops, si, seed_days,
-                         group_subset, center, prior, prior_intercept,
-                         prior_covariance, r0, prior_phi, prior_tau,
-                         prior_PD, group, x, link) {
-  out <- standata_autocor(formula, data)
-  out <- c(out, standata_data(data))
-  out$si <- pad(si, out$NS, 0, TRUE)
-  out$r0 <- r0
-  out$N0 <- seed_days
-  out$pop <- as.array(pops$pop)
-
-  out <- add_standata_obs(out, obs)
-  out <- add_standata_mpriors(out, prior_phi, prior_tau)
-
-  call <- match.call(expand.dots = FALSE)
-  call[[1L]] <- quote(epidemia:::standata_covariates)
-  m <- match(c(
-    "formula", "x", "group", "prior", "prior_intercept",
-    "prior_covariance", "prior_PD", "logit", "center", "link"
-  ), names(call), 0L)
-  call <- call[c(1L, m)]
-  call <- eval(call, parent.frame())
-  out <- c(out, call)
-
-  return(out)
-}
+#   return(out)
+# }
 
 # Generate standata for autocorrelation terms
 #
@@ -113,6 +108,23 @@ standata_data <- function(data) {
   ))
 }
 
+
+standata_obs <- function(obs, groups, nsim) {
+  R <- length(obs)
+
+  if (R == 0) {
+    # do something and return
+  }
+
+  lags <- as.array(lapply(obs, pad_lag))
+  obs_group <- sapply(obs, function(x) match(gr(x), groups))
+  print(obs_group)
+  return()
+}
+
+
+
+
 # add relevant standata from obs. Used internally in epim.
 #
 # @param sdat The result of standata_data
@@ -128,16 +140,6 @@ add_standata_obs <- function(sdat, obs) {
       }
     }
     pvecs <- as.array(lapply(obs, f1))
-
-    # matrix of mean rates for each observation type
-    f2 <- function(x) x$rates$means$mean
-    means <- lapply(obs, f2)
-    means <- do.call("cbind", args = means)
-
-    # matrix of rates for each observation type
-    f3 <- function(x) x$rates$scale
-    noise_scales <- lapply(obs, f3)
-    noise_scales <- do.call("c", args = noise_scales)
 
     # create matrix of observations for stan
     f4 <- function(x, i) {

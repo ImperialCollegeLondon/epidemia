@@ -123,14 +123,7 @@ epim <- function(rt,
 
   if (init_run) {
     print("Prefit to obtain reasonable starting values")
-    cobs <- list()
-    for (elem in obs) {
-      elem$odata$obs <- cumsum(elem$odata$obs)
-      elem$pvec <- cumsum(elem$pvec)
-      elem$ptype <- "distribution"
-      cobs <- c(cobs, list(elem))
-    }
-
+    cobs <- lapply(obs, cumulate)
     # replace obs with cobs for initial fit
     sdat_init <- sdat
     sdat_init$obs <- cobs

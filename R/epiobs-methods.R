@@ -34,17 +34,17 @@ time.epiobs_ <- function(object, ...) {
 # Extract lag vector from the object
 get_lag <- function(object, ...) UseMethod("get_lag")
 
-# Turn observations into cumulatives
-#
-# Cumsums the obervation vector and the lag vector. 
-# This is useful for getting good starting values for 
-# the sampler.
-cumulate <- function(object, ...) UseMethod("cumulate")
-
 # @export
 get_lag.epiobs_ <- function(object, ...) {
   return(object$lag)
 }
+
+# Turn observations into cumulatives
+#
+# Cumsums the obervation vector and the lag vector.
+# This is useful for getting good starting values for
+# the sampler.
+cumulate <- function(object, ...) UseMethod("cumulate")
 
 # @export
 cumulate.epiobs_ <- function(object, ...) {
@@ -52,4 +52,16 @@ cumulate.epiobs_ <- function(object, ...) {
   object$lag <- cumsum(get_lag(object))
   object$lagtype <- "distribution"
   return(object)
+}
+
+# Get lag padded out to a certain length
+pad_lag <- function(object, ...) UseMethod("pad_lag")
+
+pad_lag.epiobs_ <- function(object, len, ...) {
+  lag <- get_lag(object)
+  is_density <- object$lagtype == "density"
+  if (is_density)
+    return(pad(lag, len, 0, TRUE))
+  else
+    return(pad(lag, len, tail(lag, 1)))
 }
