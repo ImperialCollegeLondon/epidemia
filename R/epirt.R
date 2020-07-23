@@ -3,7 +3,10 @@
 #' Defines a model for the latent time varying reproduction number. For more
 #' details on the model assumptions please refer to the online vignettes.
 #'
-#' @param formula A formula defining the model for the observations.
+#' @param formula An R object of class \code{"formula"}. The left hand side
+#' must take the form `R(group,date)`, with `group` representing a factor
+#' vector indicating group membership (i.e. country, state, age cohort),
+#' and `date` being a vector of Date objects.
 #' @param r0 The prior expected value of \eqn{R_0}. The maximum \eqn{R_0} in the
 #'  simulations will be limited to twice this value.
 #' @param center If \code{TRUE} then the covariates for the \eqn{R_t} regression
