@@ -80,6 +80,58 @@ check_obs_formula <- function(formula) {
 }
 
 
+check_data <- function(formula, data) {
+  stopifnot(is.data.frame(data))
+
+  if (nrow(data) == 0)
+    stop("data has zero rows", call. = FALSE)
+
+  vars <- all.vars(formula)
+  if (!inherits(formula, "epiformula"))
+    vars <- c(vars, .get_obs(formula))
+
+  not_in_df <- !(vars %in% colnames(data))
+  if (any(not_in_df)) {
+    stop(paste(c("Could not find column(s) ", vars[not_in_df], " in 'data'"),
+      collapse = " "
+    ), call. = FALSE)
+  }
+
+  data <- data[, vars] # remove redundant columns
+  group <- .get_group(formula)
+  time <- .get_time(formula)
+
+  data <- tryCatch(
+    {
+
+    }
+  )
+
+  data <- tryCatch(
+    {
+      data[, group] <- droplevels(as.factor(data[, group]))
+      data[, time] <- as.Date(data[, time])
+      data
+    },
+    error = function(cond) {
+      stop(paste0("Columns ", group, " and ", time, " are not coercible to
+        Factor and Date Respectively. Original message: ", cond))
+    }
+  )
+
+  if (anyNA(data[, group])) {
+    stop(paste0("NAs exist in data$", group, " after coercion to factor"),
+      call. = FALSE
+    )
+  }
+  if (anyNA(data[, time])) {
+    stop(paste0("NAs exist in data$", time, " after coercion to Date"),
+      call. = FALSE
+    )
+  }
+  return(data)
+}
+
 
 
 # Perform a series of checks on the 'data' argument to 'epim'

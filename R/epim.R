@@ -34,20 +34,6 @@
 #' @param group_subset An optional vector specifying a subset of groups to
 #'  model. Elements should correspond to the group levels specified through the
 #'  \code{data} argument.
-#' @param center If \code{TRUE} then the covariates for the \eqn{R_t} regression
-#'  are centered to have mean zero. All of the priors are then interpreted as
-#'  prior on the centered covariates. Defaults to \code{FALSE}.
-#' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. In addition to the
-#'  \pkg{rstanarm} provided \link[rstanarm]{priors},
-#'         a \link[epidemia]{shifted_gamma} can be used. **Note:** If
-#'  \code{autoscale=TRUE} (Default) in the call to the prior distribution then
-#'  automatic rescaling of the prior may take place.
-#' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for
-#'  the regression intercept (if it exists).
-#' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only
-#'  used if the \code{formula} argument specifies a
-#' @param r0 The prior expected value of \eqn{R_0}. The maximum \eqn{R_0} in the
-#'  simulations will be limited to twice this value.
 #' @param prior_phi The prior distribution on \eqn{\phi}. This parameter is
 #'  described in the introductory vignette, and determined the variance of the
 #'  observed data around its mean. Must be a call to
@@ -102,12 +88,6 @@ epim <-
 
     if (seed_days < 1) {
       stop("'seed_days' must be greater than zero", call. = FALSE)
-    }
-
-    # get objects required for fitting the model
-    out <- parse_mm(formula = formula, data = data)
-    for (i in names(out)) {
-      assign(i, out[[i]])
     }
 
     sdat <- match.call(expand.dots = FALSE)
@@ -262,74 +242,6 @@ epim <-
     )
     return(epimodel(out))
   }
-
-
-# Parses formula and data into a list of objects required
-# for fitting the model.
-#
-# @param formula model formula
-# @param data contains data required to construct model objects from formula
-parse_mm <- function(formula, data) {
-
-  # check if formula contain terms for partial pooling
-  mixed <- is_mixed(formula)
-
-  # formula with no response and no autocorrelation terms
-  form <- formula(delete.response(terms(formula)))
-  form <- norws(form)
-
-  mf <- match.call(expand.dots = FALSE)
-  mf$formula <- form
-  mf$data <- data
-  mf$na.action <- na.fail
-
-  if (mixed) {
-    mf[[1L]] <- quote(lme4::glFormula)
-    mf$control <- make_glmerControl(
-      ignore_lhs = TRUE,
-      ignore_x_scale = FALSE
-    )
-    glmod <- eval(mf, parent.frame())
-    x <- glmod$X
-
-    if ("b" %in% colnames(x)) {
-      stop("epim does not allow the name 'b' for predictor variables.",
-        call. = FALSE
-      )
-    }
-
-    group <- glmod$reTrms
-    group <-
-      pad_reTrms(
-        Ztlist = group$Ztlist,
-        cnms = group$cnms,
-        flist = group$flist
-      )
-    mt <- NULL
-  } else {
-    mf[[1L]] <- quote(stats::model.frame)
-    mf$drop.unused.levels <- TRUE
-    mf <- eval(mf, parent.frame())
-    mt <- attr(mf, "terms")
-    x <- model.matrix(object = mt, data = mf)
-    glmod <- group <- NULL
-  }
-
-  if ("rw" %in% colnames(x)) {
-    stop("epim does not allow the name 'rw' for predictor variables.",
-      call. = FALSE
-    )
-  }
-
-  return(loo::nlist(
-    x,
-    mt,
-    glmod,
-    group
-  ))
-}
-
-
 
 is_mixed <- function(formula) {
   !is.null(lme4::findbars(norws(formula)))
