@@ -82,25 +82,26 @@ epim <- function(rt,
                  seed_days = 6,
                  algorithm = c("sampling", "meanfield", "fullrank"),
                  group_subset = NULL,
-                 prior_phi = rstanarm::normal(location = 0, scale = 5),
                  prior_tau = rstanarm::exponential(rate = 0.03),
                  prior_PD = FALSE,
                  sampling_args = list(),
                  init_run = FALSE,
                  stan_data = FALSE,
                  ...) {
-  call <- match.call(expand.dots = TRUE)
-  rt <- check_rt(rt)
-  obs <- check_obs(rt, obs)
-  data <- check_data(formula(rt), data, group_subset)
-  groups <- levels(data$group)
-  pops <- check_pops(pops, groups)
-  si <- check_sv(si, "si")
+
+  call    <- match.call(expand.dots = TRUE)
+  rt      <- check_rt(rt)
+  obs     <- check_obs(rt, obs)
+  data    <- check_data(formula(rt), data, group_subset)
+  groups  <- levels(data$group)
+  pops    <- check_pops(pops, groups)
+  si      <- check_sv(si, "si")
+
   if (seed_days < 1) {
     stop("'seed_days' must be greater than zero", call. = FALSE)
   }
 
-  # generate model matrices for each regression
+  # generates model matrices for each regression
   rt <- epirt_(rt, data)
   obs <- lapply(obs, epiobs_, data)
 
@@ -113,11 +114,11 @@ epim <- function(rt,
     "init_run", "..."
   )
   sdat[rm] <- NULL
-  checked <- loo::nlist(formula, data, obs, pops, si)
+  checked <- loo::nlist(rt, data, obs, pops, si)
   sdat[names(checked)] <- checked
   sdat[[1L]] <- quote(epidemia:::standata_all)
-  sdat$group <- group
-  sdat$x <- x
+  sdat$group <- rt$group
+  sdat$x <- rt$x
   sdat$link <- "logit" # not used yet
 
   if (init_run) {

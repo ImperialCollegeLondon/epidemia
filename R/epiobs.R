@@ -7,19 +7,28 @@
 #' the model assumptions please refer to the online vignettes.
 #'
 #' @param formula A formula defining the model for the observations.
+#' @param lag A probability vector with the following interpretation.
+#' Conditional on an observation "event" (i.e. a single death or
+#' hospitalisation etc.), the nth element represents the probability that the
+#' individual was infected exactly n days prior to this.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. **Note:**
 #'  If \code{autoscale=TRUE} (Default) in the call to the prior distribution
 #'  then automatic rescaling of the prior may take place.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior
 #'  for the regression intercept, if one has been specified.
-#' @param lag A probability vector with the following interpretation.
-#' Conditional on an observation "event" (i.e. a single death or
-#' hospitalisation etc.), the nth element represents the probability that the
-#' individual was infected exactly n days prior to this.
+#' @param prior_phi The prior distribution on \eqn{\phi}. This parameter is
+#'  described in the introductory vignette, and determined the variance of the
+#'  observed data around its mean. Must be a call to
+#' \code{\link[rstanarm]{normal}}, which is transformed to a half normal
+#'  distribution.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-epiobs <- function(formula, lag, prior = rstanarm::normal(scale = .1),
-                   prior_intercept = rstanarm::normal(scale = .1), ...) {
+epiobs <- function(formula,
+                   lag,
+                   prior = rstanarm::normal(scale = .1),
+                   prior_intercept = rstanarm::normal(scale = .1),
+                   prior_phi = rstanarm::normal(location = 0, scale = 5),
+                   ...) {
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
   lag <- check_sv(lag, name = "lag")

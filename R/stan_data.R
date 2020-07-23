@@ -5,6 +5,34 @@
 # @inheritParams epim
 # @param group, x Objects returned by parse_mm
 # @param link Not yet used.
+standata_all <- function(rt,
+                         obs,
+                         data,
+                         pops,
+                         si,
+                         seed_days,
+                         group_subset,
+                         prior_phi,
+                         prior_tau,
+                         prior_PD) {
+
+  # standata for general model params
+  out <- standata_data(data)
+  out$si <- pad(si, out$NS, 0, TRUE)
+  out$N0 <- seed_days
+  out$pop <- as.array(pops$pop)
+  out <- add_standata_mpriors(out, prior_phi, prior_tau)
+
+
+
+
+
+}
+
+
+
+
+
 standata_all <- function(formula, data, obs, pops, si, seed_days,
                          group_subset, center, prior, prior_intercept,
                          prior_covariance, r0, prior_phi, prior_tau,
