@@ -21,7 +21,7 @@ standata_all <- function(rt,
   out$si <- pad(si, out$NS, 0, TRUE)
   out$N0 <- seed_days
   out$pop <- as.array(pops$pop)
-  out <- add_standata_mpriors(out, prior_phi, prior_tau)
+  out <- c(out, standata_model_priors(prior_tau))
 
 
 
@@ -174,30 +174,28 @@ add_standata_obs <- function(sdat, obs) {
 }
 
 
-# Parse model priors (on phi and tau) to standata representation.
+# Parse model priors (currently just tau) to standata representation.
 # Used internally in epim.
 #
-# @param prior_phi, prior_tau See \code{\link{epim}}
-# @param R Number of observation types
-add_standata_mpriors <- function(sdat, prior_phi, prior_tau) {
+# @param prior_tau See \code{\link{epim}}
+standata_model_priors <- function(prior_tau) {
 
   # for passing R CMD Check
-  prior_mean_for_phi <- prior_scale_for_phi <-
-    prior_scale_for_tau <- NULL
+  prior_scale_for_tau <- NULL
 
-  prior_phi_stuff <- handle_glm_prior(
-    prior = prior_phi,
-    nvars = sdat$R,
-    default_scale = 5,
-    link = "dummy",
-    ok_dists = loo::nlist("normal")
-  )
+  # prior_phi_stuff <- handle_glm_prior(
+  #   prior = prior_phi,
+  #   nvars = sdat$R,
+  #   default_scale = 5,
+  #   link = "dummy",
+  #   ok_dists = loo::nlist("normal")
+  # )
 
-  names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_for_phi")
+  # names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_for_phi")
 
-  for (i in names(prior_phi_stuff)) {
-    assign(i, prior_phi_stuff[[i]])
-  }
+  # for (i in names(prior_phi_stuff)) {
+  #   assign(i, prior_phi_stuff[[i]])
+  # }
 
   prior_tau_stuff <- handle_glm_prior(
     prior = prior_tau,
@@ -213,12 +211,8 @@ add_standata_mpriors <- function(sdat, prior_phi, prior_tau) {
     assign(i, prior_tau_stuff[[i]])
   }
 
-  return(c(
-    sdat,
-    loo::nlist(prior_mean_for_phi,
-      prior_scale_for_phi,
-      prior_scale_for_tau = as.numeric(prior_scale_for_tau)
-    )
+  return(list(
+    prior_scale_for_tau = as.numeric(prior_scale_for_tau)
   ))
 }
 

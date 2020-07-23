@@ -40,6 +40,9 @@ epiobs <- function(formula,
   if (!(prior_intercept$dist %in% ok_dists)) {
     stop("'prior_intercept' must be a call to rstanarm::normal")
   }
+  if (!(prior_phi$dist %in% ok_dists)) {
+    stop("'prior_phi' must be a call to rstanarm::normal")
+  }
 
   out <- loo::nlist(
     call,
@@ -47,6 +50,7 @@ epiobs <- function(formula,
     lag,
     prior,
     prior_intercept,
+    prior_phi,
     mfargs <- list(...)
   )
   class(out) <- "epiobs"

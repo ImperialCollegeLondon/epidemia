@@ -27,10 +27,13 @@
 #' individual was infected exactly n days prior to this.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-epirt <- function(formula, r0 = 3.28, center = FALSE,
+epirt <- function(formula,
+                  r0 = 3.28,
+                  center = FALSE,
                   prior = rstanarm::normal(scale = .5),
                   prior_intercept = rstanarm::normal(scale = .5),
-                  prior_covariance = rstanarm::decov(scale = .5), ...) {
+                  prior_covariance = rstanarm::decov(scale = .5),
+                  ...) {
   call <- match.call(expand.dots = TRUE)
   formula <- check_rt_formula(formula)
 
