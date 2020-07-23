@@ -1,26 +1,19 @@
-#' Extract the parsed data 
-#' @templateVar epiobsArg object
-#' @template args-epimodel-object
-#' @param ... Other arguments passed to methods
-#' @return A data frame
-#' @export 
-get_data <- function(object, ...) UseMethod("get_data")
-
 #' Extract observation, group and time vectors from epiobs object
+#'
 #' @templateVar epiobsArg object
-#' @template args-epimodel-object
+#' @template args-epiobs-object
 #' @param ... Other arguments passed to methods
 #' @return A numeric vector
-#' @export 
-obs <- function(object, ...) UseMethod("get_obs")
+#' @export
+obs <- function(object, ...) UseMethod("obs")
 
-#' @rdname get_obs
-#' @export 
-gr <- function(object, ...) UseMethod("get_group")
+#' @rdname obs
+#' @export
+gr <- function(object, ...) UseMethod("gr")
 
-#' @rdname get_time
-#' @export 
-time <- function(object, ...) UseMethod("get_time")
+#' @rdname obs
+#' @export
+time <- function(object, ...) UseMethod("time")
 
 #' @export
 obs.epiobs <- function(object, ...) {
@@ -36,6 +29,3 @@ gr.epiobs <- function(object, ...) {
 time.epiobs <- function(object, ...) {
   return(object$time %ORifNULL% stop("time not found"))
 }
-
-
-

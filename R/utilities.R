@@ -1,12 +1,14 @@
 
 
-check_integer <- function(x, tol=.Machine$double.eps) {
+check_integer <- function(x, tol = .Machine$double.eps) {
   s <- substitute(x)
   x <- as.numeric(x)
-  if (anyNA(x))
+  if (anyNA(x)) {
     stop(paste0(s, " should be coercible to numeric."))
-  if (any(abs(x-round(x)) > tol))
+  }
+  if (any(abs(x - round(x)) > tol)) {
     stop(paste0(s, " is not an integer vector."))
+  }
 }
 
 check_numeric <- function(x) {
