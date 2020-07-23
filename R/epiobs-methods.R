@@ -31,3 +31,25 @@ time.epiobs_ <- function(object, ...) {
   return(object$time %ORifNULL% stop("time not found"))
 }
 
+# Extract lag vector from the object
+get_lag <- function(object, ...) UseMethod("get_lag")
+
+# Turn observations into cumulatives
+#
+# Cumsums the obervation vector and the lag vector. 
+# This is useful for getting good starting values for 
+# the sampler.
+cumulate <- function(object, ...) UseMethod("cumulate")
+
+# @export
+get_lag.epiobs_ <- function(object, ...) {
+  return(object$lag)
+}
+
+# @export
+cumulate.epiobs_ <- function(object, ...) {
+  object$obs <- cumsum(obs(object))
+  object$lag <- cumsum(get_lag(object))
+  object$lagtype <- "distribution"
+  return(object)
+}

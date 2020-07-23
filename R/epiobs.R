@@ -48,6 +48,7 @@ epiobs <- function(formula,
     call,
     formula,
     lag,
+    lagtype = "density",
     prior,
     prior_intercept,
     prior_phi,
@@ -79,7 +80,7 @@ epiobs_ <- function(object, data) {
   out <- c(out, list(
     obs = data[, .get_obs(formula)],
     gr = data[, .get_group(formula)],
-    time = data[, .get_time(formula)]
+    time = data[, .get_time(formula)],
   ))
 
   class(out) <- "epiobs_"
