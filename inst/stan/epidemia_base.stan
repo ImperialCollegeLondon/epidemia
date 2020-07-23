@@ -13,8 +13,6 @@ data {
 #include /data/data_obs.stan
 #include /data/data_indices.stan
 #include /data/data_model.stan
-matrix<lower=0,upper=1>[M, R] means; // mean values for observed events / total cases (for example, IFR)
-vector<lower=0>[R] noise_scales;
 #include /data/NKX.stan
 #include /data/data_glm.stan
 #include /data/hyperparameters.stan
@@ -40,10 +38,10 @@ parameters {
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
+#include /parameters/parameters_obs.stan
   vector[R] z_phi;
   vector<lower=0>[M] y_raw;
   real<lower=0> tau_raw;
-  matrix<lower=0>[M,R] noise;
 }
 
 transformed parameters {
@@ -58,6 +56,7 @@ transformed parameters {
 
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
+#include /tparameters/tparameters_obs.stan
 #include /tparameters/tparameters_glm.stan
 
   {
@@ -69,7 +68,12 @@ transformed parameters {
   }
   
 #include /tparameters/make_eta.stan
+#include /tparameters/make_oeta.stan
 #include /tparameters/gen_infections.stan
+
+
+  // probabilities of recording an observation at that date
+  E_obs = inv_logit(oeta);
 
   {  // compute expected values of the observations
     for (i in 1:N_obs) {
@@ -78,9 +82,9 @@ transformed parameters {
       int tp = obs_type[i];
       int n0 = starts[m];
       if (dt == 1)
-        E_obs[i] = 1e-15 * infections[1,m];
+        E_obs[i] *= 1e-15 * infections[1,m];
       else
-        E_obs[i] = noise[m, tp] * means[m, tp] * dot_product(sub_col(infections, n0, m, dt-n0), tail(pvecs_rev[tp], dt-n0));
+        E_obs[i] *= dot_product(sub_col(infections, n0, m, dt-n0), tail(pvecs_rev[tp], dt-n0));
     }
   }
 }
@@ -89,9 +93,6 @@ model {
   target += exponential_lpdf(tau_raw | 1);
   target += exponential_lpdf(y_raw | 1);
   target += normal_lpdf(z_phi | 0, 1);
-
-  for (r in 1:R)
-    noise[,r] ~ normal(1, noise_scales[r]);
 
 #include /model/priors_glm.stan
 #include /model/priors_ac.stan
