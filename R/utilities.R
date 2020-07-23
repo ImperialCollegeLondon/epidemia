@@ -80,16 +80,23 @@ check_obs_formula <- function(formula) {
 }
 
 
+# The formula in the epirt object defines the group and date columns.
+# This function performs a series of checks on the data argument of 
+# 'epim', ensuring the dataframe meets common requirements.
+#
+# @param formula The formula from rt argument
+# @param data The data to be checked
 check_data <- function(formula, data) {
   stopifnot(is.data.frame(data))
 
+  data <- data.frame(data) # in case tibble
   if (nrow(data) == 0)
-    stop("data has zero rows", call. = FALSE)
+    stop("data has zero rows", call.=FALSE)
 
-  vars <- all.vars(formula)
-  if (!inherits(formula, "epiformula"))
-    vars <- c(vars, .get_obs(formula))
-
+  # check for group and date columns
+  group <- .get_group(formula)
+  date <- .get_date(formula)
+  vars <- c(group, date)
   not_in_df <- !(vars %in% colnames(data))
   if (any(not_in_df)) {
     stop(paste(c("Could not find column(s) ", vars[not_in_df], " in 'data'"),
@@ -97,88 +104,15 @@ check_data <- function(formula, data) {
     ), call. = FALSE)
   }
 
-  data <- data[, vars] # remove redundant columns
-  group <- .get_group(formula)
-  time <- .get_time(formula)
+  # ensure there are no naming conflicts
+  nms <- colnames(data)
+  if (group != "group" && "group" %in% nms)
+    stop("Column 'group' has a special meaning in data. Please rename.")
+  if (date != "date" && "date" %in% nms)
+    stop("Column 'date' has a special meaning in data. Please rename.")
 
-  data <- tryCatch(
-    {
+  data[,c("group", "date")] <- data[, vars]
 
-    }
-  )
-
-  data <- tryCatch(
-    {
-      data[, group] <- droplevels(as.factor(data[, group]))
-      data[, time] <- as.Date(data[, time])
-      data
-    },
-    error = function(cond) {
-      stop(paste0("Columns ", group, " and ", time, " are not coercible to
-        Factor and Date Respectively. Original message: ", cond))
-    }
-  )
-
-  if (anyNA(data[, group])) {
-    stop(paste0("NAs exist in data$", group, " after coercion to factor"),
-      call. = FALSE
-    )
-  }
-  if (anyNA(data[, time])) {
-    stop(paste0("NAs exist in data$", time, " after coercion to Date"),
-      call. = FALSE
-    )
-  }
-  return(data)
-}
-
-
-
-# Perform a series of checks on the 'data' argument to 'epim'
-check_data <- function(data, formula, group_subset) {
-
-  if (!is.data.frame(data))
-  stop("'data' must be a data frame", call. = FALSE)
-
-  if (nrow(data) == 0)
-    stop("data has zero rows", call. = FALSE)
-
-
-
-}
-
-
-
-
-# Performs a series of checks on the 'data' argument of genStanData
-#
-# @param formula See [genStanData]
-# @param data See [genStanData] 
-checkData <- function(formula, data, group_subset) {
-
-  if(!is.data.frame(data))
-    stop("'data' must be a data frame", call. = FALSE)
-  
-  if(nrow(data)==0)
-    stop("data has zero rows", call. = FALSE)
-  
-  if(sum(is.na(data))!=0)
-    stop("data contains NAs", call. = FALSE)
-  
-  vars      <- all.vars(formula)
-  not_in_df <- !(vars %in% colnames(data))
-
-  if (any(not_in_df))
-    stop(paste(c("Could not find column(s) ", vars[not_in_df], " in 'data'"), collapse=" "), call.=FALSE)
-
-  # remove redundant columns
-  data <- data[,vars]
-
-  # change name of response vars
-  vars                      <- all.vars(update(formula, ".~0"))
-  df                        <- data[,vars]
-  data[,c("group", "date")] <- df
-  
   data <- tryCatch(
     {
       data$group <- droplevels(as.factor(data$group))
@@ -186,15 +120,20 @@ checkData <- function(formula, data, group_subset) {
       data
     },
     error = function(cond) {
-      stop(paste0(vars[1], " and ", vars[2], " are not coercible to Factor and Date Respectively. Original message: ", cond))
+      stop(paste0(group, " and/or ", time, " are not coercible
+       to Factor and Date Respectively. Original message: ", cond))
     }
   )
-  if(any(is.na(data$group)))
-    stop(paste0("NAs exist in data$", vars[[1]], " after coercion to factor"), call. = FALSE)
-  if(any(is.na(data$date)))
-    stop(paste0("NAs exist in data$", vars[[2]], " after coercion to Date"), call. = FALSE)
 
-  groups <- levels(data$group)
+  if(anyNA(data$group))
+    stop(paste0("NAs exist in data$", group, " after
+     coercion to factor"), call. = FALSE)
+
+  if(anyNA(data$date))
+    stop(paste0("NAs exist in data$", time, " after
+     coercion to factor"), call. = FALSE)
+
+  groups <- levels(data$date)
 
   if (!is.null(group_subset)) {
     if (!is.character(group_subset))
@@ -209,11 +148,6 @@ checkData <- function(formula, data, group_subset) {
   data <- data[w,]
   data$group <- droplevels(as.factor(data$group))
 
-  # check for missing data
-  v <- !complete.cases(data)
-  if(any(v))
-    stop(paste(c("Missing data found on rows", which(v), " of 'data'"), collapse=" "))
-
   # sort by group, then by date
   data <- data[with(data, order(group, date)),]
 
@@ -221,11 +155,11 @@ checkData <- function(formula, data, group_subset) {
   f <- function(x) return(all(diff(x$date) == 1))
   v <- !unlist(Map(f, split(data, data$group)))
   if(any(v))
-    stop(paste(c("Dates corresponding to groups ", names(v[v]), " are not consecutive"), collapse=" "), call.=FALSE)
+    stop(paste(c("Dates corresponding to groups ",
+    names(v[v]), " are not consecutive"), collapse=" "), call.=FALSE)
 
   return(data)
 }
-
 
 checkObs <- function(lst, data) {
 
