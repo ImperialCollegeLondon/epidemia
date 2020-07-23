@@ -24,7 +24,7 @@ check_character <- function(x) {
 }
 
 # syntactic sugar for the formula
-R <- function(group, date) 
+R <- function(group, date) {
 }
 
 # Check 'formula' passed to epirt meets requirements for constructing
@@ -107,14 +107,14 @@ check_obs_formula <- function(formula) {
   return(formula)
 }
 
-
 # The formula in the epirt object defines the group and date columns.
 # This function performs a series of checks on the data argument of 
 # 'epim', ensuring the dataframe meets common requirements.
 #
 # @param formula The formula from rt argument
 # @param data The data to be checked
-check_data <- function(formula, data) {
+# @param group_subset Same as in 'epim'
+check_data <- function(formula, data, group_subset) {
   stopifnot(is.data.frame(data))
 
   data <- data.frame(data) # in case tibble
@@ -197,7 +197,7 @@ check_data <- function(formula, data) {
 #
 # @param 'rt' argument to epim
 check_rt <- function(rt) {
-  if (!inherits(rt, "epirt")
+  if (!inherits(rt, "epirt"))
     stop("'rt' must have class 'epirt'.", call. = FALSE)
   return(rt)
 }
@@ -212,7 +212,8 @@ check_obs <- function(rt, obs) {
     call.=FALSE)
 
   # check all objects are 'epiobs'
-  is_epiobs <- lapply(obs, inherits, "epiobs") 
+  is_epiobs <- sapply(obs, inherits, "epiobs")
+  print(is_epiobs)
   w <- which(!is_epiobs)
   if (length(w) > 0)
     stop(paste0("Elements ", w, " of 'obs' do
@@ -220,7 +221,8 @@ check_obs <- function(rt, obs) {
 
   # check uniqueness of names
   forms <- lapply(obs, formula)
-  nms <- lapply(forms, .get_obs)
+  nms <- sapply(forms, .get_obs)
+  print(nms)
   
   if (length(unique(nms)) < length(nms))
     stop ("Each observation vector can only have one model.
@@ -229,7 +231,8 @@ check_obs <- function(rt, obs) {
 
   # check for common group variables
   rtgroup <- .get_group(formula(rt))
-  groups <- lapply(forms, .get_group)
+  groups <- sapply(forms, .get_group)
+  print(groups)
   w <- which(groups != rtgroup)
   if (length(w) > 0)
     stop(paste0("Elements ", w, " of 'obs' do
@@ -237,7 +240,8 @@ check_obs <- function(rt, obs) {
 
   # check for common date variables (removed in future)
   rttime <- .get_time(formula(rt))
-  times <- lapply(forms, .get_time)
+  times <- sapply(forms, .get_time)
+  print(times)
   w <- which(times != rttime)
   if (length(w) > 0)
     stop(paste0("Elements ", w, " of 'obs' do

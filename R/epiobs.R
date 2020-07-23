@@ -35,7 +35,7 @@ epiobs <- function(formula, lag, prior = rstanarm::normal(scale = .1),
   out <- loo::nlist(
     call,
     formula,
-    lags,
+    lag,
     prior,
     prior_intercept,
     mfargs <- list(...)
