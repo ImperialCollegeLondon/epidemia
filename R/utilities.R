@@ -199,7 +199,7 @@ checkObs <- function(lst, data) {
                         paste0("obs$", nme, "$rates"))
 
 
-    pvec <- checkSV(pvec, paste0("obs$", nme, "$pvec")) 
+    pvec <- check_sv(pvec, paste0("obs$", nme, "$pvec")) 
     ptype <- "density"
     
     if (nrow(odata))
@@ -320,7 +320,7 @@ checkDF <- function(df, name, nc) {
 # Check the data$pops argument of genStanData
 #
 # @param pops See [genStanData]
-checkPops <- function(pops, levels) {
+check_pops <- function(pops, levels) {
   pops <- checkDF(pops, "pops", 2)
   oldnames <- names(pops)
   names(pops) <- c("group", "pop")
@@ -433,7 +433,7 @@ checkRates <- function(levels, rates, name) {
 #
 # @param vec A numeric vector
 # @param name The name of the vector (for error message printing)
-checkV <- function(vec, name) {
+check_v <- function(vec, name) {
 
   if(any(is.na(vec)))
     stop(paste0("NAs exist in ", name), call. = FALSE)
@@ -458,9 +458,9 @@ checkV <- function(vec, name) {
 #
 # @param vec A numeric vector
 # @param name The name of the vector (for error message printing)
-checkSV <- function(vec, name) {
+check_sv <- function(vec, name) {
 
-  vec <- checkV(vec, name)
+  vec <- check_v(vec, name)
 
   if(abs(sum(vec) - 1) > 1e-14)
     warning(paste0(name, " did not sum to 1. Have rescaled to form a probability vector."), call. = FALSE)

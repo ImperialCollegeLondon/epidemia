@@ -157,7 +157,7 @@ pp_standata <- function(object, newdata=NULL) {
 
   groups <- levels(newdata$group)
   obs    <- checkObs(object$obs, newdata)
-  pops  <- checkPops(object$pops, groups)
+  pops  <- check_pops(object$pops, groups)
 
   out <- standata_data(newdata)
   out <- add_standata_obs(out, obs)

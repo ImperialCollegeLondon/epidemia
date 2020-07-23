@@ -23,7 +23,7 @@ prior_intercept = rstanarm::normal(scale = .1), ...) {
 
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
-  lag <- checkSV(lag, name="lag")
+  lag <- check_sv(lag, name="lag")
 
   ok_dists <- c("normal")
   if (!(prior$dist %in% ok_dists))

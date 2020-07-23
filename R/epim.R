@@ -79,16 +79,22 @@ epim <-
            prior_tau = rstanarm::exponential(rate = 0.03), prior_PD = FALSE,
            sampling_args = list(), init_run = FALSE, ...) {
     call <- match.call(expand.dots = TRUE)
-    formula <- checkFormula(formula)
-    data <- checkData(formula, data, group_subset)
+    rt <- check_rt(rt)
+    obs <- check_obs(rt, obs)
+    data <- check_data(formula(rt), data, group_subset)
     groups <- levels(data$group)
-    obs <- checkObs(obs, data)
-    pops <- checkPops(pops, groups)
-    si <- checkSV(si, "si")
-
+    pops <- check_pops(pops, groups)
+    si <- check_sv(si, "si")
     if (seed_days < 1) {
       stop("'seed_days' must be greater than zero", call. = FALSE)
     }
+
+    # generate model matrices for each regression
+    rt <- epirt_(rt, data)
+    obs <- lapply(obs, epiobs_, data)
+
+    return(c(rt, obs))
+
 
     sdat <- match.call(expand.dots = FALSE)
     fml <- formals()
