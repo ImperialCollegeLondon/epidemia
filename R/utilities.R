@@ -123,7 +123,7 @@ check_data <- function(formula, data, group_subset) {
 
   # check for group and date columns
   group <- .get_group(formula)
-  date <- .get_date(formula)
+  date <- .get_time(formula)
   vars <- c(group, date)
   not_in_df <- !(vars %in% colnames(data))
   if (any(not_in_df)) {
@@ -213,7 +213,6 @@ check_obs <- function(rt, obs) {
 
   # check all objects are 'epiobs'
   is_epiobs <- sapply(obs, inherits, "epiobs")
-  print(is_epiobs)
   w <- which(!is_epiobs)
   if (length(w) > 0)
     stop(paste0("Elements ", w, " of 'obs' do
@@ -222,7 +221,6 @@ check_obs <- function(rt, obs) {
   # check uniqueness of names
   forms <- lapply(obs, formula)
   nms <- sapply(forms, .get_obs)
-  print(nms)
   
   if (length(unique(nms)) < length(nms))
     stop ("Each observation vector can only have one model.
@@ -232,7 +230,6 @@ check_obs <- function(rt, obs) {
   # check for common group variables
   rtgroup <- .get_group(formula(rt))
   groups <- sapply(forms, .get_group)
-  print(groups)
   w <- which(groups != rtgroup)
   if (length(w) > 0)
     stop(paste0("Elements ", w, " of 'obs' do
@@ -241,7 +238,6 @@ check_obs <- function(rt, obs) {
   # check for common date variables (removed in future)
   rttime <- .get_time(formula(rt))
   times <- sapply(forms, .get_time)
-  print(times)
   w <- which(times != rttime)
   if (length(w) > 0)
     stop(paste0("Elements ", w, " of 'obs' do
