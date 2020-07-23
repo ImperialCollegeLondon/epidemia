@@ -30,3 +30,4 @@ gr.epiobs_ <- function(object, ...) {
 time.epiobs_ <- function(object, ...) {
   return(object$time %ORifNULL% stop("time not found"))
 }
+

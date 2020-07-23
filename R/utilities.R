@@ -26,19 +26,77 @@ check_character <- function(x) {
 # syntactic sugar for the formula
 R <- function(group, date) {}
 
-checkFormula <- function(formula) {
+
+
+
+# Check 'formula' passed to epirt meets requirements for constructing
+# the object
+#
+# @param formula
+check_rt_formula <- function(formula) {
   if(!inherits(formula,"formula"))
     stop("'formula' must have class formula.", call. = FALSE)
   
-   # check left hand side for correct form
-  lhs <- deparse(terms(formula)[[2]])
-  match <- grepl(pattern = "^R\\((\\w)+, (\\w)+\\)$", x=lhs)
-  if(!match)
-    stop ("left hand side 'formula' does not have required form.")
-    
+  # check left hand side for correct form
+  match <- grepl(
+    pattern = "^R\\((\\w)+, (\\w)+\\)$",
+    x = deparse(lhs(formula))
+  )
+  if (!match) {
+    stop("left hand side 'formula' does not have required form.")
+  }  
   class(formula) <- c("epiformula", "formula")
   return(formula)
 }
+
+# Check 'formula' passed to epiobs meets requirements for constructing
+# the object
+#
+# @param formula
+check_obs_formula <- function(formula) {
+  if (!inherits(formula, "formula")) {
+    stop("'formula' must have class formula.", call. = FALSE)
+  }
+
+  if (is_mixed(formula)) {
+    stop("random effects terms found in 'formula', but are not currently
+      supported", call. = FALSE)
+  }
+
+  if (is_autocor(formula)) {
+    stop("autocorrelation terms found in 'formula', but are not currently
+    supported", call. = FALSE)
+  }
+
+  # check left hand side for correct form
+  match <- grepl(
+    pattern = "^(\\w)+\\((\\w)+, (\\w)+\\)$",
+    x = deparse(lhs(formula))
+  )
+  if (!match) {
+    stop("left hand side 'formula' does not have required form.")
+  }
+  return(formula)
+}
+
+
+
+
+# Perform a series of checks on the 'data' argument to 'epim'
+check_data <- function(data, formula, group_subset) {
+
+  if (!is.data.frame(data))
+  stop("'data' must be a data frame", call. = FALSE)
+
+  if (nrow(data) == 0)
+    stop("data has zero rows", call. = FALSE)
+
+
+
+}
+
+
+
 
 # Performs a series of checks on the 'data' argument of genStanData
 #

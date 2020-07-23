@@ -86,12 +86,9 @@
 #' \insertAllCited{}
 #' @export
 epim <-
-  function(formula, data, obs, pops, si, seed_days = 6,
-           algorithm = c("sampling", "meanfield", "fullrank"), 
-           group_subset = NULL, stan_data = FALSE, center = FALSE, 
-           prior = rstanarm::normal(scale = .5),
-           prior_intercept = rstanarm::normal(scale = .5),
-           prior_covariance = rstanarm::decov(scale = .5), r0 = 3.28,
+  function(rt, obs, data, pops, si, seed_days = 6,
+           algorithm = c("sampling", "meanfield", "fullrank"),
+           group_subset = NULL, stan_data = FALSE, center = FALSE,
            prior_phi = rstanarm::normal(location = 0, scale = 5),
            prior_tau = rstanarm::exponential(rate = 0.03), prior_PD = FALSE,
            sampling_args = list(), init_run = FALSE, ...) {

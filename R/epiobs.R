@@ -5,7 +5,6 @@
 #' are taken to be a function of the latent infections in the poulation.
 #' Examples include daily death or hospitalisation rates. For more details on
 #' the model assumptions please refer to the online vignettes.
-#' 
 #'
 #' @param formula A formula defining the model for the observations.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. **Note:**
@@ -35,11 +34,13 @@ prior_intercept = rstanarm::normal(scale = .1), ...) {
   out <- loo::nlist(
     call,
     formula,
-    lag,
+    lags,
     prior,
     prior_intercept,
     mfargs <- list(...)
   )
+  class(out) <- "epiobs"
+  return(out)
 }
 
 # This is a constructor for an internal class which is essentially the same
@@ -75,35 +76,8 @@ epiobs_ <- function(object, data) {
   return(out)
 }
 
-# Check 'formula' passed to epiobs meets requirements for constructing
-# the object
-#
-# @param formula
-check_obs_formula <- function(formula) {
-  if (!inherits(formula, "formula")) {
-    stop("'formula' must have class formula.", call. = FALSE)
-  }
 
-  if (is_mixed(formula)) {
-    stop("random effects terms found in 'formula', but are not currently
-      supported", call. = FALSE)
-  }
 
-  if (is_autocor(formula)) {
-    stop("autocorrelation terms found in 'formula', but are not currently
-    supported", call. = FALSE)
-  }
-
-  # check left hand side for correct form
-  match <- grepl(
-    pattern = "^(\\w)+\\((\\w)+, (\\w)+\\)$",
-    x = deparse(lhs(formula))
-  )
-  if (!match) {
-    stop("left hand side 'formula' does not have required form.")
-  }
-  return(formula)
-}
 
 # Performs a series of checks on the 'data' argument passed to epiobs_
 # constructor.
