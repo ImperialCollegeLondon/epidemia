@@ -1,52 +1,75 @@
 
 #' Helper for constructing an object of class 'epiobs'
 #'
-#' This structure defines a model for a particular type of data that is
-#' a function of the underlying infections in populations. An example is
-#' daily death data or hospitalisation rates. For more details on the types
-#' of data that can be modeled please see the vignette.
+#' Defines a model for an observation vector. These observations
+#' are taken to be a function of the latent infections in the poulation.
+#' Examples include daily death or hospitalisation rates. For more details on
+#' the model assumptions please refer to the online vignettes.
+#' 
 #'
-#' @param formula A formula defining the model for the observations
-#' @param data A dataframe with columns refering to terms in `formula`
+#' @param formula A formula defining the model for the observations.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. **Note:**
 #'  If \code{autoscale=TRUE} (Default) in the call to the prior distribution
 #'  then automatic rescaling of the prior may take place.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior
 #'  for the regression intercept, if one has been specified.
-#' @param offset Same as in \code{\link[stats]{lm}}.
-#' @param pvec A probability vector with the following interpretation.
+#' @param lag A probability vector with the following interpretation.
 #' Conditional on an observation "event" (i.e. a single death or
 #' hospitalisation etc.), the nth element represents the probability that the
 #' individual was infected exactly n days prior to this.
+#' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-epiobs <- function(formula, data, pvec, prior, prior_intercept, offset,
-                   na.action = na.fail, ...) {
+epiobs <- function(formula, lag, prior = rstanarm::normal(scale = .1),
+prior_intercept = rstanarm::normal(scale = .1), ...) {
+
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
-  data <- check_obs_data(formula, data)
-  data <- na.action(data)
+  lag <- checkSV(lag)
 
-  mf <- match.call(expand.dots = FALSE)
-  m <- match(c("na.action", "offset"), names(mf), 0L)
-  mf <- mf[c(1L, m)]
-  mf$formula <- formula(delete.response(terms(formula)))
-  mf$data <- data
-  mf[[1L]] <- quote(stats::model.frame)
-
-  mf <- eval(mf, parent.frame())
-  mt <- attr(mf, "terms")
-  x <- model.matrix(object = mt, data = mf)
+  if (prior$dist != "normal")
+    stop("'prior' must be a call to rstanarm::normal")
+  if (prior_intercept$dist != "normal")
+    stop("'prior_intercept' must be a call to rstanarm::normal")
 
   out <- loo::nlist(
     call,
     formula,
-    obs   = data[, .get_obs(formula)],
-    gr    = data[, .get_group(formula)],
-    time  = data[, .get_time(formula)],
-    mt,
-    x
+    pvec,
+    prior,
+    prior_intercept,
+    mfargs <- list(...)
   )
-  class(out) <- "epiobs"
+}
+
+# This is a constructor for an internal class which is essentially the same
+# as epiobs, however it constructs and stores the model matrix associated with
+# the model, along with some other objects
+#
+# @templateVar epiobsArg object
+# @template args-epiobs-object
+# @param data The dataframe from which to construct the model matrix
+.epiobs <- function(object, data, ...) {
+  if (!inherits(object, "epiobs"))
+    stop("Bug found. Argument 'object' should have class 'epiobs'")
+
+  formula <- formula(object)
+  data <- check_obs_data(formula, data)
+
+  mfargs <- object$mfargs
+  mfargs$formula <- formula(delete.response(terms(formula)))
+  mfargs$data <- data
+  mf <- do.call(stats::model.frame, mfargs)
+  mt <- attr(mf, "terms")
+  x <- model.matrix(object = mt, data = mf)
+
+  out <- object
+  out$obs <- data[, .get_obs(formula)]
+  out$gr <- data[, .get_group(formula)]
+  out$time <- data[, .get_time(formula)]
+  out$mt <- mt
+  out$x <- x
+  class(out) <- ".epiobs"
+
   return(out)
 }
 

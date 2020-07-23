@@ -5,16 +5,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox1 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX1 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -23,16 +24,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox2 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX2 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -41,16 +43,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox3 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX3 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -59,16 +62,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox4 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX4 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -77,16 +81,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox5 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX5 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -95,16 +100,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox6 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX6 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -113,16 +119,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox7 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX7 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -131,16 +138,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox8 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX8 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -149,16 +157,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox9 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX9 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 
     npos += oN[i];
@@ -167,16 +176,17 @@
     if (R >= i) {
         // predictor without intercept
         if (oK[i] > 0)
-            segment(oeta, npos, oN[i]) = ox10 * segment(obeta, kpos, oK[i])
-        else 
-            segment(oeta, npos, oN[i]) = rep_vector(0.0, oN[i]);
+            oeta[npos:(npos+oN[i]-1)] = oX10 * segment(obeta, kpos, oK[i]);
+        else {
+            oeta[npos:(npos+oN[i]-1)] = rep_vector(0.0, oN[i]);
+        }
         // add intercept
         if (has_ointercept[i] > 0)
-            segment(oeta, npos, oN[i]) += ogamma[has_ointercept[i]];
+            oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
         else
-             segment(oeta, npos, oN[i]) += 
+            oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
-                            segment(obeta, kpos, oK[i]);
+                            segment(obeta, kpos, oK[i]));
     }
 }
 

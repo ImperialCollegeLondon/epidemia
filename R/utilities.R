@@ -410,26 +410,6 @@ checkV <- function(vec, name) {
   return(vec)
 }
 
-
-# Simple check of a cumulative vector
-#
-# @param vec A numeric vector
-# @ names The name of the vector (for error messsage printing)
-checkCV <- function(vec, name) {
-
-  vec <- checkV(vec, name)
-
-  if (any(diff(vec) < 0))
-    stop(paste0("Values in ", name, " expected to be non-decreasing.", call. = FALSE))
-
-  if (abs(tail(vec,1) - 1) > 1e-14)
-    warning(paste0("Final value in ", name, " was not equal to 1. Have rescaled to form a distribution function."), call. = FALSE)
-
-  return(vec/utils::tail(vec,1))
-}
-
-
-
 # Simple check of a simplex vector
 #
 # @param vec A numeric vector
