@@ -1,6 +1,6 @@
 #' Helper for constructing an object of class 'epirt'
 #'
-#' Defines a model for the latent time varying reproduction number. For more 
+#' Defines a model for the latent time varying reproduction number. For more
 #' details on the model assumptions please refer to the online vignettes.
 #'
 #' @param formula A formula defining the model for the observations.
@@ -24,16 +24,15 @@
 #' individual was infected exactly n days prior to this.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-epirt <- function(formula, r0 = 3.28, center=FALSE,
-      prior = rstanarm::normal(scale = .5),
-      prior_intercept = rstanarm::normal(scale = .5),
-      prior_covariance = rstanarm::decov(scale = .5), ...) {
-
+epirt <- function(formula, r0 = 3.28, center = FALSE,
+                  prior = rstanarm::normal(scale = .5),
+                  prior_intercept = rstanarm::normal(scale = .5),
+                  prior_covariance = rstanarm::decov(scale = .5), ...) {
   call <- match.call(expand.dots = TRUE)
   formula <- check_rt_formula(formula)
 
   if (r0 <= 0) {
-      stop("'r0' must positive", call. = FALSE)
+    stop("'r0' must positive", call. = FALSE)
   }
 
   out <- loo::nlist(
@@ -60,9 +59,10 @@ epirt <- function(formula, r0 = 3.28, center=FALSE,
 # @template args-epirt-object
 # @param data The dataframe from which to construct the model matrix
 epirt_ <- function(object, data) {
-  if (!inherits(object, "epirt"))
+  if (!inherits(object, "epirt")) {
     stop("Bug found. Argument 'object' should have class 'epirt'")
-  
+  }
+
   formula <- formula(object)
   args <- object$mfargs
   args$na.action <- na.fail # need data for all periods
@@ -73,74 +73,10 @@ epirt_ <- function(object, data) {
 
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
-    gr = data[,.get_group(formula)],
-    time = data[,.get_time(formula)]
+    gr = data[, .get_group(formula)],
+    time = data[, .get_time(formula)]
   ))
 
   class(out) <- "epirt_"
   return(out)
-}
-
-# Parses formula and data into a list of objects required
-# for fitting the model.
-#
-# @param formula model formula
-# @param data contains data required to construct model objects from formula
-parse_mm <- function(formula, data, ...) {
-
-  # check if formula contain terms for partial pooling
-  mixed <- is_mixed(formula)
-
-  # formula with no response and no autocorrelation terms
-  form <- formula(delete.response(terms(formula)))
-  form <- norws(form)
-
-  mf <- match.call(expand.dots = FALSE)
-  mf$formula <- form
-  mf$data <- data
-
-  if (mixed) {
-    mf[[1L]] <- quote(lme4::glFormula)
-    mf$control <- make_glmerControl(
-      ignore_lhs = TRUE,
-      ignore_x_scale = FALSE
-    )
-    glmod <- eval(mf, parent.frame())
-    x <- glmod$X
-
-    if ("b" %in% colnames(x)) {
-      stop("epim does not allow the name 'b' for predictor variables.",
-        call. = FALSE
-      )
-    }
-
-    group <- glmod$reTrms
-    group <-
-      pad_reTrms(
-        Ztlist = group$Ztlist,
-        cnms = group$cnms,
-        flist = group$flist
-      )
-    mt <- NULL
-  } else {
-    mf[[1L]] <- quote(stats::model.frame)
-    mf$drop.unused.levels <- TRUE
-    mf <- eval(mf, parent.frame())
-    mt <- attr(mf, "terms")
-    x <- model.matrix(object = mt, data = mf)
-    glmod <- group <- NULL
-  }
-
-  if ("rw" %in% colnames(x)) {
-    stop("epim does not allow the name 'rw' for predictor variables.",
-      call. = FALSE
-    )
-  }
-
-  return(loo::nlist(
-    x,
-    mt,
-    glmod,
-    group
-  ))
 }

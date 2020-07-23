@@ -47,6 +47,36 @@ check_rt_formula <- function(formula) {
   return(formula)
 }
 
+# Get name of observation column from formula
+# @param x A formula
+.get_obs <- function(x) {
+  out <- deparse(lhs(x))
+  out <- sub("\\(.*", "", out)
+  return(out)
+}
+
+# Get name of group column from formula
+# @param x A formula
+.get_group <- function(x) {
+  out <- deparse(lhs(x))
+  out <- sub(".*\\(", "", out)
+  out <- sub(",.*", "", out)
+  return(out)
+}
+
+.get_time <- function(x) {
+  out <- deparse(lhs(x))
+  out <- sub("\\).*", "", out)
+  out <- sub(".*, ", "", out)
+  return(out)
+}
+
+# Get left hand side of a formula
+# @param x A formula
+lhs <- function(x) {
+  return(terms(x)[[2]])
+}
+
 # Check 'formula' passed to epiobs meets requirements for constructing
 # the object
 #
