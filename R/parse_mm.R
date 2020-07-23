@@ -12,7 +12,7 @@ parse_mm <- function(formula, data, ...) {
   form <- formula(delete.response(terms(formula)))
   form <- norws(form)
 
-  mf <- match.call(expand.dots = FALSE)
+  mf <- match.call(expand.dots = TRUE)
   mf$formula <- form
   mf$data <- data
 

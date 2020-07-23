@@ -164,7 +164,7 @@ check_data <- function(formula, data, group_subset) {
     stop(paste0("NAs exist in data$", time, " after
      coercion to factor"), call. = FALSE)
 
-  groups <- levels(data$date)
+  groups <- levels(data$group)
 
   if (!is.null(group_subset)) {
     if (!is.character(group_subset))

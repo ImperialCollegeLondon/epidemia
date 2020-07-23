@@ -92,12 +92,6 @@ epim <-
     # generate model matrices for each regression
     rt <- epirt_(rt, data)
     obs <- lapply(obs, epiobs_, data)
-    out <- obs
-    out$rt <- rt
-    out$data <- data
-
-    return(out)
-
 
     sdat <- match.call(expand.dots = FALSE)
     fml <- formals()
