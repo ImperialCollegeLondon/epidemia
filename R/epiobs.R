@@ -26,9 +26,10 @@ prior_intercept = rstanarm::normal(scale = .1), ...) {
   formula <- check_obs_formula(formula)
   lag <- checkSV(lag)
 
-  if (prior$dist != "normal")
+  ok_dists <- c("normal")
+  if (!(prior$dist %in% ok_dists))
     stop("'prior' must be a call to rstanarm::normal")
-  if (prior_intercept$dist != "normal")
+  if (!(prior_intercept$dist %in% ok_dists))
     stop("'prior_intercept' must be a call to rstanarm::normal")
 
   out <- loo::nlist(
@@ -48,7 +49,7 @@ prior_intercept = rstanarm::normal(scale = .1), ...) {
 # @templateVar epiobsArg object
 # @template args-epiobs-object
 # @param data The dataframe from which to construct the model matrix
-.epiobs <- function(object, data, ...) {
+epiobs_ <- function(object, data) {
   if (!inherits(object, "epiobs"))
     stop("Bug found. Argument 'object' should have class 'epiobs'")
 
@@ -62,14 +63,15 @@ prior_intercept = rstanarm::normal(scale = .1), ...) {
   mt <- attr(mf, "terms")
   x <- model.matrix(object = mt, data = mf)
 
-  out <- object
-  out$obs <- data[, .get_obs(formula)]
-  out$gr <- data[, .get_group(formula)]
-  out$time <- data[, .get_time(formula)]
-  out$mt <- mt
-  out$x <- x
-  class(out) <- ".epiobs"
+  out <- c(object, list(
+    obs = data[, .get_obs(formula)],
+    gr = data[, .get_group(formula)],
+    time = data[, .get_time(formula)],
+    mt = mt,
+    x = x
+  ))
 
+  class(out) <- "epiobs_"
   return(out)
 }
 
@@ -103,7 +105,7 @@ check_obs_formula <- function(formula) {
   return(formula)
 }
 
-# Performs a series of checks on the 'data' argument passed to epiobs
+# Performs a series of checks on the 'data' argument passed to epiobs_
 # constructor.
 #
 # @param formula
