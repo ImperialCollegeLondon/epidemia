@@ -43,9 +43,9 @@ epiobs <- function(formula, data, pvec, prior, prior_intercept, offset,
     obs   = data[, .get_obs(formula)],
     gr    = data[, .get_group(formula)],
     time  = data[, .get_time(formula)],
+    mt,
     x
   )
-
   class(out) <- "epiobs"
   return(out)
 }

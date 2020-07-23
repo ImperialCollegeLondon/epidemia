@@ -36,6 +36,7 @@ for(r in 1:R)
 }
 
 parameters {
+  vector[num_ointercepts] ogamma;
   real gamma[has_intercept];
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
@@ -46,6 +47,7 @@ parameters {
 }
 
 transformed parameters {
+  vector[N_obs] oeta;
   vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
   real<lower=0> tau2 = prior_scale_for_tau * tau_raw;

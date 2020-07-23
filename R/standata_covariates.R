@@ -1,12 +1,13 @@
-# Stan data relating to Rt regression
-#
-# Collates data relating to covariates in the regression for Rt.
-#
-# Constructs the data to pass to rstan::sampling or rstan::vb. 
-# Code adapted from rstanarm::stan_glm.fit to fit our purposes.
-# This function is called inside \code{epim}, and is internal.
-#
-# @returns A named list
+#' Stan data relating to Rt regression
+#'
+#' Collates data relating to covariates in the regression for Rt.
+#'
+#' Constructs the data to pass to rstan::sampling or rstan::vb. 
+#' Code adapted from rstanarm::stan_glm.fit to fit our purposes.
+#' This function is called inside \code{epim}, and is internal.
+#'
+#' @returns A named list
+#' @export
 standata_covariates <- 
   function(formula, x, link, group=NULL, prior, prior_intercept, 
   prior_covariance, prior_PD, center, ...) 
@@ -16,9 +17,9 @@ standata_covariates <-
   formula <- formula(delete.response(terms(formula)))
   formula <- norws(formula)
 
-  if (is.null(prior)) 
+  if (is.null(prior))
     prior <- list()
-  if (is.null(prior_intercept)) 
+  if (is.null(prior_intercept))
     prior_intercept <- list()
 
   linkstr <- link
