@@ -51,6 +51,7 @@ epirt <- function(formula, r0 = 3.28, center=FALSE,
   return(out)
 }
 
+
 # This is a constructor for an internal class which is essentially the same
 # as epirt, however it constructs and stores the model matrix associated with
 # the model, along with some other objects
@@ -63,18 +64,14 @@ epirt_ <- function(object, data) {
     stop("Bug found. Argument 'object' should have class 'epirt'")
   
   formula <- formula(object)
-  data <- check_data(formula, data)
-
-  mfargs <- object$mfargs
-  mfargs <- c(mfargs,)
-  mfargs$formula <- formula
-
-
-
-  out <- c(object, parse_mm(
-    formula = formula, data = data
+  args <- object$mfargs
+  args$na.action <- na.fail # need data for all periods
+  args <- c(args, list(
+    formula = formula(delete.response(terms(formula))),
+    data = data
   ))
 
+  out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
     gr = data[,.get_group(formula)],
     time = data[,.get_time(formula)]
@@ -83,11 +80,6 @@ epirt_ <- function(object, data) {
   class(out) <- "epirt_"
   return(out)
 }
-
- mfargs <- object$mfargs
-mfargs$formula <- formula(delete.response(terms(formula)))
-  mfargs$data <- data
-  mf <- do.call(stats::model.frame, mfargs)
 
 # Parses formula and data into a list of objects required
 # for fitting the model.

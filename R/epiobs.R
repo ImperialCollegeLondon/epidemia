@@ -55,29 +55,21 @@ epiobs_ <- function(object, data) {
     stop("Bug found. Argument 'object' should have class 'epiobs'")
 
   formula <- formula(object)
-  data <- check_obs_data(formula, data)
-
-  mfargs <- object$mfargs
-  mfargs$formula <- formula(delete.response(terms(formula)))
-  mfargs$data <- data
-  mf <- do.call(stats::model.frame, mfargs)
-  mt <- attr(mf, "terms")
-  x <- model.matrix(object = mt, data = mf)
-
-  out <- c(object, list(
+  args <- object$mfargs
+  args <- c(args, list(
+    formula = formula(delete.response(terms(formula))),
+    data = data
+  ))
+  out <- c(object, do.call(parse_mm, args))
+  out <- c(out, list(
     obs = data[, .get_obs(formula)],
     gr = data[, .get_group(formula)],
     time = data[, .get_time(formula)],
-    mt = mt,
-    x = x
   ))
 
   class(out) <- "epiobs_"
   return(out)
 }
-
-
-
 
 # Performs a series of checks on the 'data' argument passed to epiobs_
 # constructor.

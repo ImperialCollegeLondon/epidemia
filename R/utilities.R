@@ -24,7 +24,8 @@ check_character <- function(x) {
 }
 
 # syntactic sugar for the formula
-R <- function(group, date) {}
+R <- function(group, date) 
+}
 
 # Check 'formula' passed to epirt meets requirements for constructing
 # the object
@@ -166,7 +167,7 @@ check_data <- function(formula, data) {
 #
 # @param 'rt' argument to epim
 check_rt <- function(rt) {
-  if (!inherits(rt), "epirt")
+  if (!inherits(rt, "epirt")
     stop("'rt' must have class 'epirt'.", call. = FALSE)
   return(rt)
 }
