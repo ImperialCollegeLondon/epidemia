@@ -26,9 +26,6 @@ check_character <- function(x) {
 # syntactic sugar for the formula
 R <- function(group, date) {}
 
-
-
-
 # Check 'formula' passed to epirt meets requirements for constructing
 # the object
 #
@@ -99,7 +96,8 @@ check_data <- function(formula, data) {
   vars <- c(group, date)
   not_in_df <- !(vars %in% colnames(data))
   if (any(not_in_df)) {
-    stop(paste(c("Could not find column(s) ", vars[not_in_df], " in 'data'"),
+    stop(paste(c("Could not find column(s) ", 
+      vars[not_in_df], " in 'data'"),
       collapse = " "
     ), call. = FALSE)
   }
@@ -107,9 +105,11 @@ check_data <- function(formula, data) {
   # ensure there are no naming conflicts
   nms <- colnames(data)
   if (group != "group" && "group" %in% nms)
-    stop("Column 'group' has a special meaning in data. Please rename.")
+    stop("Column 'group' has a special meaning in data.
+     Please rename.")
   if (date != "date" && "date" %in% nms)
-    stop("Column 'date' has a special meaning in data. Please rename.")
+    stop("Column 'date' has a special meaning in data.
+     Please rename.")
 
   data[,c("group", "date")] <- data[, vars]
 
@@ -139,7 +139,8 @@ check_data <- function(formula, data) {
     if (!is.character(group_subset))
       stop("group_subset must be a character vector.")
     if(!all(group_subset %in% groups))
-      stop("Not all groups in group_subset were found in 'data'", call.=FALSE)
+      stop("Not all groups in group_subset were found in
+       'data'", call.=FALSE)
     groups <- group_subset
   }
 
@@ -161,139 +162,57 @@ check_data <- function(formula, data) {
   return(data)
 }
 
-checkObs <- function(lst, data) {
-
-  if(!is.list(lst))
-  stop(" Argument 'obs' must be a list.", call.=FALSE)
-
-  # check list has unique nonempty names
-  nms <- names(lst)
-
-  if (any(nms == ""))
-    stop ("All elements of 'obs' must be named.", call.=FALSE)
-  if (length(unique(nms)) < length(nms))
-    stop ("Names of elements in 'obs' are not unique.", call.=FALSE)
-
-  for (i in seq_along(lst)) {
-    
-    nme   <- nms[i]
-    elem  <- lst[[i]]
-    
-    # check we have the correct items
-    missing.items <- sapply(c("odata", "rates", "pvec"), function(x) !(x %in% names(elem)))
-
-    if(any(missing.items)) {
-      missing.items <- names(missing.items)[missing.items]
-      stop(paste0(paste0(missing.items, collapse=", "), " missing from obs$", nme), call. = FALSE)
-    }
-
-    for (name in names(elem))
-      assign(name, elem[[name]])
-
-    odata   <- checkObsDF(data, 
-                          odata, 
-                          paste0("obs$", nme, "$odata"))
-
-    rates <- checkRates(levels(data$group),
-                        rates, 
-                        paste0("obs$", nme, "$rates"))
-
-
-    pvec <- check_sv(pvec, paste0("obs$", nme, "$pvec")) 
-    ptype <- "density"
-    
-    if (nrow(odata))
-      lst[[i]] <- loo::nlist(odata, rates, pvec, ptype)
-    else {
-      warning(paste0("No relevant data found in obs$", nme, ". Removing..."), call. = FALSE)
-      lst[[i]] <- NULL
-    }
-  }
-  return(lst)
+# Simple check on rt argument
+#
+# @param 'rt' argument to epim
+check_rt <- function(rt) {
+  if (!inherits(rt), "epirt")
+    stop("'rt' must have class 'epirt'.", call. = FALSE)
+  return(rt)
 }
 
-
-# Series of checks on dataframe df
+# Simple checks on the obs list
 #
-# These include
-# * formatting (column names, removing redundant columns)
-# * throwing errors if duplicated data exists
-# * removing incomplete cases
-# * warning if unmodelled groups exists
-# * warning if dates must be trimmed
-# @param data The result of [checkData]
-# @param df The dataframe to consider (obs$deaths or obs$incidence)
-# @param name Name of dataframe to output in warnings
-checkObsDF <- function(data, df, name) {
-  df <- checkDF(df, "obs$deaths", 3)
+# @param rt The 'rt' argument to epim
+# @param obs The 'obs' argumento to epim
+check_obs <- function(rt, obs) {
+  if(!is.list(obs))
+    stop(" Argument 'obs' must be a list.", 
+    call.=FALSE)
 
-  # format correctly
-  names(df) <- c("group", "date", "obs")
+  # check all objects are 'epiobs'
+  is_epiobs <- lapply(obs, inherits, "epiobs") 
+  w <- which(!is_epiobs)
+  if (length(w) > 0)
+    stop(paste0("Elements ", w, " of 'obs' do
+     not inherit from 'epiobs'"))
 
-  # check if columns are coercible
-  df <- tryCatch(
-    {
-      df$group <- droplevels(as.factor(df$group))
-      df$date <- as.Date(df$date)
-      df$obs <- as.numeric(df$obs)
-      df
-    },
-    error = function(cond) {
-      stop(paste0("Columns of '", name,"' are not coercible to required classes [factor, Date, numeric]. Original message: ", cond),
-           call. = FALSE)
-    }
-  )
+  # check uniqueness of names
+  forms <- lapply(obs, formula)
+  nms <- lapply(forms, .get_obs)
   
-  # check no NAs were introducted during coercion
-  contains.NA <- apply(df, 2, function(x) sum(is.na(x)))!=0
-  if(any(contains.NA)) {
-    contains.NA <- names(contains.NA)[contains.NA]
-    stop(paste0(paste0(contains.NA, collapse=", "), " contain NA values after being coerced to their appropriate types. These types are listed in documentation of the obs argument to epim."),
-         call. = FALSE)
-  }
+  if (length(unique(nms)) < length(nms))
+    stop ("Each observation vector can only have one model.
+     Please check 'obs' argument",
+     call.=FALSE)
 
-  # ignore unmodelled groups
-  w <- df$group %in% levels(data$group)
-  df <- df[w,]
-  df$group <- droplevels(df$group)
+  # check for common group variables
+  rtgroup <- .get_group(formula(rt))
+  groups <- lapply(forms, .get_group)
+  w <- which(groups != rtgroup)
+  if (length(w) > 0)
+    stop(paste0("Elements ", w, " of 'obs' do
+     not have group vector implied by 'rt'"))
 
-  # throw error if duplicated
-  if(any(duplicated(df[,1:2])))
-    stop(paste0("Observations for a given group and date must be unique. Please check '", name, "'.", call. = FALSE))
+  # check for common date variables (removed in future)
+  rttime <- .get_time(formula(rt))
+  times <- lapply(forms, .get_time)
+  w <- which(times != rttime)
+  if (length(w) > 0)
+    stop(paste0("Elements ", w, " of 'obs' do
+     not have time vector implied by 'rt'"))
 
-  # remove incomplete cases
-  v <- !complete.cases(df)
-  if(any(v)) {
-    df <- df[!v,]
-    warning(paste(c("Have removed missing data on rows", which(v), " of", name), collapse=" "), call.=FALSE)
-  }
-
-  # warn if we have to trim the data.
-  for (group in levels(df$group)) {
-    dates_data  <- data[data$group == group, "date"]
-    start_date  <- min(dates_data)
-    stop_date   <- max(dates_data)
-    range       <- paste0(start_date," : ", stop_date)
-    dates_df    <- df[df$group == group, "date"]
-
-    if(min(dates_df) < start_date || max(dates_df > stop_date))
-        warning(paste0("Group: ", group, ", found dates in ", name, " outside of ", range, ". Trimming..."), call.=FALSE)
-  }
-
-  # trim the data
-  data$group <- as.character(data$group)
-  df$group <- as.character(df$group)
-  df <- dplyr::left_join(data[,c("group", "date")], df, by = c("group", "date"))
-  df <- df[complete.cases(df),]
-  data$group <- as.factor(data$group)
-  df$group <- as.factor(df$group)
-
-  # warning if some groups do not have data
-  v <- setdiff(levels(data$group), levels(df$group))
-  if(length(v))
-    warning(paste(c("No data for group(s) ", v, " found in", name), collapse=" "), call. = FALSE)
-
-  return(df)
+  return(obs)
 }
 
 # Generic checking of a dataframe
@@ -301,7 +220,7 @@ checkObsDF <- function(data, df, name) {
 # @param df The Data.Frame to be checked
 # @param name The name of the dataframe (for error message printing)
 # @param nc The minimum number of columns expected.
-checkDF <- function(df, name, nc) {
+check_df <- function(df, name, nc) {
   if(!is.data.frame(df))
     stop(paste0(name, " must be a dataframe."), call. = FALSE)
   
@@ -321,7 +240,7 @@ checkDF <- function(df, name, nc) {
 #
 # @param pops See [genStanData]
 check_pops <- function(pops, levels) {
-  pops <- checkDF(pops, "pops", 2)
+  pops <- check_df(pops, "pops", 2)
   oldnames <- names(pops)
   names(pops) <- c("group", "pop")
   
@@ -363,72 +282,6 @@ check_pops <- function(pops, levels) {
   return(pops)
 }
 
-# Check that a 'rate' is provided correctly for each observation
-#
-# @param levels Unique levels found in the 'data' argument of [epim]
-# @param rates An element of each element of 'obs' see [epim]
-# @param name The name to print in case of an error
-checkRates <- function(levels, rates, name) {
-
-  if (!is.list(rates))
-    stop(paste0(name," must be a list.", call.=FALSE))
-  
-  if(is.null(rates$means))
-    stop(paste0(name,"$means not found. ", call.=FALSE))
-  
-  if(nrow(rates$means)==0)
-    stop(paste0(name,"$means has zero rows", call.=FALSE))
-  
-  means <- rates$means
-
-  if(is.null(rates$scale)) {
-    warning(paste0(name, "$scale not found, using default value of 0.1"), call. = FALSE)
-    scale = 0.1
-  }
-  else if(!is.numeric(rates$scale) || length(rates$scale) != 1)
-    stop(paste0(name, "$scale must be a numeric of length 1."), call. = FALSE)
-  else
-    scale = rates$scale
-
-  means        <- checkDF(means, paste0(name, "$means"), 2)
-  names(means) <- c("group", "mean")
-  
-  # check if columns are coercible
-  means <- tryCatch(
-    {
-      means$group <- droplevels(as.factor(means$group))
-      means$mean <- as.numeric(means$mean)
-      means
-    },
-    error = function(cond) {
-      stop(paste0("Columns of ", name, "$means are not coercible to required classes [factor, numeric]. Original message: ", cond),
-           call. = FALSE)
-    }
-  )
-  if(any(is.na(means$mean)))
-    stop(paste0("NAs exist in ", name, "$means after coercion to numeric"), call. = FALSE)
-  if(any(is.na(means$group)))
-    stop(paste0("NAs exist in ", name, "$group after coercion to factor"), call. = FALSE)
-
-  # removing rows not represented in response groups
-  means <- means[means$group %in% levels,]
-
-  # requiring all levels have an associated population
-  if (!all(levels %in% means$group))
-    stop(paste0("Levels in 'formula' response missing in ", name, "$means"), call. = FALSE)
-
-  if(any(duplicated(means$group)))
-    stop(paste0("Values for a given group must be unique. Please check ", name, "$means"), call. = FALSE)
-  
-  if(any((means$mean > 1) + (means$mean < 0)))
-    stop(paste0("Mean values must be in [0,1]. Plase check ", name, "$means"), call. = FALSE)
-  
-  # sort by group
-  means <- means[order(means$group),]
-  
-  return(loo::nlist(means, scale))
-}
-
 # Simple check of a vector
 #
 # @param vec A numeric vector
@@ -441,10 +294,12 @@ check_v <- function(vec, name) {
   # do the coercion then check for NAs
   out <- tryCatch(as.numeric(vec),
     error = function(cond) {
-      stop(paste0(name, " could not be coerced to a numeric vector. Original message: ", cond), call. = FALSE)
+      stop(paste0(name, " could not be coerced to a
+       numeric vector. Original message: ", cond), call. = FALSE)
     })
   if(any(is.na(out)))
-    stop(paste0("NAs exist in ", name, " after coercion to numeric"), call. = FALSE)
+    stop(paste0("NAs exist in ", name, " after
+     coercion to numeric"), call. = FALSE)
   
   if(any(vec < 0))
     stop(paste0("Negative values found in ", name), call. = FALSE)
@@ -463,37 +318,8 @@ check_sv <- function(vec, name) {
   vec <- check_v(vec, name)
 
   if(abs(sum(vec) - 1) > 1e-14)
-    warning(paste0(name, " did not sum to 1. Have rescaled to form a probability vector."), call. = FALSE)
+    warning(paste0(name, " did not sum to 1. Have rescaled to
+     form a probability vector."), call. = FALSE)
   
   return(vec/sum(vec))
-}
-
-checkCovariates <- function(data, if_missing = NULL) {
-  if (missing(data) || is.null(data)) {
-    warnCovariatesMissing()
-    return(if_missing)
-  }
-  if (!is.data.frame(data)) {
-    stop("'data' must be a data frame.", call. = FALSE)
-  }
-  
-  # drop other classes (e.g. 'tbl_df', 'tbl', 'data.table')
-  data <- as.data.frame(data)
-  dropRedundantDims(data)
-}
-
-dropRedundantDims <- function(data) {
-  drop_dim <- sapply(data, function(v) is.matrix(v) && NCOL(v) == 1)
-  data[, drop_dim] <- lapply(data[, drop_dim, drop=FALSE], drop)
-  return(data)
-}
-
-warnCovariatesMissing <- function() {
-  warning(
-    "Omitting the 'covariates' element of 'data' is not recommended",
-    "and may not be allowed in future versions of rstanarm. ", 
-    "Some post-estimation functions (in particular 'update', 'loo', 'kfold') ", 
-    "are not guaranteed to work properly unless 'data' is specified as a data frame.",
-    call. = FALSE
-  )
 }
