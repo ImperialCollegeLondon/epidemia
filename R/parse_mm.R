@@ -9,7 +9,7 @@ parse_mm <- function(formula, data, ...) {
   mixed <- is_mixed(formula)
 
   # formula with no response and no autocorrelation terms
-  form <- formula(delete.response(terms(formula)))
+  form <- rhs(formula)
   form <- norws(form)
 
   mf <- match.call(expand.dots = TRUE)

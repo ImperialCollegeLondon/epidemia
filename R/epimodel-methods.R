@@ -50,7 +50,7 @@ model.frame.epimodel <- function(formula, fixed.only=FALSE, ...) {
       fr <- fr[vars]
     }
   } else {
-    form <- formula(delete.response(terms(formula)))
+    form <- rhs(formula)
     fr <- model.frame(formula=form, data=formula$data, drop.unused.levels=TRUE)
   }
   return(fr)

@@ -1,3 +1,24 @@
+# Parses standata for a regression model
+# 
+# This is used internally by epim to create the stan data for the
+# observation regressions and the Rt regressions.
+#
+# @param An object of class 'epiobs_' or 'epirt_'
+# @return A named list giving data to pass to stan
+standata_reg <- function(object, ...) {
+
+  # formula with no response and no autocorrelation terms
+  formula <- rhs(formula(object))
+  formula <- norws(formula)
+
+
+}
+
+
+
+
+
+
 #' Stan data relating to Rt regression
 #'
 #' Collates data relating to covariates in the regression for Rt.

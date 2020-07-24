@@ -77,6 +77,12 @@ lhs <- function(x) {
   return(terms(x)[[2]])
 }
 
+# Get right hand side of a formula
+# @param x A formula
+rhs <- function(x) {
+  return(formula(delete.response(terms(x))))
+}
+
 # Check 'formula' passed to epiobs meets requirements for constructing
 # the object
 #

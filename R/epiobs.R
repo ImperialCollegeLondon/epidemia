@@ -73,7 +73,7 @@ epiobs_ <- function(object, data) {
   formula <- formula(object)
   args <- object$mfargs
   args <- c(args, list(
-    formula = formula(delete.response(terms(formula))),
+    formula = rhs(formula),
     data = data
   ))
   out <- c(object, do.call(parse_mm, args))

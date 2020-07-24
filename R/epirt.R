@@ -73,7 +73,7 @@ epirt_ <- function(object, data) {
   args <- object$mfargs
   args$na.action <- na.fail # need data for all periods
   args <- c(args, list(
-    formula = formula(delete.response(terms(formula))),
+    formula = rhs(formula),
     data = data
   ))
 

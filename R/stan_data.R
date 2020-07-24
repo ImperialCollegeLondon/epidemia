@@ -149,6 +149,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
   }
 
   return(loo::nlist(
+    N_obs = sum(oN),
     R = types,
     oN,
     obs = sapply(obs, get_obs.epiobs_),
