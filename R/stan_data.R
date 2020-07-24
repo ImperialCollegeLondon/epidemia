@@ -129,7 +129,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
      supported. Please check 'obs'", .call = FALSE)
   }
 
-
   if (types > 0) {
     oN <- sapply(obs, function(x) nobs(x))
     oN <- pad(oN, maxtypes, 0)
@@ -149,9 +148,23 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
     # compute regression quantities
     reg <- lapply(obs, standata_reg)
+    oK <- sapply(reg, function(x) x$K)
+    oK <- pad(oK, maxtypes, 0)
+    K_all <- sum(oK)
+
+    out <- list()
+    nms <- paste("oX", 1:maxtypes, sep = "")
+    for (i in seq_along(nms)) {
+      if (i <= types) {
+        out[[nms[i]]] <- reg[[i]]$X
+      }
+      else {
+        out[[nms[i]]] <- matrix(nrow = 0, ncol = 0)
+      }
+    }
   }
 
-  return(loo::nlist(
+  out <- c(out, loo::nlist(
     N_obs = sum(oN),
     R = types,
     oN,
@@ -159,8 +172,11 @@ standata_obs <- function(obs, groups, nsim, begin) {
     obs_group,
     obs_date,
     obs_type,
-    reg
+    oK,
+    K_all
   ))
+
+  return(out)
 }
 
 

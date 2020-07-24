@@ -7,27 +7,35 @@
 # @return A named list giving data to pass to stan
 standata_reg <- function(object, ...) {
 
-  # formula with no response and no autocorrelation terms
-  formula <- rhs(formula(object))
-  formula <- norws(formula)
-  linkstr <- object$link # will need checking when generalised
 
-  if (is.null(object$prior)) {
+  # local bindings to satisfy R CMD Check
+  formula <- x <- link <- center <- prior <- prior_intercept <-
+  prior_covariance <- group <- has_intercept <- xtemp <- xbar <-
+  prior_shape <- prior_shift <- prior_df <- prior_df_for_intercept <-
+  prior_dist <- prior_dist_for_intercept <- prior_mean <-
+  prior_mean_for_intercept <- prior_scale <- prior_scale_for_intercept <-
+  prior_autoscale <- prior_autoscale_for_intercept <- global_prior_scale <-
+  global_prior_df <- slab_df <- slab_scale <- NULL
+
+  # put used parts of object directly in the namespace
+  nms <- c("formula", "x", "link", "center", "prior",
+  "prior_intercept", "prior_covariance", "group")
+  for(nm in nms)
+    assign(nm, object[[nm]])
+
+  # formula with no response and no autocorrelation terms
+  formula <- rhs(formula)
+  formula <- norws(formula)
+  linkstr <- link # will need checking when generalised
+
+  if (is.null(prior)) {
     prior <- list()
   }
-  if (is.null(object$prior_intercept)) {
+  if (is.null(prior_intercept)) {
     prior_intercept <- list()
   }
 
-  x_stuff <- process_x(get_x(object), object$center)
-
-  # local bindings to satisfy R CMD Check
-  has_intercept <- xtemp <- xbar <- prior_shape <- prior_shift <-
-    prior_df <- prior_df_for_intercept <- prior_dist <-
-    prior_dist_for_intercept <- prior_mean <- prior_mean_for_intercept <-
-    prior_scale <- prior_scale_for_intercept <- prior_autoscale <-
-    prior_autoscale_for_intercept <- global_prior_scale <-
-    global_prior_df <- slab_df <- slab_scale <- NULL
+  x_stuff <- process_x(x, center)
 
   for (i in names(x_stuff)) { # xtemp, xbar, has_intercept
     assign(i, x_stuff[[i]])
@@ -94,7 +102,6 @@ standata_reg <- function(object, ...) {
     xbar = as.array(xbar),
     link,
     has_intercept,
-    prior_PD,
     prior_dist,
     prior_mean,
     prior_scale,
@@ -112,8 +119,8 @@ standata_reg <- function(object, ...) {
 
   # make a copy of user specification before modifying 'group'
   # (used for keeping track of priors)
-  group <- object$group
-  prior_covariance <- object$prior_covariance
+  group <- group
+  prior_covariance <- prior_covariance
   user_covariance <- if (!length(group)) NULL else prior_covariance
 
   if (length(group) && length(group$flist)) {
