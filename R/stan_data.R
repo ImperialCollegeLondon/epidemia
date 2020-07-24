@@ -146,6 +146,9 @@ standata_obs <- function(obs, groups, nsim, begin) {
     )
     obs_date <- as.numeric(as.Date(obs_date) - begin + 1)
     obs_type <- unlist(Map(rep, 1:maxtypes, oN))
+
+    # compute regression quantities
+    reg <- lapply(obs, standata_reg)
   }
 
   return(loo::nlist(
@@ -155,7 +158,8 @@ standata_obs <- function(obs, groups, nsim, begin) {
     obs = sapply(obs, get_obs.epiobs_),
     obs_group,
     obs_date,
-    obs_type
+    obs_type,
+    reg
   ))
 }
 

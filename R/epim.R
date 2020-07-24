@@ -117,9 +117,6 @@ epim <- function(rt,
   checked <- loo::nlist(rt, data, obs, pops, si)
   sdat[names(checked)] <- checked
   sdat[[1L]] <- quote(epidemia:::standata_all)
-  #sdat$group <- rt$group
-  #sdat$x <- rt$x
-  #sdat$link <- "logit" # not used yet
 
   if (init_run) {
     print("Prefit to obtain reasonable starting values")
