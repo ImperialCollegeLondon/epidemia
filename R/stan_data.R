@@ -109,19 +109,30 @@ standata_data <- function(data) {
 }
 
 
-standata_obs <- function(obs, groups, nsim) {
+standata_obs <- function(obs, groups, nsim, begin) {
   R <- length(obs)
 
   if (R == 0) {
     # do something and return
   }
 
-  lags <- as.array(lapply(obs, pad_lag))
-  obs_group <- sapply(obs, function(x) match(gr(x), groups))
-  print(obs_group)
-  return()
-}
+  lags <- as.array(lapply(lst, pad_lag.epiobs_, len=nsim))
 
+  nobs <- sapply(obs, nobs)
+
+  obs_group <- sapply(obs, function(x) match(get_gr(x), groups))
+  obs_date <- sapply(lst, get_time)
+  obs_date <- as.numeric(obs_date - begin + 1) # currently have daily obs
+
+
+
+
+
+  obs_type <- 
+  return(loo::nlist(
+    obs = sapply(obs, get_obs)
+  ))
+}
 
 
 

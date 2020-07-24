@@ -6,28 +6,28 @@
 # @param ... Other arguments passed to methods
 # @return A numeric vector
 # @export
-obs <- function(object, ...) UseMethod("obs")
+get_obs <- function(object, ...) UseMethod("obs")
 
 # @rdname obs
 # @export
-gr <- function(object, ...) UseMethod("gr")
+get_gr <- function(object, ...) UseMethod("gr")
 
 # @rdname obs
 # @export
-time <- function(object, ...) UseMethod("time")
+get_time <- function(object, ...) UseMethod("time")
 
 # @export
-obs.epiobs_ <- function(object, ...) {
+get_obs.epiobs_ <- function(object, ...) {
   return(object$obs %ORifNULL% stop("obs not found"))
 }
 
 # @export
-gr.epiobs_ <- function(object, ...) {
+get_gr.epiobs_ <- function(object, ...) {
   return(object$gr %ORifNULL% stop("gr not found"))
 }
 
 # @export
-time.epiobs_ <- function(object, ...) {
+get_time.epiobs_ <- function(object, ...) {
   return(object$time %ORifNULL% stop("time not found"))
 }
 
@@ -48,7 +48,7 @@ cumulate <- function(object, ...) UseMethod("cumulate")
 
 # @export
 cumulate.epiobs_ <- function(object, ...) {
-  object$obs <- cumsum(obs(object))
+  object$obs <- cumsum(get_obs(object))
   object$lag <- cumsum(get_lag(object))
   object$lagtype <- "distribution"
   return(object)
