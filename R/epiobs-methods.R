@@ -6,15 +6,15 @@
 # @param ... Other arguments passed to methods
 # @return A numeric vector
 # @export
-get_obs <- function(object, ...) UseMethod("obs")
+get_obs <- function(object, ...) UseMethod("get_obs")
 
 # @rdname obs
 # @export
-get_gr <- function(object, ...) UseMethod("gr")
+get_gr <- function(object, ...) UseMethod("get_gr")
 
 # @rdname obs
 # @export
-get_time <- function(object, ...) UseMethod("time")
+get_time <- function(object, ...) UseMethod("get_time")
 
 # @export
 get_obs.epiobs_ <- function(object, ...) {
@@ -37,6 +37,13 @@ get_lag <- function(object, ...) UseMethod("get_lag")
 # @export
 get_lag.epiobs_ <- function(object, ...) {
   return(object$lag)
+}
+
+# Get total number of observations
+nobs <- function(object, ...) UseMethod("nobs")
+
+nobs.epiobs_ <- function(object, ...) {
+  return(length(get_obs(object)))
 }
 
 # Turn observations into cumulatives

@@ -21,10 +21,15 @@ standata_all <- function(rt,
   out$si <- pad(si, out$NS, 0, TRUE)
   out$N0 <- seed_days
   out$pop <- as.array(pops$pop)
-  out <- c(out, standata_model_priors(prior_tau))
-
-  out <- c(out, standata_obs(obs, out$groups, out$NS))
-
+  out <- c(
+    out,
+    standata_model_priors(prior_tau),
+    standata_obs(
+      obs, out$groups,
+      out$NS, out$begin
+    )
+  )
+  return(out)
 }
 
 
@@ -109,31 +114,49 @@ standata_data <- function(data) {
 }
 
 
+# Parses obs argument into data ready for stan
+#
+# @param obs A list of epiobs_ objects
+# @param groups An ordered list of all modeled groups
+# @param nsim The total simulation period
+# @param begin The first simulation date
 standata_obs <- function(obs, groups, nsim, begin) {
-  R <- length(obs)
+  maxtypes <- 10
+  types <- length(obs)
 
-  if (R == 0) {
-    # do something and return
+  if (types > maxtypes) {
+    stop("Currently up to 10 observation types are
+     supported. Please check 'obs'", .call = FALSE)
   }
 
-  lags <- as.array(lapply(lst, pad_lag.epiobs_, len=nsim))
 
-  nobs <- sapply(obs, nobs)
+  if (types > 0) {
+    oN <- sapply(obs, function(x) nobs(x))
+    oN <- pad(oN, maxtypes, 0)
 
-  obs_group <- sapply(obs, function(x) match(get_gr(x), groups))
-  obs_date <- sapply(lst, get_time)
-  obs_date <- as.numeric(obs_date - begin + 1) # currently have daily obs
+    lags <- as.array(lapply(obs,
+      function(x) pad_lag(x, len = nsim)))
+    obs_group <- sapply(
+      obs,
+      function(x) match(get_gr(x), groups)
+    )
+    obs_date <- sapply(
+      obs,
+      function(x) as.character(get_time(x))
+    )
+    obs_date <- as.numeric(as.Date(obs_date) - begin + 1)
+    obs_type <- unlist(Map(rep, 1:maxtypes, oN))
+  }
 
-
-
-
-
-  obs_type <- 
   return(loo::nlist(
-    obs = sapply(obs, get_obs)
+    R = types,
+    oN,
+    obs = sapply(obs, get_obs.epiobs_),
+    obs_group,
+    obs_date,
+    obs_type
   ))
 }
-
 
 
 # add relevant standata from obs. Used internally in epim.
