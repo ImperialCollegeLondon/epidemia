@@ -78,9 +78,6 @@ epirt_ <- function(object, data) {
     data = data
   ))
 
-  print(class(args))
-  print(names(args))
-
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
     gr = data[, .get_group(formula)],

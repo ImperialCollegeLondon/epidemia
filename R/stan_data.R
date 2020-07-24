@@ -152,6 +152,14 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oK <- pad(oK, maxtypes, 0)
     K_all <- sum(oK)
 
+    # intercepts
+    has_ointercept <- sapply(reg, function(x) x$has_intercept)
+    has_ointercept <- pad(has_ointercept, maxtypes, 0)
+    num_ointercepts <- sum(has_ointercept)
+    has_ointercept <- has_ointercept * cumsum(has_ointercept)
+
+    # covariates
+    oxbar <- sapply(reg, function(x) x$xbar)
     out <- list()
     nms <- paste("oX", 1:maxtypes, sep = "")
     for (i in seq_along(nms)) {
@@ -173,7 +181,10 @@ standata_obs <- function(obs, groups, nsim, begin) {
     obs_date,
     obs_type,
     oK,
-    K_all
+    K_all,
+    oxbar,
+    has_ointercept,
+    num_ointercepts
   ))
 
   return(out)
