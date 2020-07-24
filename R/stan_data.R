@@ -18,15 +18,24 @@ standata_all <- function(rt,
 
   # standata for general model params
   out <- standata_data(data)
-  out$si <- pad(si, out$NS, 0, TRUE)
-  out$N0 <- seed_days
-  out$pop <- as.array(pops$pop)
   out <- c(
     out,
+    list(
+      si = pad(si, out$NS, 0, TRUE),
+      N0 = seed_days,
+      prior_PD = prior_PD,
+      pop = as.array(pops$pop)
+    ),
     standata_model_priors(prior_tau),
     standata_obs(
-      obs, out$groups,
-      out$NS, out$begin
+      obs = obs,
+      groups = out$groups,
+      nsim = out$NS,
+      begin = out$begin
+    ),
+    standata_rt(
+      rt = rt,
+      data = data
     )
   )
   return(out)
@@ -64,8 +73,13 @@ standata_all <- function(rt,
 #
 # @inheritParams epim
 # @param formula, data Same as in epim
-standata_autocor <- function(formula, data) {
+standata_autocor <- function(object, data) {
   out <- list()
+
+  if (!inherits(object, "epirt_"))
+    stop("Bug found. 'object' must have class 'epirt_'.")
+
+  formula <- object$formula
 
   if (is_autocor(formula)) {
     trms <- terms_rw(formula)
@@ -113,6 +127,19 @@ standata_data <- function(data) {
   ))
 }
 
+# Parses rt argument into data ready for stan
+#
+# @param rt An epirt_ object
+# @param data data argument to epim
+standata_rt <- function(rt, data) {
+  out <- list()
+  out$r0 <- rt$r0
+  out <- c(
+    out,
+    standata_reg(rt, data)
+  )
+  return(out)
+}
 
 # Parses obs argument into data ready for stan
 #
@@ -133,7 +160,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oN <- sapply(obs, function(x) nobs(x))
     oN <- pad(oN, maxtypes, 0)
 
-    lags <- as.array(lapply(obs,
+    pvecs <- as.array(lapply(obs,
       function(x) pad_lag(x, len = nsim)))
     obs_group <- sapply(
       obs,
@@ -198,9 +225,14 @@ standata_obs <- function(obs, groups, nsim, begin) {
     )
 
   }
-  { # set to zero values
-
-
+  else { # set to zero values
+    N_obs <- K_all <- num_ointercepts <-  0
+    obs <- oprior_mean <- oprior_scale <-
+    oprior_mean_for_intercept <- oprior_scale_for_intercept <-
+    prior_mean_for_phi <- prior_scale_for_phi <- rep(0,0)
+    obs_group <- obs_date <- obs_type <- oN <- oK <- oxbar <-
+    has_ointercept <- integer(0)
+    pvecs <- array(0, dim = c(0, nsim))
   }
 
   out <- c(out, loo::nlist(
@@ -222,63 +254,11 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oprior_mean_for_intercept,
     oprior_scale_for_intercept,
     prior_mean_for_phi,
-    prior_scale_for_phi
+    prior_scale_for_phi,
+    pvecs
   ))
-
   return(out)
 }
-
-
-# add relevant standata from obs. Used internally in epim.
-#
-# @param sdat The result of standata_data
-# @param obs The result of checkObs
-add_standata_obs <- function(sdat, obs) {
-  R <- length(obs)
-  if (R) {
-    f1 <- function(x) {
-      if (x$ptype == "density") {
-        pad(x$pvec, sdat$NS, 0, TRUE)
-      } else {
-        pad(x$pvec, sdat$NS, tail(x$pvec, 1))
-      }
-    }
-    pvecs <- as.array(lapply(obs, f1))
-
-    # create matrix of observations for stan
-    f4 <- function(x, i) {
-      df <- x$odata
-      g <- function(x) which(x == sdat$groups)[1]
-
-      df$group <- sapply(df$group, g)
-      df$date <- as.numeric(df$date - sdat$begin + 1)
-      df$type <- i
-      df
-    }
-    obs <- do.call("rbind", args = Map(f4, obs, seq_along(obs)))
-  } else {
-    obs <- data.frame()
-    pvecs <- array(0, dim = c(0, sdat$NS))
-    means <- array(0, dim = c(sdat$M, 0))
-    noise_scales <- numeric()
-  }
-
-  return(c(
-    sdat,
-    list(
-      obs_group = as.numeric(obs$group),
-      obs_date = as.numeric(obs$date),
-      obs_type = as.numeric(obs$type),
-      obs = as.numeric(obs$obs),
-      N_obs = nrow(obs),
-      R = R,
-      pvecs = pvecs,
-      means = means,
-      noise_scales = as.array(noise_scales)
-    )
-  ))
-}
-
 
 # Parse model priors (currently just tau) to standata representation.
 # Used internally in epim.
@@ -288,20 +268,6 @@ standata_model_priors <- function(prior_tau) {
 
   # for passing R CMD Check
   prior_scale_for_tau <- NULL
-
-  # prior_phi_stuff <- handle_glm_prior(
-  #   prior = prior_phi,
-  #   nvars = sdat$R,
-  #   default_scale = 5,
-  #   link = "dummy",
-  #   ok_dists = loo::nlist("normal")
-  # )
-
-  # names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_for_phi")
-
-  # for (i in names(prior_phi_stuff)) {
-  #   assign(i, prior_phi_stuff[[i]])
-  # }
 
   prior_tau_stuff <- handle_glm_prior(
     prior = prior_tau,

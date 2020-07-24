@@ -5,7 +5,7 @@
 #
 # @param An object of class 'epiobs_' or 'epirt_'
 # @return A named list giving data to pass to stan
-standata_reg <- function(object, ...) {
+standata_reg <- function(object, data, ...) {
 
 
   # local bindings to satisfy R CMD Check
@@ -22,6 +22,11 @@ standata_reg <- function(object, ...) {
   "prior_intercept", "prior_covariance", "group")
   for(nm in nms)
     assign(nm, object[[nm]])
+
+  autocor <- NULL
+  if (inherits(object, "epirt_")) {
+    autocor <- standata_autocor(object, data)
+  }
 
   # formula with no response and no autocorrelation terms
   formula <- rhs(formula)
@@ -77,10 +82,9 @@ standata_reg <- function(object, ...) {
     assign(i, prior_intercept_stuff[[i]])
   }
 
-  if (class(object) == "epiobs_") { # response distribution
-    # currently assumes NB, may extend in future.
-    prior_mean_for_phi <- prior_scale_for_phi <- NULL
-  
+  prior_mean_for_phi <- prior_scale_for_phi <- NULL
+  if (inherits(object, "epiobs_")) { # response distribution
+    # currently assumes NB, may extend in future.  
     prior_phi_stuff <- handle_glm_prior(
       prior = object$prior_phi,
       nvars = 1,
@@ -137,6 +141,8 @@ standata_reg <- function(object, ...) {
     prior_mean_for_phi,
     prior_scale_for_phi
   )
+
+  out <- c(out, autocor) # add data for autocorrelation terms
 
   # make a copy of user specification before modifying 'group'
   # (used for keeping track of priors)
