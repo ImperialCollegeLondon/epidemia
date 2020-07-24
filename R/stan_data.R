@@ -41,34 +41,6 @@ standata_all <- function(rt,
   return(out)
 }
 
-
-# standata_all <- function(formula, data, obs, pops, si, seed_days,
-#                          group_subset, center, prior, prior_intercept,
-#                          prior_covariance, r0, prior_phi, prior_tau,
-#                          prior_PD, group, x, link) {
-#   out <- standata_autocor(formula, data)
-#   out <- c(out, standata_data(data))
-#   out$si <- pad(si, out$NS, 0, TRUE)
-#   out$r0 <- r0
-#   out$N0 <- seed_days
-#   out$pop <- as.array(pops$pop)
-
-#   out <- add_standata_obs(out, obs)
-#   out <- add_standata_mpriors(out, prior_phi, prior_tau)
-
-#   call <- match.call(expand.dots = FALSE)
-#   call[[1L]] <- quote(epidemia:::standata_covariates)
-#   m <- match(c(
-#     "formula", "x", "group", "prior", "prior_intercept",
-#     "prior_covariance", "prior_PD", "logit", "center", "link"
-#   ), names(call), 0L)
-#   call <- call[c(1L, m)]
-#   call <- eval(call, parent.frame())
-#   out <- c(out, call)
-
-#   return(out)
-# }
-
 # Generate standata for autocorrelation terms
 #
 # @inheritParams epim
@@ -79,7 +51,7 @@ standata_autocor <- function(object, data) {
   if (!inherits(object, "epirt_"))
     stop("Bug found. 'object' must have class 'epirt_'.")
 
-  formula <- object$formula
+  formula <- formula(object)
 
   if (is_autocor(formula)) {
     trms <- terms_rw(formula)
@@ -158,35 +130,46 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
   if (types > 0) {
     oN <- sapply(obs, function(x) nobs(x))
-    oN <- pad(oN, maxtypes, 0)
+    oN <- array(pad(oN, maxtypes, 0))
 
     pvecs <- as.array(lapply(obs,
       function(x) pad_lag(x, len = nsim)))
-    obs_group <- sapply(
-      obs,
-      function(x) match(get_gr(x), groups)
+
+    dat <- array(unlist(
+      lapply(
+        obs,
+        function(x) get_obs(x)
+      )
+    ))
+    obs_group <- array(unlist(
+      lapply(
+        obs,
+        function(x) match(get_gr(x), groups)
+      )
+    ))
+    obs_date <- unlist(
+      lapply(
+        obs,
+        function(x) as.character(get_time(x))
+      )
     )
-    obs_date <- sapply(
-      obs,
-      function(x) as.character(get_time(x))
-    )
-    obs_date <- as.numeric(as.Date(obs_date) - begin + 1)
-    obs_type <- unlist(Map(rep, 1:maxtypes, oN))
+    obs_date <- array(as.Date(obs_date) - begin + 1)
+    obs_type <- array(unlist(Map(rep, 1:maxtypes, oN)))
 
     # compute regression quantities
     reg <- lapply(obs, standata_reg)
     oK <- sapply(reg, function(x) x$K)
-    oK <- pad(oK, maxtypes, 0)
+    oK <- array(pad(oK, maxtypes, 0))
     K_all <- sum(oK)
 
     # intercepts
     has_ointercept <- sapply(reg, function(x) x$has_intercept)
     has_ointercept <- pad(has_ointercept, maxtypes, 0)
     num_ointercepts <- sum(has_ointercept)
-    has_ointercept <- has_ointercept * cumsum(has_ointercept)
+    has_ointercept <- array(has_ointercept * cumsum(has_ointercept))
 
     # covariates
-    oxbar <- sapply(reg, function(x) x$xbar)
+    oxbar <- array(unlist(lapply(reg, function(x) x$xbar)))
     out <- list()
     nms <- paste("oX", 1:maxtypes, sep = "")
     for (i in seq_along(nms)) {
@@ -194,36 +177,37 @@ standata_obs <- function(obs, groups, nsim, begin) {
         out[[nms[i]]] <- reg[[i]]$X
       }
       else {
-        out[[nms[i]]] <- matrix(nrow = 0, ncol = 0)
+        out[[nms[i]]] <- array(0, dim = c(0, 0))
       }
     }
 
     # regression hyperparameters
-    oprior_mean <- sapply(
-      reg,
-      function(x) x$prior_mean
-    )
-    oprior_scale <- sapply(
+    oprior_mean <- array(unlist(
+      lapply(
+        reg,
+        function(x) x$prior_mean
+      )
+    ))
+    oprior_scale <- array(unlist(lapply(
       reg,
       function(x) x$prior_scale
-    )
-    oprior_mean_for_intercept <- sapply(
+    )))
+    oprior_mean_for_intercept <- array(sapply(
       reg,
       function(x) x$prior_mean_for_intercept
-    )
-    oprior_scale_for_intercept <- sapply(
+    ))
+    oprior_scale_for_intercept <- array(sapply(
       reg,
       function(x) x$prior_scale_for_intercept
-    )
-    prior_mean_for_phi <- sapply(
+    ))
+    prior_mean_for_phi <- array(sapply(
       reg,
       function(x) x$prior_mean_for_phi
-    )
-    prior_scale_for_phi <- sapply(
+    ))
+    prior_scale_for_phi <- array(sapply(
       reg,
       function(x) x$prior_scale_for_phi
-    )
-
+    ))
   }
   else { # set to zero values
     N_obs <- K_all <- num_ointercepts <-  0
@@ -240,7 +224,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     N_obs = sum(oN),
     R = types,
     oN,
-    obs = sapply(obs, get_obs.epiobs_),
+    obs = dat,
     obs_group,
     obs_date,
     obs_type,

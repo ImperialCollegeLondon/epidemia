@@ -81,9 +81,9 @@ epiobs_ <- function(object, data) {
   ))
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
-    obs = data[, .get_obs(formula)],
-    gr = data[, .get_group(formula)],
-    time = data[, .get_time(formula)]
+    obs = data[, .get_obs(formula), drop = TRUE],
+    gr = data[, .get_group(formula), drop = TRUE],
+    time = data[, .get_time(formula), drop = TRUE]
   ))
 
   class(out) <- "epiobs_"

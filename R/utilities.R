@@ -27,6 +27,14 @@ check_character <- function(x) {
 R <- function(group, date) {
 }
 
+is_mixed <- function(formula) {
+  !is.null(lme4::findbars(norws(formula)))
+}
+
+is_autocor <- function(formula) {
+  return(length(terms_rw(formula)) > 0)
+}
+
 # Check 'formula' passed to epirt meets requirements for constructing
 # the object
 #

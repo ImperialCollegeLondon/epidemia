@@ -120,7 +120,7 @@ epim <- function(rt,
 
   if (init_run) {
     print("Prefit to obtain reasonable starting values")
-    cobs <- lapply(obs, cumulate)
+    cobs <- lapply(obs, function(x) cumulate(x))
     # replace obs with cobs for initial fit
     sdat_init <- sdat
     sdat_init$obs <- cobs
@@ -164,34 +164,42 @@ epim <- function(rt,
     return(sdat)
   }
 
+  group <- rt$group
   # parameters to keep track of
   pars <- c(
     if (sdat$has_intercept) "alpha",
-    "beta",
+    if (sdat$K > 0) "beta",
     if (length(group)) "b",
     if (sdat$len_theta_L) "theta_L",
-    "y", "tau2", "phi", "noise",
+    "y",
+    "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
-    if (length(sdat$ac_nterms)) "ac_noise"
+    if (length(sdat$ac_nterms)) "ac_noise",
+    if (sdat$R > 0) "phi",
+    if (sdat$num_ointercepts) "ogamma",
+    if (sdat$K_all > 0) "obeta"
   )
 
-  args <- sampling_args
-  args$object <- stanmodels$epidemia_base
-  args$pars <- pars
-  args$data <- sdat
-
-  if (init_run) {
-    args$init <- initf
-  }
+  args <- c(
+    sampling_args,
+    list(
+      object = stanmodels$epidemia_base,
+      pars = pars,
+      data = sdat
+    )
+  )
+  
+  if (init_run) 
+    args$init <- initf 
 
   algorithm <- match.arg(algorithm)
   sampling <- algorithm == "sampling"
 
   fit <-
     if (sampling) {
-      do.call("sampling", args)
+      do.call(rstan::sampling, args)
     } else {
-      do.call("vb", args)
+      do.call(rstan::vb, args)
     }
 
   if (sdat$len_theta_L) {
@@ -212,26 +220,44 @@ epim <- function(rt,
     Sigma_nms <- unlist(Sigma_nms)
   }
 
-
-  trms_rw <- terms_rw(formula)
+  trms_rw <- terms_rw(formula(rt))
   combs <- expand.grid(groups, names(obs))
+
   new_names <- c(
-    if (sdat$has_intercept) "(Intercept)",
-    colnames(sdat$X),
-    if (length(group) && length(group$flist)) c(paste0("b[", make_b_nms(group), "]")),
-    if (sdat$len_theta_L) paste0("Sigma[", Sigma_nms, "]"),
+    if (sdat$has_intercept) {
+      "(Intercept)"
+    },
+    if (sdat$K > 0) {
+      colnames(sdat$X)
+    },
+    if (length(group) && length(group$flist)) {
+      c(paste0("b[", make_b_nms(group), "]"))
+    },
+    if (sdat$len_theta_L) {
+      paste0("Sigma[", Sigma_nms, "]")
+    },
     c(paste0("seeds[", groups, "]")),
     "tau",
-    if (sdat$R > 0) paste0("phi[", names(obs), "]"),
-    if (sdat$R > 0) paste0("noise[", combs[, 1], ",", combs[, 2], "]"),
-    if (length(sdat$ac_nterms)) make_rw_sigma_nms(trms_rw, data),
-    if (length(sdat$ac_nterms)) make_rw_nms(trms_rw, data),
+    if (length(sdat$ac_nterms)) {
+      make_rw_sigma_nms(trms_rw, data)
+    },
+    if (length(sdat$ac_nterms)) {
+      make_rw_nms(trms_rw, data)
+    },
+    if (sdat$R > 0) {
+      make_phi_nms(obs, sdat)
+    },
+    if (sdat$num_ointercepts > 0) {
+      make_ointercept_nms(obs, sdat)
+    },
+    if (sdat$K_all > 0) {
+      make_obeta_nms(obs, sdat)
+    },
     "log-posterior"
   )
 
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names
-
 
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[, !sel, drop = FALSE]
@@ -246,14 +272,6 @@ epim <- function(rt,
     orig_names, groups
   )
   return(epimodel(out))
-}
-
-is_mixed <- function(formula) {
-  !is.null(lme4::findbars(norws(formula)))
-}
-
-is_autocor <- function(formula) {
-  return(length(terms_rw(formula)) > 0)
 }
 
 transformTheta_L <- function(stanfit, cnms) {
@@ -311,4 +329,49 @@ make_rw_sigma_nms <- function(trms, data) {
     nms <- c(nms, unique(paste0("sigma:", trm$label, "[", group, "]")))
   }
   return(nms)
+}
+
+make_phi_nms <- function(obs, sdat) {
+  if (sdat$R == 0) {
+    return(character(0))
+  }
+  obs_nms <- sapply(
+    obs,
+    function(x) .get_obs(formula(x))
+  )
+  return(paste0("phi[", obs_nms, "]"))
+}
+
+make_ointercept_nms <- function(obs, sdat) {
+  if (sdat$num_ointercepts == 0) {
+    return(character(0))
+  }
+  obs_nms <- sapply(
+    obs,
+    function(x) .get_obs(formula(x))
+  )
+  return(paste0(
+    "(Intercept)[",
+    obs_nms[sdat$has_intercept], "]"
+  ))
+}
+
+make_obeta_nms <- function(obs, sdat) {
+  if (sdat$K_all == 0) {
+    return(character(0))
+  }
+  obs_nms <- sapply(
+    obs,
+    function(x) .get_obs(formula(x))
+  )
+  repnms <- unlist(Map(
+    rep,
+    obs_nms,
+    head(sdat$oK, length(obs_nms))
+  ))
+  obs_beta_nms <- unlist(lapply(
+    obs,
+    function(a) colnames(get_x(a))
+  ))
+  return(paste0(repnms, ":", obs_beta_nms))
 }

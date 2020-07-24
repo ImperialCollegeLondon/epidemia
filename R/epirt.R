@@ -80,8 +80,8 @@ epirt_ <- function(object, data) {
 
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
-    gr = data[, .get_group(formula)],
-    time = data[, .get_time(formula)]
+    gr = data[, .get_group(formula), drop = TRUE],
+    time = data[, .get_time(formula), drop = TRUE]
   ))
 
   class(out) <- "epirt_"
