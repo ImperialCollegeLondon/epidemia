@@ -77,6 +77,25 @@ standata_reg <- function(object, ...) {
     assign(i, prior_intercept_stuff[[i]])
   }
 
+  if (class(object) == "epiobs_") { # response distribution
+    # currently assumes NB, may extend in future.
+    prior_mean_for_phi <- prior_scale_for_phi <- NULL
+  
+    prior_phi_stuff <- handle_glm_prior(
+      prior = object$prior_phi,
+      nvars = 1,
+      default_scale = 5,
+      link = "dummy",
+      ok_dists = loo::nlist("normal")
+    )
+  
+    names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_for_phi")
+  
+    for (i in names(prior_phi_stuff)) {
+      assign(i, prior_phi_stuff[[i]])
+    }
+  }
+
   if (prior_dist > 0L && prior_autoscale) {
     min_prior_scale <- 1e-12
     prior_scale <- pmax(min_prior_scale, prior_scale /
@@ -114,7 +133,9 @@ standata_reg <- function(object, ...) {
     prior_df_for_intercept = c(prior_df_for_intercept),
     global_prior_df, global_prior_scale, slab_df, slab_scale, # for hs priors
     prior_df_for_intercept = c(prior_df_for_intercept),
-    num_normals = if (prior_dist == 7) as.integer(prior_df) else integer(0)
+    num_normals = if (prior_dist == 7) as.integer(prior_df) else integer(0),
+    prior_mean_for_phi,
+    prior_scale_for_phi
   )
 
   # make a copy of user specification before modifying 'group'

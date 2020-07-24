@@ -170,9 +170,41 @@ standata_obs <- function(obs, groups, nsim, begin) {
         out[[nms[i]]] <- matrix(nrow = 0, ncol = 0)
       }
     }
+
+    # regression hyperparameters
+    oprior_mean <- sapply(
+      reg,
+      function(x) x$prior_mean
+    )
+    oprior_scale <- sapply(
+      reg,
+      function(x) x$prior_scale
+    )
+    oprior_mean_for_intercept <- sapply(
+      reg,
+      function(x) x$prior_mean_for_intercept
+    )
+    oprior_scale_for_intercept <- sapply(
+      reg,
+      function(x) x$prior_scale_for_intercept
+    )
+    prior_mean_for_phi <- sapply(
+      reg,
+      function(x) x$prior_mean_for_phi
+    )
+    prior_scale_for_phi <- sapply(
+      reg,
+      function(x) x$prior_scale_for_phi
+    )
+
+  }
+  { # set to zero values
+
+
   }
 
   out <- c(out, loo::nlist(
+    reg,
     N_obs = sum(oN),
     R = types,
     oN,
@@ -184,7 +216,13 @@ standata_obs <- function(obs, groups, nsim, begin) {
     K_all,
     oxbar,
     has_ointercept,
-    num_ointercepts
+    num_ointercepts,
+    oprior_mean,
+    oprior_scale,
+    oprior_mean_for_intercept,
+    oprior_scale_for_intercept,
+    prior_mean_for_phi,
+    prior_scale_for_phi
   ))
 
   return(out)
