@@ -259,6 +259,9 @@ epim <- function(rt,
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names
 
+  return(fit)
+
+  x <- get_x(rt)
   sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
   x <- x[, !sel, drop = FALSE]
   z <- group$Z
@@ -267,7 +270,7 @@ epim <- function(rt,
   }
 
   out <- loo::nlist(
-    stanfit = fit, formula, x = cbind(x, z), data, obs, r0, seed_days, si, pops,
+    stanfit = fit, formula(rt), x = cbind(x, z), data, obs, r0, seed_days, si, pops,
     call, algorithm, terms = mt, glmod, standata = sdat,
     orig_names, groups
   )
