@@ -90,8 +90,8 @@ epim <- function(rt,
                  ...) {
 
   call    <- match.call(expand.dots = TRUE)
-  rt      <- check_rt(rt)
-  obs     <- check_obs(rt, obs)
+  rt_orig <- check_rt(rt)
+  obs_orig <- check_obs(rt, obs)
   data    <- check_data(formula(rt), data, group_subset)
   groups  <- levels(data$group)
   pops    <- check_pops(pops, groups)
@@ -102,8 +102,8 @@ epim <- function(rt,
   }
 
   # generates model matrices for each regression
-  rt <- epirt_(rt, data)
-  obs <- lapply(obs, epiobs_, data)
+  rt <- epirt_(rt_orig, data)
+  obs <- lapply(obs_orig, epiobs_, data)
 
   sdat <- match.call(expand.dots = FALSE)
   fml <- formals()
@@ -258,6 +258,8 @@ epim <- function(rt,
   fit@sim$fnames_oi <- new_names
 
   out <- loo::nlist(
+    rt_orig,
+    obs_orig,
     call,
     stanfit = fit, 
     rt,

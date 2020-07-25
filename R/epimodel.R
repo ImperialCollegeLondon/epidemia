@@ -56,6 +56,8 @@ epimodel <- function(object) {
     names(ses) <- names(covmat) <- nms
 
   out <- loo::nlist(
+    rt = rt_orig,
+    obs = obs_orig,
     coefficients = coefs,
     ses,
     linear.predictors = eta,

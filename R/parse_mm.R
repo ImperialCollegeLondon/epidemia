@@ -1,8 +1,10 @@
 # Parses formula and data into a list of objects required
 # for fitting the model.
 #
-# @param formula model formula
-# @param data contains data required to construct model objects from formula
+# @param formula Model formula
+# @param data Dontains data required to construct model objects from formula
+# @param ... Arguments to be passed to \code{\link[stats]{model.frame}}
+# or \code{\link[lme4]{glFormula}}
 parse_mm <- function(formula, data, ...) {
 
   # formula with no response and no autocorrelation terms

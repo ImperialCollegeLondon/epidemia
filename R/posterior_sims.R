@@ -5,7 +5,8 @@
 # also the observation series.
 #
 # @inheritParams posterior_infections
-# return A names list, with each elements containing draws of a particular type of series
+# return A names list, with each elements containing draws of a
+# particular type of series
 posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
   if (!is.null(seed))
     set.seed(seed)
@@ -21,7 +22,8 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
     groups <- levels(newdata$group)
     w <- !(groups %in% object$groups)
     if (any(w))
-      stop(paste0("Groups ", groups[w], " not modeled. 'newdata' only supported for existing populations."))
+      stop(paste0("Groups ", groups[w], " not modeled. 
+      'newdata' only supported for existing populations."))
   }
 
   # construct linear predictor
