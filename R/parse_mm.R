@@ -5,9 +5,6 @@
 # @param data contains data required to construct model objects from formula
 parse_mm <- function(formula, data, ...) {
 
-  # check if formula contain terms for partial pooling
-  mixed <- is_mixed(formula)
-
   # formula with no response and no autocorrelation terms
   form <- rhs(formula)
   form <- norws(form)
@@ -16,7 +13,7 @@ parse_mm <- function(formula, data, ...) {
   mf$formula <- form
   mf$data <- data
 
-  if (mixed) {
+  if (is_mixed(formula)) {
     mf[[1L]] <- quote(lme4::glFormula)
     mf$control <- make_glmerControl(
       ignore_lhs = TRUE,
@@ -48,6 +45,12 @@ parse_mm <- function(formula, data, ...) {
     glmod <- group <- NULL
   }
 
+  autocor <- NULL
+  if (is_autocor(formula)) {
+    trms <- terms_rw(formula)
+    autocor <- parse_all_terms(trms, data)
+  }
+
   if ("rw" %in% colnames(x)) {
     stop("epim does not allow the name 'rw' for predictor variables.",
       call. = FALSE
@@ -58,6 +61,7 @@ parse_mm <- function(formula, data, ...) {
     x,
     mt,
     glmod,
-    group
+    group,
+    autocor
   ))
 }

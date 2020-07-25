@@ -178,7 +178,7 @@ epim <- function(rt,
     "y",
     "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
-    if (sdat$R > 0) "phi",
+    if (sdat$R > 0) "phi"
   )
 
   args <- c(
@@ -221,9 +221,6 @@ epim <- function(rt,
     Sigma_nms <- unlist(Sigma_nms)
   }
 
-  trms_rw <- terms_rw(formula(rt))
-  combs <- expand.grid(groups, names(obs))
-
   new_names <- c(
     if (sdat$has_intercept) {
       "R|(Intercept)"
@@ -235,7 +232,7 @@ epim <- function(rt,
       c(paste0("R|b[", make_b_nms(group), "]"))
     },
     if (length(sdat$ac_nterms)) {
-      make_rw_nms(trms_rw, data)
+      make_rw_nms(formula(rt), data)
     },
     if (sdat$num_ointercepts > 0) {
       make_ointercept_nms(obs, sdat)
@@ -244,12 +241,12 @@ epim <- function(rt,
       make_obeta_nms(obs, sdat)
     },
     if (sdat$len_theta_L) {
-      paste0("Sigma[", Sigma_nms, "]")
+      paste0("R|Sigma[", Sigma_nms, "]")
     },
     c(paste0("seeds[", groups, "]")),
     "tau",
     if (length(sdat$ac_nterms)) {
-      make_rw_sigma_nms(trms_rw, data)
+      make_rw_sigma_nms(formula(rt), data)
     },
     if (sdat$R > 0) {
       make_phi_nms(obs, sdat)
@@ -257,25 +254,32 @@ epim <- function(rt,
     "log-posterior"
   )
 
+  # replace names for the simulation
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names
 
-  return(fit)
-
-  x <- get_x(rt)
-  sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
-  x <- x[, !sel, drop = FALSE]
-  z <- group$Z
-  if (length(z)) {
-    colnames(z) <- b_names(names(fit), value = TRUE)
-  }
+  # x <- get_x(rt)
+  # sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
+  # x <- x[, !sel, drop = FALSE]
+  # z <- group$Z
+  # if (length(z)) {
+  #   colnames(z) <- b_names(names(fit), value = TRUE)
+  # }
 
   out <- loo::nlist(
-    stanfit = fit, formula(rt), x = cbind(x, z), data, obs, r0, seed_days, si, pops,
-    call, algorithm, terms = mt, glmod, standata = sdat,
-    orig_names, groups
+    call,
+    stanfit = fit, 
+    rt,
+    obs,
+    data,
+    seed_days,
+    si,
+    pops,
+    algorithm,
+    standata = sdat,
+    orig_names
   )
-  return(epimodel(out))
+  return(out) # will add epimodel once ready
 }
 
 transformTheta_L <- function(stanfit, cnms) {
@@ -311,8 +315,8 @@ transformTheta_L <- function(stanfit, cnms) {
   return(stanfit)
 }
 
-# construct names for the random walks
-make_rw_nms <- function(trms, data) {
+make_rw_nms <- function(formula, data) {
+  trms <- terms_rw(formula)
   nms <- character()
   for (trm in trms) {
     trm <- eval(parse(text = trm))
@@ -325,12 +329,13 @@ make_rw_nms <- function(trms, data) {
   return(nms)
 }
 
-make_rw_sigma_nms <- function(trms, data) {
+make_rw_sigma_nms <- function(formula, data) {
+  trms <- terms_rw(formula)
   nms <- character()
   for (trm in trms) {
     trm <- eval(parse(text = trm))
     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-    nms <- c(nms, unique(paste0("sigma:", trm$label, "[", group, "]")))
+    nms <- c(nms, unique(paste0("R|sigma:", trm$label, "[", group, "]")))
   }
   return(nms)
 }
@@ -355,7 +360,7 @@ make_ointercept_nms <- function(obs, sdat) {
     function(x) .get_obs(formula(x))
   )
   return(paste0(
-    obs_nms[sdat$has_intercept], 
+    obs_nms[sdat$has_intercept],
     "|(Intercept)"
   ))
 }
@@ -377,5 +382,11 @@ make_obeta_nms <- function(obs, sdat) {
     obs,
     function(a) colnames(get_x(a))
   ))
-  return(paste0(obs_beta_nms, "|", repnms))
+  obs_beta_nms <- grep(
+    pattern = "(Intercept)",
+    x = obs_beta_nms,
+    invert = T,
+    value = T
+  )
+  return(paste0(repnms, "|", obs_beta_nms))
 }
