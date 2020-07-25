@@ -164,13 +164,11 @@ epim <- function(rt,
     return(sdat)
   }
 
-  group <- rt$group
-
     # parameters to keep track of
   pars <- c(
     if (sdat$has_intercept) "alpha",
     if (sdat$K > 0) "beta",
-    if (length(group)) "b",
+    if (length(rt$group)) "b",
     if (length(sdat$ac_nterms)) "ac_noise",
     if (sdat$num_ointercepts > 0) "ogamma",
     if (sdat$K_all > 0) "obeta",
@@ -204,7 +202,7 @@ epim <- function(rt,
     }
 
   if (sdat$len_theta_L) {
-    cnms <- group$cnms
+    cnms <- rt$group$cnms
     fit <- transformTheta_L(fit, cnms)
 
     # names
@@ -228,11 +226,11 @@ epim <- function(rt,
     if (sdat$K > 0) {
       paste0("R|",colnames(sdat$X))
     },
-    if (length(group) && length(group$flist)) {
-      c(paste0("R|b[", make_b_nms(group), "]"))
+    if (length(rt$group) && length(rt$group$flist)) {
+      c(paste0("R|b[", make_b_nms(rt$group), "]"))
     },
     if (length(sdat$ac_nterms)) {
-      make_rw_nms(formula(rt), data)
+      paste0("R|", make_rw_nms(formula(rt), data))
     },
     if (sdat$num_ointercepts > 0) {
       make_ointercept_nms(obs, sdat)
@@ -323,7 +321,7 @@ make_rw_nms <- function(formula, data) {
     # retrieve the time and group vectors
     time <- if (trm$time == "NA") data$date else data[[trm$time]]
     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-    f <- unique(paste0("R|",trm$label, "[", time, ",", group, "]"))
+    f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
     nms <- c(nms, f)
   }
   return(nms)

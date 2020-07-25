@@ -49,13 +49,33 @@ parse_mm <- function(formula, data, ...) {
   if (is_autocor(formula)) {
     trms <- terms_rw(formula)
     autocor <- parse_all_terms(trms, data)
+
+    if ("rw" %in% colnames(x)) {
+      stop("epim does not allow the name 'rw' for predictor variables.",
+        call. = FALSE
+      )
+    }
   }
 
-  if ("rw" %in% colnames(x)) {
-    stop("epim does not allow the name 'rw' for predictor variables.",
-      call. = FALSE
-    )
+  # dropping redundant columns
+  sel <- apply(
+    x,
+    2L,
+    function(a) !all(a == 1) && length(unique(a)) < 2
+  )
+  x <- x[, !sel, drop = FALSE]
+  
+  # change namings
+  if (length(group$Z)) {
+    colnames(group$Z) <- paste0("b[", make_b_nms(group), "]")
   }
+  
+  if (length(autocor$Z)) {
+    colnames(autocor$Z) <- make_rw_nms(formula, data)
+  }
+  
+  # overall model matrix includes FE, RE and autocor
+  x <- cbind(x, group$Z, autocor$Z)
 
   return(loo::nlist(
     x,
