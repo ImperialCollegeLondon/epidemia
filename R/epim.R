@@ -269,7 +269,7 @@ epim <- function(rt,
     standata = sdat,
     orig_names
   )
-  return(out) # will add epimodel once ready
+  return(epimodel(out))
 }
 
 transformTheta_L <- function(stanfit, cnms) {
