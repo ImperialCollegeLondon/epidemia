@@ -229,7 +229,7 @@ epim <- function(rt,
     if (length(rt$group) && length(rt$group$flist)) {
       c(paste0("R|", colnames(rt$group$Z)))
     },
-    if (length(sdat$ac_nterms)) {
+    if (sdat$ac_nterms > 0) {
       paste0("R|", colnames(rt$autocor$Z))
     },
     if (sdat$num_ointercepts > 0) {
@@ -251,6 +251,7 @@ epim <- function(rt,
     },
     "log-posterior"
   )
+
 
   # replace names for the simulation
   orig_names <- fit@sim$fnames_oi

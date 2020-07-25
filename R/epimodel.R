@@ -66,11 +66,14 @@ epimodel <- function(object) {
     algorithm = object$algorithm,
     stan_summary,
     stanfit = stanfit,
-    call = object$call
+    call = object$call,
+    sdat = object$standata
   )
-  
+
   return(out)
 }
+
+
 
 
 # out <- nlist(
