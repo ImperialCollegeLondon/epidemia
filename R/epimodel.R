@@ -1,3 +1,6 @@
+
+
+
 # Constructor for the epimodel class
 #
 # This is an internal constructor initialising objects with class \code{epimodel}.
@@ -59,6 +62,21 @@ epimodel <- function(object) {
   }
   return(structure(out, class = c("epimodel")))
 }
+
+
+
+# epirtfit <- function(object) {
+
+# coefs # point estimates of regression coefs
+# ses # standard errors based on MAD
+# fitted.values <- #fitted mean values (i.e. transformed by link)
+# linear.predictors <- #linear fit on the link scale.
+# call <- # the matched call
+# formula <- # the model formula
+# prior.info <- # prior information
+# stan_summary <- # summary statistics for regression vars
+
+# }
 
 
 

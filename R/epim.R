@@ -165,19 +165,20 @@ epim <- function(rt,
   }
 
   group <- rt$group
-  # parameters to keep track of
+
+    # parameters to keep track of
   pars <- c(
     if (sdat$has_intercept) "alpha",
     if (sdat$K > 0) "beta",
     if (length(group)) "b",
+    if (length(sdat$ac_nterms)) "ac_noise",
+    if (sdat$num_ointercepts > 0) "ogamma",
+    if (sdat$K_all > 0) "obeta",
     if (sdat$len_theta_L) "theta_L",
     "y",
     "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
-    if (length(sdat$ac_nterms)) "ac_noise",
     if (sdat$R > 0) "phi",
-    if (sdat$num_ointercepts) "ogamma",
-    if (sdat$K_all > 0) "obeta"
   )
 
   args <- c(
@@ -225,13 +226,22 @@ epim <- function(rt,
 
   new_names <- c(
     if (sdat$has_intercept) {
-      "(Intercept)"
+      "R|(Intercept)"
     },
     if (sdat$K > 0) {
-      colnames(sdat$X)
+      paste0("R|",colnames(sdat$X))
     },
     if (length(group) && length(group$flist)) {
-      c(paste0("b[", make_b_nms(group), "]"))
+      c(paste0("R|b[", make_b_nms(group), "]"))
+    },
+    if (length(sdat$ac_nterms)) {
+      make_rw_nms(trms_rw, data)
+    },
+    if (sdat$num_ointercepts > 0) {
+      make_ointercept_nms(obs, sdat)
+    },
+    if (sdat$K_all > 0) {
+      make_obeta_nms(obs, sdat)
     },
     if (sdat$len_theta_L) {
       paste0("Sigma[", Sigma_nms, "]")
@@ -241,17 +251,8 @@ epim <- function(rt,
     if (length(sdat$ac_nterms)) {
       make_rw_sigma_nms(trms_rw, data)
     },
-    if (length(sdat$ac_nterms)) {
-      make_rw_nms(trms_rw, data)
-    },
     if (sdat$R > 0) {
       make_phi_nms(obs, sdat)
-    },
-    if (sdat$num_ointercepts > 0) {
-      make_ointercept_nms(obs, sdat)
-    },
-    if (sdat$K_all > 0) {
-      make_obeta_nms(obs, sdat)
     },
     "log-posterior"
   )
@@ -318,7 +319,7 @@ make_rw_nms <- function(trms, data) {
     # retrieve the time and group vectors
     time <- if (trm$time == "NA") data$date else data[[trm$time]]
     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-    f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
+    f <- unique(paste0("R|",trm$label, "[", time, ",", group, "]"))
     nms <- c(nms, f)
   }
   return(nms)
@@ -342,7 +343,7 @@ make_phi_nms <- function(obs, sdat) {
     obs,
     function(x) .get_obs(formula(x))
   )
-  return(paste0("phi[", obs_nms, "]"))
+  return(paste0(obs_nms, "|phi"))
 }
 
 make_ointercept_nms <- function(obs, sdat) {
@@ -354,8 +355,8 @@ make_ointercept_nms <- function(obs, sdat) {
     function(x) .get_obs(formula(x))
   )
   return(paste0(
-    "(Intercept)[",
-    obs_nms[sdat$has_intercept], "]"
+    obs_nms[sdat$has_intercept], 
+    "|(Intercept)"
   ))
 }
 
@@ -376,5 +377,5 @@ make_obeta_nms <- function(obs, sdat) {
     obs,
     function(a) colnames(get_x(a))
   ))
-  return(paste0(repnms, ":", obs_beta_nms))
+  return(paste0(obs_beta_nms, "|", repnms))
 }
