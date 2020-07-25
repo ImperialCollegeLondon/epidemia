@@ -227,10 +227,10 @@ epim <- function(rt,
       paste0("R|",colnames(sdat$X))
     },
     if (length(rt$group) && length(rt$group$flist)) {
-      c(paste0("R|b[", make_b_nms(rt$group), "]"))
+      c(paste0("R|", colnames(rt$group$Z), "]"))
     },
     if (length(sdat$ac_nterms)) {
-      paste0("R|", make_rw_nms(formula(rt), data))
+      paste0("R|", colnames(rt$autocor$Z))
     },
     if (sdat$num_ointercepts > 0) {
       make_ointercept_nms(obs, sdat)
@@ -255,14 +255,6 @@ epim <- function(rt,
   # replace names for the simulation
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names
-
-  # x <- get_x(rt)
-  # sel <- apply(x, 2L, function(a) !all(a == 1) && length(unique(a)) < 2)
-  # x <- x[, !sel, drop = FALSE]
-  # z <- group$Z
-  # if (length(z)) {
-  #   colnames(z) <- b_names(names(fit), value = TRUE)
-  # }
 
   out <- loo::nlist(
     call,
