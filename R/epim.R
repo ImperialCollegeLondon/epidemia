@@ -227,7 +227,7 @@ epim <- function(rt,
       paste0("R|",colnames(sdat$X))
     },
     if (length(rt$group) && length(rt$group$flist)) {
-      c(paste0("R|", colnames(rt$group$Z), "]"))
+      c(paste0("R|", colnames(rt$group$Z)))
     },
     if (length(sdat$ac_nterms)) {
       paste0("R|", colnames(rt$autocor$Z))
