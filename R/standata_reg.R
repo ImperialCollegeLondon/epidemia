@@ -20,8 +20,11 @@ standata_reg <- function(object, ...) {
   # put used parts of object directly in the namespace
   nms <- c("formula", "x", "link", "center", "prior",
   "prior_intercept", "prior_covariance", "group")
+
   for(nm in nms)
     assign(nm, object[[nm]])
+
+  x <- just_fe(x)
 
   autocor <- NULL
   if (inherits(object, "epirt_")) {
@@ -225,6 +228,11 @@ standata_reg <- function(object, ...) {
   return(out)
 }
 
+# removes random effects and autocorrelation terms from design matrix
+just_fe <- function(x) {
+  keep <- grep(pattern="^b\\[|^rw\\(", x=colnames(x), invert=T)
+  return(x[,keep,drop=FALSE])
+}
 
 
 #------- helpers from rstanarm package -------#
