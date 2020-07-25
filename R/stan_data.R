@@ -33,10 +33,7 @@ standata_all <- function(rt,
       nsim = out$NS,
       begin = out$begin
     ),
-    standata_rt(
-      rt = rt,
-      data = data
-    )
+    standata_rt(rt)
   )
   return(out)
 }
@@ -45,7 +42,7 @@ standata_all <- function(rt,
 #
 # @inheritParams epim
 # @param formula, data Same as in epim
-standata_autocor <- function(object, data) {
+standata_autocor <- function(object) {
   out <- list()
 
   if (!inherits(object, "epirt_"))
@@ -54,18 +51,16 @@ standata_autocor <- function(object, data) {
   formula <- formula(object)
 
   if (is_autocor(formula)) {
-    trms <- terms_rw(formula)
-    res <- parse_all_terms(trms, data)
-
-    out$ac_nterms <- length(res$nproc)
-    out$ac_ntime <- as.array(res$ntime)
-    out$ac_q <- sum(res$ntime)
-    out$ac_nproc <- sum(res$nproc)
+    autocor <- object$autocor
+    out$ac_nterms <- length(autocor$nproc)
+    out$ac_ntime <- as.array(autocor$ntime)
+    out$ac_q <- sum(autocor$ntime)
+    out$ac_nproc <- sum(autocor$nproc)
     # todo: implement this as an option
-    out$ac_prior_scales <- as.array(res$prior_scale)
+    out$ac_prior_scales <- as.array(autocor$prior_scale)
 
     # add sparse matrix representation
-    parts <- rstan::extract_sparse_parts(res$Z)
+    parts <- rstan::extract_sparse_parts(autocor$Z)
     out$ac_v <- parts$v - 1L
     out$ac_nnz <- length(out$ac_v)
   } else {
@@ -103,12 +98,12 @@ standata_data <- function(data) {
 #
 # @param rt An epirt_ object
 # @param data data argument to epim
-standata_rt <- function(rt, data) {
+standata_rt <- function(rt) {
   out <- list()
   out$r0 <- rt$r0
   out <- c(
     out,
-    standata_reg(rt, data)
+    standata_reg(rt)
   )
   return(out)
 }

@@ -5,7 +5,7 @@
 #
 # @param An object of class 'epiobs_' or 'epirt_'
 # @return A named list giving data to pass to stan
-standata_reg <- function(object, data, ...) {
+standata_reg <- function(object, ...) {
 
 
   # local bindings to satisfy R CMD Check
@@ -25,7 +25,7 @@ standata_reg <- function(object, data, ...) {
 
   autocor <- NULL
   if (inherits(object, "epirt_")) {
-    autocor <- standata_autocor(object, data)
+    autocor <- standata_autocor(object)
   }
 
   # formula with no response and no autocorrelation terms
