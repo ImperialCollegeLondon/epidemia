@@ -53,8 +53,10 @@ posterior_sims <- function(object,
     groups = levels(data$group),
     ntypes = length(object$obs)
   )
+  
+  stanmat <- cbind(stanmat, eta, oeta)
 
-  return(list(eta = eta, oeta = oeta))
+  return(stanmat)
 }
 
 # # Generate posterior draws of time series of interest
