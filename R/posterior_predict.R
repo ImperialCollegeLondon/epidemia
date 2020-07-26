@@ -12,32 +12,36 @@
 #' @param A named list of draws from the posterior predictive. Each element
 #'  corresponds to a specific outcome.
 #' @export
-posterior_predict.epimodel <- function(
-                                       object,
-                                       newdata = NULL,
-                                       draws = NULL,
-                                       types = NULL,
-                                       seed = NULL,
-                                       posterior_mean = FALSE, ...) {
-  alltypes <- names(object$obs)
-  if (is.null(types)) {
-    types <- alltypes
-  } else {
-    w <- !(types %in% alltypes)
-    if (any(w)) {
-      stop(paste0(types[w], " not a modeled type of observation.",
-        call. = FALSE
-      ))
+posterior_predict.epimodel <-
+  function(object,
+           newdata = NULL,
+           draws = NULL,
+           types = NULL,
+           seed = NULL,
+           posterior_mean = FALSE, ...) {
+    alltypes <- sapply(
+      object$obs,
+      function(x) .get_obs(formula(x))
+    )
+    print(alltypes)
+    if (is.null(types)) {
+      types <- alltypes
+    } else {
+      w <- !(types %in% alltypes)
+      if (any(w)) {
+        stop(paste0(types[w], " not a modeled type of observation.",
+          call. = FALSE
+        ))
+      }
     }
-  }
 
-  out <- posterior_sims(
-    object = object,
-    newdata = newdata,
-    draws = draws,
-    seed = seed,
-    ...
-  )
-  out <- if (posterior_mean) out$E_obs else out$obs
-  return(out[[types]])
-}
+    out <- posterior_sims(
+      object = object,
+      newdata = newdata,
+      draws = draws,
+      seed = seed,
+      ...
+    )
+    out <- if (posterior_mean) out$E_obs else out$obs
+    return(out[types])
+  }

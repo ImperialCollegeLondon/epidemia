@@ -1,7 +1,7 @@
 # Generate posterior draws of time series of interest
 #
 # This used rstan::gqs to generate posterior draws of time series,
-# including latent series such as daily infections, reproduction number and 
+# including latent series such as daily infections, reproduction number and
 # also the observation series.
 #
 # @inheritParams posterior_infections
@@ -21,7 +21,7 @@ posterior_sims <- function(object,
     newdata <- check_data(
       formula = formula(object$rt),
       data = newdata,
-      newdata = object$groups
+      group_subset = object$groups
     )
     all <- Map( # enforce original factor levels
       add_xlev,
@@ -138,7 +138,7 @@ parse_latent <- function(sims, nme, ind, rt) {
   )
   draws <- Map(function(x, y) x[, y], draws, ind)
   return(list(
-    group = rt$group,
+    group = rt$gr,
     date = rt$time,
     draws = do.call(cbind, draws)
   ))
