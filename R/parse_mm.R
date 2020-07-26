@@ -78,9 +78,11 @@ parse_mm <- function(formula, data, ...) {
   }
   
   # overall model matrix includes FE, RE and autocor
+  fe <- x
   x <- cbind(x, group$Z, autocor$Z)
 
   return(loo::nlist(
+    fe,
     x,
     mf,
     mt,
