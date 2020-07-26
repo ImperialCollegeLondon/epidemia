@@ -368,3 +368,20 @@ check_sv <- function(vec, name) {
   
   return(vec/sum(vec))
 }
+
+# add xlevs to epirt or epiobs object
+# @param x An epirt or epiobs object
+# @param y A names list of character vectors to pass as xlev in model.frame
+add_xlev <- function(x,y) {
+      x$mfargs$xlev <- y
+      return(x)
+}
+
+# returns levels of each column in a matrix
+mflevels <- function(x) {
+  x <- Filter(is.factor, x)
+  out <- NULL
+  if (length(x) > 0)
+    out <- lapply(x, levels)
+  return(out)
+}

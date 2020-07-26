@@ -1,47 +1,52 @@
 
 
-
-
-
-posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
-  if (!is.null(seed))
+# Generate posterior draws of time series of interest
+#
+# This used rstan::gqs to generate posterior draws of time series,
+# including latent series such as daily infections, reproduction number and 
+# also the observation series.
+#
+# @inheritParams posterior_infections
+# return A names list, with each elements containing draws of a
+# particular type of series
+posterior_sims <- function(object,
+                           newdata = NULL,
+                           draws = NULL,
+                           seed = NULL,
+                           ...) {
+  if (!is.null(seed)) {
     set.seed(seed)
-  dots <- list(...)
-
-
-  x <- object$x
-  if(!is.null(newdata)) {
-    newdata <- check_data(formula(object$rt), newdata, object$groups)
-    groups <- levels(newdata$group)
-
-    # adjust epirt and epiobs objects to enforce original factor levels
-    orig_levs <- lapply(object$mf, mflevels)
-    all <- c(list(R=object$rt), object$obs)
-    allnew <- Map(add_xlev, all, orig_levs)
-
-    # creates new model frames and matrices
-    rt <- epirt_(all$R, newdata)
-    obs <- lapply(all[-1], epiobs_, newdata)
-
-    return(list(R=rt, obs))
   }
-}
+  all <- c(list(R = object$rt), object$obs)
 
-# add xlevs to epirt or epiobs object
-# @param x An epirt or epiobs object
-# @param y A names list of character vectors to pass as xlev in model.frame
-add_xlev <- function(x,y) {
-      x$mfargs$xlev <- y
-      return(x)
-}
+  if (is.null(newdata)) {
+    data <- object$data
+  } else {
+    data <- check_data(
+      formula(object$rt),
+      newdata,
+      object$groups
+    )
+    all <- Map(  # enforce original factor levels
+      add_xlev,
+      all,
+      lapply(object$mf, mflevels)
+    )
+  }
 
-# returns levels of each column in a matrix
-mflevels <- function(x) {
-  x <- Filter(is.factor, x)
-  out <- NULL
-  if (length(x) > 0)
-    out <- lapply(x, levels)
-  return(out)
+  rt <- epirt_(all$R, data)
+  obs <- lapply(all[-1], epiobs_, data)
+  stanmat <- as.matrix(object$stanfit)
+
+  # construct all linear predictors
+  eta <- pp_eta(rt, stanmat)
+  oeta <- do.call(rbind,lapply(obs, pp_eta, stanmat))
+
+  # give names expected by stan
+  colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
+  colnames(oeta) <- paste0("oeta[",1:ncol(eta),"]")
+
+  return(list(eta = eta, oeta = oeta))
 }
 
 # # Generate posterior draws of time series of interest
