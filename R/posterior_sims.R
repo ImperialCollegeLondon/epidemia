@@ -1,5 +1,3 @@
-
-
 # Generate posterior draws of time series of interest
 #
 # This used rstan::gqs to generate posterior draws of time series,
@@ -63,106 +61,42 @@ posterior_sims <- function(object,
     data = data
   )
 
-  sims <- rstan::gqs(stanmodels$epidemia_pp_base, 
-                     data = standata, 
-                     draws=stanmat)
-
+  sims <- rstan::gqs(stanmodels$epidemia_pp_base,
+    data = standata,
+    draws = stanmat
+  )
+  
   n <- standata$oN[1:standata$R]
-
-  ppobs <- parse_obs(
-    rstan::extract(sims, "obs")[[1]],
-    n,
-    obs
+  
+  # get list of indices for slicing result of gqs
+  starts <- sdat$starts
+  ends <- starts + sdat$NC - 1
+  ind <- Map(function(x, y) x:y, starts, ends)
+  
+  # get latent series
+  nms <- c("Rt_unadj", "Rt", "infections")
+  out <- lapply(
+    nms,
+    function(x) parse_latent(sims, x, ind, rt)
   )
+  
+  # add posterior predictive
+  out$obs <- parse_obs(sims, "obs", n, obs)
+  out$eobs <- parse_obs(sims, "E_obs", n, obs)
 
-  ppeobs <- parse_obs(
-    rstan::extract(sims, "E_obs")[[1]],
-    n,
-    obs
-  )
-
-  return(list(obs=ppobs,eobs = ppeobs, standata=standata, sims=sims, rt=rt))
-
-
-  return(list(
-    sims = sims,
-    standata=standata,
-    rt=rt,
-    obs=obs
-    ))
-  return(list(stanmat=stanmat, standata=standata))
+  return(out)
 }
 
-
-# # Generate posterior draws of time series of interest
-# #
-# # This used rstan::gqs to generate posterior draws of time series,
-# # including latent series such as daily infections, reproduction number and 
-# # also the observation series.
-# #
-# # @inheritParams posterior_infections
-# # return A names list, with each elements containing draws of a
-# # particular type of series
-# posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
-#   if (!is.null(seed))
-#     set.seed(seed)
-#   dots <- list(...)
-
-#   # subsampled matrix of posterior draws
-#   stanmat <- subsamp(object, as.matrix(object$stanfit), draws)
-
-#   if (is.null(newdata))
-#     groups <- levels(object$data$group)
-#   else {
-#     newdata <- checkData(formula(object), newdata, NULL)
-#     groups <- levels(newdata$group)
-#     w <- !(groups %in% object$groups)
-#     if (any(w))
-#       stop(paste0("Groups ", groups[w], " not modeled. 
-#       'newdata' only supported for existing populations."))
-#   }
-
-#   # construct linear predictor
-#   dat <- pp_data(object=object, newdata=newdata, ...)
-#   eta <- pp_eta(object, dat, stanmat)
-#   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
-
-#   # stanmatrix may require relabelling
-#   stanmat <- pp_stanmat(object, stanmat, groups)
-#   stanmat <- cbind(stanmat, eta)
-
-#   standata <- pp_standata(object, newdata)
-
-#   sims <- rstan::gqs(stanmodels$epidemia_pp_base, 
-#                      data = standata, 
-#                      draws=stanmat)
-
-#   data = newdata %ORifNULL% object$data
-#   out <- list()
-#   out$rt_unadj <- parse_latent(sims, data, "Rt_unadj")
-#   out$rt <- parse_latent(sims, data, "Rt")
-#   out$infections <- parse_latent(sims, data, "infections")
-
-#   # get posterior predictive
-#   out$obs <- list()
-#   types <- names(object$obs)
-#   for(i in seq_along(types))
-#     out$obs[[types[i]]] <- parse_obs(sims, data, i)
-
-#   return(out)
-# }
-
-
-
-
-# Formats draws of observations (or expected) 
+# Formats draws of observations (or expected)
 # from the posterior
 #
-# @param draws ndraws * N_obs matrix of posterior samples
+# @param sims The result of rstan::extract
+# @param nme Either "obs" or "E_obs"
 # @param n An integer vector giving number of observations 
 # of each type
 # @param obs List of epiobs_ objects
-parse_obs <- function(draws, n, obs) {
+parse_obs <- function(sims, nme, n, obs) {
+  draws <- rstan::extract(sims, nme)[[1]]
 
   # split draws into components for each type
   i <- lapply(n, function(x) 1:x)
@@ -187,10 +121,12 @@ parse_obs <- function(draws, n, obs) {
 
 # Formats draws of latent quantities from rstan::gqs
 #
-# @param draws A three dimensional array of samples
+# @param sims The result of rstan::extract
+# @param nme One of "Rt_unadj", "Rt" or "infections"
 # @param ind A list giving the indices at which to extract for each group
 # @param rt An epirt_ object
-parse_latent <- function(draws, ind, rt) {
+parse_latent <- function(sims, nme, ind, rt) {
+  draws <- rstan::extract(sims, nme)[[1]]
   ng <- dim(draws)[3]
   draws <- lapply( # 3d array to list of matrices
     seq_len(ng),
