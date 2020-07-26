@@ -242,7 +242,7 @@ pp_standata <- function(object, rt, obs, data) {
     N0 = object$seed_days,
     pop = as.array(pops$pop),
     N = nrow(data),
-    r0 = object$r0
+    r0 = rt$r0
   ))
   return(out)
 }
