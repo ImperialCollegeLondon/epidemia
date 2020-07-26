@@ -84,6 +84,7 @@ plot_rt.epimodel <-
     stop("'log' must be of type logical", call. = FALSE)
   
   rt <- posterior_rt(object=object, ...)
+  rt <- out2list(rt)
   
   # check smoothing input
   min.dates <- min(sapply(rt, function(x) length(x$date)))
@@ -245,6 +246,7 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
     stop("'log' must be of type logical", call. = FALSE)
   
   obs <- posterior_predict(object=object, types=type, ...)
+  obs <- lapply(obs, out2list)
   
   if (!is.null(group)) {
     w <- !(group %in% names(obs))
@@ -383,6 +385,7 @@ plot_infections.epimodel <- function(object, group = NULL,
     stop("'log' must be of type logical", call. = FALSE)
 
   inf <- posterior_infections(object=object, ...)
+  inf <- out2list(inf)
 
   if (!is.null(group)) {
     w <- !(group %in% names(rt))
@@ -397,6 +400,7 @@ plot_infections.epimodel <- function(object, group = NULL,
   # quantiles by group
   qtl <- lapply(inf, function(.inf) .get_quantiles(.inf, levels))
   qtl <- data.table::rbindlist(qtl, idcol="group")
+
 
   # date subsetting if required
   dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
@@ -543,3 +547,18 @@ cumul <- function(df) {
 #' @importFrom magrittr %>%
 #' @export
 magrittr::`%>%`
+
+
+# temporary before we refactor plotting code
+out2list <- function(out) {
+  groups <- levels(out$group)
+  f <- function(x) {
+    w <- x == out$group
+    res <- cbind(out$date[w],t(out$draws[,w]))
+    colnames(res) <- c("date", paste0("draw ", 1:nrow(out$draws)))
+    return(res)
+  }
+  out <- lapply(groups, f)
+  names(out) <- groups
+  return(data.frame(out))
+}
