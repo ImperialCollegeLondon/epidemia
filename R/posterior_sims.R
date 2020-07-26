@@ -19,11 +19,11 @@ posterior_sims <- function(object,
   all <- c(list(R = object$rt), object$obs)
   if (!is.null(newdata)) {
     newdata <- check_data(
-      formula(object$rt),
-      newdata,
-      object$groups
+      formula = formula(object$rt),
+      data = newdata,
+      newdata = object$groups
     )
-    all <- Map(  # enforce original factor levels
+    all <- Map( # enforce original factor levels
       add_xlev,
       all,
       lapply(object$mf, mflevels)
@@ -37,11 +37,11 @@ posterior_sims <- function(object,
 
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)
-  oeta <- do.call(cbind,lapply(obs, pp_eta, stanmat))
+  oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
 
   # give names expected by stan
-  colnames(eta) <- paste0("eta[",seq_len(ncol(eta)),"]")
-  colnames(oeta) <- paste0("oeta[",seq_len(ncol(oeta)),"]")
+  colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
+  colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
 
 
   # stanmatrix may require relabeling
@@ -65,24 +65,28 @@ posterior_sims <- function(object,
     data = standata,
     draws = stanmat
   )
-  
-  n <- standata$oN[1:standata$R]
-  
+
   # get list of indices for slicing result of gqs
-  starts <- sdat$starts
-  ends <- starts + sdat$NC - 1
-  ind <- Map(function(x, y) x:y, starts, ends)
-  
+  ind <- Map(
+    function(x, y) x:y,
+    standata$starts,
+    standata$starts + standata$NC - 1
+  )
+
   # get latent series
   nms <- c("Rt_unadj", "Rt", "infections")
   out <- lapply(
     nms,
     function(x) parse_latent(sims, x, ind, rt)
   )
-  
+  names(out) <- nms
+
   # add posterior predictive
-  out$obs <- parse_obs(sims, "obs", n, obs)
-  out$eobs <- parse_obs(sims, "E_obs", n, obs)
+  n <- standata$oN[1:standata$R]
+  out <- c(out, list(
+    obs = parse_obs(sims, "obs", n, obs),
+    E_obs = parse_obs(sims, "E_obs", n, obs)
+  ))
 
   return(out)
 }
