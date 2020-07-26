@@ -76,15 +76,26 @@ epiobs_ <- function(object, data) {
 
   formula <- formula(object)
   args <- object$mfargs
+
+  # deal with NAs before passing to parse_mm
+  na_action <- args[["na.action"]]
+  vars <- all_vars_obs(formula)
+  data <- data[, vars]
+  data <-
+    if (is.null(na_action)) {
+      na.omit(data)
+    } else {
+      na_action(data)
+    }
   args <- c(args, list(
     formula = rhs(formula),
     data = data
   ))
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
-    obs = data[, .get_obs(formula), drop = TRUE],
-    gr = droplevels(as.factor(data[, .get_group(formula), drop = TRUE])),
-    time = data[, .get_time(formula), drop = TRUE]
+    obs = data[, .get_obs(formula)],
+    gr = droplevels(as.factor(data[, .get_group(formula)])),
+    time = data[, .get_time(formula)]
   ))
 
   class(out) <- "epiobs_"

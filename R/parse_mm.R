@@ -7,9 +7,8 @@
 # or \code{\link[lme4]{glFormula}}
 parse_mm <- function(formula, data, ...) {
 
-  # formula with no response and no autocorrelation terms
-  form <- rhs(formula)
-  form <- norws(form)
+  # formula with no autocorrelation terms
+  form <- norws(formula)
 
   mf <- match.call(expand.dots = TRUE)
   mf$formula <- form

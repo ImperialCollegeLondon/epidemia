@@ -385,3 +385,10 @@ mflevels <- function(x) {
     out <- lapply(x, levels)
   return(out)
 }
+
+# get all vars from formula for obs
+all_vars_obs <- function(formula) {
+  vars <- all.vars(formula)
+  vars <- c(vars, .get_obs(formula))
+  return(vars)
+}
