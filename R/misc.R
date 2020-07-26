@@ -250,5 +250,5 @@ linear_predictor.default <- function(beta, x) {
 }
 
 linear_predictor.matrix <- function(beta, x) {
-  return(as.matrix(beta) %*% t(x))
+  return(as.matrix(beta) %*% Matrix::t(x))
 }

@@ -50,6 +50,7 @@ pp_eta_re <- function(object, stanmat) {
     paste0(nme, "|", colnames(z)),
     stanmat
   )
+  print(dim(stanmat))
   return(linear_predictor(stanmat, z))
 }
 
@@ -147,7 +148,7 @@ pp_b_ord <- function(nms, stanmat) {
       stop("No matches bug")
     }
   }
-  ord <- sapply[nms, FUN = b_ord]
+  ord <- sapply(nms, FUN = b_ord)
   return(stanmat[, ord, drop = FALSE])
 }
 
