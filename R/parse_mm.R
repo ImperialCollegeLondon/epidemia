@@ -22,6 +22,7 @@ parse_mm <- function(formula, data, ...) {
       ignore_x_scale = FALSE
     )
     glmod <- eval(mf, parent.frame())
+    mf <- glmod$fr
     x <- glmod$X
 
     if ("b" %in% colnames(x)) {

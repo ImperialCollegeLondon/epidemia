@@ -14,36 +14,35 @@ posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
     newdata <- check_data(formula(object$rt), newdata, object$groups)
     groups <- levels(newdata$group)
 
-    
-    
+    # adjust epirt and epiobs objects to enforce original factor levels
+    orig_levs <- lapply(object$mf, mflevels)
+    all <- c(list(R=object$rt), object$obs)
+    allnew <- Map(add_xlev, all, orig_levs)
 
+    # creates new model frames and matrices
+    rt <- epirt_(all$R, newdata)
+    obs <- lapply(all[-1], epiobs_, newdata)
 
-    
-    # generates model matrices for each regression
-    orig_levs <- lapply(x, xlevels)
-
-    # generate model frame for rt regression
-    rt <- object$rt
-    print(orig_levs)
-    rt$mfargs$xlev <- orig_levs$R
-    rt_orig <- rt
-    rt <- epirt_(rt, newdata)
-    #obs <- lapply(obs_orig, epiobs_, data)
+    return(list(R=rt, obs))
   }
-  return(list(rt=rt, rt_orig=rt_orig))
 }
 
+# add xlevs to epirt or epiobs object
+# @param x An epirt or epiobs object
+# @param y A names list of character vectors to pass as xlev in model.frame
+add_xlev <- function(x,y) {
+      x$mfargs$xlev <- y
+      return(x)
+}
 
 # returns levels of each column in a matrix
-xlevels <- function(x) {
-  is_fac <- apply(x,2L,is.factor)
+mflevels <- function(x) {
+  x <- Filter(is.factor, x)
   out <- NULL
-  if (length(x))
-    out <- levels(x[,is_fac])
+  if (length(x) > 0)
+    out <- lapply(x, levels)
   return(out)
 }
-
-
 
 # # Generate posterior draws of time series of interest
 # #

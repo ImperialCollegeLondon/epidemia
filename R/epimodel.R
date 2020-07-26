@@ -9,7 +9,7 @@ epimodel <- function(object) {
   stanfit <- object$stanfit
   obs_nms <- sapply(object$obs, function(x) .get_obs(formula(x)))
   nms <- c("R", obs_nms)
-  all <- c(object$rt, object$obs)
+  all <- c(list(R=object$rt), object$obs)
 
   # construct x and y and model frames
   x <- lapply(all, function(x) get_x(x))
