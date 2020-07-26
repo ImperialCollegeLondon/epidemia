@@ -13,4 +13,3 @@ for (i in 1:N_obs) {
     E_obs[i] *= dot_product(sub_col(infections, n0, m, dt-n0), tail(pvecs_rev[tp], dt-n0));
 }
 }
-  

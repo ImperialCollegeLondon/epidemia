@@ -56,7 +56,14 @@ posterior_sims <- function(object,
 
   stanmat <- cbind(stanmat, eta, oeta)
 
-  return(stanmat)
+  standata <- pp_standata(
+    object = object,
+    rt = rt,
+    obs = obs,
+    data = data
+  )
+
+  return(list(stanmat=stanmat, standata=standata))
 }
 
 
