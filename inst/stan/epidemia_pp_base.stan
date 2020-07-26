@@ -30,15 +30,9 @@ parameters {
 }
 
 generated quantities {
-  matrix[N2, M] pred[R];
   vector[N_obs] E_obs;
   int obs[N_obs];
 #include /tparameters/infections_rt.stan
-
-  // initialise to 0
-  for (r in 1:R)
-    pred[r] = rep_matrix(0, N2, M);
-
 #include /tparameters/gen_infections.stan
 #include /tparameters/gen_eobs.stan
 

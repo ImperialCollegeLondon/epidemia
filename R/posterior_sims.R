@@ -63,6 +63,11 @@ posterior_sims <- function(object,
     data = data
   )
 
+  sims <- rstan::gqs(stanmodels$epidemia_pp_base, 
+                     data = standata, 
+                     draws=stanmat)
+
+  return(sims)
   return(list(stanmat=stanmat, standata=standata))
 }
 
