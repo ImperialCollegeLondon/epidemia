@@ -67,11 +67,31 @@ posterior_sims <- function(object,
                      data = standata, 
                      draws=stanmat)
 
-  return(sims)
+  n <- standata$oN[1:standata$R]
+
+  ppobs <- parse_obs(
+    rstan::extract(sims, "obs")[[1]],
+    n,
+    obs
+  )
+
+  ppeobs <- parse_obs(
+    rstan::extract(sims, "E_obs")[[1]],
+    n,
+    obs
+  )
+
+  return(list(obs=ppobs,eobs = ppeobs, standata=standata, sims=sims, rt=rt))
+
+
+  return(list(
+    sims = sims,
+    standata=standata,
+    rt=rt,
+    obs=obs
+    ))
   return(list(stanmat=stanmat, standata=standata))
 }
-
-
 
 
 # # Generate posterior draws of time series of interest
@@ -132,72 +152,56 @@ posterior_sims <- function(object,
 #   return(out)
 # }
 
-# Parses a given latent quantity from the result of rstan::qgs
+
+
+
+# Formats draws of observations (or expected) 
+# from the posterior
 #
-# @param sims Result of calling rstan::gqs in posterior_sims
-# @param data data.frame used 
-# @param nme Name of the latent series to return
-# @inherits posterior_infections return
-parse_latent <- function(sims, data, nme) {
+# @param draws ndraws * N_obs matrix of posterior samples
+# @param n An integer vector giving number of observations 
+# of each type
+# @param obs List of epiobs_ objects
+parse_obs <- function(draws, n, obs) {
 
-  starts <- NC <- NULL
+  # split draws into components for each type
+  i <- lapply(n, function(x) 1:x)
+  i <- Map(function(x, y) x + y, i, cumsum(n) - n[1])
+  draws <- lapply(i, function(x) draws[, x])
 
-  # get useful quantities
-  sdat <- standata_data(data)
-  for (name in names(sdat))
-    assign(name, sdat[[name]])
-  ends    <- starts + NC - 1
-
-  sims <- rstan::extract(sims, nme)[[1]]
-
-  out <- list()
-  for (i in seq_along(groups)) {
-    t <- starts[i]:ends[i]
-    df <- as.data.frame(t(sims[,t,i]))
-
-    w <- data$group %in% groups[i]
-    df <- do.call("cbind.data.frame", 
-                  args = list(date = data$date[w], 
-                              df))
-      
-    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
-    out[[groups[i]]] <- df
+  f <- function(x, y) {
+    list(
+      group = get_gr(x),
+      time = get_time(x),
+      draws = y
+    )
   }
+
+  out <- Map(f, obs, draws)
+  names(out) <- lapply(
+    obs,
+    function(x) .get_obs(formula(x))
+  )
   return(out)
 }
 
-# Parses a given latent quantity from the result of rstan::qgs
+# Formats draws of latent quantities from rstan::gqs
 #
-# @inherits parse_latent param sims, data, return
-# @param idx index of the latent observation series to return
-parse_obs <- function(sims, data, idx) {
-
-  starts <- NC <- NULL
-
-  sims <- rstan::extract(sims, "pred")[[1]]
-
-  # get useful quantities
-  sdat <- standata_data(data)
-  for (name in names(sdat))
-    assign(name, sdat[[name]])
-  ends    <- starts + NC - 1
-
-  out <- list()
-  for (i in seq_along(groups)) {
-    t <- starts[i]:ends[i]
-    df <- t(sims[,idx,t,i])
-    df <- as.data.frame(df)
-    
-    # attach corresponding dates
-    w <- data$group %in% groups[i]
-    df <- do.call("cbind.data.frame", 
-                  args = list(date = data$date[w], 
-                              df))
-    
-    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
-    out[[groups[i]]] <- df
-  }
-  return(out)
+# @param draws A three dimensional array of samples
+# @param ind A list giving the indices at which to extract for each group
+# @param rt An epirt_ object
+parse_latent <- function(draws, ind, rt) {
+  ng <- dim(draws)[3]
+  draws <- lapply( # 3d array to list of matrices
+    seq_len(ng),
+    function(x) draws[, , x]
+  )
+  draws <- Map(function(x, y) x[, y], draws, ind)
+  return(list(
+    group = rt$group,
+    date = rt$time,
+    draws = do.call(cbind, draws)
+  ))
 }
 
 # Subsample a matrix of posterior parameter draws
@@ -251,32 +255,6 @@ pp_standata <- function(object, rt, obs, data) {
   ))
   return(out)
 }
-
-# # Creates standata from newdata, which is passed into rstan::gqs
-# #
-# # @param object An \code{epimodel} object
-# # @param newdata The result of checkData
-# pp_standata <- function(object, newdata=NULL) {
-
-#   sdat <- object$standata
-
-#   if (is.null(newdata))
-#     return(sdat)
-
-#   groups <- levels(newdata$group)
-#   obs    <- checkObs(object$obs, newdata)
-#   pops  <- check_pops(object$pops, groups)
-
-#   out <- standata_data(newdata)
-#   out <- add_standata_obs(out, obs)
-#   out$pop <- as.array(pops$pop)
-#   out$si <- pad(sdat$si, out$NS, 0, TRUE)
-#   out$r0 <- sdat$r0
-#   out$N0 <- sdat$N0
-#   out$N <- nrow(newdata)
-
-#   return(out)
-# }
 
 # Renames stanmat for passing into rstan::gqs. This is because the
 # modeled groups may differ from the original.

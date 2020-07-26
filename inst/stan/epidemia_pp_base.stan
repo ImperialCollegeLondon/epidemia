@@ -36,6 +36,6 @@ generated quantities {
 #include /tparameters/gen_infections.stan
 #include /tparameters/gen_eobs.stan
 
-    obs = neg_binomial_2_rng(E_obs + 1e-15, phi[obs_type]);
+  obs = neg_binomial_2_rng(E_obs + 1e-15, phi[obs_type]);
 }
 
