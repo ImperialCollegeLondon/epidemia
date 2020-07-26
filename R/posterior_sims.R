@@ -15,6 +15,7 @@ posterior_sims <- function(object,
   if (!is.null(seed)) {
     set.seed(seed)
   }
+  
 
   all <- c(list(R = object$rt), object$obs)
   if (!is.null(newdata)) {
@@ -33,7 +34,12 @@ posterior_sims <- function(object,
   data <- newdata %ORifNULL% object$data
   rt <- epirt_(all$R, data)
   obs <- lapply(all[-1], epiobs_, data)
-  stanmat <- as.matrix(object$stanfit)
+
+  stanmat <- subsamp(
+    object,
+    as.matrix(object$stanfit),
+    draws
+  )
 
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)

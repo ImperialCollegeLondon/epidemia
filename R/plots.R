@@ -8,17 +8,25 @@
 #' @template args-epimodel-object
 #' @param group \code{NULL}, string or character vector specifying which groups
 #' to plot. Default is \code{NULL}, which plots all possible groups.
-#' @param dates a vector of (start date, end date) defining the date range to be plotted. Must be coercible to date if not 
-#' NA. If NA, this means use the lower/upper limit as appropriate. See examples.
-#' @param date_breaks string giving the distance between date tick labels. Default is "2 weeks".
-#' Passed as \code{date_breaks} argument to \code{ggplot::scale_x_date} - see \url{https://ggplot2.tidyverse.org/reference/scale_date.html}
-#' @param date_format the date format for coercing \code{dates}. Default is "%Y-%m-%d"
-#' @param levels numeric vector giving the levels of the plotted credible intervals
+#' @param dates a vector of (start date, end date) defining the date range
+#'  to be plotted. Must be coercible to date if not NA. If NA, this means
+#'  use the lower/upper limit as appropriate. See examples.
+#' @param date_breaks string giving the distance between date tick labels.
+#'  Default is "2 weeks".
+#' Passed as \code{date_breaks} argument to \code{ggplot::scale_x_date} -
+#'  see \url{https://ggplot2.tidyverse.org/reference/scale_date.html}
+#' @param date_format the date format for coercing \code{dates}.
+#'  Default is "%Y-%m-%d"
+#' @param levels numeric vector giving the levels of the plotted
+#'  credible intervals
 #' @param log whether to plot the reproduction number on a log10-scale.
 #' Logical, default is \code{FALSE}.
-#' @param smooth integer specifying the window used to smooth the Rt values. Default is 1 (no smoothing).
-#' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}. Examples include \code{newdata}, which allows 
-#'  predictions or counterfactuals. \code{adjusted=FALSE} prevents application of the population adjustment to the reproduction number.
+#' @param smooth integer specifying the window used to smooth the Rt values.
+#'  Default is 1 (no smoothing).
+#' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}.
+#'  Examples include \code{newdata}, which allows predictions or
+#'  counterfactuals. \code{adjusted=FALSE} prevents application of
+#'  the population adjustment to the reproduction number.
 #' @return A ggplot object which can be further modified.
 #' @examples
 #' \dontrun{
@@ -28,7 +36,10 @@
 #' ## setup sampling
 #' args <- EuropeCovid
 #' args$algorithm <- "sampling"
-#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$sampling_args <- list(
+#' iter=1e3,
+#' control=list(adapt_delta=0.95,max_treedepth=15),
+#' seed=12345)
 #' args$group_subset <- c("Italy")
 #' args$formula <- R(country,date) ~  1 + lockdown
 #' args$prior <- rstanarm::normal(location=0,scale=.5)
@@ -41,25 +52,33 @@
 #' plot_rt(fit) # default, plots all groups and dates
 #' plot_rt(fit, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
 #' plot_rt(fit, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20")) 
 #' plot_rt(fit, 
 #'         dates=c("2020-03-20", "2020-04-20"), 
-#'         date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#'         date_breaks="1 day") # ticks every day
 #' plot_rt(fit, 
 #'         dates=c("2020-03-20", "2020-04-20"), 
-#'         date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#'         date_breaks="1 week") # ticks every week
 #' plot_rt(fit, 
 #'         dates=c("2020-20-03", "2020-20-04"), 
-#'         date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#'         date_format="%Y-%d-%m") # (different date format)
 #' }
 #' @export
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
 #' @rdname plot_rt
 #' @export
-plot_rt.epimodel <- function(object, group=NULL,
-							 dates=NULL, date_breaks="2 weeks", date_format="%Y-%m-%d",
-							 levels=c(50,95), log=FALSE, smooth=1, ...) {
+plot_rt.epimodel <-
+  function(object,
+           group = NULL,
+           dates = NULL,
+           date_breaks = "2 weeks",
+           date_format = "%Y-%m-%d",
+           levels = c(50, 95),
+           log = FALSE,
+           smooth = 1,
+           ...) {
+
   levels <- .check_levels(levels)
   if(!is.logical(log))
     stop("'log' must be of type logical", call. = FALSE)
@@ -68,17 +87,21 @@ plot_rt.epimodel <- function(object, group=NULL,
   
   # check smoothing input
   min.dates <- min(sapply(rt, function(x) length(x$date)))
-  if(smooth >= min.dates) {
-    warning(paste0("smooth=", smooth, " is too large (one group has ", min.dates, " unique dates) - no smoothing will be performed"),
-            call. = FALSE)
+  if (smooth >= min.dates) {
+    warning(paste0("smooth=", smooth, " is too large 
+      (one group has ", min.dates, " unique dates)
+       - no smoothing will be performed"),
+      call. = FALSE
+    )
     smooth <- 1
-  } else if(smooth <=0 | smooth%%1!=0) {
-    warning("smooth must be a positive integer - no smoothing will be performed", call. = FALSE)
+  } else if (smooth <= 0 | smooth %% 1 != 0) {
+    warning("smooth must be a positive integer -
+       no smoothing will be performed", call. = FALSE)
     smooth <- 1
   }
   
   if (!is.null(group)) {
-    w <- !(group %in% names(rt))
+    w <- !(group %in% levels(rt$group))
     if (any(w))
       stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
     rt <- rt[group]
