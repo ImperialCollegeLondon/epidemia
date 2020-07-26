@@ -17,12 +17,10 @@ posterior_sims <- function(object,
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  all <- c(list(R = object$rt), object$obs)
 
-  if (is.null(newdata)) {
-    data <- object$data
-  } else {
-    data <- check_data(
+  all <- c(list(R = object$rt), object$obs)
+  if (!is.null(newdata)) {
+    newdata <- check_data(
       formula(object$rt),
       newdata,
       object$groups
@@ -34,17 +32,27 @@ posterior_sims <- function(object,
     )
   }
 
+  data <- newdata %ORifNULL% object$data
   rt <- epirt_(all$R, data)
   obs <- lapply(all[-1], epiobs_, data)
   stanmat <- as.matrix(object$stanfit)
 
-  # construct all linear predictors
+  # construct linear predictors
   eta <- pp_eta(rt, stanmat)
   oeta <- do.call(cbind,lapply(obs, pp_eta, stanmat))
 
   # give names expected by stan
-  colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
-  colnames(oeta) <- paste0("oeta[",1:ncol(eta),"]")
+  colnames(eta) <- paste0("eta[",seq_len(ncol(eta)),"]")
+  colnames(oeta) <- paste0("oeta[",seq_len(ncol(oeta)),"]")
+
+
+  # stanmatrix may require relabeling
+  stanmat <- pp_stanmat(
+    stanmat = stanmat,
+    orig_nms = object$orig_names,
+    groups = levels(data$group),
+    ntypes = length(object$obs)
+  )
 
   return(list(eta = eta, oeta = oeta))
 }
@@ -223,44 +231,25 @@ pp_standata <- function(object, newdata=NULL) {
   return(out)
 }
 
-# Parses a matrix of posterior draws into form required for rstan::gqs
+# Renames stanmat for passing into rstan::gqs. This is because the
+# modeled groups may differ from the original.
 #
-# @param object An \code{epimodel} object
-# @param groups Ordered vector of unique populations to be modelled 
-pp_stanmat <- function(object, stanmat, groups) {
+# @param stanmat An matrix of parameter draws
+# @param orig_nms The original names for stan parameters
+# @param groups Sorted character vector of groups to simulate for
+# @param ntypes Total number of observation types
+pp_stanmat <- function(stanmat, orig_nms, groups, ntypes) {
+  nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
+  m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
+  nms[m] <- paste0("y[", seq_along(groups), "]")
+  colnames(stanmat) <- nms
 
-  stanms <- object$orig_names
-  
-  # replace original names for the seeds
-  seeds_idx <- grep(paste0("seeds["), colnames(stanmat), fixed=TRUE)
-  seeds_idx_keep <- sapply(groups, function(x) grep(paste0("seeds[", x, "]"), colnames(stanmat), fixed=TRUE))
-  stanms[seeds_idx_keep] <- paste0("y[", seq_along(groups), "]")
+  # need to pad out for rstan::gqs
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 2)
+  colnames(mat) <- c(
+    paste0("y[", length(groups) + 1, "]"),
+    paste0("phi[", ntypes + 1, "]")
+  )
 
-  noise_idx <- NULL
-  noise_idx_keep <- NULL
-  R <- object$standata$R
-  if (R > 0) {
-  # replace original names for the noise
-  noise_idx <- grep(paste0("noise["), colnames(stanmat), fixed=TRUE)
-  noise_idx_keep <- sapply(groups, function(x) grep(paste0("noise[", x), colnames(stanmat), fixed=TRUE))
-  combs <- expand.grid(seq_along(groups), 1:R)
-  stanms[noise_idx_keep] <- paste0("noise[", combs[,1], ",", combs[,2], "]")
-  }
-
-  colnames(stanmat) <- stanms
-  # remove redundant indices to avoid name conflicts
-  col_rm <- union(setdiff(seeds_idx, seeds_idx_keep),setdiff(noise_idx, noise_idx_keep))
-
-  if (length(col_rm) > 0)
-    stanmat <- stanmat[,-col_rm]
-
-  # bug in rstan::gqs means we have to pad parameters if M=1...
-  mat <- matrix(0, nrow=nrow(stanmat), ncol= 2+R)
-  colnames(mat) <- c(paste0("y[",length(groups)+1,"]"),
-                     paste0("phi[",R+1,"]"),
-                     paste0("noise[",length(groups)+1,",",1:R,"]"))
-
-  stanmat <- cbind(stanmat, mat)
-
-  return(stanmat)
+  return(cbind(stanmat, mat))
 }

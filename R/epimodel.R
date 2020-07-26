@@ -73,7 +73,8 @@ epimodel <- function(object) {
     stan_summary,
     stanfit = stanfit,
     call = object$call,
-    sdat = object$standata
+    sdat = object$standata,
+    orig_names = object$orig_names
   )
 
   class(out) <- "epimodel"
