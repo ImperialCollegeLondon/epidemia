@@ -53,11 +53,14 @@ posterior_sims <- function(object,
     groups = levels(data$group),
     ntypes = length(object$obs)
   )
-  
+
   stanmat <- cbind(stanmat, eta, oeta)
 
   return(stanmat)
 }
+
+
+
 
 # # Generate posterior draws of time series of interest
 # #
@@ -207,31 +210,61 @@ subsamp <- function(object, mat, draws=NULL) {
   return(mat)
 }
 
-# Creates standata from newdata, which is passed into rstan::gqs
+# standata passed into rstan::gqs
 #
 # @param object An \code{epimodel} object
-# @param newdata The result of checkData
-pp_standata <- function(object, newdata=NULL) {
+# @param rt An epirt_ object
+# @param obs A list of epiobs_ objects
+# @param data The checked data (either original or newdata)
+pp_standata <- function(object, rt, obs, data) {
+  out <- standata_data(data)
+  pops <- check_pops( # reduce to only modeled pops
+    object$pops,
+    out$groups
+  )
+  out <- c(out, standata_obs(
+    obs = obs,
+    groups = out$groups,
+    nsim = out$NS,
+    begin = out$begin
+  ))
 
-  sdat <- object$standata
-
-  if (is.null(newdata))
-    return(sdat)
-
-  groups <- levels(newdata$group)
-  obs    <- checkObs(object$obs, newdata)
-  pops  <- check_pops(object$pops, groups)
-
-  out <- standata_data(newdata)
-  out <- add_standata_obs(out, obs)
-  out$pop <- as.array(pops$pop)
-  out$si <- pad(sdat$si, out$NS, 0, TRUE)
-  out$r0 <- sdat$r0
-  out$N0 <- sdat$N0
-  out$N <- nrow(newdata)
-
+  # add remaining data
+  out <- c(out, list(
+    si = pad(object$si, out$NS, 0, TRUE),
+    N0 = object$seed_days,
+    pop = as.array(pops$pop),
+    N = nrow(data),
+    r0 = object$r0
+  ))
   return(out)
 }
+
+# # Creates standata from newdata, which is passed into rstan::gqs
+# #
+# # @param object An \code{epimodel} object
+# # @param newdata The result of checkData
+# pp_standata <- function(object, newdata=NULL) {
+
+#   sdat <- object$standata
+
+#   if (is.null(newdata))
+#     return(sdat)
+
+#   groups <- levels(newdata$group)
+#   obs    <- checkObs(object$obs, newdata)
+#   pops  <- check_pops(object$pops, groups)
+
+#   out <- standata_data(newdata)
+#   out <- add_standata_obs(out, obs)
+#   out$pop <- as.array(pops$pop)
+#   out$si <- pad(sdat$si, out$NS, 0, TRUE)
+#   out$r0 <- sdat$r0
+#   out$N0 <- sdat$N0
+#   out$N <- nrow(newdata)
+
+#   return(out)
+# }
 
 # Renames stanmat for passing into rstan::gqs. This is because the
 # modeled groups may differ from the original.

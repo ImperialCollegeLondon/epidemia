@@ -32,7 +32,7 @@ parameters {
 generated quantities {
   matrix[N2, M] pred[R];
   vector[N_obs] E_obs;
-  vector[N_obs] obs;
+  int obs[N_obs];
 #include /tparameters/infections_rt.stan
 
   // initialise to 0
