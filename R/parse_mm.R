@@ -81,6 +81,7 @@ parse_mm <- function(formula, data, ...) {
 
   return(loo::nlist(
     x,
+    mf,
     mt,
     glmod,
     group,

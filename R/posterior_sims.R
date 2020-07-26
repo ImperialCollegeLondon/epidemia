@@ -1,60 +1,107 @@
-# Generate posterior draws of time series of interest
-#
-# This used rstan::gqs to generate posterior draws of time series,
-# including latent series such as daily infections, reproduction number and 
-# also the observation series.
-#
-# @inheritParams posterior_infections
-# return A names list, with each elements containing draws of a
-# particular type of series
+
+
+
+
+
 posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
   if (!is.null(seed))
     set.seed(seed)
   dots <- list(...)
 
-  # subsampled matrix of posterior draws
-  stanmat <- subsamp(object, as.matrix(object$stanfit), draws)
 
-  if (is.null(newdata))
-    groups <- levels(object$data$group)
-  else {
-    newdata <- checkData(formula(object), newdata, NULL)
+  x <- object$x
+  if(!is.null(newdata)) {
+    newdata <- check_data(formula(object$rt), newdata, object$groups)
     groups <- levels(newdata$group)
-    w <- !(groups %in% object$groups)
-    if (any(w))
-      stop(paste0("Groups ", groups[w], " not modeled. 
-      'newdata' only supported for existing populations."))
+
+    
+    
+
+
+    
+    # generates model matrices for each regression
+    orig_levs <- lapply(x, xlevels)
+
+    # generate model frame for rt regression
+    rt <- object$rt
+    print(orig_levs)
+    rt$mfargs$xlev <- orig_levs$R
+    rt_orig <- rt
+    rt <- epirt_(rt, newdata)
+    #obs <- lapply(obs_orig, epiobs_, data)
   }
+  return(list(rt=rt, rt_orig=rt_orig))
+}
 
-  # construct linear predictor
-  dat <- pp_data(object=object, newdata=newdata, ...)
-  eta <- pp_eta(object, dat, stanmat)
-  colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
 
-  # stanmatrix may require relabelling
-  stanmat <- pp_stanmat(object, stanmat, groups)
-  stanmat <- cbind(stanmat, eta)
-
-  standata <- pp_standata(object, newdata)
-
-  sims <- rstan::gqs(stanmodels$epidemia_pp_base, 
-                     data = standata, 
-                     draws=stanmat)
-
-  data = newdata %ORifNULL% object$data
-  out <- list()
-  out$rt_unadj <- parse_latent(sims, data, "Rt_unadj")
-  out$rt <- parse_latent(sims, data, "Rt")
-  out$infections <- parse_latent(sims, data, "infections")
-
-  # get posterior predictive
-  out$obs <- list()
-  types <- names(object$obs)
-  for(i in seq_along(types))
-    out$obs[[types[i]]] <- parse_obs(sims, data, i)
-
+# returns levels of each column in a matrix
+xlevels <- function(x) {
+  is_fac <- apply(x,2L,is.factor)
+  out <- NULL
+  if (length(x))
+    out <- levels(x[,is_fac])
   return(out)
 }
+
+
+
+# # Generate posterior draws of time series of interest
+# #
+# # This used rstan::gqs to generate posterior draws of time series,
+# # including latent series such as daily infections, reproduction number and 
+# # also the observation series.
+# #
+# # @inheritParams posterior_infections
+# # return A names list, with each elements containing draws of a
+# # particular type of series
+# posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
+#   if (!is.null(seed))
+#     set.seed(seed)
+#   dots <- list(...)
+
+#   # subsampled matrix of posterior draws
+#   stanmat <- subsamp(object, as.matrix(object$stanfit), draws)
+
+#   if (is.null(newdata))
+#     groups <- levels(object$data$group)
+#   else {
+#     newdata <- checkData(formula(object), newdata, NULL)
+#     groups <- levels(newdata$group)
+#     w <- !(groups %in% object$groups)
+#     if (any(w))
+#       stop(paste0("Groups ", groups[w], " not modeled. 
+#       'newdata' only supported for existing populations."))
+#   }
+
+#   # construct linear predictor
+#   dat <- pp_data(object=object, newdata=newdata, ...)
+#   eta <- pp_eta(object, dat, stanmat)
+#   colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
+
+#   # stanmatrix may require relabelling
+#   stanmat <- pp_stanmat(object, stanmat, groups)
+#   stanmat <- cbind(stanmat, eta)
+
+#   standata <- pp_standata(object, newdata)
+
+#   sims <- rstan::gqs(stanmodels$epidemia_pp_base, 
+#                      data = standata, 
+#                      draws=stanmat)
+
+#   data = newdata %ORifNULL% object$data
+#   out <- list()
+#   out$rt_unadj <- parse_latent(sims, data, "Rt_unadj")
+#   out$rt <- parse_latent(sims, data, "Rt")
+#   out$infections <- parse_latent(sims, data, "infections")
+
+#   # get posterior predictive
+#   out$obs <- list()
+#   types <- names(object$obs)
+#   for(i in seq_along(types))
+#     out$obs[[types[i]]] <- parse_obs(sims, data, i)
+
+#   return(out)
+# }
 
 # Parses a given latent quantity from the result of rstan::qgs
 #

@@ -26,5 +26,6 @@ posterior_predict.epimodel <- function(object, newdata=NULL, draws=NULL, types =
                         draws=draws,
                         seed=seed,
                         ...)
+  return(out)
   return(out$obs[[types]])
 }

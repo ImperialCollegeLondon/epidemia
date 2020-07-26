@@ -9,10 +9,11 @@ epimodel <- function(object) {
   stanfit <- object$stanfit
   obs_nms <- sapply(object$obs, function(x) .get_obs(formula(x)))
   nms <- c("R", obs_nms)
+  all <- c(object$rt, object$obs)
 
-  # construct x and y
-  obs_x <- lapply(object$obs, function(x) get_x(x))
-  x <- c(list(get_x(object$rt)), obs_x)
+  # construct x and y and model frames
+  x <- lapply(all, function(x) get_x(x))
+  mf <- lapply(all, function(x) x$mf)
   y <- lapply(object$obs, function(x) get_obs(x))
 
   # get index of parameters for each regression
@@ -52,18 +53,21 @@ epimodel <- function(object) {
 
   # correct names for output
   names(y) <- obs_nms
-  names(x) <- names(coefs) <-
+  names(x) <- names(mf) <- names(coefs) <-
     names(ses) <- names(covmat) <- nms
 
   out <- loo::nlist(
-    rt = rt_orig,
-    obs = obs_orig,
+    rt = object$rt_orig,
+    obs = object$obs_orig,
+    data = object$data,
+    groups = levels(object$data$group),
     coefficients = coefs,
     ses,
     linear.predictors = eta,
     covmat,
     y,
     x,
+    mf,
     data = object$data,
     algorithm = object$algorithm,
     stan_summary,
@@ -71,6 +75,8 @@ epimodel <- function(object) {
     call = object$call,
     sdat = object$standata
   )
+
+  class(out) <- "epimodel"
 
   return(out)
 }
