@@ -32,7 +32,8 @@ epiobs <- function(formula,
                    ...) {
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
-  lag <- check_sv(lag, name = "lag")
+  # lag <- check_sv(lag, name = "lag") no longer required to be simplex
+  lag <- check_v(lag, name = "lag")
 
   ok_dists <- c("normal")
   if (!(prior$dist %in% ok_dists)) {
