@@ -44,8 +44,6 @@ posterior_sims <- function(object,
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)
   oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
-
-  # give names expected by stan
   colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
   colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
 

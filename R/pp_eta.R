@@ -31,7 +31,7 @@ pp_eta_fe <- function(object, stanmat) {
   if (anyNA(w)) {
     stop("Bug found. Unmatched fixed effects in newdata.")
   }
-  return(linear_predictor(stanmat[, w], x))
+  return(linear_predictor(stanmat[, w, drop = F], x))
 }
 
 # Constructs linear predictor for random effects.
@@ -104,7 +104,7 @@ new_rw_stanmat <- function(object, stanmat) {
 
   # ensure ordered by walk then by time period
   w <- order(df$walk, df$time)
-  df <- df[w, ]
+  df <- df[w, , drop=F]
 
   # cumulate errors by walk
   dfs <- split(df, df$walk)
@@ -113,7 +113,7 @@ new_rw_stanmat <- function(object, stanmat) {
   df[, draws] <- do.call(rbind, dfs)
 
   w <- match(newnms, df$name)
-  out <- t(as.matrix(df[w, draws]))
+  out <- t(as.matrix(df[w, draws, drop=F]))
   colnames(out) <- newnms
   return(out)
 }

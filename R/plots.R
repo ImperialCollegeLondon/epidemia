@@ -554,11 +554,12 @@ out2list <- function(out) {
   groups <- levels(out$group)
   f <- function(x) {
     w <- x == out$group
-    res <- cbind(out$date[w],t(out$draws[,w]))
+    res <- cbind(out$time[w],t(out$draws[,w]))
     colnames(res) <- c("date", paste0("draw ", 1:nrow(out$draws)))
     return(res)
   }
   out <- lapply(groups, f)
   names(out) <- groups
-  return(data.frame(out))
+  out <- lapply(out, data.frame)
+  return(out)
 }

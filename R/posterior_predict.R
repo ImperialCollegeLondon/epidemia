@@ -23,7 +23,6 @@ posterior_predict.epimodel <-
       object$obs,
       function(x) .get_obs(formula(x))
     )
-    print(alltypes)
     if (is.null(types)) {
       types <- alltypes
     } else {
@@ -34,7 +33,6 @@ posterior_predict.epimodel <-
         ))
       }
     }
-
     out <- posterior_sims(
       object = object,
       newdata = newdata,

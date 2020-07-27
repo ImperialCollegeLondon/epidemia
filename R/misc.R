@@ -245,6 +245,7 @@ linear_predictor <- function(beta, x) {
   UseMethod("linear_predictor")
 }
 
+# expects beta a vector of point estimates (not a sample)
 linear_predictor.default <- function(beta, x) {
   return(as.vector(if (NCOL(x) == 1L) x * beta else x %*% beta))
 }
