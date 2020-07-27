@@ -84,7 +84,10 @@ plot_rt.epimodel <-
     stop("'log' must be of type logical", call. = FALSE)
   
   rt <- posterior_rt(object=object, ...)
+  print("reached 1")
   rt <- out2list(rt)
+
+  print("reached 2")
   
   # check smoothing input
   min.dates <- min(sapply(rt, function(x) length(x$date)))
@@ -116,10 +119,14 @@ plot_rt.epimodel <-
                                                                                 function(y) zoo::rollmean(y, smooth, fill=NA)))))
     rt <- lapply(rt.smoothed, function(x) x[complete.cases(x),])
   }
+
+  print("reached 3")
   
   # quantiles by group
   qtl <- lapply(rt, function(.rt) .get_quantiles(.rt, levels))
   qtl <- data.table::rbindlist(qtl, idcol="group")
+
+  print("reached 4")
 
   # date subsetting if required
   dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
@@ -134,6 +141,8 @@ plot_rt.epimodel <-
     ylab <- bquote("smoothed "~R[t]~" ("~.(smooth)~" day window)")
   else
     ylab <- expression(R[t])
+
+  print("reached 5")
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_ribbon(data = qtl, 
@@ -234,7 +243,7 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
                               group=NULL,
                               dates=NULL, date_breaks="2 weeks", date_format="%Y-%m-%d",
                               cumulative=FALSE, levels=c(50, 95), log=FALSE, ...) {
-  
+
   # input checks
   if(!is.null(type)) {
     if(!(type %in% names(object$obs)))
@@ -245,9 +254,9 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
   if(!is.logical(log))
     stop("'log' must be of type logical", call. = FALSE)
   
-  obs <- posterior_predict(object=object, types=type, ...)
-  obs <- lapply(obs, out2list)
-  
+  obs <- posterior_predict(object=object, types=type, posterior_mean=posterior_mean, ...)
+  obs <- out2list(obs)
+
   if (!is.null(group)) {
     w <- !(group %in% names(obs))
     if (any(w))
@@ -257,13 +266,15 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
   
   if (cumulative)
     obs <- lapply(obs, cumul)
-  
+
   # quantiles by group
   qtl <- lapply(obs, function(.obs) .get_quantiles(.obs, levels))
   qtl <- data.table::rbindlist(qtl, idcol="group")
+
   
   # observed data
-  df <- object$obs[[type]][["odata"]]
+  df <- object$data[, c("group", "date", type)]
+  #df <- object$obs[[type]][["odata"]]
   
   # date subsetting if required
   dates <- .check_dates(dates, date_format,
@@ -291,6 +302,7 @@ plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE,
     df <- as.data.frame(df)
   }
   
+  names(df)[3] <- "obs" # now explicitly change name
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_bar(data = df, 
                       ggplot2::aes_string(x = "date", y = "obs", fill = "reported"),
@@ -554,12 +566,14 @@ out2list <- function(out) {
   groups <- levels(out$group)
   f <- function(x) {
     w <- x == out$group
-    res <- cbind(out$time[w],t(out$draws[,w]))
+    date <- as.character(out$time[w])
+    res <- cbind(data.frame(date), data.frame(t(out$draws[,w])))
     colnames(res) <- c("date", paste0("draw ", 1:nrow(out$draws)))
+    res <- as.data.frame(res)
+    res$date <- as.Date(res$date)
     return(res)
   }
   out <- lapply(groups, f)
   names(out) <- groups
-  out <- lapply(out, data.frame)
   return(out)
 }

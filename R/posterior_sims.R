@@ -143,7 +143,7 @@ parse_latent <- function(sims, nme, ind, rt) {
   draws <- Map(function(x, y) x[, y], draws, ind)
   return(list(
     group = rt$gr,
-    date = rt$time,
+    time = rt$time,
     draws = do.call(cbind, draws)
   ))
 }

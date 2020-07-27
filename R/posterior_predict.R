@@ -41,5 +41,5 @@ posterior_predict.epimodel <-
       ...
     )
     out <- if (posterior_mean) out$E_obs else out$obs
-    return(out[types])
+    return(out[[types]])
   }
