@@ -80,6 +80,7 @@ model {
 
 #include /model/priors_glm.stan
 #include /model/priors_ac.stan
+#include /model/priors_obs.stan
   if (t > 0) {
     real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
                           regularization, delta, shape, t, p);

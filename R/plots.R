@@ -84,11 +84,7 @@ plot_rt.epimodel <-
     stop("'log' must be of type logical", call. = FALSE)
   
   rt <- posterior_rt(object=object, ...)
-  print("reached 1")
   rt <- out2list(rt)
-
-  print("reached 2")
-  
   # check smoothing input
   min.dates <- min(sapply(rt, function(x) length(x$date)))
   if (smooth >= min.dates) {
@@ -120,13 +116,10 @@ plot_rt.epimodel <-
     rt <- lapply(rt.smoothed, function(x) x[complete.cases(x),])
   }
 
-  print("reached 3")
   
   # quantiles by group
   qtl <- lapply(rt, function(.rt) .get_quantiles(.rt, levels))
   qtl <- data.table::rbindlist(qtl, idcol="group")
-
-  print("reached 4")
 
   # date subsetting if required
   dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
@@ -141,8 +134,6 @@ plot_rt.epimodel <-
     ylab <- bquote("smoothed "~R[t]~" ("~.(smooth)~" day window)")
   else
     ylab <- expression(R[t])
-
-  print("reached 5")
   
   p <-  ggplot2::ggplot(qtl) + 
     ggplot2::geom_ribbon(data = qtl, 
