@@ -68,7 +68,7 @@ pad_lag.epiobs_ <- function(object, len, ...) {
   lag <- get_lag(object)
   is_density <- object$lagtype == "density"
   if (is_density)
-    return(pad(lag, len, 0, TRUE))
+    return(pad(lag, len, 0, FALSE))
   else
     return(pad(lag, len, tail(lag, 1)))
 }
