@@ -12,7 +12,6 @@ standata_all <- function(rt,
                          si,
                          seed_days,
                          group_subset,
-                         prior_phi,
                          prior_tau,
                          prior_PD) {
 
@@ -196,8 +195,8 @@ standata_obs <- function(obs, groups, nsim, begin) {
     ))
 
     # auxiliary params
-    ofamily <- sapply(reg, function(x) x$family)
-    olink <- sapply(reg, function(x) x$link)
+    ofamily <- array(sapply(reg, function(x) x$family))
+    olink <- array(sapply(reg, function(x) x$link))
     has_oaux <- sapply(reg, function(x) !is.null(x$prior_dist_for_oaux))
     num_oaux <- sum(has_oaux)
     has_oaux <- array(has_oaux * cumsum(has_oaux))
@@ -208,17 +207,19 @@ standata_obs <- function(obs, groups, nsim, begin) {
       "prior_scale_for_oaux",
       "prior_df_for_oaux"
     )
-    w <- (has_oaux > 0)
-    for (i in nms_aux)
-      assign(i, sapply(reg, function(x) x[[i]])[w])
+    for (i in nms_aux){
+      temp <- unlist(lapply(reg, function(x) x[[i]]))
+      assign(i, array(temp %ORifNULL% rep(0,0)))
+    }
   }
   else { # set to zero values
     N_obs <- K_all <- num_ointercepts <-  0
-    obs <- oprior_mean <- oprior_scale <-
-    oprior_mean_for_intercept <- oprior_scale_for_intercept <-
-    prior_mean_for_phi <- prior_scale_for_phi <- rep(0,0)
+    obs <- prior_omean <- prior_oscale <-
+    prior_mean_for_ointercept <- prior_scale_for_ointercept <-
+    prior_mean_for_oaux <- prior_scale_for_oaux <- 
+    prior_df_for_oaux <- rep(0,0)
     obs_group <- obs_date <- obs_type <- oN <- oK <- oxbar <-
-    has_ointercept <- integer(0)
+    has_ointercept <- prior_dist_for_oaux <- integer(0)
     pvecs <- array(0, dim = c(0, nsim))
   }
 
@@ -236,10 +237,10 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oxbar,
     has_ointercept,
     num_ointercepts,
-    oprior_mean,
-    oprior_scale,
-    oprior_mean_for_intercept,
-    oprior_scale_for_intercept,
+    prior_omean,
+    prior_oscale,
+    prior_mean_for_ointercept,
+    prior_scale_for_ointercept,
     ofamily,
     olink,
     has_oaux,

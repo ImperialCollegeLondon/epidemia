@@ -33,11 +33,6 @@
 #' @param group_subset An optional vector specifying a subset of groups to
 #'  model. Elements should correspond to the group levels specified through the
 #'  \code{data} argument.
-#' @param prior_phi The prior distribution on \eqn{\phi}. This parameter is
-#'  described in the introductory vignette, and determined the variance of the
-#'  observed data around its mean. Must be a call to
-#' \code{\link[rstanarm]{normal}}, which again is transformed to a half normal
-#'  distribution.
 #' @param prior_tau The prior for \eqn{\tau}.This parameter is described in the
 #'  introductory vignette, and controls the variability in the number of
 #'  seeded infections at the beginning of the epidemic. Must be a call to
@@ -153,8 +148,6 @@ epim <- function(rt,
         }
       }
       res$tau_raw <- c(res$tau_raw)
-      res$noise <- NULL
-      res$z_phi <- NULL
       res
     }
   }
@@ -176,7 +169,7 @@ epim <- function(rt,
     "y",
     "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
-    if (sdat$R > 0) "phi"
+    if (sdat$num_oaux > 0) "oaux"
   )
 
   args <- c(
@@ -246,7 +239,7 @@ epim <- function(rt,
     if (length(sdat$ac_nterms)) {
       make_rw_sigma_nms(formula(rt), data)
     },
-    if (sdat$R > 0) {
+    if (sdat$num_oaux > 0) {
       make_phi_nms(obs, sdat)
     },
     "log-posterior"
@@ -333,15 +326,18 @@ make_rw_sigma_nms <- function(formula, data) {
   return(nms)
 }
 
-make_phi_nms <- function(obs, sdat) {
-  if (sdat$R == 0) {
+make_oaux_nms <- function(obs, sdat) {
+  if (sdat$num_oaux == 0) {
     return(character(0))
   }
   obs_nms <- sapply(
     obs,
     function(x) .get_obs(formula(x))
   )
-  return(paste0(obs_nms, "|phi"))
+  return(paste0(
+    obs_nms[sdat$has_oaux],
+    "|recipricol dispersion"
+  ))
 }
 
 make_ointercept_nms <- function(obs, sdat) {

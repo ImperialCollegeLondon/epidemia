@@ -98,16 +98,6 @@ model {
                           regularization, delta, shape, t, p);
   }
 
-  // priors for auxiliary variables
-  for (i in 1:num_oaux) {
-    if (prior_dist_for_oaux[i] == 1) 
-      target += normal_lpdf(oaux_raw[i] | 0, 1);
-    else if (prior_dist_for_oaux[i] == 2)
-      target += student_t_lpdf(oaux_raw[i] | prior_df_for_oaux[i], 0, 1);
-    else if (prior_dist_for_oaux[i] == 3)
-      target += exponential_lpdf(oaux_raw[i] | 1);
-  }
-
   if (prior_PD == 0) {
     int i = 1;
     for (r in 1:R) {
