@@ -211,13 +211,15 @@ standata_obs <- function(obs, groups, nsim, begin) {
       temp <- unlist(lapply(reg, function(x) x[[i]]))
       assign(i, array(temp %ORifNULL% rep(0,0)))
     }
+
+    offset_ <- array(sapply(function(x) x$offset))
   }
   else { # set to zero values
     N_obs <- K_all <- num_ointercepts <-  0
     obs <- prior_omean <- prior_oscale <-
     prior_mean_for_ointercept <- prior_scale_for_ointercept <-
     prior_mean_for_oaux <- prior_scale_for_oaux <- 
-    prior_df_for_oaux <- rep(0,0)
+    prior_df_for_oaux <- offset_ <- rep(0,0)
     obs_group <- obs_date <- obs_type <- oN <- oK <- oxbar <-
     has_ointercept <- prior_dist_for_oaux <- integer(0)
     pvecs <- array(0, dim = c(0, nsim))
@@ -249,7 +251,8 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_mean_for_oaux,
     prior_scale_for_oaux,
     prior_df_for_oaux,
-    pvecs
+    pvecs,
+    offset_
   ))
   return(out)
 }

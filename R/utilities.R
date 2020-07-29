@@ -23,6 +23,16 @@ check_character <- function(x) {
     stop(paste0(s, " should be coercible to integer."))
 }
 
+check_offset <- function(offset, y) {
+  if (is.null(offset)) {
+    offset <- rep(0, NROW(y))
+  }
+  if (length(offset) != NROW(y)) {
+    stop("offset should be same length as observation vector")
+  }
+  return(offset)
+}
+
 # syntactic sugar for the formula
 R <- function(group, date) {
 }

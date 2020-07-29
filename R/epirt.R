@@ -57,7 +57,6 @@ epirt <- function(formula,
   return(out)
 }
 
-
 # This is a constructor for an internal class which is essentially the same
 # as epirt, however it constructs and stores the model matrix associated with
 # the model, along with some other objects

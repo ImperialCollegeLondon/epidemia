@@ -18,6 +18,10 @@
 #' Conditional on an observation "event" (i.e. a single death or
 #' hospitalisation etc.), the nth element represents the probability that the
 #' individual was infected exactly n days prior to this.
+#' @param center If \code{TRUE} then the covariates are centered to
+#'  have mean zero. All of the priors are then interpreted as
+#'  priors on the centered covariates. Defaults to \code{FALSE}.
+#' @param offset Same as \code{\link[stats]{glm}}
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. **Note:**
 #'  If \code{autoscale=TRUE} in the call to the prior distribution
 #'  then automatic rescaling of the prior may take place.
@@ -35,6 +39,7 @@ epiobs <- function(formula,
                    link = "logit",
                    lag,
                    center = FALSE,
+                   offset = NULL,
                    prior = rstanarm::normal(scale = .1),
                    prior_intercept = rstanarm::normal(scale = .1),
                    prior_aux = rstanarm::exponential(autoscale = TRUE),
@@ -63,6 +68,10 @@ epiobs <- function(formula,
      - check that this is intentional")
   }
 
+  if (!is.null(offset) && !is.numeric(offset))
+    stop("offset should be either null or a numeric vector",
+    call. = FALSE)
+
   # only supported prior family is normal. (will change in future)
   ok_dists <- c("normal")
   if (!(prior$dist %in% ok_dists)) {
@@ -89,6 +98,7 @@ epiobs <- function(formula,
     family,
     link,
     lag,
+    offset,
     lagtype = "density",
     link = "logit",
     center,
@@ -127,8 +137,10 @@ epiobs_ <- function(object, data) {
       na_action(data)
     }
   args <- c(args, list(
-    formula = rhs(formula),
-    data = data
+    formula = update(formula,
+      paste0(.get_obs(formula), "~.")),
+    data = data,
+    offset = object$offset
   ))
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
@@ -140,3 +152,4 @@ epiobs_ <- function(object, data) {
   class(out) <- "epiobs_"
   return(out)
 }
+

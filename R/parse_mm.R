@@ -5,7 +5,7 @@
 # @param data Dontains data required to construct model objects from formula
 # @param ... Arguments to be passed to \code{\link[stats]{model.frame}}
 # or \code{\link[lme4]{glFormula}}
-parse_mm <- function(formula, data, ...) {
+parse_mm <- function(formula, data, offset = NULL, ...) {
 
   # formula with no autocorrelation terms
   form <- norws(formula)
@@ -13,6 +13,7 @@ parse_mm <- function(formula, data, ...) {
   mf <- match.call(expand.dots = TRUE)
   mf$formula <- form
   mf$data <- data
+  mf$offset <- offset
 
   if (is_mixed(formula)) {
     mf[[1L]] <- quote(lme4::glFormula)
@@ -46,7 +47,8 @@ parse_mm <- function(formula, data, ...) {
     x <- model.matrix(object = mt, data = mf)
     glmod <- group <- NULL
   }
-
+  y <- model.response(mf)
+  offset <- check_offset(model.offset(mf), x)
   autocor <- NULL
   if (is_autocor(formula)) {
     trms <- terms_rw(formula)
@@ -84,6 +86,7 @@ parse_mm <- function(formula, data, ...) {
     fe,
     x,
     mf,
+    offset,
     mt,
     glmod,
     group,
