@@ -49,6 +49,7 @@ epiobs <- function(formula,
      - check that this is intentional")
   }
 
+  # only supported prior family is normal. (will change in future)
   ok_dists <- c("normal")
   if (!(prior$dist %in% ok_dists)) {
     stop("'prior' must be a call to rstanarm::normal")
@@ -56,8 +57,11 @@ epiobs <- function(formula,
   if (!(prior_intercept$dist %in% ok_dists)) {
     stop("'prior_intercept' must be a call to rstanarm::normal")
   }
-  if (!(prior_phi$dist %in% ok_dists)) {
-    stop("'prior_phi' must be a call to rstanarm::normal")
+
+  ok_aux_dists <- c("normal", "t", "cauchy", "exponential")
+  if (!(prior_aux$dist %in% ok_dists)) {
+    stop("'prior_aux' must be a call to either normal,
+     student_t, cauchy or exponential")
   }
 
   out <- loo::nlist(
