@@ -17,8 +17,8 @@ for(r in 1:R)
 }
 
 parameters {
-  vector<lower=0>[M+1] y;
-  vector<lower=0>[num_oaux+1] oaux;
+  vector<lower=0>[M+2] y;
+  vector<lower=0>[num_oaux+2] oaux;
   vector[N] eta;
   vector[N_obs] oeta;
 }
@@ -34,10 +34,10 @@ generated quantities {
     int i = 1;
     for (r in 1:R) {
       if (ofamily[r] == 1) { // poisson
-        obs[i:(i+oN[r]-1)] = poisson_rng(linkinv(segment(E_obs, i, oN[r]) + 1e-15, olink[r]));
+        obs[i:(i+oN[r]-1)] = poisson_rng(segment(E_obs, i, oN[r]));
       }
       else { // neg binom
-        obs[i:(i+oN[r]-1)] = neg_binomial_2_rng(linkinv(segment(E_obs, i, oN[r]) + 1e-15, olink[r]), 
+        obs[i:(i+oN[r]-1)] = neg_binomial_2_rng(segment(E_obs, i, oN[r]), 
           oaux[has_oaux[r]]);
       }
       i += oN[r];

@@ -47,23 +47,25 @@ posterior_sims <- function(object,
   colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
   colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
 
-
-  # stanmatrix may require relabeling
-  stanmat <- pp_stanmat(
-    stanmat = stanmat,
-    orig_nms = object$orig_names,
-    groups = levels(data$group),
-    ntypes = length(object$obs)
-  )
-
-  stanmat <- cbind(stanmat, eta, oeta)
-
   standata <- pp_standata(
     object = object,
     rt = rt,
     obs = obs,
     data = data
   )
+
+  # stanmatrix may require relabeling
+  stanmat <- pp_stanmat(
+    stanmat = stanmat,
+    orig_nms = object$orig_names,
+    groups = levels(data$group),
+    num_oaux = standata$num_oaux
+  )
+
+  print(head(stanmat))
+
+  stanmat <- cbind(stanmat, eta, oeta)
+
 
   sims <- rstan::gqs(stanmodels$epidemia_pp_base,
     data = standata,
@@ -206,18 +208,18 @@ pp_standata <- function(object, rt, obs, data) {
 # @param stanmat An matrix of parameter draws
 # @param orig_nms The original names for stan parameters
 # @param groups Sorted character vector of groups to simulate for
-# @param ntypes Total number of observation types
-pp_stanmat <- function(stanmat, orig_nms, groups, ntypes) {
+# @param num_oaux Total number of auxiliary variables 
+pp_stanmat <- function(stanmat, orig_nms, groups, num_oaux) {
   nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
   nms[m] <- paste0("y[", seq_along(groups), "]")
   colnames(stanmat) <- nms
 
   # need to pad out for rstan::gqs
-  mat <- matrix(0, nrow = nrow(stanmat), ncol = 2)
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 4)
   colnames(mat) <- c(
-    paste0("y[", length(groups) + 1, "]"),
-    paste0("phi[", ntypes + 1, "]")
+    paste0("y[", length(groups) + 1:2, "]"),
+    paste0("oaux[", num_oaux + 1:2, "]")
   )
 
   return(cbind(stanmat, mat))
