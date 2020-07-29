@@ -51,7 +51,6 @@ pp_eta_re <- function(object, stanmat) {
     paste0(nme, "|", colnames(z)),
     stanmat
   )
-  print(dim(stanmat))
   return(linear_predictor(stanmat, z))
 }
 
