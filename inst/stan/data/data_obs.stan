@@ -10,6 +10,7 @@ int<lower=0> oK[10];  // number of predictors for each observation type
 int<lower=0> K_all; // sum of the above
 int<lower=0> num_ointercepts; // total intercept params
 int<lower=0, upper=num_ointercepts> has_ointercept[R]; // 0 means no, otherwise gives index
+vector<lower=0>[NS] pvecs[R]; // the 'lag' for each type of observation.
 
 // family for each observation type
 int<lower=1,upper=2> ofamily[R]; //1:poisson 2:neg_binom
@@ -21,7 +22,7 @@ int<lower=0, upper=num_oaux> has_oaux[R];
 int<lower=0, upper=3> prior_dist_for_oaux[num_oaux];
 vector[num_oaux] prior_mean_for_oaux;
 vector<lower=0>[num_oaux] prior_scale_for_oaux;
-vector<lower=0>[num_oaux] prior_scale_for_oaux;
+vector<lower=0>[num_oaux] prior_df_for_oaux;
 
 // model matrices (maximum of 10 types)
 // not pretty, but hopefully more efficient with algorithmic diff

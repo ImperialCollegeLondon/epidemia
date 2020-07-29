@@ -28,8 +28,8 @@ functions {
 }
 
 data {
-#include /data/data_obs.stan
 #include /data/data_indices.stan
+#include /data/data_obs.stan
 #include /data/data_model.stan
 #include /data/NKX.stan
 #include /data/data_glm.stan
@@ -54,7 +54,7 @@ for(r in 1:R)
 parameters {
   vector[num_ointercepts] ogamma;
   real gamma[has_intercept];
-  vector<lower=0> oaux_raw[num_oaux];
+  vector<lower=0>[num_oaux] oaux_raw;
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
@@ -70,7 +70,12 @@ transformed parameters {
   vector<lower=0>[M] y = tau2 * y_raw;
   vector<lower=0>[num_oaux] oaux = oaux_raw;
 
-  // transform auxiliary parameters
+#include /tparameters/infections_rt.stan
+#include /tparameters/tparameters_ac.stan
+#include /tparameters/tparameters_obs.stan
+#include /tparameters/tparameters_glm.stan
+
+// transform auxiliary parameters
   for (i in 1:num_oaux) {
     if (prior_dist_for_oaux[i] > 0) {
       if (prior_scale_for_oaux[i] > 0) {
@@ -81,11 +86,6 @@ transformed parameters {
       }
     }
   }
-
-#include /tparameters/infections_rt.stan
-#include /tparameters/tparameters_ac.stan
-#include /tparameters/tparameters_obs.stan
-#include /tparameters/tparameters_glm.stan
 
   {
     int i = 1;
@@ -115,13 +115,12 @@ model {
 
   // priors for auxiliary variables
   for (i in 1:num_oaux) {
-    if (prior_dist_for_oaux[i] == 1) {
+    if (prior_dist_for_oaux[i] == 1) 
       target += normal_lpdf(oaux_raw[i] | 0, 1);
     else if (prior_dist_for_oaux[i] == 2)
-      target += student_t_lpdf(oaux_raw[i], prior_df_for_oaux[i], 0, 1);
+      target += student_t_lpdf(oaux_raw[i] | prior_df_for_oaux[i], 0, 1);
     else if (prior_dist_for_oaux[i] == 3)
       target += exponential_lpdf(oaux_raw[i] | 1);
-    }
   }
 
   if (prior_PD == 0) {
