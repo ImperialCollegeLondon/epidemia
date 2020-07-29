@@ -102,11 +102,11 @@ model {
     int i = 1;
     for (r in 1:R) {
       if (ofamily[r] == 1) { // poisson
-        target += poisson_lpmf(segment(obs, i, oN[r]) | segment(E_obs, i, oN[r]));
+        target += poisson_lpmf(segment(obs, i, oN[r]) | segment(E_obs, i, oN[r]) + 1e-15);
       }
       else { // neg binom
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
-        segment(E_obs, i, oN[r]), oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
       }
       i += oN[r];
     }
