@@ -38,12 +38,13 @@ process_x <- function(x, center) {
 # @param prior A list
 # @param nvars An integer indicating the number of variables
 # @param default_scale Default value to use to scale if not specified by user
-# @param link String naming the link function.
+# @param § String naming the link function.
 # @param ok_dists A list of admissible distributions.
 handle_glm_prior <- function(prior, nvars, default_scale, link,
                              ok_dists = loo::nlist("gamma", "normal", student_t = "t", 
                                               "cauchy", "hs", "hs_plus", 
                                               "laplace", "lasso", "product_normal")) {
+
   if (!length(prior))
     return(list(prior_dist = 0L, prior_mean = as.array(rep(0, nvars)),
                 prior_scale = as.array(rep(1, nvars)),
@@ -71,6 +72,7 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   global_prior_df <- 0
   slab_df <- 0
   slab_scale <- 0
+
   if (!prior_dist_name %in% unlist(ok_dists)) {
     stop("The prior distribution should be one of ",
          paste(names(ok_dists), collapse = ", "))

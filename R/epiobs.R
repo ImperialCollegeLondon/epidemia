@@ -30,7 +30,6 @@
 
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-stop("'family' must be one of ", paste(ok_families, collapse=", "))
 epiobs <- function(formula,
                    family = "neg_binom",
                    link = "logit",

@@ -14,10 +14,10 @@ real<lower=0> slab_scale;  // for hs prior only
 int<lower=2> num_normals[prior_dist == 7 ? K : 0];
 
 // additional hyperparameters for coefficients in obs regressions
-vector[K_all] oprior_mean;
-vector<lower=0>[K_all] oprior_scale;
-vector[num_ointercepts] oprior_mean_for_intercept;
-vector<lower=0>[num_ointercepts] oprior_scale_for_intercept;
+vector[K_all] prior_omean;
+vector<lower=0>[K_all] prior_oscale;
+vector[num_ointercepts] prior_mean_for_ointercept;
+vector<lower=0>[num_ointercepts] prior_scale_for_ointercept;
 
 // and also for auxiliary variables
 int<lower=0, upper=3> prior_dist_for_oaux[num_oaux];

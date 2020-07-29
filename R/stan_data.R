@@ -176,45 +176,41 @@ standata_obs <- function(obs, groups, nsim, begin) {
     }
 
     # regression hyperparameters
-    oprior_mean <- array(unlist(
+    prior_omean <- array(unlist(
       lapply(
         reg,
         function(x) x$prior_mean
       )
     ))
-    oprior_scale <- array(unlist(lapply(
+    prior_oscale <- array(unlist(lapply(
       reg,
       function(x) x$prior_scale
     )))
-    oprior_mean_for_intercept <- array(sapply(
+    prior_mean_for_ointercept <- array(sapply(
       reg,
       function(x) x$prior_mean_for_intercept
     ))
-    oprior_scale_for_intercept <- array(sapply(
+    prior_scale_for_ointercept <- array(sapply(
       reg,
       function(x) x$prior_scale_for_intercept
     ))
 
     # auxiliary params
     ofamily <- sapply(reg, function(x) x$family)
-    olink <- sapply(reg, function(x) x$olink)
-    has_oaux <- sapply(reg, function(x) !is.null(x$prior_aux))
+    olink <- sapply(reg, function(x) x$link)
+    has_oaux <- sapply(reg, function(x) !is.null(x$prior_dist_for_oaux))
     num_oaux <- sum(has_oaux)
     has_oaux <- array(has_oaux * cumsum(has_oaux))
-    prior_dist_for_oaux <- sapply(reg, function(x) x$prior_dist_for_aux)
-    prior_mean_for_oaux <- sapply(reg, function(x) x$prior_mean_for_aux)
-    prior_scale_for_oaux <- sapply(reg, function(x) x$prior_scale_for_oaux)
-    prior_df_for_oaux <- sapply(reg, unction(x) x$prior_df_for_oaux)
 
-
-    prior_mean_for_phi <- array(sapply(
-      reg,
-      function(x) x$prior_mean_for_phi
-    ))
-    prior_scale_for_phi <- array(sapply(
-      reg,
-      function(x) x$prior_scale_for_phi
-    ))
+    nms_aux <- c(
+      "prior_dist_for_oaux",
+      "prior_mean_for_oaux",
+      "prior_scale_for_oaux",
+      "prior_df_for_oaux"
+    )
+    w <- (has_oaux > 0)
+    for (i in nms_aux)
+      assign(i, sapply(reg, function(x) x[[i]])[w])
   }
   else { # set to zero values
     N_obs <- K_all <- num_ointercepts <-  0
@@ -244,8 +240,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oprior_scale,
     oprior_mean_for_intercept,
     oprior_scale_for_intercept,
-    prior_mean_for_phi,
-    prior_scale_for_phi,
     ofamily,
     olink,
     has_oaux,

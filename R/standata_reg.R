@@ -33,6 +33,7 @@ standata_reg <- function(object, ...) {
     if (!length(fam)) {
       stop("'family' must be one of ", paste(ok_families, collapse=", "))
     }
+    family = fam
     ok_links <- c("logit", "probit", "cauchit", "cloglog", "identity")
     link <- which(ok_links == link)
     if (!length(link)) 
@@ -74,7 +75,7 @@ standata_reg <- function(object, ...) {
   prior_stuff <- handle_glm_prior(
     prior,
     nvars,
-    link = linkstr,
+    link = NULL,
     default_scale = 0.25,
     ok_dists = ok_dists
   )
@@ -89,7 +90,7 @@ standata_reg <- function(object, ...) {
     prior_intercept,
     nvars = 1,
     default_scale = 0.25,
-    link = linkstr,
+    link = NULL,
     ok_dists = ok_intercept_dists
   )
   # prior_{dist, mean, scale, df, dist_name, autoscale}_for_intercept
