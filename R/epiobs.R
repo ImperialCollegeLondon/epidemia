@@ -25,7 +25,7 @@
 #' @export
 epiobs <- function(formula,
                    lag,
-                   center=F,
+                   center = F,
                    prior = rstanarm::normal(scale = .1),
                    prior_intercept = rstanarm::normal(scale = .1),
                    prior_phi = rstanarm::normal(location = 0, scale = 5),
@@ -34,8 +34,11 @@ epiobs <- function(formula,
   formula <- check_obs_formula(formula)
   # lag <- check_sv(lag, name = "lag") no longer required to be simplex
   lag <- check_v(lag, name = "lag")
-  if (any(lag>1)) warning("'lag' has elements greater than 1 - check that this is intentional")
-  
+  if (any(lag > 1)) {
+    warning("'lag' has elements greater than 1
+     - check that this is intentional")
+  }
+
   ok_dists <- c("normal")
   if (!(prior$dist %in% ok_dists)) {
     stop("'prior' must be a call to rstanarm::normal")

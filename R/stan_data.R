@@ -159,7 +159,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
     # intercepts
     has_ointercept <- sapply(reg, function(x) x$has_intercept)
-    has_ointercept <- pad(has_ointercept, maxtypes, 0)
     num_ointercepts <- sum(has_ointercept)
     has_ointercept <- array(has_ointercept * cumsum(has_ointercept))
 

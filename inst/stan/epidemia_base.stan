@@ -36,10 +36,10 @@ for(r in 1:R)
 parameters {
   vector[num_ointercepts] ogamma;
   real gamma[has_intercept];
+  vector<lower=0> oaux_raw[num_oaux];
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
-  vector[R] z_phi;
   vector<lower=0>[M] y_raw;
   real<lower=0> tau_raw;
 }
@@ -50,9 +50,12 @@ transformed parameters {
   vector[N] eta;  // linear predictor
   real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
   vector<lower=0>[M] y = tau2 * y_raw;
-  
-  // transformed phi (half normal distributions)
-  vector<lower=0>[R] phi = fabs(z_phi .* prior_scale_for_phi + prior_mean_for_phi);
+  vector<lower=0>[num_oaux] oaux = oaux_raw;
+
+  // transform auxiliary parameters
+  oaux *= prior_scale_for_oaux;
+  oaux += prior_mean_for_oaux .* (prior_mean_for_oaux <= 2);
+
 
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
@@ -76,7 +79,6 @@ transformed parameters {
 model {
   target += exponential_lpdf(tau_raw | 1);
   target += exponential_lpdf(y_raw | 1);
-  target += normal_lpdf(z_phi | 0, 1);
 
 #include /model/priors_glm.stan
 #include /model/priors_ac.stan
@@ -86,8 +88,31 @@ model {
                           regularization, delta, shape, t, p);
   }
 
-  if (prior_PD == 0)
-    obs ~ neg_binomial_2(E_obs + 1e-15, phi[obs_type]);
+  // priors for auxiliary variables
+  for (i in 1:num_oaux) {
+    if (prior_dist_for_oaux[i] == 1) {
+      target += normal_lpdf(oaux_raw[i] | 0, 1);
+    else if (prior_dist_for_oaux[i] == 2)
+      target += student_t_lpdf(oaux_raw[i], prior_df_for_oaux[i], 0, 1);
+    else if (prior_dist_for_oaux[i] == 3)
+      target += exponential_lpdf(oaux_raw[i] | 1);
+    }
+  }
+
+  if (prior_PD == 0) {
+    int i = 1;
+    for (r in 1:R) {
+      if (ofamily[r] == 1) { // poisson
+        target += poisson_lpmf(segment(obs, i, oN[r]) | 
+          linkinv(segment(E_obs, i, oN[r]) + 1e-15, olink[r]));
+      }
+      else { // neg binom
+        target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
+          linkinv(segment(E_obs, i, oN[r]) + 1e-15, olink[r]), oaux[has_oaux[r]]);
+      }
+      i += oN[r];
+    }
+  }
 
 }
 
