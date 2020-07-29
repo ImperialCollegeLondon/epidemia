@@ -196,7 +196,15 @@ standata_obs <- function(obs, groups, nsim, begin) {
     ))
 
     # auxiliary params
-    has_aux <- sapply(reg, function(x) !is.null(x$))
+    ofamily <- sapply(reg, function(x) x$family)
+    olink <- sapply(reg, function(x) x$olink)
+    has_oaux <- sapply(reg, function(x) !is.null(x$prior_aux))
+    num_oaux <- sum(has_oaux)
+    has_oaux <- array(has_oaux * cumsum(has_oaux))
+    prior_dist_for_oaux <- sapply(reg, function(x) x$prior_dist_for_aux)
+    prior_mean_for_oaux <- sapply(reg, function(x) x$prior_mean_for_aux)
+    prior_scale_for_oaux <- sapply(reg, function(x) x$prior_scale_for_oaux)
+    prior_df_for_oaux <- sapply(reg, unction(x) x$prior_df_for_oaux)
 
 
     prior_mean_for_phi <- array(sapply(
@@ -238,6 +246,14 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oprior_scale_for_intercept,
     prior_mean_for_phi,
     prior_scale_for_phi,
+    ofamily,
+    olink,
+    has_oaux,
+    num_oaux,
+    prior_dist_for_oaux,
+    prior_mean_for_oaux,
+    prior_scale_for_oaux,
+    prior_df_for_oaux,
     pvecs
   ))
   return(out)
