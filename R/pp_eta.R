@@ -16,6 +16,7 @@ pp_eta <- function(object, stanmat) {
   if (!is.null(eta_ac)) {
     out <- out + eta_ac
   }
+
   return(out)
 }
 

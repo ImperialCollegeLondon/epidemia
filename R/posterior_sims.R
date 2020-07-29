@@ -41,18 +41,31 @@ posterior_sims <- function(object,
     draws
   )
 
-  # construct linear predictors
-  eta <- pp_eta(rt, stanmat)
-  oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
-  colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
-  colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
-
   standata <- pp_standata(
     object = object,
     rt = rt,
     obs = obs,
     data = data
   )
+
+  # construct linear predictors
+  eta <- pp_eta(rt, stanmat)
+  oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
+
+  # add on the offset
+  print(dim(oeta))
+  print(dim(standata$offset))
+
+
+  print(standata$offset)
+  print(head(oeta))
+  oeta <- sweep(oeta, 2, standata$offset, "+")
+  print(head(oeta))
+  #oeta <- apply(oeta, 1, function(x) x + standata$offset)
+  print(dim(oeta))
+
+  colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
+  colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
 
   # stanmatrix may require relabeling
   stanmat <- pp_stanmat(

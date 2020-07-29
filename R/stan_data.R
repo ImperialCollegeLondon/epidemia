@@ -212,7 +212,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
       assign(i, array(temp %ORifNULL% rep(0,0)))
     }
 
-    has_offset <- array(sapply(obs, function(x) x$has_offset))
+    has_offset <- array(sapply(obs, function(x) x$has_offset * 1))
     offset_ <- array(sapply(obs, function(x) x$offset))
   }
   else { # set to zero values

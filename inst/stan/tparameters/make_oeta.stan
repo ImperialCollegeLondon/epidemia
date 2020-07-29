@@ -190,3 +190,13 @@
     }
 }
 
+{
+    int i = 1;
+    for (r in 1:R) {
+        if (has_offset[r] == 1) {
+            oeta[i:(i+oN[r]-1)] += segment(offset_, i, oN[r]);
+        }
+        i += oN[r];
+    }
+}
+
