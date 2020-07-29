@@ -36,6 +36,18 @@ generated quantities {
 #include /tparameters/gen_infections.stan
 #include /tparameters/gen_eobs.stan
 
-  obs = neg_binomial_2_rng(E_obs + 1e-15, phi[obs_type]);
+  {
+    int i = 1;
+    for (r in 1:R) {
+      if (ofamily[r] == 1) { // poisson
+        obs[i:(i+oN[r]-1)] = poisson_rng(linkinv(segment(E_obs, i, oN[r]) + 1e-15, olink[r]));
+      }
+      else { // neg binom
+        obs[i:(i+oN[r]-1)] = neg_binomial_2_rng(linkinv(segment(E_obs, i, oN[r]) + 1e-15, olink[r]), 
+          oaux[has_oaux[r]]);
+      }
+      i += oN[r];
+    }
+  }
 }
 
