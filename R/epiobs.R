@@ -49,7 +49,7 @@ epiobs <- function(formula,
 
   ok_families <- c("poisson", "neg_binom")
   if (!(family %in% ok_families)) {
-    stop("'family' must be one of ", paste(ok_families, collapse=", "),
+    stop("'family' must be one of ", paste(ok_families, collapse= ", "),
       call. = FALSE
     )
   }
@@ -98,6 +98,7 @@ epiobs <- function(formula,
     family,
     link,
     lag,
+    has_offset = any(offset != 0),
     offset,
     lagtype = "density",
     link = "logit",
@@ -142,6 +143,7 @@ epiobs_ <- function(object, data) {
     data = data,
     offset = object$offset
   ))
+  object$offset <- NULL
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
     obs = data[, .get_obs(formula)],

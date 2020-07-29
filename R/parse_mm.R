@@ -48,7 +48,7 @@ parse_mm <- function(formula, data, offset = NULL, ...) {
     glmod <- group <- NULL
   }
   y <- model.response(mf)
-  offset <- check_offset(model.offset(mf), x)
+  offset <- check_offset(model.offset(mf), y)
   autocor <- NULL
   if (is_autocor(formula)) {
     trms <- terms_rw(formula)
