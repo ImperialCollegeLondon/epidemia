@@ -34,10 +34,10 @@ data {
 #include /data/data_model.stan
 #include /data/NKX.stan
 #include /data/data_glm.stan
+#include /data/data_ac.stan
 #include /data/hyperparameters.stan
 #include /data/glmer_stuff.stan
 #include /data/glmer_stuff2.stan
-#include /data/data_ac.stan
 }
 
 transformed data {
