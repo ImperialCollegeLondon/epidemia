@@ -31,17 +31,32 @@
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
 epiobs <- function(formula,
-                   family = c("poisson", "neg_binom"),
-                   link =  c("logit", "probit",
-                    "cauchit", "cloglog", "identity"),
+                   family = "neg_binom",
+                   link = "logit",
                    lag,
-                   center = F,
+                   center = FALSE,
                    prior = rstanarm::normal(scale = .1),
                    prior_intercept = rstanarm::normal(scale = .1),
                    prior_aux = rstanarm::exponential(autoscale = TRUE),
                    ...) {
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
+
+  ok_families <- c("poisson", "neg_binom")
+  if (!(family %in% ok_families)) {
+    stop(paste0("'family' must be either 'neg_binom' or 'poisson'"),
+      call. = FALSE
+    )
+  }
+
+  ok_links <- c("logit", "probit", "cauchit", "cloglog", "identity")
+  if (!(link %in% ok_links)) {
+    stop(paste0("Specified 'link' is not permitted. Please see 
+      documentation."),
+      call. = FALSE
+    )
+  }
+
   # lag <- check_sv(lag, name = "lag") no longer required to be simplex
   lag <- check_v(lag, name = "lag")
   if (any(lag > 1)) {
@@ -52,16 +67,22 @@ epiobs <- function(formula,
   # only supported prior family is normal. (will change in future)
   ok_dists <- c("normal")
   if (!(prior$dist %in% ok_dists)) {
-    stop("'prior' must be a call to rstanarm::normal")
+    stop("'prior' must be a call to rstanarm::normal",
+      call. = FALSE
+    )
   }
   if (!(prior_intercept$dist %in% ok_dists)) {
-    stop("'prior_intercept' must be a call to rstanarm::normal")
+    stop("'prior_intercept' must be a call to rstanarm::normal",
+      call. = FALSE
+    )
   }
 
   ok_aux_dists <- c("normal", "t", "cauchy", "exponential")
-  if (!(prior_aux$dist %in% ok_dists)) {
+  if (!(prior_aux$dist %in% ok_aux_dists)) {
     stop("'prior_aux' must be a call to either normal,
-     student_t, cauchy or exponential")
+     student_t, cauchy or exponential",
+      call. = FALSE
+    )
   }
 
   out <- loo::nlist(
