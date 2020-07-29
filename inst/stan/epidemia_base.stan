@@ -53,9 +53,16 @@ transformed parameters {
   vector<lower=0>[num_oaux] oaux = oaux_raw;
 
   // transform auxiliary parameters
-  oaux *= prior_scale_for_oaux;
-  oaux += prior_mean_for_oaux .* (prior_mean_for_oaux <= 2);
-
+  for (i in 1:num_oaux) {
+    if (prior_dist_for_oaux[i] > 0) {
+      if (prior_scale_for_oaux[i] > 0) {
+        oaux[i] *= prior_scale_for_oaux[i];
+      }
+      if (prior_dist_for_oaux[i] <= 2) {
+        oaux[i] += prior_mean_for_oaux[i];
+      }
+    }
+  }
 
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
