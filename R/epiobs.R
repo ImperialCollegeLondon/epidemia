@@ -24,7 +24,7 @@
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior
 #'  for the regression intercept, if one has been specified.
 #' @param prior_aux Specify the prior distribution for the auxiliary parameter
-#'  if it exists. Only used is family is negative binomial, in which case this
+#'  if it exists. Only used if family is negative binomial, in which case this
 #'  represents the prior on the reciprocal of the dispersion parameter. See
 #'  \code{\link[rstanarm]{stan_glm}} for more details.
 

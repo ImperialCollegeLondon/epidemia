@@ -15,7 +15,9 @@ standata_reg <- function(object, ...) {
   prior_dist <- prior_dist_for_intercept <- prior_mean <-
   prior_mean_for_intercept <- prior_scale <- prior_scale_for_intercept <-
   prior_autoscale <- prior_autoscale_for_intercept <- global_prior_scale <-
-  global_prior_df <- slab_df <- slab_scale <- NULL
+  global_prior_df <- slab_df <- slab_scale <- prior_dist_for_oaux <-
+  prior_mean_for_oaux <- prior_scale_for_oaux <- prior_df_for_oaux <-
+  prior_autoscale_for_oaux <- NULL
 
   # put used parts of object directly in the namespace
   nms <- c("formula", "x", "link", "center", "prior",
@@ -85,22 +87,19 @@ standata_reg <- function(object, ...) {
     assign(i, prior_intercept_stuff[[i]])
   }
 
-  prior_mean_for_phi <- prior_scale_for_phi <- NULL
-  if (inherits(object, "epiobs_")) { # response distribution
-    # currently assumes NB, may extend in future.  
-    prior_phi_stuff <- handle_glm_prior(
-      prior = object$prior_phi,
-      nvars = 1,
-      default_scale = 5,
-      link = "dummy",
-      ok_dists = loo::nlist("normal")
-    )
-  
-    names(prior_phi_stuff) <- paste0(names(prior_phi_stuff), "_for_phi")
-  
-    for (i in names(prior_phi_stuff)) {
-      assign(i, prior_phi_stuff[[i]])
-    }
+  if (inherits(object, "epiobs_")) { #response distribution
+    ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
+      prior_aux_stuff <- handle_glm_prior(
+          prior = object$prior_aux,
+          nvars = 1,
+          default_scale = 1,
+          link = NULL,
+          ok_dists = ok_aux_dists
+      )
+      # prior_{dist, mean, scale, df, dist_name, autoscale}_for_aux
+      names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_oaux")
+      for (i in names(prior_aux_stuff)) 
+        assign(i, prior_aux_stuff[[i]])
   }
 
   if (prior_dist > 0L && prior_autoscale) {
@@ -141,8 +140,10 @@ standata_reg <- function(object, ...) {
     global_prior_df, global_prior_scale, slab_df, slab_scale, # for hs priors
     prior_df_for_intercept = c(prior_df_for_intercept),
     num_normals = if (prior_dist == 7) as.integer(prior_df) else integer(0),
-    prior_mean_for_phi,
-    prior_scale_for_phi
+    prior_dist_for_oaux,
+    prior_mean_for_oaux,
+    prior_scale_for_oaux,
+    prior_df_for_oaux,
   )
 
   out <- c(out, autocor) # add data for autocorrelation terms
