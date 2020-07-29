@@ -15,7 +15,7 @@
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. In addition to the
 #'  \pkg{rstanarm} provided \link[rstanarm]{priors},
 #'         a \link[epidemia]{shifted_gamma} can be used. **Note:** If
-#'  \code{autoscale=TRUE} (Default) in the call to the prior distribution then
+#'  \code{autoscale=TRUE} in the call to the prior distribution then
 #'  automatic rescaling of the prior may take place.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for
 #'  the regression intercept (if it exists).

@@ -7,28 +7,37 @@
 #' the model assumptions please refer to the online vignettes.
 #'
 #' @param formula A formula defining the model for the observations.
+#' @param family A string representing the error distribution for the model.
+#'  Can be either "poisson" or "neg_binom".
+#' @param link A string representing the link function used to transform the
+#'  covariates. The linear predictor constructed from the covariates is
+#' transformed by the inverse link function, then multiplied by the weighted
+#' previous infections. This quantity represents the mean of the response
+#' distribution.
 #' @param lag A probability vector with the following interpretation.
 #' Conditional on an observation "event" (i.e. a single death or
 #' hospitalisation etc.), the nth element represents the probability that the
 #' individual was infected exactly n days prior to this.
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. **Note:**
-#'  If \code{autoscale=TRUE} (Default) in the call to the prior distribution
+#'  If \code{autoscale=TRUE} in the call to the prior distribution
 #'  then automatic rescaling of the prior may take place.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior
 #'  for the regression intercept, if one has been specified.
-#' @param prior_phi The prior distribution on \eqn{\phi}. This parameter is
-#'  described in the introductory vignette, and determined the variance of the
-#'  observed data around its mean. Must be a call to
-#' \code{\link[rstanarm]{normal}}, which is transformed to a half normal
-#'  distribution.
+#' @param prior_aux Specify the prior distribution for the auxiliary parameter
+#'  if it exists. Only used is family is negative binomial, in which case this
+#'  represents the prior on the reciprocal of the dispersion parameter. See
+#'  \code{\link[rstanarm]{stan_glm}} for more details.
+
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
 epiobs <- function(formula,
+                   family = "poisson",
+                   link = "logit",
                    lag,
                    center = F,
                    prior = rstanarm::normal(scale = .1),
                    prior_intercept = rstanarm::normal(scale = .1),
-                   prior_phi = rstanarm::normal(location = 0, scale = 5),
+                   prior_aux = rstanarm::normal(location = 0, scale = 5),
                    ...) {
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
@@ -53,13 +62,15 @@ epiobs <- function(formula,
   out <- loo::nlist(
     call,
     formula,
+    family,
+    link,
     lag,
     lagtype = "density",
     link = "logit",
     center,
     prior,
     prior_intercept,
-    prior_phi,
+    prior_aux,
     mfargs <- list(...)
   )
   class(out) <- "epiobs"
