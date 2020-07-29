@@ -31,13 +31,14 @@
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
 epiobs <- function(formula,
-                   family = "poisson",
-                   link = "logit",
+                   family = c("poisson", "neg_binom"),
+                   link =  c("logit", "probit",
+                    "cauchit", "cloglog", "identity"),
                    lag,
                    center = F,
                    prior = rstanarm::normal(scale = .1),
                    prior_intercept = rstanarm::normal(scale = .1),
-                   prior_aux = rstanarm::normal(location = 0, scale = 5),
+                   prior_aux = rstanarm::exponential(autoscale = TRUE),
                    ...) {
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
