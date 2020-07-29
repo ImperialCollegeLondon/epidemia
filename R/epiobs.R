@@ -30,6 +30,7 @@
 
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
+stop("'family' must be one of ", paste(ok_families, collapse=", "))
 epiobs <- function(formula,
                    family = "neg_binom",
                    link = "logit",
@@ -44,15 +45,14 @@ epiobs <- function(formula,
 
   ok_families <- c("poisson", "neg_binom")
   if (!(family %in% ok_families)) {
-    stop(paste0("'family' must be either 'neg_binom' or 'poisson'"),
+    stop("'family' must be one of ", paste(ok_families, collapse=", "),
       call. = FALSE
     )
   }
 
   ok_links <- c("logit", "probit", "cauchit", "cloglog", "identity")
   if (!(link %in% ok_links)) {
-    stop(paste0("Specified 'link' is not permitted. Please see 
-      documentation."),
+    stop("'link' must be one of ", paste(ok_links, collapse=", "),
       call. = FALSE
     )
   }
@@ -79,8 +79,7 @@ epiobs <- function(formula,
 
   ok_aux_dists <- c("normal", "t", "cauchy", "exponential")
   if (!(prior_aux$dist %in% ok_aux_dists)) {
-    stop("'prior_aux' must be a call to either normal,
-     student_t, cauchy or exponential",
+    stop("'prior_aux' must be one of ", paste(ok_aux_dists, collapse=", "),
       call. = FALSE
     )
   }

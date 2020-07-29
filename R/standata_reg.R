@@ -9,7 +9,7 @@ standata_reg <- function(object, ...) {
 
 
   # local bindings to satisfy R CMD Check
-  formula <- x <- link <- center <- prior <- prior_intercept <-
+  formula <- x <- family <- link <- center <- prior <- prior_intercept <-
   prior_covariance <- group <- has_intercept <- xtemp <- xbar <-
   prior_shape <- prior_shift <- prior_df <- prior_df_for_intercept <-
   prior_dist <- prior_dist_for_intercept <- prior_mean <-
@@ -20,11 +20,24 @@ standata_reg <- function(object, ...) {
   prior_autoscale_for_oaux <- NULL
 
   # put used parts of object directly in the namespace
-  nms <- c("formula", "x", "link", "center", "prior",
-  "prior_intercept", "prior_covariance", "group")
+  nms <- c("formula", "x", "family", "link", "center", "prior",
+  "prior_intercept", "prior_covariance", "prior_aux", "group")
 
   for(nm in nms)
     assign(nm, object[[nm]])
+
+
+  if (inherits(object, "epiobs_")) { # expect family and link
+    ok_families <- c("poisson", "neg_binom")
+    fam <- which(pmatch(ok_families, family, nomatch=0L) == 1L)
+    if (!length(fam)) {
+      stop("'family' must be one of ", paste(ok_families, collapse=", "))
+    }
+    ok_links <- c("logit", "probit", "cauchit", "cloglog", "identity")
+    link <- which(ok_links == link)
+    if (!length(link)) 
+      stop("'link' must be one of ", paste(ok_links, collapse = ", "))
+  }
 
   x <- just_fe(x)
 
@@ -88,9 +101,10 @@ standata_reg <- function(object, ...) {
   }
 
   if (inherits(object, "epiobs_")) { #response distribution
+    if (fam == 2) { # poisson has no auxiliary parameter
     ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
       prior_aux_stuff <- handle_glm_prior(
-          prior = object$prior_aux,
+          prior = prior_aux,
           nvars = 1,
           default_scale = 1,
           link = NULL,
@@ -98,8 +112,9 @@ standata_reg <- function(object, ...) {
       )
       # prior_{dist, mean, scale, df, dist_name, autoscale}_for_aux
       names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_oaux")
-      for (i in names(prior_aux_stuff)) 
+      for (i in names(prior_aux_stuff))
         assign(i, prior_aux_stuff[[i]])
+    }
   }
 
   if (prior_dist > 0L && prior_autoscale) {
@@ -125,6 +140,7 @@ standata_reg <- function(object, ...) {
     N = nrow(xtemp),
     K = ncol(xtemp),
     xbar = as.array(xbar),
+    family,
     link,
     has_intercept,
     prior_dist,
@@ -143,7 +159,7 @@ standata_reg <- function(object, ...) {
     prior_dist_for_oaux,
     prior_mean_for_oaux,
     prior_scale_for_oaux,
-    prior_df_for_oaux,
+    prior_df_for_oaux
   )
 
   out <- c(out, autocor) # add data for autocorrelation terms

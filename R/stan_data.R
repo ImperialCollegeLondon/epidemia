@@ -194,6 +194,11 @@ standata_obs <- function(obs, groups, nsim, begin) {
       reg,
       function(x) x$prior_scale_for_intercept
     ))
+
+    # auxiliary params
+    has_aux <- sapply(reg, function(x) !is.null(x$))
+
+
     prior_mean_for_phi <- array(sapply(
       reg,
       function(x) x$prior_mean_for_phi
