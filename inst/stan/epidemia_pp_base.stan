@@ -24,6 +24,7 @@ for(r in 1:R)
 
 parameters {
   vector<lower=0>[M+1] y;
+  vector<lower=0> oaux[num_oaux+1];
   real<lower=0> phi[R+1];
   vector[N] eta;
   vector[N_obs] oeta;

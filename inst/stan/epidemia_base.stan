@@ -30,6 +30,7 @@ functions {
 data {
 #include /data/data_indices.stan
 #include /data/data_obs.stan
+#include /data/data_obs_mm.stan
 #include /data/data_model.stan
 #include /data/NKX.stan
 #include /data/data_glm.stan

@@ -18,3 +18,9 @@ vector[K_all] oprior_mean;
 vector<lower=0>[K_all] oprior_scale;
 vector[num_ointercepts] oprior_mean_for_intercept;
 vector<lower=0>[num_ointercepts] oprior_scale_for_intercept;
+
+// and also for auxiliary variables
+int<lower=0, upper=3> prior_dist_for_oaux[num_oaux];
+vector[num_oaux] prior_mean_for_oaux;
+vector<lower=0>[num_oaux] prior_scale_for_oaux;
+vector<lower=0>[num_oaux] prior_df_for_oaux;
