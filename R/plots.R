@@ -44,23 +44,23 @@
 #' args$formula <- R(country,date) ~  1 + lockdown
 #' args$prior <- rstanarm::normal(location=0,scale=.5)
 #' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
-#' 
+#'
 #' ## run sampling
 #' fit <- do.call("epim", args)
-#' 
+#'
 #' ## make plots
 #' plot_rt(fit) # default, plots all groups and dates
 #' plot_rt(fit, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
 #' plot_rt(fit, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20")) 
-#' plot_rt(fit, 
-#'         dates=c("2020-03-20", "2020-04-20"), 
+#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20"))
+#' plot_rt(fit,
+#'         dates=c("2020-03-20", "2020-04-20"),
 #'         date_breaks="1 day") # ticks every day
-#' plot_rt(fit, 
-#'         dates=c("2020-03-20", "2020-04-20"), 
+#' plot_rt(fit,
+#'         dates=c("2020-03-20", "2020-04-20"),
 #'         date_breaks="1 week") # ticks every week
-#' plot_rt(fit, 
-#'         dates=c("2020-20-03", "2020-20-04"), 
+#' plot_rt(fit,
+#'         dates=c("2020-20-03", "2020-20-04"),
 #'         date_format="%Y-%d-%m") # (different date format)
 #' }
 #' @export
@@ -83,7 +83,7 @@ plot_rt.epimodel <-
   levels <- .check_levels(levels)
   
   rt <- posterior_rt(object=object, ...)
-
+  
   # check smoothing input
   min.dates <- min(sapply(rt, function(x) length(x$date)))
   if (smooth >= min.dates) {
@@ -229,11 +229,6 @@ plot_rt.epimodel <-
                                                                                 function(y) zoo::rollmean(y, smooth, fill=NA)))))
     rt <- lapply(rt.smoothed, function(x) x[complete.cases(x),])
   }
-
-  
-  # quantiles by group
-  qtl <- lapply(rt, function(.rt) .get_quantiles(.rt, levels))
-  qtl <- data.table::rbindlist(qtl, idcol="group")
 
   # date subsetting if required
   dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
@@ -593,6 +588,75 @@ get_quantiles <- function(object, levels) {
   return(out)
 }
 
+# smooths observations across dates
+#
+# @param object Result of a posterior_ function
+# @param smooth Periods to smooth for
+smooth_obs <- function(object, smooth) {
+  if (smooth == 1) {
+    return(object)
+  }
+
+  df <- as.data.frame(t(object$draws))
+  dfs <- split(df, object$group)
+  dfs <- lapply(
+    dfs,
+    function(x) {
+      apply(
+        x,
+        2,
+        function(x) {
+          zoo::rollmean(
+            x,
+            smooth,
+            fill = NA
+          )
+        }
+      )
+    }
+  )
+  df <- do.call(rbind, dfs)
+  w <- complete.cases(df)
+  object$draws <- t(df)
+  return(sub_(object, w))
+}
+
+# subsets observations for a given
+# a logical vector
+#
+# @param object Result of posterior_ function
+# @param w A logical vector
+sub_ <- function(object, w) {
+  if (!is.logical(w)) {
+    stop("bug found. 'w' should be logical")
+  }
+  object$draws <- object$draws[w, ]
+  object$time <- object$time[w]
+  object$group <- object$group[w]
+  return(object)
+}
+
+# subsets posterior data for a given
+# set of groups
+#
+# @param object output from posterior_rt or
+# posterior_predict
+# @param group A character vector specifying
+# groups to plot
+gr_subset <- function(object, group) {
+  if (is.null(group)) {
+    return(object)
+  }
+  w <- !(group %in% object$group)
+  if (any(w)) {
+    stop(paste0(
+      "group(s) ", group[w],
+      " not found."
+    ), call. = FALSE)
+  }
+  w <- object$group %in% group
+  return(sub_(object, w))
+}
 
 
 
