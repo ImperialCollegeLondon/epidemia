@@ -86,23 +86,12 @@ plot_rt.epimodel <-
     rt <- gr_subset(rt, group)
     rt <- smooth_obs(rt, smooth)
 
-    # date subsetting if required
-    dates <- check_dates(
+    qtl <- get_quantiles(
+      rt,
+      levels,
       dates,
-      date_format,
-      max(qtl$date),
-      min(qtl$date)
+      date_format
     )
-    if (!is.null(dates)) {
-      date.range <- seq(dates[[1]], dates[[2]], by = "day")
-      qtl <- qtl[qtl$date %in% date.range, ]
-      if (nrow(qtl) == 0) {
-        stop("date subsetting removed all data")
-      }
-    }
-
-    qtl <- get_quantiles(rt, levels)
-
     p <- base_plot(qtl, date_format)
     return(p)
   }
@@ -114,10 +103,10 @@ cumul <- function(df) {
 }
 
 # Compute quantiles for all levels
-# 
+#
 # @param object Result of a posterior_ function
 # @param levels A numeric vector defining levels
-get_quantiles <- function(object, levels) {
+get_quantiles <- function(object, levels, dates, date_format) {
   levels <- levels[order(levels)]
   f <- function(level) {
     res <- apply(
@@ -138,8 +127,31 @@ get_quantiles <- function(object, levels) {
   }
   out <- lapply(levels, f)
   out <- do.call(rbind, out)
-  out$tag <- factor(out$tag, ordered=T, levels=rev(levels))
+  out$tag <- factor(out$tag, ordered = T, levels = rev(levels))
+  out <- subset_for_dates(
+    out,
+    dates,
+    date_format
+  )
   return(out)
+}
+
+
+subset_for_dates <- function(qtl, dates, date_format) {
+  dates <- check_dates(
+    dates,
+    date_format,
+    max(qtl$date),
+    min(qtl$date)
+  )
+  if (!is.null(dates)) {
+    date_range <- seq(dates[1], dates[2], by = "day")
+    qtl <- qtl[qtl$date %in% date_range, ]
+    if (nrow(qtl) == 0) {
+      stop("date subsetting removed all data")
+    }
+  }
+  return(qtl)
 }
 
 # smooths observations across dates
@@ -212,8 +224,6 @@ gr_subset <- function(object, group) {
   w <- object$group %in% group
   return(sub_(object, w))
 }
-
-
 
 # makes sure all levels are between 0 and 100 (inclusive)
 check_levels <- function(levels) {
