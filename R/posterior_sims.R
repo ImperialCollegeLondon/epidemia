@@ -51,9 +51,7 @@ posterior_sims <- function(object,
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)
   oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
-
   oeta <- sweep(oeta, 2, standata$offset, "+")
-
   colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
   colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
 
@@ -66,7 +64,6 @@ posterior_sims <- function(object,
   )
 
   stanmat <- cbind(stanmat, eta, oeta)
-
 
   sims <- rstan::gqs(stanmodels$epidemia_pp_base,
     data = standata,
@@ -90,6 +87,7 @@ posterior_sims <- function(object,
 
   # add posterior predictive
   n <- standata$oN[1:standata$R]
+
   out <- c(out, list(
     obs = parse_obs(sims, "obs", n, obs),
     E_obs = parse_obs(sims, "E_obs", n, obs)
@@ -108,10 +106,9 @@ posterior_sims <- function(object,
 # @param obs List of epiobs_ objects
 parse_obs <- function(sims, nme, n, obs) {
   draws <- rstan::extract(sims, nme)[[1]]
-
   # split draws into components for each type
   i <- lapply(n, function(x) 1:x)
-  i <- Map(function(x, y) x + y, i, cumsum(n) - n[1])
+  i <- Map(function(x, y) x + y, i, head(c(0,cumsum(n)),-1))
   draws <- lapply(i, function(x) draws[, x])
 
   f <- function(x, y) {
