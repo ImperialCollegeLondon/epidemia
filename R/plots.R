@@ -92,14 +92,137 @@ plot_rt.epimodel <-
       dates,
       date_format
     )
-    p <- base_plot(qtl, date_format)
+    p <- base_plot(qtl, log, date_breaks)
     return(p)
   }
-# transform dataframe into cumulatives
-# @param df Dataframe giving series draws.
-cumul <- function(df) {
-  df[, -1] <- apply(df[, -1], 2, cumsum)
-  return(df)
+
+
+#' Plotting the posterior predictive distribution
+#'
+#' Plots credible intervals for the observed data under the posterior predictive distribution.
+#' Plots for a specific observation type. 
+#' The user can control the levels of the intervals and the plotted group(s).
+#' This is a generic function.
+#' 
+#' @inherit plot_rt params return
+#' @param type the name of the observations to plot. This should match one of the names
+#' of the \code{obs} argument to \code{epim}.
+#' @param posterior_mean If true, the credible intervals are plotted for the posterior mean. Defaults to FALSE, 
+#'  in which case the posterior predictive is plotted.
+#' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
+#' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
+#' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include \code{newdata}, which allows 
+#'  predictions or counterfactuals.
+#' @examples
+#' \dontrun{
+#' ## load required data
+#' library(epidemia)
+#' data("EuropeCovid")
+#' ## setup sampling
+#' args <- EuropeCovid
+#' args$algorithm <- "sampling"
+#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$group_subset <- c("Italy")
+#' args$formula <- R(country,date) ~  1 + lockdown
+#' args$prior <- rstanarm::normal(location=0,scale=.5)
+#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+#' 
+#' ## run sampling
+#' fit <- do.call("epim", args)
+#' 
+#' ## make plots
+#' plot_obs(fit, type="deaths") # default, plots all groups and dates
+#' plot_obs(fit, type="deaths", 
+#'               dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-03-20", "2020-04-20"), 
+#'          date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-03-20", "2020-04-20"), 
+#'          date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_obs(fit, 
+#'          type="deaths", 
+#'          dates=c("2020-20-03", "2020-20-04"), 
+#'          date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' }
+#' @export
+plot_obs <- function(object, ...) UseMethod("plot_obs", object)
+
+plot_rt <- function(object, ...) UseMethod("plot_rt", object)
+
+#' @rdname plot_rt
+#' @export
+plot_obs.epimodel <-
+  function(object,
+           type,
+           posterior_mean = FALSE,
+           group = NULL,
+           dates = NULL,
+           date_breaks = "2 weeks",
+           date_format = "%Y-%m-%d",
+           cumulative = FALSE,
+           levels = c(50, 95),
+           log = FALSE,
+           ...) {
+    levels <- check_levels(levels)
+
+    alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
+    if (!(type %in% alltypes)) {
+      stop(paste0("obs does not contain any observations
+    for type '", type, "'"), call. = FALSE)
+    }
+
+    obs <- posterior_predict(
+      object = object,
+      types = type,
+      posterior_mean = posterior_mean,
+      ...
+    )
+
+    return(obs)
+
+    if (cumulative) {
+      obs <- lapply(obs, cumul)
+    }
+
+    # transform data
+    obs <- gr_subset(obs, group)
+
+    qtl <- get_quantiles(
+      obs,
+      levels,
+      dates,
+      date_format
+    )
+    p <- base_plot(qtl, log, date_breaks)
+    return(p)
+  }
+
+
+
+# ---- internal -----
+
+# transform into cumulatives
+# @param object Result of posterior_ function
+cumul <- function(object) {
+  dfs <- split(
+    as.data.frame(t(object$draws)),
+    object$group
+  )
+  dfs <- lapply(
+    dfs,
+    function(x) apply(x, 1, cumsum)
+  )
+  object$draws <- do.call(cbind, dfs)
+  return(object)
 }
 
 # Compute quantiles for all levels
@@ -127,7 +250,7 @@ get_quantiles <- function(object, levels, dates, date_format) {
   }
   out <- lapply(levels, f)
   out <- do.call(rbind, out)
-  out$tag <- factor(out$tag, ordered = T, levels = rev(levels))
+  out$tag <- factor(out$tag, ordered = T, levels = rev(levels(out$tag)))
   out <- subset_for_dates(
     out,
     dates,
@@ -135,7 +258,6 @@ get_quantiles <- function(object, levels, dates, date_format) {
   )
   return(out)
 }
-
 
 subset_for_dates <- function(qtl, dates, date_format) {
   dates <- check_dates(
@@ -159,7 +281,7 @@ subset_for_dates <- function(qtl, dates, date_format) {
 # @param object Result of a posterior_ function
 # @param smooth Periods to smooth for
 smooth_obs <- function(object, smooth) {
-  smooth <- check_smooth(rt, smooth)
+  smooth <- check_smooth(object, smooth)
   if (smooth == 1) {
     return(object)
   }
@@ -246,10 +368,10 @@ check_levels <- function(levels) {
 # @param smooth 'smooth' argument to plotting 
 # function
 check_smooth <- function(object, smooth) {
-  min_dates <- min(table(object$group))
-  if (smooth >= min_dates) {
+  min_date <- min(table(object$group))
+  if (smooth >= min_date) {
     warning(paste0("smooth=", smooth, " is too large 
-      (one group has ", min_dates, " unique dates)
+      (one group has ", min_date, " unique dates)
        - no smoothing will be performed"),
             call. = FALSE
     )
@@ -298,7 +420,7 @@ check_dates <- function(dates, date_format, min_date, max_date) {
 #
 # @param qtl dataframe giving quantiles
 # @param date_breaks Determines breaks uses on x-axis
-base_plot <- function(qtl, date_breaks) {
+base_plot <- function(qtl, log, date_breaks) {
 
   p <- ggplot2::ggplot(
     qtl,
@@ -311,7 +433,7 @@ base_plot <- function(qtl, date_breaks) {
     )
   ) +
     ggplot2::geom_ribbon(alpha = 1) +
-    scale_fill_brewer() +
+    scale_fill_brewer(palette="Greens") +
     ggplot2::xlab("") +
     ggplot2::geom_hline(
       yintercept = 1,
