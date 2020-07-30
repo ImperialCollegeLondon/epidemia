@@ -454,27 +454,30 @@ cumul <- function(df) {
 
 # Internal
 
-# df A data frame (element of list returned from get_obs)
-.get_quantiles <- function(df, levels) {
-  dates <- df$date
-  # remove date column and transpose
-  w <- !(colnames(df) %in% "date")
-  df <- t(df[,w])
-  
+get_quantiles <- function(object, levels) {
   levels <- levels[order(levels)]
-  nms <- paste0(levels,"%")
-  
-  qtl <- data.frame(date = rep(dates, length(nms)))
-  tag <- sapply(nms, function(x) rep(x, ncol(df)))
-  qtl$tag <- as.character(matrix(tag, ncol=1, byrow=F))
-  
-  # compute quantiles
-  f <- function(x) quantile(x, 0.5 - levels/200)
-  qtl$low = as.numeric(matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F))
-  f <- function(x) quantile(x, 0.5 + levels/200)
-  qtl$up <- as.numeric(matrix(t(apply(df, 2, FUN=f)), ncol=1, byrow = F))
-  return(qtl)
+  f <- function(level) {
+    res <- apply(
+      object$draws, 
+      2, 
+      function(x) quantile(x, 0.5 + level * c(-1,1)/200)
+    )
+    return(
+      data.frame(
+        date = object$time, 
+        lower = res[1,], 
+        upper= res[2,], 
+        group= object$group, 
+        tag = paste0(level,"%"),
+        level = level
+      ))
+  }
+  out <- lapply(levels, f)
+  return(do.call(rbind,out))
 }
+
+
+
 
 # Internal
 

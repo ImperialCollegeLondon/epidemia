@@ -1,4 +1,3 @@
-
 # Parses arguments into complete list of objects ready to pass as data
 # arguments into stanmodels::epidemia_base
 #
