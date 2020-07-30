@@ -18,7 +18,7 @@
 #' @param rt An object of class \code{\link[epidemia]{epirt}}. This specifies
 #'  the model for the time-varying reproduction number.
 #' #' @param obs A list of \code{\link[epidemia]{epiobs}} objects. Each
-#'  element defines a model for the specified observation. 
+#'  element defines a model for the specified observation.
 #' @param data A dataframe containing all data required to fit the model.
 #'  See [lm].
 #' @param pops  A two column dataframe giving the total population of each
@@ -35,7 +35,7 @@
 #'  \code{data} argument.
 #' @param prior_tau The prior for \eqn{\tau}.This parameter is described in the
 #'  introductory vignette, and controls the variability in the number of
-#'  seeded infections at the beginning of the epidemic. Must be a call to
+#'  seeded infections at  the beginning of the epidemic. Must be a call to
 #'  \code{\link[rstanarm]{exponential}}.
 #' @param prior_PD Same as in \code{\link[rstanarm]{stan_glm}}. If \code{TRUE},
 #'  samples parameters from the prior disribution.
@@ -86,8 +86,8 @@ epim <- function(rt,
 
   call    <- match.call(expand.dots = TRUE)
   rt_orig <- check_rt(rt)
-  obs_orig <- check_obs(rt, obs)
   data    <- check_data(formula(rt), data, group_subset)
+  obs_orig <- check_obs(rt, obs)
   groups  <- levels(data$group)
   pops    <- check_pops(pops, groups)
   si      <- check_sv(si, "si")
@@ -125,6 +125,7 @@ epim <- function(rt,
     args$object <- stanmodels$epidemia_base
     args$data <- sdat_init
     prefit <- do.call("sampling", args)
+    
 
     # function defining parameter initialisation
     initf <- function() {

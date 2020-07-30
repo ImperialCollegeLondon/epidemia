@@ -5,7 +5,7 @@
         i += oN[r];
     }
 }
-
+ 
 {  // compute expected values of the observations
 for (i in 1:N_obs) {
     int m = obs_group[i];

@@ -213,7 +213,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     }
 
     has_offset <- array(sapply(obs, function(x) x$has_offset * 1))
-    offset_ <- array(sapply(obs, function(x) x$offset))
+    offset_ <- array(unlist(lapply(obs, function(x) x$offset)))
   }
   else { # set to zero values
     N_obs <- K_all <- num_ointercepts <-  0
