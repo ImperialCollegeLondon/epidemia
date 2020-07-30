@@ -187,8 +187,6 @@ plot_obs.epimodel <-
       ...
     )
 
-    return(obs)
-
     if (cumulative) {
       obs <- cumul(obs)
     }
@@ -219,9 +217,9 @@ cumul <- function(object) {
   )
   dfs <- lapply(
     dfs,
-    function(x) apply(x, 2, cumsum)
+    function(x) t(apply(x, 2, cumsum))
   )
-  object$draws <- do.call(cbind, t(dfs))
+  object$draws <- do.call(cbind, dfs)
   return(object)
 }
 
