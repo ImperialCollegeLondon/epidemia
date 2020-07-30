@@ -561,8 +561,10 @@ cumul <- function(df) {
 }
 
 
-# Internal
-
+# Compute quantiles for all levels
+# 
+# @param object Result of a posterior_ function
+# @param levels A numeric vector defining levels
 get_quantiles <- function(object, levels) {
   levels <- levels[order(levels)]
   f <- function(level) {
@@ -661,74 +663,139 @@ gr_subset <- function(object, group) {
 
 
 # Internal
-
 # makes sure all levels are between 0 and 100 (inclusive)
-# also sorts levels so colour scheme makes sense
-.check_levels <- function(levels) {
-  if(length(levels)==0) {
-    warning("no levels provided, will use default credible intervals (50% and 95%)", call. = FALSE)
+check_levels <- function(levels) {
+  if (length(levels) == 0) {
+    warning("no levels provided, will use 
+    default credible intervals (50% and 95%)", call. = FALSE)
     return(c(50, 95))
   }
-  if(any(!dplyr::between(levels, 0, 100)))
-    stop("all levels must be between 0 and 100 (inclusive)", call. = FALSE)
+  if (any(!dplyr::between(levels, 0, 100))) {
+    stop("all levels must be between 0
+     and 100 (inclusive)", call. = FALSE)
+  }
   return(sort(levels))
 }
 
 # Internal
 
 # checks date argument. returns NULL if dates are invalid
-.check_dates <- function(dates, date_format, max_date, min_date) {
-  if(!is.null(dates)) {
-    
-    # check two dates are provided (min, max)
-    if(length(dates)==2) {
-      
-      # if either is NA then this means we want to plot the whole
-      # range in that direction, so replace with max or min as 
-      # appropriate
-      
-      if(is.character(dates)) {
-        if(is.na(dates[[1]]))
-          dates[[1]] <- as.character(min_date) # or date is coerced to numeric
-        if(is.na(dates[[2]]))
+check_dates <- function(dates,
+                        date_format,
+                        max_date,
+                        min_date) {
+  if (!is.null(dates)) {
+    if (length(dates) == 2) {
+      if (is.character(dates)) {
+        if (is.na(dates[[1]])) {
+          dates[[1]] <- as.character(min_date)
+        } # or date is coerced to numeric
+        if (is.na(dates[[2]])) {
           dates[[2]] <- as.character(max_date)
-      } else if(lubridate::is.Date(dates)) {
-        if(is.na(dates[[1]]))
-          dates[[1]] <- as.Date(min_date, format=date_format) # or date is coerced to numeric
-        if(is.na(dates[[2]]))
-          dates[[2]] <- as.Date(max_date, format=date_format)
+        }
+      } else if (lubridate::is.Date(dates)) {
+        if (is.na(dates[[1]])) {
+          dates[[1]] <- as.Date(min_date, format = date_format)
+        }
+        if (is.na(dates[[2]])) {
+          dates[[2]] <- as.Date(max_date, format = date_format)
+        }
       } else {
-        warning(sprintf("dates have invalid value %s (class %s). This may be due to passing NA values and Date objects in the same vector. Resolve by coercing NA using as.Date(). The entire date range will be plotted.",
-                        paste(dates, collapse=", "), class(dates)),
-                call. = FALSE)
+        warning(sprintf(
+          "dates have invalid value %s (class %s). This may
+         be due to passing NA values and Date objects in the same vector.
+          Resolve by coercing NA using as.Date().
+           The entire date range will be plotted.",
+          paste(dates, collapse = ", "), class(dates)
+        ),
+        call. = FALSE
+        )
         return(NULL)
       }
-      
+
       # check no NAs introduced by coercion to date
-      if(!any(is.na(as.Date(dates, format=date_format)))) {
-        dates <- as.Date(dates, format=date_format)
-        
+      if (!any(is.na(as.Date(dates, format = date_format)))) {
+        dates <- as.Date(dates, format = date_format)
+
         # check start date > end date
-        if(dates[[1]]>dates[[2]]) {
-          warning("start of date range is before end - reversing dates", call. = FALSE)
+        if (dates[[1]] > dates[[2]]) {
+          warning("start of date range is before end -
+           reversing dates", call. = FALSE)
           return(rev(dates))
-        } else if (dates[[1]]==dates[[2]]) {
-          warning("dates must be different - plotting the entire range", call. = FALSE)
+        } else if (dates[[1]] == dates[[2]]) {
+          warning("dates must be different -
+           plotting the entire range", call. = FALSE)
           return(NULL)
-        } else return(dates)
-        
+        } else {
+          return(dates)
+        }
       } else {
-        warning(paste0("Could not coerce ",
-                       paste0(dates[which(is.na(as.Date(dates, format=date_format)))], collapse=", "),
-                       " to date with specified format - plotting the enire date range"),
-                call. = FALSE)
+        warning(paste0(
+          "Could not coerce ",
+          paste0(dates[which(is.na(as.Date(dates,
+            format = date_format
+          )))], collapse = ", "),
+          " to date with specified format
+                        - plotting the enire date range"
+        ),
+        call. = FALSE
+        )
         return(NULL)
       }
     } else {
-      warning("dates should have format (min date, max date) - plotting the entire date range", call. = FALSE)
+      warning("dates should have format (min date, max date) -
+       plotting the entire date range", call. = FALSE)
       return(NULL)
     }
-  } else return(dates)
+  } else {
+    return(dates)
+  }
+}
+
+# Basic ggplot. Plotting functions add to this
+#
+# @param qtl dataframe giving quantiles
+# @param date_breaks Determines breaks uses on x-axis
+base_plot <- function(qtl, date_breaks, ) {
+
+  p <- ggplot2::ggplot(
+    qtl,
+    ggplot2::aes_string(
+      x = "date",
+      ymin = "lower",
+      ymax = "upper",
+      group = "tag",
+      fill = "tag"
+    )
+  ) +
+    ggplot2::geom_ribbon(alpha = 1) +
+    scale_fill_brewer() +
+    ggplot2::xlab("") +
+    ggplot2::geom_hline(
+      yintercept = 1,
+      color = "black",
+      size = 0.7
+    ) +
+    ggplot2::scale_x_date(
+      date_breaks = date_breaks,
+      labels = scales::date_format("%e %b")
+    ) +
+    ggplot2::scale_y_continuous(
+      trans = ifelse(log, "log10", "identity"),
+      limits = c(ifelse(log, NA, 0), NA)
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(
+        angle = 45,
+        hjust = 1
+      ),
+      axis.text = ggplot2::element_text(size = 12),
+      axis.title = ggplot2::element_text(size = 12)
+    ) +
+    ggplot2::theme(legend.position = "right") +
+    ggplot2::facet_wrap(~group)
+  return(p)
 }
 
 #' @importFrom magrittr %>%
