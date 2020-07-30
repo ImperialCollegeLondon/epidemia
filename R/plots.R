@@ -190,7 +190,7 @@ plot_obs.epimodel <-
     return(obs)
 
     if (cumulative) {
-      obs <- lapply(obs, cumul)
+      obs <- cumul(obs)
     }
 
     # transform data
@@ -219,11 +219,12 @@ cumul <- function(object) {
   )
   dfs <- lapply(
     dfs,
-    function(x) apply(x, 1, cumsum)
+    function(x) apply(x, 2, cumsum)
   )
-  object$draws <- do.call(cbind, dfs)
+  object$draws <- do.call(cbind, t(dfs))
   return(object)
 }
+
 
 # Compute quantiles for all levels
 #
