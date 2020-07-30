@@ -66,6 +66,120 @@
 #' @export
 plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 
+
+#' @rdname plot_rt
+#' @export
+plot_rt.epimodel <-
+  function(object,
+           group = NULL,
+           dates = NULL,
+           date_breaks = "2 weeks",
+           date_format = "%Y-%m-%d",
+           levels = c(50, 95),
+           log = FALSE,
+           smooth = 1,
+           ...) {
+
+  levels <- .check_levels(levels)
+  
+  rt <- posterior_rt(object=object, ...)
+
+  # check smoothing input
+  min.dates <- min(sapply(rt, function(x) length(x$date)))
+  if (smooth >= min.dates) {
+    warning(paste0("smooth=", smooth, " is too large 
+      (one group has ", min.dates, " unique dates)
+       - no smoothing will be performed"),
+      call. = FALSE
+    )
+    smooth <- 1
+  } else if (smooth <= 0 | smooth %% 1 != 0) {
+    warning("smooth must be a positive integer -
+       no smoothing will be performed", call. = FALSE)
+    smooth <- 1
+  }
+  
+  # subset the groups
+  if (!is.null(group)) {
+    w <- !(group %in% levels(rt$group))
+    if (any(w))
+      stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
+    rt <- rt[group]
+  }
+
+  # do the smoothing
+  if(smooth > 1) {
+    # remove date, smooth samples then reattach dates
+    rt.smoothed <- lapply(rt,
+                          function(x) as.data.frame(cbind(date=x["date"], apply(x %>% dplyr::select(-date), 2,
+                                                                                function(y) zoo::rollmean(y, smooth, fill=NA)))))
+    rt <- lapply(rt.smoothed, function(x) x[complete.cases(x),])
+  }
+
+  # date subsetting if required
+  dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
+  if(!is.null(dates)) {
+    date.range <- seq(dates[[1]], dates[[2]], by="day")
+    qtl <- qtl[qtl$date %in% date.range,]
+    if(nrow(qtl)==0)
+      stop("date subsetting removed all data")
+  }
+  
+  if(smooth > 1)
+    ylab <- bquote("smoothed "~R[t]~" ("~.(smooth)~" day window)")
+  else
+    ylab <- expression(R[t])
+
+  qtl <- get_quantiles(rt, levels)
+
+  p <- ggplot2::ggplot(
+    qtl,
+    ggplot2::aes_string(
+      x = "date",
+      ymin = "lower",
+      ymax = "upper",
+      group = "tag",
+      fill = "tag"
+    )
+  ) +
+    ggplot2::geom_ribbon(alpha = 1) +
+    scale_fill_brewer() +
+    ggplot2::xlab("") +
+    ggplot2::ylab(TeX("$R_t$")) +
+    ggplot2::geom_hline(
+      yintercept = 1,
+      color = "black",
+      size = 0.7
+    ) +
+    ggplot2::scale_x_date(
+      date_breaks = date_breaks,
+      labels = scales::date_format("%e %b")
+    ) +
+    ggplot2::scale_y_continuous(
+      trans = ifelse(log, "log10", "identity"),
+      limits = c(ifelse(log, NA, 0), NA)
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(
+        angle = 45,
+        hjust = 1
+      ),
+      axis.text = ggplot2::element_text(size = 12),
+      axis.title = ggplot2::element_text(size = 12)
+    ) +
+    ggplot2::theme(legend.position = "right") +
+    ggplot2::facet_wrap(~group)
+
+  # make interactive with plotly
+  p <- ggplotly(p) %>% config(mathjax = "cdn")
+
+  return(p)
+}
+
+
+
+
 #' @rdname plot_rt
 #' @export
 plot_rt.epimodel <-
@@ -458,22 +572,25 @@ get_quantiles <- function(object, levels) {
   levels <- levels[order(levels)]
   f <- function(level) {
     res <- apply(
-      object$draws, 
-      2, 
-      function(x) quantile(x, 0.5 + level * c(-1,1)/200)
+      object$draws,
+      2,
+      function(x) quantile(x, 0.5 + level * c(-1, 1) / 200)
     )
     return(
       data.frame(
-        date = object$time, 
-        lower = res[1,], 
-        upper= res[2,], 
-        group= object$group, 
-        tag = paste0(level,"%"),
+        date = object$time,
+        lower = res[1, ],
+        upper = res[2, ],
+        group = object$group,
+        tag = paste0(level, "%"),
         level = level
-      ))
+      )
+    )
   }
   out <- lapply(levels, f)
-  return(do.call(rbind,out))
+  out <- do.call(rbind, out)
+  out$tag <- factor(out$tag, ordered=T, levels=rev(levels))
+  return(out)
 }
 
 
