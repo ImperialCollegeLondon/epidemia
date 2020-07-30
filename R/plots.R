@@ -187,12 +187,23 @@ plot_obs.epimodel <-
       ...
     )
 
-    if (cumulative) {
-      obs <- cumul(obs)
-    }
+    df <- na.omit(object$data[, c("group", "date", type)])
+    names(df)[3] <- "obs"
 
     # transform data
     obs <- gr_subset(obs, group)
+    # also subset the true data
+    group <- group %ORifNULL% levels(obs$group)
+    w <- df$group %in% group
+    df <- df[df$group %in% group, ]
+
+    if (cumulative) {
+      obs <- cumul(obs)
+      df <- df %>%
+        dplyr::group_by(group) %>%
+        dplyr::mutate(obs = cumsum(obs))
+      df <- as.data.frame(df)
+    }
 
     qtl <- get_quantiles(
       obs,
@@ -200,7 +211,17 @@ plot_obs.epimodel <-
       dates,
       date_format
     )
+
     p <- base_plot(qtl, log, date_breaks)
+
+    p <- p + ggplot2::geom_bar(
+      data = df,
+      ggplot2::aes_string(x = "date", y = "obs"),
+      fill = "coral4",
+      stat = "identity",
+      alpha = 0.5
+    )
+
     return(p)
   }
 
@@ -421,17 +442,15 @@ check_dates <- function(dates, date_format, min_date, max_date) {
 # @param date_breaks Determines breaks uses on x-axis
 base_plot <- function(qtl, log, date_breaks) {
 
-  p <- ggplot2::ggplot(
-    qtl,
-    ggplot2::aes_string(
+  p <- ggplot2::ggplot(qtl) +
+    ggplot2::geom_ribbon(alpha = 1,
+        ggplot2::aes_string(
       x = "date",
       ymin = "lower",
       ymax = "upper",
       group = "tag",
       fill = "tag"
-    )
-  ) +
-    ggplot2::geom_ribbon(alpha = 1) +
+    )) +
     scale_fill_brewer(palette="Greens") +
     ggplot2::xlab("") +
     ggplot2::geom_hline(
