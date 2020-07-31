@@ -23,6 +23,8 @@
 #' Logical, default is \code{FALSE}.
 #' @param smooth integer specifying the window used to smooth the Rt values.
 #'  Default is 1 (no smoothing).
+#' @param inter If TRUE, wraps the ggplot object into a plotly object, for
+#'  interactive graphing.
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}.
 #'  Examples include \code{newdata}, which allows predictions or
 #'  counterfactuals. \code{adjusted=FALSE} prevents application of
@@ -74,9 +76,10 @@ plot_rt.epimodel <-
            dates = NULL,
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
-           levels = c(50, 95),
+           levels = c(20, 50, 95),
            log = FALSE,
            smooth = 1,
+           inter = FALSE
            ...) {
     levels <- check_levels(levels)
 
@@ -93,6 +96,25 @@ plot_rt.epimodel <-
       date_format
     )
     p <- base_plot(qtl, log, date_breaks)
+
+    p <- p + ggplot2::scale_fill_manual(
+      name = "CI", 
+      labels = paste0(rev(levels),"%"), 
+      values = ggplot2::alpha("seagreen", levels/100)
+    )
+
+    p <- p + ggplot2::geom_hline(
+      yintercept = 1,
+      color = "black",
+      size = 0.7
+    )
+
+    if (inter) {
+      p <- p + ggplot2::ylab(TeX("$R_t$"))
+      p <- plotly::ggplotly(p) %>% config(mathjax = "cdn")
+    } else {
+      p <- p + ggplot2::ylab(expression(R[t]))
+    }
     return(p)
   }
 
@@ -111,6 +133,8 @@ plot_rt.epimodel <-
 #'  in which case the posterior predictive is plotted.
 #' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
 #' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
+#' @param inter If TRUE, wraps the ggplot object into a plotly object, for
+#'  interactive graphing.
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
 #' @examples
@@ -156,8 +180,6 @@ plot_rt.epimodel <-
 #' @export
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
-plot_rt <- function(object, ...) UseMethod("plot_rt", object)
-
 #' @rdname plot_rt
 #' @export
 plot_obs.epimodel <-
@@ -169,8 +191,9 @@ plot_obs.epimodel <-
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
            cumulative = FALSE,
-           levels = c(50, 95),
+           levels = c(20, 50, 95),
            log = FALSE,
+           inter = FALSE,
            ...) {
     levels <- check_levels(levels)
 
@@ -214,14 +237,24 @@ plot_obs.epimodel <-
 
     p <- base_plot(qtl, log, date_breaks)
 
-    p <- p + ggplot2::geom_bar(
-      data = df,
-      ggplot2::aes_string(x = "date", y = "obs"),
-      fill = "coral4",
-      stat = "identity",
-      alpha = 0.5
+    p <- p + ggplot2::scale_fill_manual(
+      name = "CI", 
+      labels = paste0(rev(levels),"%"), 
+      values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
+    names(df)[3] <- type
+    p <- p + ggplot2::geom_bar(
+      data = df,
+      ggplot2::aes_string(x = "date", y = type),
+      fill = "coral4",
+      stat = "identity",
+      alpha = 0.7
+    )
+
+    if (inter) {
+      p <- plotly::ggplotly(p)
+    }
     return(p)
   }
 
@@ -443,21 +476,15 @@ check_dates <- function(dates, date_format, min_date, max_date) {
 base_plot <- function(qtl, log, date_breaks) {
 
   p <- ggplot2::ggplot(qtl) +
-    ggplot2::geom_ribbon(alpha = 1,
-        ggplot2::aes_string(
-      x = "date",
-      ymin = "lower",
-      ymax = "upper",
-      group = "tag",
-      fill = "tag"
+    ggplot2::geom_ribbon(
+      ggplot2::aes_string(
+        x = "date",
+        ymin = "lower",
+        ymax = "upper",
+        group = "tag",
+        fill = "tag"
     )) +
-    scale_fill_brewer(palette="Greens") +
     ggplot2::xlab("") +
-    ggplot2::geom_hline(
-      yintercept = 1,
-      color = "black",
-      size = 0.7
-    ) +
     ggplot2::scale_x_date(
       date_breaks = date_breaks,
       labels = scales::date_format("%e %b")
@@ -610,37 +637,37 @@ magrittr::`%>%`
 #   }
   
 #   names(df)[3] <- "obs" # now explicitly change name
-#   p <-  ggplot2::ggplot(qtl) + 
-#     ggplot2::geom_bar(data = df, 
-#                       ggplot2::aes_string(x = "date", y = "obs", fill = "reported"),
-#                       fill = "coral4", 
-#                       stat='identity', 
-#                       alpha=0.5) + 
-#     ggplot2::geom_ribbon(data = qtl, 
-#                          ggplot2::aes_string(x="date",
-#                                              ymin="low", 
-#                                              ymax="up", 
-#                                              fill="tag")) +
-#     ggplot2::xlab("") +
-#     ggplot2::ylab(type) +
-#     ggplot2::scale_y_continuous(labels = scales::comma, 
-#                                 expand = ggplot2::expansion(mult=c(0,0.1)),
-#                                 trans = ifelse(log, "pseudo_log", "identity"),
-#                                 limits = c(ifelse(log, NA, 0), NA)) +
-#     ggplot2::scale_x_date(date_breaks = date_breaks,
-#                           labels = scales::date_format("%e %b")) + 
-#     ggplot2::scale_fill_manual(name = "Credible Intervals", 
-#                                labels = paste0(levels,"%"), 
-#                                values = ggplot2::alpha("deepskyblue4", 
-#                                                        0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
-#     ggplot2::theme_bw() + 
-#     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
-#                    legend.position = "None", 
-#                    axis.text = ggplot2::element_text(size = 12),
-#                    axis.title = ggplot2::element_text(size = 12)) + 
-#     ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
-#     ggplot2::theme(legend.position="right") + 
-#     ggplot2::facet_wrap(~group, scale = "free_y")
+  # p <-  ggplot2::ggplot(qtl) + 
+  #   ggplot2::geom_bar(data = df, 
+  #                     ggplot2::aes_string(x = "date", y = "obs", fill = "reported"),
+  #                     fill = "coral4", 
+  #                     stat='identity', 
+  #                     alpha=0.5) + 
+  #   ggplot2::geom_ribbon(data = qtl, 
+  #                        ggplot2::aes_string(x="date",
+  #                                            ymin="low", 
+  #                                            ymax="up", 
+  #                                            fill="tag")) +
+  #   ggplot2::xlab("") +
+  #   ggplot2::ylab(type) +
+  #   ggplot2::scale_y_continuous(labels = scales::comma, 
+  #                               expand = ggplot2::expansion(mult=c(0,0.1)),
+  #                               trans = ifelse(log, "pseudo_log", "identity"),
+  #                               limits = c(ifelse(log, NA, 0), NA)) +
+  #   ggplot2::scale_x_date(date_breaks = date_breaks,
+  #                         labels = scales::date_format("%e %b")) + 
+  #   ggplot2::scale_fill_manual(name = "Credible Intervals", 
+  #                              labels = paste0(levels,"%"), 
+  #                              values = ggplot2::alpha("deepskyblue4", 
+  #                                                      0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
+  #   ggplot2::theme_bw() + 
+  #   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
+  #                  legend.position = "None", 
+  #                  axis.text = ggplot2::element_text(size = 12),
+  #                  axis.title = ggplot2::element_text(size = 12)) + 
+  #   ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
+  #   ggplot2::theme(legend.position="right") + 
+  #   ggplot2::facet_wrap(~group, scale = "free_y")
   
 #   return(p)
 # }
