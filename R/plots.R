@@ -111,7 +111,7 @@ plot_rt.epimodel <-
 
     if (inter) {
       p <- p + ggplot2::ylab(plotly::TeX("$R_t$"))
-      p <- plotly::ggplotly(p) %>% config(mathjax = "cdn")
+      p <- plotly::ggplotly(p) %>% plotly::config(mathjax = "cdn")
     } else {
       p <- p + ggplot2::ylab(expression(R[t]))
     }
@@ -258,6 +258,118 @@ plot_obs.epimodel <-
     return(p)
   }
 
+
+#' Plotting the underlying number of infections over time
+#'
+#' Plots credible intervals for the underlying number of infections.
+#' The user can control the levels of the intervals and the plotted group(s).
+#' This is a generic function.
+#' 
+#' @inherit plot_obs params return
+#' @param ... Additional arguments for \code{\link[epidemia]{posterior_infections}}. Examples include \code{newdata}, which allows 
+#'  predictions or counterfactuals.
+#' @examples
+#' \dontrun{
+#' ## load required data
+#' library(epidemia)
+#' data("EuropeCovid")
+#' ## setup sampling
+#' args <- EuropeCovid
+#' args$algorithm <- "sampling"
+#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$group_subset <- c("Italy")
+#' args$formula <- R(country,date) ~  1 + lockdown
+#' args$prior <- rstanarm::normal(location=0,scale=.5)
+#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+#' 
+#' ## run sampling
+#' fit <- do.call("epim", args)
+#' 
+#' ## make plots
+#' plot_infections(fit) # default, plots all groups and dates
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_infections(fit, 
+#'                 dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20"), 
+#'                 date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20"),
+#'                 date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_infections(fit, 
+#'                 dates=c("2020-20-03", "2020-20-04"), 
+#'                 date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' }
+#' @export
+plot_infections <- function(object, ...) UseMethod("plot_infections", object)
+
+
+#' @rdname plot_rt
+#' @export
+plot_obs.epimodel <-
+  function(object,
+           type,
+           posterior_mean = FALSE,
+           group = NULL,
+           dates = NULL,
+           date_breaks = "2 weeks",
+           date_format = "%Y-%m-%d",
+           cumulative = FALSE,
+           levels = c(20, 50, 95),
+           log = FALSE,
+           inter = FALSE,
+           ...) {
+
+#' @rdname plot_infections
+#' @export
+plot_infections.epimodel <- 
+  function(object, 
+  group = NULL,
+  dates=NULL, 
+  date_breaks="2 weeks", 
+  date_format="%Y-%m-%d",
+  cumulative=FALSE, 
+  levels = c(20, 50, 95), 
+  log=FALSE,
+  inter = FALSE, 
+  ...) {
+    levels <- check_levels(levels)
+
+    inf <- posterior_infections(
+      object = object,
+      ...
+    )
+
+    # transform data
+    inf <- gr_subset(inf, group)
+
+    if (cumulative) {
+      inf <- cumul(inf)
+    }
+
+    qtl <- get_quantiles(
+      inf,
+      levels,
+      dates,
+      date_format
+    )
+
+    p <- base_plot(qtl, log, date_breaks)
+
+    p <- p + ggplot2::scale_fill_manual(
+      name = "CI", 
+      labels = paste0(rev(levels),"%"), 
+      values = ggplot2::alpha("deepskyblue4", levels/100)
+    )
+
+    if (inter) {
+      p <- plotly::ggplotly(p)
+    }
+    return(p)
+  }
 
 
 # ---- internal -----
@@ -510,279 +622,3 @@ base_plot <- function(qtl, log, date_breaks) {
 #' @importFrom magrittr %>%
 #' @export
 magrittr::`%>%`
-
-
-# #' Plotting the posterior predictive distribution
-# #'
-# #' Plots credible intervals for the observed data under the posterior predictive distribution.
-# #' Plots for a specific observation type. 
-# #' The user can control the levels of the intervals and the plotted group(s).
-# #' This is a generic function.
-# #' 
-# #' @inherit plot_rt params return
-# #' @param type the name of the observations to plot. This should match one of the names
-# #' of the \code{obs} argument to \code{epim}.
-# #' @param posterior_mean If true, the credible intervals are plotted for the posterior mean. Defaults to FALSE, 
-# #'  in which case the posterior predictive is plotted.
-# #' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
-# #' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
-# #' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include \code{newdata}, which allows 
-# #'  predictions or counterfactuals.
-# #' @examples
-# #' \dontrun{
-# #' ## load required data
-# #' library(epidemia)
-# #' data("EuropeCovid")
-# #' ## setup sampling
-# #' args <- EuropeCovid
-# #' args$algorithm <- "sampling"
-# #' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
-# #' args$group_subset <- c("Italy")
-# #' args$formula <- R(country,date) ~  1 + lockdown
-# #' args$prior <- rstanarm::normal(location=0,scale=.5)
-# #' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
-# #' 
-# #' ## run sampling
-# #' fit <- do.call("epim", args)
-# #' 
-# #' ## make plots
-# #' plot_obs(fit, type="deaths") # default, plots all groups and dates
-# #' plot_obs(fit, type="deaths", 
-# #'               dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-# #' plot_obs(fit, 
-# #'          type="deaths", 
-# #'          dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-# #' plot_obs(fit, 
-# #'          type="deaths", 
-# #'          dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
-# #' plot_obs(fit, 
-# #'          type="deaths", 
-# #'          dates=c("2020-03-20", "2020-04-20"), 
-# #'          date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
-# #' plot_obs(fit, 
-# #'          type="deaths", 
-# #'          dates=c("2020-03-20", "2020-04-20"), 
-# #'          date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
-# #' plot_obs(fit, 
-# #'          type="deaths", 
-# #'          dates=c("2020-20-03", "2020-20-04"), 
-# #'          date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
-# #' }
-# #' @export
-# plot_obs <- function(object, ...) UseMethod("plot_obs", object)
-
-# #' @rdname plot_obs
-# #' @export
-# plot_obs.epimodel <- function(object, type=NULL, posterior_mean=FALSE, 
-#                               group=NULL,
-#                               dates=NULL, date_breaks="2 weeks", date_format="%Y-%m-%d",
-#                               cumulative=FALSE, levels=c(50, 95), log=FALSE, ...) {
-
-#   # input checks
-#   if(!is.null(type)) {
-#     if(!(type %in% names(object$obs)))
-#       stop(paste0("obs does not contain any observations for type '", type, "'"), call. = FALSE)
-#   } else stop("must specify an observation type", call. = FALSE)
-  
-#   levels <- .check_levels(levels)
-#   if(!is.logical(log))
-#     stop("'log' must be of type logical", call. = FALSE)
-  
-#   obs <- posterior_predict(object=object, types=type, posterior_mean=posterior_mean, ...)
-#   obs <- out2list(obs)
-
-#   if (!is.null(group)) {
-#     w <- !(group %in% names(obs))
-#     if (any(w))
-#       stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
-#     obs <- obs[group]
-#   }
-  
-#   if (cumulative)
-#     obs <- lapply(obs, cumul)
-
-#   # quantiles by group
-#   qtl <- lapply(obs, function(.obs) .get_quantiles(.obs, levels))
-#   qtl <- data.table::rbindlist(qtl, idcol="group")
-
-  
-#   # observed data
-#   df <- object$data[, c("group", "date", type)]
-#   #df <- object$obs[[type]][["odata"]]
-  
-#   # date subsetting if required
-#   dates <- .check_dates(dates, date_format,
-#                         max(c(max(qtl$date), max(df$date))),
-#                         min(c(min(qtl$date), min(df$date))))
-#   if(!is.null(dates)) {
-#     date.range <- seq(dates[[1]], dates[[2]], by="day")
-#     df <- df[df$date %in% date.range,]
-#     qtl <- qtl[qtl$date %in% date.range,]
-#     if(nrow(qtl)==0 | nrow(df)==0)
-#       stop("date subsetting removed all data")
-#   }
-  
-#   if (is.null(group))
-#     w <- df$group %in% names(obs)
-#   else
-#     w <- df$group %in% group
-  
-#   df <- df[w,]
-  
-#   if (cumulative) {
-#     df <- df %>%
-#       dplyr::group_by(group) %>%
-#       dplyr::mutate(obs = cumsum(obs))
-#     df <- as.data.frame(df)
-#   }
-  
-#   names(df)[3] <- "obs" # now explicitly change name
-  # p <-  ggplot2::ggplot(qtl) + 
-  #   ggplot2::geom_bar(data = df, 
-  #                     ggplot2::aes_string(x = "date", y = "obs", fill = "reported"),
-  #                     fill = "coral4", 
-  #                     stat='identity', 
-  #                     alpha=0.5) + 
-  #   ggplot2::geom_ribbon(data = qtl, 
-  #                        ggplot2::aes_string(x="date",
-  #                                            ymin="low", 
-  #                                            ymax="up", 
-  #                                            fill="tag")) +
-  #   ggplot2::xlab("") +
-  #   ggplot2::ylab(type) +
-  #   ggplot2::scale_y_continuous(labels = scales::comma, 
-  #                               expand = ggplot2::expansion(mult=c(0,0.1)),
-  #                               trans = ifelse(log, "pseudo_log", "identity"),
-  #                               limits = c(ifelse(log, NA, 0), NA)) +
-  #   ggplot2::scale_x_date(date_breaks = date_breaks,
-  #                         labels = scales::date_format("%e %b")) + 
-  #   ggplot2::scale_fill_manual(name = "Credible Intervals", 
-  #                              labels = paste0(levels,"%"), 
-  #                              values = ggplot2::alpha("deepskyblue4", 
-  #                                                      0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
-  #   ggplot2::theme_bw() + 
-  #   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
-  #                  legend.position = "None", 
-  #                  axis.text = ggplot2::element_text(size = 12),
-  #                  axis.title = ggplot2::element_text(size = 12)) + 
-  #   ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
-  #   ggplot2::theme(legend.position="right") + 
-  #   ggplot2::facet_wrap(~group, scale = "free_y")
-  
-#   return(p)
-# }
-
-
-# #' Plotting the underlying number of infections over time
-# #'
-# #' Plots credible intervals for the underlying number of infections.
-# #' The user can control the levels of the intervals and the plotted group(s).
-# #' This is a generic function.
-# #' 
-# #' @inherit plot_obs params return
-# #' @param ... Additional arguments for \code{\link[epidemia]{posterior_infections}}. Examples include \code{newdata}, which allows 
-# #'  predictions or counterfactuals.
-# #' @examples
-# #' \dontrun{
-# #' ## load required data
-# #' library(epidemia)
-# #' data("EuropeCovid")
-# #' ## setup sampling
-# #' args <- EuropeCovid
-# #' args$algorithm <- "sampling"
-# #' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
-# #' args$group_subset <- c("Italy")
-# #' args$formula <- R(country,date) ~  1 + lockdown
-# #' args$prior <- rstanarm::normal(location=0,scale=.5)
-# #' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
-# #' 
-# #' ## run sampling
-# #' fit <- do.call("epim", args)
-# #' 
-# #' ## make plots
-# #' plot_infections(fit) # default, plots all groups and dates
-# #' plot_infections(fit, 
-# #'                 dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-# #' plot_infections(fit, 
-# #'                 dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-# #' plot_infections(fit, 
-# #'                 dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
-# #' plot_infections(fit, 
-# #'                 dates=c("2020-03-20", "2020-04-20"), 
-# #'                 date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
-# #' plot_infections(fit, 
-# #'                 dates=c("2020-03-20", "2020-04-20"),
-# #'                 date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
-# #' plot_infections(fit, 
-# #'                 dates=c("2020-20-03", "2020-20-04"), 
-# #'                 date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
-# #' }
-# #' @export
-# plot_infections <- function(object, ...) UseMethod("plot_infections", object)
-
-# #' @rdname plot_infections
-# #' @export
-# plot_infections.epimodel <- function(object, group = NULL,
-# 									 dates=NULL, date_breaks="2 weeks", date_format="%Y-%m-%d",
-# 									 cumulative=FALSE, levels = c(50, 95), log=FALSE, ...) {
-
-#   levels <- .check_levels(levels)
-#   if(!is.logical(log))
-#     stop("'log' must be of type logical", call. = FALSE)
-
-#   inf <- posterior_infections(object=object, ...)
-#   inf <- out2list(inf)
-
-#   if (!is.null(group)) {
-#     w <- !(group %in% names(rt))
-#     if (any(w))
-#       stop(paste0("group(s) ", group[w], " not found."), call.=FALSE)
-#       inf <- inf[group]
-#   }
-
-#   if (cumulative)
-#     inf <- lapply(inf, cumul)
-
-#   # quantiles by group
-#   qtl <- lapply(inf, function(.inf) .get_quantiles(.inf, levels))
-#   qtl <- data.table::rbindlist(qtl, idcol="group")
-
-
-#   # date subsetting if required
-#   dates <- .check_dates(dates, date_format, max(qtl$date), min(qtl$date))
-#   if(!is.null(dates)) {
-#     date.range <- seq(dates[[1]], dates[[2]], by="day")
-#     qtl <- qtl[qtl$date %in% date.range,]
-#     if(nrow(qtl)==0)
-#       stop("date subsetting removed all data")
-#   }
-  
-#   p <-  ggplot2::ggplot(qtl) + 
-#     ggplot2::geom_ribbon(data = qtl, 
-#                          ggplot2::aes_string(x="date",
-#                                              ymin="low", 
-#                                              ymax="up", 
-#                                              fill="tag")) +
-#     ggplot2::xlab("") +
-#     ggplot2::ylab("Infections") +
-#     ggplot2::scale_y_continuous(labels = scales::comma, 
-#                                 expand=ggplot2::expansion(mult=c(0,0.1)),
-#                                 trans = ifelse(log, "pseudo_log", "identity"),
-#                                 limits = c(ifelse(log, NA, 0), NA)) +
-#     ggplot2::scale_x_date(date_breaks = "2 weeks", 
-#                           labels = scales::date_format("%e %b")) + 
-#     ggplot2::scale_fill_manual(name = "Credible Intervals", 
-#                                labels = paste0(levels,"%"), 
-#                                values = ggplot2::alpha("deepskyblue4", 
-#                                                        0.55 - 0.1   * (1 - (seq_along(levels)-1)/length(levels)))) + 
-#     ggplot2::theme_bw() + 
-#     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1), 
-#                    legend.position = "None", 
-#                    axis.text = ggplot2::element_text(size = 12),
-#                    axis.title = ggplot2::element_text(size = 12)) + 
-#     ggplot2::guides(fill=ggplot2::guide_legend(ncol=1)) +
-#     ggplot2::theme(legend.position="right") + 
-#     ggplot2::facet_wrap(~group, scales = "free_y") 
-  
-#   return(p)
-# }
