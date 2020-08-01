@@ -130,6 +130,7 @@ epiobs_ <- function(object, data) {
   # deal with NAs before passing to parse_mm
   na_action <- args[["na.action"]]
   vars <- all_vars_obs(formula)
+
   data <- data[, vars]
   data <-
     if (is.null(na_action)) {

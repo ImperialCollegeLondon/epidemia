@@ -40,6 +40,7 @@ posterior_predict.epimodel <-
       seed = seed,
       ...
     )
+    #return(out)
     out <- if (posterior_mean) out$E_obs else out$obs
     return(out[[types]])
   }

@@ -65,9 +65,11 @@ pp_eta_ac <- function(object, stanmat) {
   if (is.null(z)) {
     return(NULL)
   }
+  stanmat_orig <- stanmat
+  #return(list(stanmat_orig=stanmat_orig,stanmat=stanmat, z=z, object=object))
   stanmat <- new_rw_stanmat(object, stanmat)
   return(linear_predictor(stanmat, z))
-}
+} 
 
 # Creates a new stanmatrix for random walks
 # from an existing matrix
@@ -77,16 +79,18 @@ pp_eta_ac <- function(object, stanmat) {
 new_rw_stanmat <- function(object, stanmat) {
   nme <- .get_obs(formula(object))
 
-  newnms <- grep(
-    pattern = paste0("^", nme, "\\|rw\\(.*\\)\\[.*,.*\\]$"),
-    x = colnames(stanmat),
-    value = TRUE
-  )
+  # newnms <- grep(
+  #   pattern = paste0("^", nme, "\\|rw\\(.*\\)\\[.*,.*\\]$"),
+  #   x = colnames(stanmat),
+  #   value = TRUE
+  # )
+
+  newnms <-  paste0(nme, "|", colnames(object$autocor$Z))
 
   df <- parse_rw_labels(newnms)
   df$name <- newnms
   df$walk <- paste0(df$label, "[", df$gr, "]")
-  df$sigma <- paste0(nme, "|sigma:", df$walk)
+  df$sigma <- paste0(nme, "|sigma:", sub(".*\\|", "",df$walk))
 
   draws <- paste0("draw ", 1:nrow(stanmat))
   locs <- match(newnms, colnames(stanmat))

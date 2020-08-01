@@ -79,7 +79,7 @@ plot_rt.epimodel <-
            levels = c(20, 50, 95),
            log = FALSE,
            smooth = 1,
-           inter = FALSE
+           inter = FALSE,
            ...) {
     levels <- check_levels(levels)
 
@@ -110,7 +110,7 @@ plot_rt.epimodel <-
     )
 
     if (inter) {
-      p <- p + ggplot2::ylab(TeX("$R_t$"))
+      p <- p + ggplot2::ylab(plotly::TeX("$R_t$"))
       p <- plotly::ggplotly(p) %>% config(mathjax = "cdn")
     } else {
       p <- p + ggplot2::ylab(expression(R[t]))

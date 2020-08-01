@@ -33,6 +33,7 @@ posterior_sims <- function(object,
 
   data <- newdata %ORifNULL% object$data
   rt <- epirt_(all$R, data)
+
   obs <- lapply(all[-1], epiobs_, data)
 
   stanmat <- subsamp(

@@ -34,10 +34,10 @@ generated quantities {
     int i = 1;
     for (r in 1:R) {
       if (ofamily[r] == 1) { // poisson
-        obs[i:(i+oN[r]-1)] = poisson_rng(segment(E_obs, i, oN[r]));
+        obs[i:(i+oN[r]-1)] = poisson_rng(segment(E_obs, i, oN[r]) + 1e-15);
       }
       else { // neg binom
-        obs[i:(i+oN[r]-1)] = neg_binomial_2_rng(segment(E_obs, i, oN[r]), 
+        obs[i:(i+oN[r]-1)] = neg_binomial_2_rng(segment(E_obs, i, oN[r]) + 1e-15, 
           oaux[has_oaux[r]]);
       }
       i += oN[r];
