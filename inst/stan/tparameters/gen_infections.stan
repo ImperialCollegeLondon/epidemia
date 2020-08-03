@@ -18,6 +18,7 @@ for (m in 1:M){
     for(i in (n1+1):n2) {
     real convolution = dot_product(sub_col(infections, n0, m, i-n0), tail(si_rev, i-n0));
     infections[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(-Rt_unadj[i,m] * convolution / pop[m]));
+    infectiousness[i,m] = convolution / max(si);
     Rt[i,m] =  (pop[m] - cumm_sum[i-1,m]) * Rt_unadj[i,m] / pop[m];
     cumm_sum[i,m] = cumm_sum[i-1,m] + infections[i,m];
     }

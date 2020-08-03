@@ -79,7 +79,7 @@ posterior_sims <- function(object,
   )
 
   # get latent series
-  nms <- c("Rt_unadj", "Rt", "infections")
+  nms <- c("Rt_unadj", "Rt", "infections", "infectiousness")
   out <- lapply(
     nms,
     function(x) parse_latent(sims, x, ind, rt)

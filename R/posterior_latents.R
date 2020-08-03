@@ -55,7 +55,7 @@ posterior_infectious.epimodel <-
       newdata = newdata,
       draws = draws,
       seed = seed,
-      series = "infectious",
+      series = "infectiousness",
       ...
     ))
   }

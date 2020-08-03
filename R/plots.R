@@ -23,7 +23,7 @@
 #' Logical, default is \code{FALSE}.
 #' @param smooth integer specifying the window used to smooth the Rt values.
 #'  Default is 1 (no smoothing).
-#' @param inter If TRUE, wraps the ggplot object into a plotly object, for
+#' @param plotly If TRUE, wraps the ggplot object into a plotly object, for
 #'  interactive graphing.
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}.
 #'  Examples include \code{newdata}, which allows predictions or
@@ -79,7 +79,7 @@ plot_rt.epimodel <-
            levels = c(20, 50, 95),
            log = FALSE,
            smooth = 1,
-           inter = FALSE,
+           plotly = FALSE,
            ...) {
     levels <- check_levels(levels)
 
@@ -112,7 +112,7 @@ plot_rt.epimodel <-
       size = 0.7
     )
 
-    if (inter) {
+    if (plotly) {
       p <- p + ggplot2::ylab(plotly::TeX("$R_t$"))
       p <- plotly::ggplotly(p) %>% plotly::config(mathjax = "cdn")
     } else {
@@ -136,8 +136,6 @@ plot_rt.epimodel <-
 #'  in which case the posterior predictive is plotted.
 #' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
 #' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
-#' @param inter If TRUE, wraps the ggplot object into a plotly object, for
-#'  interactive graphing.
 #' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include \code{newdata}, which allows 
 #'  predictions or counterfactuals.
 #' @examples
@@ -196,7 +194,7 @@ plot_obs.epimodel <-
            cumulative = FALSE,
            levels = c(20, 50, 95),
            log = FALSE,
-           inter = FALSE,
+           plotly = FALSE,
            ...) {
     levels <- check_levels(levels)
 
@@ -255,7 +253,7 @@ plot_obs.epimodel <-
       alpha = 0.7
     )
 
-    if (inter) {
+    if (plotly) {
       p <- plotly::ggplotly(p)
     }
     return(p)
@@ -320,7 +318,7 @@ plot_infections.epimodel <-
   cumulative=FALSE, 
   levels = c(20, 50, 95), 
   log=FALSE,
-  inter = FALSE, 
+  plotly = FALSE, 
   ...) {
     levels <- check_levels(levels)
 
@@ -351,7 +349,75 @@ plot_infections.epimodel <-
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
-    if (inter) {
+    p <- p + ggplot2::ylab("Infections")
+
+    if (plotly) {
+      p <- plotly::ggplotly(p)
+    }
+    return(p)
+  }
+
+
+  #' Plotting the underlying total infectiousness over time
+#'
+#' Plots credible intervals for the total infectiousness over time. This is 
+#' defined as the sum of each infected person, weighted by how infectious each 
+#' individual is, given how long they have been infected for.The user can 
+#' control the levels of the intervals and the plotted group(s).
+#' This is a generic function.
+#' 
+#' @inherit plot_obs params return
+#' @param ... Additional arguments for 
+#' \code{\link[epidemia]{posterior_infectious}}. Examples include 
+#' \code{newdata}, which allows predictions or counterfactuals.
+#' @export
+plot_infectious <- function(object, ...) UseMethod("plot_infectious", object)
+
+#' @rdname plot_infections
+#' @export
+plot_infectious.epimodel <- 
+  function(object, 
+  groups = NULL,
+  dates=NULL, 
+  date_breaks="2 weeks", 
+  date_format="%Y-%m-%d",
+  cumulative=FALSE, 
+  levels = c(20, 50, 95), 
+  log=FALSE,
+  plotly = FALSE, 
+  ...) {
+    levels <- check_levels(levels)
+
+    inf <- posterior_infectious(
+      object = object,
+      ...
+    )
+
+    # transform data
+    inf <- gr_subset(inf, groups)
+
+    if (cumulative) {
+      inf <- cumul(inf)
+    }
+
+    qtl <- get_quantiles(
+      inf,
+      levels,
+      dates,
+      date_format
+    )
+
+    p <- base_plot(qtl, log, date_breaks)
+
+    p <- p + ggplot2::scale_fill_manual(
+      name = "CI", 
+      labels = paste0(rev(levels),"%"), 
+      values = ggplot2::alpha("deepskyblue4", levels/100)
+    )
+
+    p <- p + ggplot2::ylab("Infectiousness")
+
+    if (plotly) {
       p <- plotly::ggplotly(p)
     }
     return(p)
