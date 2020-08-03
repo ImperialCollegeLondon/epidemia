@@ -90,7 +90,6 @@ plot_rt.epimodel <-
 
     # transform data
     rt <- gr_subset(rt, groups)
-    print("reached here")
     rt <- smooth_obs(rt, smooth)
 
     qtl <- get_quantiles(
