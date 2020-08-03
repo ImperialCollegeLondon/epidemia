@@ -13,7 +13,7 @@ standata_reg <- function(object, ...) {
   prior_covariance <- group <- has_intercept <- xtemp <- xbar <-
   prior_shape <- prior_shift <- prior_df <- prior_df_for_intercept <-
   prior_dist <- prior_dist_for_intercept <- prior_mean <-
-  prior_mean_for_intercept <- prior_scale <- prior_scale_for_intercept <-
+  prior_mean_for_intercept <- prior_scale <- prior_aux <- prior_scale_for_intercept <-
   prior_autoscale <- prior_autoscale_for_intercept <- global_prior_scale <-
   global_prior_df <- slab_df <- slab_scale <- prior_dist_for_oaux <-
   prior_mean_for_oaux <- prior_scale_for_oaux <- prior_df_for_oaux <-
@@ -58,6 +58,9 @@ standata_reg <- function(object, ...) {
   if (is.null(prior_intercept)) {
     prior_intercept <- list()
   }
+  if (is.null(prior_aux)) {
+    prior_aux <- list()
+  }
 
   x_stuff <- process_x(x, center)
 
@@ -101,21 +104,18 @@ standata_reg <- function(object, ...) {
     assign(i, prior_intercept_stuff[[i]])
   }
 
-  if (inherits(object, "epiobs_")) { #response distribution
-    if (fam == 2) { # poisson has no auxiliary parameter
-    ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
-      prior_aux_stuff <- handle_glm_prior(
-          prior = prior_aux,
-          nvars = 1,
-          default_scale = 1,
-          link = NULL,
-          ok_dists = ok_aux_dists
-      )
-      # prior_{dist, mean, scale, df, dist_name, autoscale}_for_aux
-      names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_oaux")
-      for (i in names(prior_aux_stuff))
-        assign(i, prior_aux_stuff[[i]])
-    }
+  ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
+  has_aux <- length(prior_aux) > 0
+  prior_aux_stuff <- handle_glm_prior(
+    prior = prior_aux,
+    nvars = 1,
+    default_scale = 1,
+    link = NULL,
+    ok_dists = ok_aux_dists
+  )
+  names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_oaux")
+  for (i in names(prior_aux_stuff)) {
+    assign(i, prior_aux_stuff[[i]])
   }
 
   if (prior_dist > 0L && prior_autoscale) {
@@ -233,14 +233,17 @@ standata_reg <- function(object, ...) {
   prior_info <- summarize_glm_prior(
     user_prior = prior_stuff,
     user_prior_intercept = prior_intercept_stuff,
+    user_prior_aux = prior_aux_stuff,
     user_prior_covariance = user_covariance,
     has_intercept = has_intercept,
     has_predictors = nvars > 0,
+    has_aux = has_aux,
     adjusted_prior_scale = prior_scale,
-    adjusted_prior_intercept_scale = prior_scale_for_intercept
+    adjusted_prior_intercept_scale = prior_scale_for_intercept,
+    adjusted_prior_oaux_scale = prior_scale_for_oaux
   )
 
-  out$prior.info <- prior_info
+  out$prior_info <- prior_info
   out$X <- xtemp
 
   return(out)
@@ -332,32 +335,47 @@ unpad_reTrms.array <- function(x, columns = TRUE, ...) {
 }
 
 
-# Adapted from rstanarm to include "shape" and "shift parameters"
-# for the gamma distribution
+
+
+# Create "prior.info" attribute needed for prior_summary()
+#
+# @param user_* The user's prior, prior_intercept, prior_covariance, and 
+#   prior_aux specifications. For prior and prior_intercept these should be
+#   passed in after broadcasting the df/location/scale arguments if necessary.
+# @param has_intercept T/F, does model have an intercept?
+# @param has_predictors T/F, does model have predictors?
+# @param adjusted_prior_*_scale adjusted scales computed if using autoscaled priors
+# @param family Family object.
+# @return A named list with components 'prior', 'prior_intercept', and possibly 
+#   'prior_covariance' and 'prior_aux' each of which itself is a list
+#   containing the needed values for prior_summary.
 summarize_glm_prior <-
   function(user_prior,
            user_prior_intercept,
+           user_prior_aux,
            user_prior_covariance,
-           has_intercept,
+           has_intercept, 
            has_predictors,
+           has_aux,
            adjusted_prior_scale,
-           adjusted_prior_intercept_scale) {
-
-    # check if coefficients and intercept have been rescaled
+           adjusted_prior_intercept_scale, 
+           adjusted_prior_oaux_scale) {
     rescaled_coef <-
-      user_prior$prior_autoscale &&
-        has_predictors &&
-        !is.na(user_prior$prior_dist_name) &&
-        !all(user_prior$prior_scale == adjusted_prior_scale)
-
+      user_prior$prior_autoscale && 
+      has_predictors &&
+      !is.na(user_prior$prior_dist_name) &&
+      !all(user_prior$prior_scale == adjusted_prior_scale)
     rescaled_int <-
       user_prior_intercept$prior_autoscale_for_intercept &&
-        has_intercept &&
-        !is.na(user_prior_intercept$prior_dist_name_for_intercept) &&
-        (user_prior_intercept$prior_scale_for_intercept !=
-         adjusted_prior_intercept_scale)
+      has_intercept &&
+      !is.na(user_prior_intercept$prior_dist_name_for_intercept) &&
+      (user_prior_intercept$prior_scale_for_intercept != adjusted_prior_intercept_scale)
 
-
+    rescaled_aux <- user_prior_aux$prior_autoscale_for_oaux &&
+      has_aux &&
+      !is.na(user_prior_aux$prior_dist_name_for_oaux) &&
+      (user_prior_aux$prior_scale_for_oaux != adjusted_prior_oaux_scale)
+    
     if (has_predictors && user_prior$prior_dist_name %in% "t") {
       if (all(user_prior$prior_df == 1)) {
         user_prior$prior_dist_name <- "cauchy"
@@ -365,65 +383,70 @@ summarize_glm_prior <-
         user_prior$prior_dist_name <- "student_t"
       }
     }
-
     if (has_intercept &&
-      user_prior_intercept$prior_dist_name_for_intercept %in% "t") {
+        user_prior_intercept$prior_dist_name_for_intercept %in% "t") {
       if (all(user_prior_intercept$prior_df_for_intercept == 1)) {
         user_prior_intercept$prior_dist_name_for_intercept <- "cauchy"
       } else {
         user_prior_intercept$prior_dist_name_for_intercept <- "student_t"
       }
     }
-
-    prior_list <- list(
-      prior =
-        if (!has_predictors) {
-          NULL
-        } else {
-          with(user_prior, list(
-            dist = prior_dist_name,
-            location = prior_mean,
-            shape = prior_shape,
-            scale = prior_scale,
-            shift = prior_shift,
-            adjusted_scale = if (rescaled_coef) {
-              adjusted_prior_scale
-            } else {
-              NULL
-            },
-            df = if (prior_dist_name %in% c
-            ("student_t", "hs", "hs_plus", "lasso", "product_normal")) {
-              prior_df
-            } else {
-              NULL
-            }
-          ))
-        },
-      prior_intercept =
-        if (!has_intercept) {
-          NULL
-        } else {
-          with(user_prior_intercept, list(
-            dist = prior_dist_name_for_intercept,
-            location = prior_mean_for_intercept,
-            scale = prior_scale_for_intercept,
-            adjusted_scale = if (rescaled_int) {
-              adjusted_prior_intercept_scale
-            } else {
-              NULL
-            },
-            df = if (prior_dist_name_for_intercept %in% "student_t") {
-              prior_df_for_intercept
-            } else {
-              NULL
-            }
-          ))
-        }
-    )
-
-    if (length(user_prior_covariance)) {
-      prior_list$prior_covariance <- user_prior_covariance
+    if ( has_aux && user_prior_aux$prior_dist_name_for_oaux %in% "t") {
+      if (all(user_prior_aux$prior_df_for_oaux == 1)) {
+        user_prior_aux$prior_dist_name_for_oaux <- "cauchy"
+      } else {
+        user_prior_aux$prior_dist_name_for_oaux <- "student_t"
+      }
     }
-
+    prior_list <- list(
+      prior = 
+        if (!has_predictors) NULL else with(user_prior, list(
+          dist = prior_dist_name,
+          location = prior_mean,
+          scale = prior_scale,
+          shape = prior_shape,
+          shift = prior_shift,
+          adjusted_scale = if (rescaled_coef)
+            adjusted_prior_scale else NULL,
+          df = if (prior_dist_name %in% c
+                   ("student_t", "hs", "hs_plus", "lasso", "product_normal"))
+            prior_df else NULL
+        )),
+      prior_intercept = 
+        if (!has_intercept) NULL else with(user_prior_intercept, list(
+          dist = prior_dist_name_for_intercept,
+          location = prior_mean_for_intercept,
+          scale = prior_scale_for_intercept,
+          adjusted_scale = if (rescaled_int)
+            adjusted_prior_intercept_scale else NULL,
+          df = if (prior_dist_name_for_intercept %in% "student_t")
+            prior_df_for_intercept else NULL
+        ))
+    )
+    if (length(user_prior_covariance))
+      prior_list$prior_covariance <- user_prior_covariance
+    
+    prior_list$prior_aux <- if (!has_aux) 
+      NULL else with(user_prior_aux, list(
+        dist = prior_dist_name_for_oaux,
+        location = if (!is.na(prior_dist_name_for_oaux) && 
+                       prior_dist_name_for_oaux != "exponential")
+          prior_mean_for_oaux else NULL,
+        scale = if (!is.na(prior_dist_name_for_oaux) && 
+                    prior_dist_name_for_oaux != "exponential")
+          prior_scale_for_oaux else NULL,
+        adjusted_scale = if (rescaled_aux)
+          adjusted_prior_oaux_scale else NULL,
+        df = if (!is.na(prior_dist_name_for_oaux) && 
+                 prior_dist_name_for_oaux %in% "student_t")
+          prior_df_for_oaux else NULL, 
+        rate = if (!is.na(prior_dist_name_for_oaux) && 
+                   prior_dist_name_for_oaux %in% "exponential")
+          1 / prior_scale_for_oaux else NULL,
+        aux_name = "reciprocal dispersion"
+      ))
+      
     return(prior_list)
   }
+
+

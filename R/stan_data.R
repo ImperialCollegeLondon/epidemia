@@ -103,6 +103,7 @@ standata_rt <- function(rt) {
     out,
     standata_reg(rt)
   )
+  out$rt_prior_info = out$prior_info
   return(out)
 }
 
@@ -227,6 +228,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
   out <- c(out, loo::nlist(
     reg,
+    obs_prior_info = lapply(reg, function(x) x$prior_info),
     N_obs = sum(oN),
     R = types,
     oN,
