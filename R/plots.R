@@ -72,7 +72,7 @@ plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 #' @export
 plot_rt.epimodel <-
   function(object,
-           group = NULL,
+           groups = NULL,
            dates = NULL,
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
@@ -83,10 +83,14 @@ plot_rt.epimodel <-
            ...) {
     levels <- check_levels(levels)
 
-    rt <- posterior_rt(object = object, ...)
+    rt <- posterior_rt(
+      object = object,
+      ...
+    )
 
     # transform data
-    rt <- gr_subset(rt, group)
+    rt <- gr_subset(rt, groups)
+    print("reached here")
     rt <- smooth_obs(rt, smooth)
 
     qtl <- get_quantiles(
@@ -186,7 +190,7 @@ plot_obs.epimodel <-
   function(object,
            type,
            posterior_mean = FALSE,
-           group = NULL,
+           groups = NULL,
            dates = NULL,
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
@@ -214,16 +218,16 @@ plot_obs.epimodel <-
     names(df)[3] <- "obs"
 
     # transform data
-    obs <- gr_subset(obs, group)
+    obs <- gr_subset(obs, groups)
     # also subset the true data
-    group <- group %ORifNULL% levels(obs$group)
-    w <- df$group %in% group
-    df <- df[df$group %in% group, ]
+    groups <- groups %ORifNULL% levels(obs$group)
+    w <- df$group %in% groups
+    df <- df[df$group %in% groups, ]
 
     if (cumulative) {
       obs <- cumul(obs)
       df <- df %>%
-        dplyr::group_by(group) %>%
+        dplyr::group_by(groups) %>%
         dplyr::mutate(obs = cumsum(obs))
       df <- as.data.frame(df)
     }
@@ -306,28 +310,11 @@ plot_obs.epimodel <-
 #' @export
 plot_infections <- function(object, ...) UseMethod("plot_infections", object)
 
-
-#' @rdname plot_rt
-#' @export
-plot_obs.epimodel <-
-  function(object,
-           type,
-           posterior_mean = FALSE,
-           group = NULL,
-           dates = NULL,
-           date_breaks = "2 weeks",
-           date_format = "%Y-%m-%d",
-           cumulative = FALSE,
-           levels = c(20, 50, 95),
-           log = FALSE,
-           inter = FALSE,
-           ...) {
-
 #' @rdname plot_infections
 #' @export
 plot_infections.epimodel <- 
   function(object, 
-  group = NULL,
+  groups = NULL,
   dates=NULL, 
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
@@ -344,7 +331,7 @@ plot_infections.epimodel <-
     )
 
     # transform data
-    inf <- gr_subset(inf, group)
+    inf <- gr_subset(inf, groups)
 
     if (cumulative) {
       inf <- cumul(inf)
@@ -484,7 +471,7 @@ sub_ <- function(object, w) {
   if (!is.logical(w)) {
     stop("bug found. 'w' should be logical")
   }
-  object$draws <- object$draws[w, ]
+  object$draws <- object$draws[, w]
   object$time <- object$time[w]
   object$group <- object$group[w]
   return(object)
@@ -495,20 +482,20 @@ sub_ <- function(object, w) {
 #
 # @param object output from posterior_rt or
 # posterior_predict
-# @param group A character vector specifying
+# @param groups A character vector specifying
 # groups to plot
-gr_subset <- function(object, group) {
-  if (is.null(group)) {
+gr_subset <- function(object, groups) {
+  if (is.null(groups)) {
     return(object)
   }
-  w <- !(group %in% object$group)
+  w <- !(groups %in% object$group)
   if (any(w)) {
     stop(paste0(
-      "group(s) ", group[w],
+      "group(s) ", groups[w],
       " not found."
     ), call. = FALSE)
   }
-  w <- object$group %in% group
+  w <- object$group %in% groups
   return(sub_(object, w))
 }
 
