@@ -348,7 +348,7 @@ make_ointercept_nms <- function(obs, sdat) {
     function(x) .get_obs(formula(x))
   )
   return(paste0(
-    obs_nms[sdat$has_intercept],
+    obs_nms[sdat$has_ointercept],
     "|(Intercept)"
   ))
 }

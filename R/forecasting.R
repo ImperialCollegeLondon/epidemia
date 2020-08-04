@@ -74,7 +74,7 @@ evaluate_forecast <- function(object, newdata, observations, type,
     }
   }
   
-  levels <- .check_levels(levels)
+  levels <- check_levels(levels)
   
   # draw posterior samples
   posterior_samples <- tryCatch({

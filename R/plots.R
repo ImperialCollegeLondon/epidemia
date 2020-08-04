@@ -198,6 +198,9 @@ plot_obs.epimodel <-
            ...) {
     levels <- check_levels(levels)
 
+    if (is.null(type))
+      stop("must specify an observation type")
+
     alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
     if (!(type %in% alltypes)) {
       stop(paste0("obs does not contain any observations
