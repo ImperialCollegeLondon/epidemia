@@ -14,7 +14,7 @@ test_that("wrong observation type throws error", {
 })
 
 test_that("missing observation type throws error", {
-  expect_error(plot_obs(example.fit, group = c("Germany")), regexp = "must specify an observation type")
+  expect_error(plot_obs(example.fit, groups = c("Germany")), regexp = "^argument")
 })
 
 test_that("levels out of [0,100] throws error", {
@@ -52,18 +52,18 @@ test_that("date subsetting",{
 
 test_that(".check_dates works as expected", {
   date_format <- "%Y-%m-%d"
-  expect_equal(check_dates(c("2020-03-09", "2020-04-06"), date_format, "2020-06-06", "2020-02-06"),
+  expect_equal(check_dates(c("2020-03-09", "2020-04-06"), date_format, "2020-02-06", "2020-06-06"),
                as.Date(c("2020-03-09","2020-04-06")))
-  expect_equal(.check_dates(c("2020-03-09", NA), date_format, "2020-06-06", "2020-02-06"),
+  expect_equal(check_dates(c("2020-03-09", NA), date_format, "2020-02-06", "2020-06-06"),
                as.Date(c("2020-03-09","2020-06-06")))
-  expect_equal(.check_dates(c(NA, "2020-04-06"), date_format, "2020-06-06", "2020-02-06"),
+  expect_equal(check_dates(c(NA, "2020-04-06"), date_format, "2020-02-06", "2020-06-06"),
                as.Date(c("2020-02-06","2020-04-06")))
-  expect_equal(.check_dates(as.Date(c("2020-03-09", "2020-04-06")), date_format, "2020-06-06", "2020-02-06"),
+  expect_equal(check_dates(as.Date(c("2020-03-09", "2020-04-06")), date_format, "2020-02-06", "2020-06-06"),
                as.Date(c("2020-03-09","2020-04-06")))
-  expect_equal(.check_dates(as.Date(c("2020-03-09", NA)), date_format, "2020-06-06", "2020-02-06"),
+  expect_equal(check_dates(as.Date(c("2020-03-09", NA)), date_format, "2020-02-06", "2020-06-06"),
                as.Date(c("2020-03-09","2020-06-06")))
-  expect_equal(.check_dates(as.Date(c(NA, "2020-04-06")), date_format, "2020-06-06", "2020-02-06"),
+  expect_equal(check_dates(as.Date(c(NA, "2020-04-06")), date_format, "2020-02-06", "2020-06-06"),
                as.Date(c("2020-02-06","2020-04-06")))
-  expect_warning(.check_dates(c(NA, as.Date("2020-04-06")), date_format, "2020-06-06", "2020-02-06"),
-                 regexp = "dates have invalid value NA, 18358 \\(class numeric\\). This may be due to passing NA values and Date objects in the same vector. Resolve by coercing NA using as.Date\\(\\). The entire date range will be plotted.")
-})
+}
+)
+
