@@ -3,9 +3,10 @@ context("Test expected behaviour for different arguments to epim")
 # load data
 data("EuropeCovid")
 working.args <- EuropeCovid
-working.args$formula <- R(country, date) ~ 0 + lockdown 
+working.args$rt <- epirt(
+  formula = R(country, date) ~ 0 + lockdown 
+)
 working.args$algorithm <- "meanfield"
-working.args$stan_data <- TRUE
 data <- working.args$data
 
 # convenience functions to run only changing one argument at a time
@@ -22,25 +23,32 @@ run.with.obs <- function(obs) {
 }
 
 test_that("NAs produced by a formula (not neccessarily in the 'data') are caught", {
-
+  
   data("EuropeCovid")
   args <- EuropeCovid
-  args$data$day <- as.integer(args$data$date-min(args$data$date))
+  args$data$day <- as.integer(args$data$date - min(args$data$date))
   args$algorithm <- "sampling"
   args$sampling_args <- list(chains=0)       
   args$group_subset <- c("United_Kingdom","Germany")
-  args$formula <- R(country,date) ~ 0 +  (cut(day,seq(-1,100,by=14))|country)    
+  args$rt <- epirt(
+    formula = R(country, date) ~ 0 + (cut(day, seq(-1, 100, by=14)) | country)
+  )
   expect_error(do.call("epim", args), regexp = "missing values in object")
 })
 
 test_that("epim throws error if formula not in data", {
   broken.args <- working.args
-  broken.args$formula <- R(country, date) ~ 0 + wrongname
-  expect_error(do.call("epim", args=broken.args))
+  broken.args$rt <- epirt(
+    formula = R(country, date) ~ 0 + wrongname
+  )
+  expect_error(do.call("epim", args=broken.args), regexp = "object 'wrongname' not found")
   
   broken.args <- working.args
-  broken.args$formula <- R(wrongname, date) ~ 0 + lockdown
-  expect_error(do.call("epim", args=broken.args), regexp = "Could not find column\\(s\\)  wrongname  in \'data\'")
+  broken.args$rt <- epirt(
+    formula =  R(wrongname, date) ~ 0 + lockdown
+  )
+  
+  expect_error(do.call("epim", args=broken.args), regexp = "Could not find column")
 })
 
 test_that("non-consecutive dates throws error", {
@@ -59,47 +67,15 @@ test_that("non-consecutive dates throws error", {
 test_that("NA in data throws error", {
   broken.data <- working.args$data
   broken.data[1,1] <- NA
-  expect_error(run.with.data(broken.data), regexp = "data contains NAs")
+  expect_error(run.with.data(broken.data), regexp = "NAs exist in")
 })
 
-test_that("NA in obs throws error", {
-  # NA in death$obs
-  broken.obs <- working.args$obs
-  broken.obs$deaths$odata[1,3] <- NA
-  expect_error(run.with.obs(broken.obs), regexp = "NAs exist in obs\\$deaths")
-  
-  # NA in deaths$pvec
-  broken.obs <- working.args$obs
-  broken.obs$deaths$pvec[1] <- NA
-  expect_error(run.with.obs(broken.obs), regexp = "NAs exist in obs\\$deaths\\$pvec")
-  
-  # NA in deaths$rate
-  broken.obs <- working.args$obs
-  broken.obs$deaths$rates$means[1,1] <- NA
-  expect_error(run.with.obs(broken.obs), regexp = "NAs exist in obs\\$deaths\\$rates\\$means")
-})
 
-test_that("wrong item names in obs throws error", {
-  # TODO: these will have to change to check obs when it is a list of lists
+test_that("wrong column types for observations throws error", {
   
-  # misnamed obs
-  broken.obs <- working.args$obs
-  names(broken.obs$deaths)[[1]] <- c("abcd")
-  expect_error(run.with.obs(broken.obs), regexp = "odata missing from obs\\$deaths")
-  
-  # misnamed pvec
-  broken.obs <- working.args$obs
-  names(broken.obs$deaths)[[2]] <- c("abcd")
-  expect_error(run.with.obs(broken.obs), regexp = "pvec missing from obs\\$deaths")
-  
-  # misnamed rates
-  broken.obs <- working.args$obs
-  names(broken.obs$deaths)[[3]] <- c("abcd")
-  expect_error(run.with.obs(broken.obs), regexp = "rates missing from obs\\$deaths")
-})
-
-test_that("wrong column types in obs$deaths$odata throws error", {
-  
+  broken.args <- working.args
+  broken.args$data$deaths <- "hello"
+  do.call(epim, broken.args)
   # passing "hello" as the date column in obs
   broken.obs <- working.args$obs
   broken.obs$deaths$odata$date <- "hello"

@@ -63,8 +63,8 @@ epiobs <- function(formula,
 
   # lag <- check_sv(lag, name = "lag") no longer required to be simplex
   lag <- check_v(lag, name = "lag")
-  if (any(lag > 1)) {
-    warning("'lag' has elements greater than 1
+  if (sum(lag) != 1) {
+    warning("'lag' does not sum to 1
      - check that this is intentional")
   }
 
@@ -146,8 +146,15 @@ epiobs_ <- function(object, data) {
   ))
   object$offset <- NULL
   out <- c(object, do.call(parse_mm, args))
+
+  obs <- data[, .get_obs(formula)]
+  if (!is.numeric(obs)) {
+    stop(paste0("response ", .get_obs(formula), " not numeric"),
+    call. = FALSE)
+  }
+
   out <- c(out, list(
-    obs = data[, .get_obs(formula)],
+    obs = obs,
     gr = droplevels(as.factor(data[, .get_group(formula)])),
     time = data[, .get_time(formula)]
   ))
