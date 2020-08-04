@@ -89,6 +89,7 @@ epim <- function(rt,
   groups  <- levels(data$group)
   pops    <- check_pops(pops, groups)
   si      <- check_sv(si, "si")
+  algorithm <- match.arg(algorithm)
 
   if (seed_days < 1) {
     stop("'seed_days' must be greater than zero", call. = FALSE)
@@ -183,7 +184,6 @@ epim <- function(rt,
   if (init_run) 
     args$init <- initf 
 
-  algorithm <- match.arg(algorithm)
   sampling <- algorithm == "sampling"
 
   fit <-

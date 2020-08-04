@@ -1,33 +1,45 @@
 context("Fixed effects stan data")
 
+library(epidemia)
+
 load(file = "../data/NYWA.RData")
 args <- NYWA
 # No sampling, just return stan data
-args$stan_data <- TRUE
+args$sampling_args <- list(chains=0)
 
 test_that("has_intercept takes correct values", {
 
   # implied intercept
-  args$formula <- Rt(code, date) ~ av_mobility
+  args$rt <- epirt(
+    formula = R(code, date) ~ av_mobility,
+  )
+  
   sdat <- do.call("epim", args=args)
   expect_true(sdat$has_intercept)
 
   # no intercept
-  args$formula <- Rt(code, date) ~ 0 + av_mobility
+  args$rt <- epirt(
+    formula = R(code, date) ~ 0 + av_mobility
+  )
   sdat <- do.call("epim", args=args)
   expect_false(sdat$has_intercept)
-
 })
 
 test_that("Correct number of predictors K", {
 
   # No predictors here
-  args$formula <- Rt(code, date) ~ 1
+  args$rt <- epirt(
+    formula = R(code, date) ~ 1
+  )
+  
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$K, 0)
 
   # check number of predictors
-  args$formula <- Rt(code, date) ~ 1 + av_mobility + residential
+  args$rt <- epirt(
+    R(code, date) ~ 1 + av_mobility + residential
+  )
+  
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$K, 2)
 
@@ -36,10 +48,13 @@ test_that("Correct number of predictors K", {
 test_that("Parsing of model matrix (centering, predictor means)", {
 
   # check predictor mean values
-  args$center <- TRUE
-  args$formula <- Rt(code, date) ~ 1 + av_mobility + residential
+  args$rt <- epirt(
+    formula = R(code, date) ~ 1 + av_mobility + residential,
+    center = TRUE
+  )
+
   sdat <- do.call("epim", args=args)
-  vars <- all.vars(update(args$formula, "0~."))
+  vars <- all.vars(update(formula(args$rt), "0~."))
   df <- args$data[,vars]
   expect_equal(as.numeric(sdat$xbar), as.numeric(colMeans(df)))
 
