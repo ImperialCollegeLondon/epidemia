@@ -239,7 +239,7 @@ epim <- function(rt,
       make_rw_sigma_nms(formula(rt), data)
     },
     if (sdat$num_oaux > 0) {
-      make_oaux_nms(obs, sdat)
+      make_oaux_nms(obs)
     },
     "log-posterior"
   )
