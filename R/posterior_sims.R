@@ -59,7 +59,7 @@ posterior_sims <- function(object,
   oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
   if (length(oeta) > 0) {
     oeta <- sweep(oeta, 2, standata$offset, "+")
-    colnames(oeta) <- paste0("eta[", seq_len(ncol(oeta)), "]")
+    colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
     stanmat <- cbind(stanmat, as.matrix(oeta))
   }
 
