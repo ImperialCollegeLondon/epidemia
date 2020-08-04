@@ -16,12 +16,6 @@ run.with.data <- function(data) {
   return(do.call("epim", args=test.args))
 }
 
-run.with.obs <- function(obs) {
-  test.args <- working.args
-  test.args$obs <- obs
-  return(do.call("epim", args=test.args))
-}
-
 test_that("NAs produced by a formula (not neccessarily in the 'data') are caught", {
   
   data("EuropeCovid")
@@ -70,85 +64,17 @@ test_that("NA in data throws error", {
   expect_error(run.with.data(broken.data), regexp = "NAs exist in")
 })
 
-
-test_that("wrong column types for observations throws error", {
-  
+test_that("Wrong column types for observations throws error", {
   broken.args <- working.args
-  broken.args$data$deaths <- "hello"
-  do.call(epim, broken.args)
-  # passing "hello" as the date column in obs
-  broken.obs <- working.args$obs
-  broken.obs$deaths$odata$date <- "hello"
-  expect_error(run.with.obs(broken.obs),
-               regexp = "Columns of 'obs\\$deaths\\$odata' are not coercible to required classes \\[factor, Date, numeric\\]. Original message: Error in charToDate\\(x\\): character string is not in a standard unambiguous format")
-  
-  # passing "hello" as the data column in obs
-  broken.obs <- working.args$obs
-  broken.obs$deaths$odata$deaths <- "hello"
-  expect_error(suppressWarnings(run.with.obs(broken.obs)),
-               regexp = "obs contain NA values after being coerced to their appropriate types. These types are listed in documentation of the obs argument to epim.")
+  broken.args$data$deaths <- "string"
+  expect_error(do.call(epim, broken.args), regexp="^response")
 })
-
-test_that("wrong types in obs throws error", {
-  
-  # passing character vector as pvec
-  broken.obs <- working.args$obs
-  broken.obs$deaths$pvec <- rep("hello", 20)
-  expect_error(suppressWarnings(run.with.obs(broken.obs)), regexp = "NAs exist in obs\\$deaths\\$pvec after coercion to numeric")
-  
-  # passing dataframe as rates
-  broken.obs <- working.args$obs
-  broken.obs$deaths$pvec <- data.frame(a=c(1:10), b=runif(10))
-  expect_error(run.with.obs(broken.obs),
-               regexp = "obs\\$deaths\\$pvec could not be coerced to a numeric vector. Original message: Error in doTryCatch\\(return\\(expr\\), name, parentenv, handler\\): 'list' object cannot be coerced to type 'double'")
-  
-  # wrong names in rates
-  broken.obs <- working.args$obs
-  names(broken.obs$deaths$rates)[[1]] <- c("beans")
-  expect_error(run.with.obs(broken.obs), regexp = "obs\\$deaths\\$rates\\$means not found.")
-  
-  # check for warning that default scale will be used
-  broken.obs <- working.args$obs
-  names(broken.obs$deaths$rates)[[2]] <- c("abc")
-  expect_warning(run.with.obs(broken.obs), regexp = "obs\\$deaths\\$rates\\$scale not found, using default value of 0.1")
-})
-
 
 test_that("zero-row arguments throws error", {
-  
   # data
   expect_error(run.with.data(data.frame()), regexp = "data has zero rows")
-  
-  # obs$deaths$obs
-  broken.obs <- working.args$obs
-  broken.obs$deaths$odata <- data.frame()
-  expect_error(run.with.obs(broken.obs), regexp = "obs\\$deaths has zero rows")
-  
-  # obs$deaths$pvec
-  broken.obs <- working.args$obs
-  broken.obs$deaths$pvec <- c()
-  expect_error(run.with.obs(broken.obs), regexp = "pvec missing from obs\\$deaths")
-  
-  # obs$deaths$rates
-  broken.obs <- working.args$obs
-  broken.obs$deaths$rates <- list(means=data.frame(), scale=0.1)
-  expect_error(run.with.obs(broken.obs), regexp = "obs\\$deaths\\$rates\\$means has zero rows")
 })
 
-test_that("error if arguments are missing columns", {
-  
-  # if obs$deaths is missing a column
-  broken.obs <- working.args$obs
-  broken.obs$deaths$odata$deaths <- NULL
-  expect_error(run.with.obs(broken.obs),
-               regexp = "Not enough columns in obs\\$deaths - at least 3 are required")
-  
-  # if rates$means is missing a column
-  broken.obs <- working.args$obs
-  broken.obs$deaths$rates$means$ifr <- NULL
-  expect_error(run.with.obs(broken.obs),
-               regexp = "Not enough columns in obs\\$deaths\\$rates\\$means - at least 2 are required")
-})
 
 test_that("NA in si throws error", {
   broken.args <- working.args
@@ -171,6 +97,6 @@ test_that("error if group missing from pops", {
 test_that("error if group_subset contains invalid group", {
   broken.args <- working.args
   broken.args$group_subset <- c("Austria", "Germany", "FakeCountry")
-  expect_error(do.call("epim", args=broken.args), regexp = "Not all groups in group_subset were found in 'data'")
+  expect_error(do.call("epim", args=broken.args), regexp = "Not all groups")
 })
 
