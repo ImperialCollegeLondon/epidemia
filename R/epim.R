@@ -325,16 +325,17 @@ make_rw_sigma_nms <- function(formula, data) {
   return(nms)
 }
 
-make_oaux_nms <- function(obs, sdat) {
-  if (sdat$num_oaux == 0) {
-    return(character(0))
-  }
+make_oaux_nms <- function(obs) {
+  has_oaux <- sapply(
+    obs,
+    function(x) !is.null(x$prior_aux)
+  )
   obs_nms <- sapply(
     obs,
     function(x) .get_obs(formula(x))
   )
   return(paste0(
-    obs_nms[sdat$has_oaux],
+    obs_nms[has_oaux],
     "|recipricol dispersion"
   ))
 }

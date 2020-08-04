@@ -105,7 +105,7 @@ epiobs <- function(formula,
     center,
     prior,
     prior_intercept,
-    prior_aux,
+    prior_aux = if (family == "poisson") NULL else prior_aux,
     mfargs <- list(...)
   )
   class(out) <- "epiobs"

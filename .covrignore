@@ -1,2 +1,2 @@
 inst/include/csr_matrix_times_vector2.hpp
-src/stanExports_base.h
+src/stanExports_epidemia_base.h
