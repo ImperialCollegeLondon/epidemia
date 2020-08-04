@@ -13,19 +13,15 @@ prior_summary.epimodel <- function(object, digits = 3, ...) {
       print_digits = digits
     ))
   }
-
   out <- list(f(object$rt_prior_info))
-
   out <- c(
     out,
     lapply(object$obs_prior_info, f)
   )
-
   names(out) <- c(
     "R",
     sapply(object$obs, function(x) .get_obs(formula(x)))
   )
-
   return(structure(
     out,
     class = "prior_summary.epimodel",

@@ -1,18 +1,3 @@
-
-# If y is a 1D array keep any names but convert to vector (used in stan_glm)
-#
-# @param y Result of calling model.response
-array1D_check <- function(y) {
-  if (length(dim(y)) == 1L) {
-    nms <- rownames(y)
-    dim(y) <- NULL
-    if (!is.null(nms)) 
-      names(y) <- nms
-  }
-  return(y)
-}
-
-
 is.epimodel <- function(x) inherits(x, "epimodel")
 
 # @param x An epimodel object.
@@ -34,33 +19,6 @@ is.mixed <- function(x) {
   if (is.null(a)) b else a
 }
 
-# Check if any variables in a model frame are constants
-#
-# exceptions: constant variable of all 1's is allowed and outcomes with all 0s
-# or 1s are allowed (e.g., for binomial models)
-# 
-# @param mf A model frame or model matrix
-# @return If no constant variables are found mf is returned, otherwise an error
-#   is thrown.
-check_constant_vars <- function(mf) {
-  mf1 <- mf
-  if (NCOL(mf[, 1]) == 2 || all(mf[, 1] %in% c(0, 1))) {
-    mf1 <- mf[, -1, drop=FALSE] 
-  }
-  
-  lu1 <- function(x) !all(x == 1) && length(unique(x)) == 1
-  nocheck <- c("(weights)", "(offset)", "(Intercept)")
-  sel <- !colnames(mf1) %in% nocheck
-  is_constant <- apply(mf1[, sel, drop=FALSE], 2, lu1)
-  if (any(is_constant)) {
-    stop("Constant variable(s) found: ", 
-         paste(names(is_constant)[is_constant], collapse = ", "), 
-         call. = FALSE)
-  }
-  return(mf)
-}
-
-
 # Grep for "b" parameters (ranef)
 #
 # @param x Character vector (often rownames(fit$stan_summary))
@@ -75,21 +33,6 @@ b_names <- function(x, ...) {
 last_dimnames <- function(x) {
   ndim <- length(dim(x))
   dimnames(x)[[ndim]]
-}
-
-# Get the correct column name to use for selecting the median
-#
-# @param algorithm String naming the estimation algorithm (probably
-#   \code{fit$algorithm}).
-# @return Either \code{"50%"} or \code{"Median"} depending on \code{algorithm}.
-select_median <- function(algorithm) {
-  switch(algorithm, 
-         sampling = "50%",
-         meanfield = "50%",
-         fullrank = "50%",
-         optimizing = "Median",
-         stop("Bug found (incorrect algorithm name passed to select_median)", 
-              call. = FALSE))
 }
 
 # Maybe broadcast 
@@ -162,59 +105,6 @@ make_glmerControl <- function(..., ignore_lhs = FALSE, ignore_x_scale = FALSE) {
                      ...)  
 }
 
-groups <- function(x) {
-  if (!is.null(x)) {
-    as.integer(as.factor(x)) 
-  } else {
-    x
-  }
-}
-
-drop_attributes <- function(x, ...) {
-  dots <- list(...)
-  if (length(dots)) {
-    for (i in dots) {
-      attr(x, i) <- NULL
-    }
-  }
-  x
-}
-
-pad_matrix <- function(x, cols = NULL, rows = NULL, 
-                       value = 0L) {
-  nc <- ncol(x)
-  nr <- nrow(x)
-  if (!is.null(cols) && nc < cols) {
-    pad_mat <- matrix(value, nr, cols - nc)
-    x <- cbind(x, pad_mat)
-    nc <- ncol(x) # update nc to reflect new num cols
-  }
-  if (!is.null(rows) && nr < rows) {
-    pad_mat <- matrix(value, rows - nr, nc)
-    x <- rbind(x, pad_mat)    
-  }
-  x
-}
-
-# Wrapper for rstan::summary
-# @param stanfit A stanfit object created using rstan::sampling or rstan::vb
-# @return A matrix of summary stats
-make_stan_summary <- function(stanfit) {
-  levs <- c(0.5, 0.8, 0.95)
-  qq <- (1 - levs) / 2
-  probs <- sort(c(0.5, qq, 1 - qq))
-  rstan::summary(stanfit, probs = probs, digits = 10)$summary  
-}
-
-select_median <- function(algorithm) {
-  switch(algorithm, 
-         sampling = "50%",
-         meanfield = "50%",
-         fullrank = "50%",
-         optimizing = "Median",
-         stop("Bug found (incorrect algorithm name passed to select_median)", 
-              call. = FALSE))
-}
 
 check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
   if (!check_lp)
