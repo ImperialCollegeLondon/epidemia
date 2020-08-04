@@ -1,4 +1,3 @@
-
 #' Print fitted model details
 #' 
 #' Prints estimated regression parameters, and other model parameters.
@@ -17,17 +16,16 @@ print.epimodel <- function(x, digits=1, ...) {
 
   # remove group effects
   if (mixed) 
-    nms <- setdiff(nms, grep("^b\\[", nms, value = TRUE))
+    nms <- setdiff(nms, grep("^R\\|b\\[", nms, value = TRUE))
 
   coef_mat <- mat[, nms, drop = FALSE]
   estimates <- .median_and_madsd(coef_mat)
 
   if (mixed) {
-    estimates <- estimates[!grepl("^Sigma\\[", rownames(estimates)),, drop=FALSE]
+    estimates <- estimates[!grepl("^R\\|Sigma\\[", rownames(estimates)),, drop=FALSE]
   }
 
-  # separate regression parameters from the model paramaters
-  model_pars <- c("seeds", "R0", "tau", "phi", "kappa", "noise")
+  model_pars <- c("seeds", "tau")
   model_pars <- paste(paste0("^", model_pars), collapse="|")
   model_pars <- grepl(model_pars, rownames(estimates))
   estimates_reg <- estimates[!model_pars,, drop=FALSE]
@@ -36,8 +34,10 @@ print.epimodel <- function(x, digits=1, ...) {
   cat("\nRt regression parameters:\n")
   cat("-----")
   cat("\ncoefficients:\n")
-  if(length(estimates_reg))
-    .printfr(estimates_reg, digits)
+  nms <- grep("^R\\|", rownames(estimates_reg), value=T)
+  mat <- estimates_reg[nms,,drop=FALSE]
+  if(length(mat))
+    .printfr(mat, digits)
 
   if (mixed) {
     cat("\nError terms:\n")
@@ -46,6 +46,18 @@ print.epimodel <- function(x, digits=1, ...) {
         paste(names(ngrps(x)), unname(ngrps(x)), collapse = ", "), "\n")
   }
 
+  for(obs in x$obs) {
+  nme <- .get_obs(formula(obs))
+  cat("\n", nme, " regression parameters:\n")
+  cat("-----")
+  cat("\ncoefficients:\n")
+  nms <- grep(paste0("^", nme, "\\|"), rownames(estimates_reg), value=T)
+  mat <- estimates_reg[nms,,drop=FALSE]
+  if (length(mat))
+    .printfr(mat, digits)
+
+  
+} 
   cat("\nOther model parameters:\n")
   cat("-----\n")
   .printfr(estimates_mod, digits)

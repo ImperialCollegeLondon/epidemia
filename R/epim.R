@@ -47,7 +47,6 @@
 #'  local mode where herd immunity is achieved. If TRUE, a short MCMC run
 #'  fitting to cumulative data is used to initialize the parameters for the main
 #'  sampler.
-#' @param stan_data For internal use. Will be removed in future versions.
 #' @param ... Not used.
 #' @examples
 #' \dontrun{
@@ -81,7 +80,6 @@ epim <- function(rt,
                  prior_PD = FALSE,
                  sampling_args = list(),
                  init_run = FALSE,
-                 stan_data = FALSE,
                  ...) {
 
   call    <- match.call(expand.dots = TRUE)
@@ -104,14 +102,20 @@ epim <- function(rt,
   fml <- formals()
   dft <- fml[setdiff(names(fml), names(sdat))]
   sdat[names(dft)] <- dft
-  rm <- c(
-    "algorithm", "stan_data", "sampling_args",
-    "init_run", "..."
-  )
+  rm <- c("algorithm", "sampling_args", "init_run", "...")
   sdat[rm] <- NULL
   checked <- loo::nlist(rt, data, obs, pops, si)
   sdat[names(checked)] <- checked
   sdat[[1L]] <- quote(epidemia:::standata_all)
+
+  sdat <- eval(sdat, parent.frame())
+  if (algorithm == "sampling") { # useful for debugging
+    if (length(sampling_args$chains) > 0 &&
+        sampling_args$chains == 0) {
+          message("Returning standata as chains = 0")
+          return(sdat)
+        }
+  }
 
   if (init_run) {
     print("Prefit to obtain reasonable starting values")
@@ -125,7 +129,6 @@ epim <- function(rt,
     args$object <- stanmodels$epidemia_base
     args$data <- sdat_init
     prefit <- do.call("sampling", args)
-    
 
     # function defining parameter initialisation
     initf <- function() {
@@ -151,11 +154,6 @@ epim <- function(rt,
       res$tau_raw <- c(res$tau_raw)
       res
     }
-  }
-
-  sdat <- eval(sdat, parent.frame())
-  if (stan_data) { # mainly for debugging purposes
-    return(sdat)
   }
 
     # parameters to keep track of
