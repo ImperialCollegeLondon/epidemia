@@ -109,7 +109,6 @@ epim <- function(rt,
   sdat[names(checked)] <- checked
   sdat[[1L]] <- quote(epidemia:::standata_all)
 
-  sdat <- eval(sdat, parent.frame())
   if (algorithm == "sampling") { # useful for debugging
     if (length(sampling_args$chains) > 0 &&
         sampling_args$chains == 0) {
@@ -120,6 +119,7 @@ epim <- function(rt,
 
   if (init_run) {
     print("Prefit to obtain reasonable starting values")
+    return(list(obs=obs, sdat=sdat))
     cobs <- lapply(obs, function(x) cumulate(x))
     # replace obs with cobs for initial fit
     sdat_init <- sdat
@@ -156,6 +156,8 @@ epim <- function(rt,
       res
     }
   }
+
+  sdat <- eval(sdat, parent.frame())
 
     # parameters to keep track of
   pars <- c(
