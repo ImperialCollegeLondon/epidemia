@@ -69,7 +69,7 @@
 #' \insertAllCited{}
 #' @export
 epim <- function(rt,
-                 obs,
+                 obs = list(),
                  data,
                  pops,
                  si,

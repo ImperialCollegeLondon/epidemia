@@ -51,20 +51,24 @@ posterior_sims <- function(object,
 
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)
+  if (length(eta) > 0) {
+    colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
+    stanmat <- cbind(stanmat, as.matrix(eta))
+  }
+
   oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
-  oeta <- sweep(oeta, 2, standata$offset, "+")
-  colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
-  colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
+  if (length(oeta) > 0) {
+    oeta <- sweep(oeta, 2, standata$offset, "+")
+    colnames(oeta) <- paste0("eta[", seq_len(ncol(oeta)), "]")
+    stanmat <- cbind(stanmat, as.matrix(oeta))
+  }
 
   # stanmatrix may require relabeling
   stanmat <- pp_stanmat(
     stanmat = stanmat,
     orig_nms = object$orig_names,
-    groups = levels(data$group),
-    num_oaux = standata$num_oaux
+    groups = levels(data$group)
   )
-
-  stanmat <- cbind(stanmat, eta, oeta)
 
   sims <- rstan::gqs(stanmodels$epidemia_pp_base,
     data = standata,
@@ -87,7 +91,7 @@ posterior_sims <- function(object,
   names(out) <- nms
 
   # add posterior predictive
-  n <- standata$oN[1:standata$R]
+  n <- standata$oN[seq_len(standata$R)]
 
   out <- c(out, list(
     obs = parse_obs(sims, "obs", n, obs),
@@ -106,6 +110,9 @@ posterior_sims <- function(object,
 # of each type
 # @param obs List of epiobs_ objects
 parse_obs <- function(sims, nme, n, obs) {
+  if (!length(n)) {
+    return(NULL)
+  }
   draws <- rstan::extract(sims, nme)[[1]]
   # split draws into components for each type
   i <- lapply(n, function(x) 1:x)
@@ -207,19 +214,23 @@ pp_standata <- function(object, rt, obs, data) {
 # @param stanmat An matrix of parameter draws
 # @param orig_nms The original names for stan parameters
 # @param groups Sorted character vector of groups to simulate for
-# @param num_oaux Total number of auxiliary variables 
-pp_stanmat <- function(stanmat, orig_nms, groups, num_oaux) {
+pp_stanmat <- function(stanmat, orig_nms, groups) {
   nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
   nms[m] <- paste0("y[", seq_along(groups), "]")
-  colnames(stanmat) <- nms
+  colnames(stanmat)[seq_along(nms)] <- nms
+
+  noaux <- length(grep("^oaux\\[", colnames(stanmat)))
+  neta <- length(grep("^eta\\[", colnames(stanmat)))
+  noeta <- length(grep("^oeta\\[", colnames(stanmat)))
 
   # need to pad out for rstan::gqs
-  mat <- matrix(0, nrow = nrow(stanmat), ncol = 4)
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 8)
   colnames(mat) <- c(
     paste0("y[", length(groups) + 1:2, "]"),
-    paste0("oaux[", num_oaux + 1:2, "]")
+    paste0("oaux[", noaux + 1:2, "]"),
+    paste0("eta[", neta + 1:2, "]"),
+    paste0("oeta[", noeta + 1:2, "]")
   )
-
   return(cbind(stanmat, mat))
 }

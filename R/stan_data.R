@@ -116,6 +116,7 @@ standata_rt <- function(rt) {
 standata_obs <- function(obs, groups, nsim, begin) {
   maxtypes <- 10
   types <- length(obs)
+  out <- list()
 
   if (types > maxtypes) {
     stop("Currently up to 10 observation types are
@@ -163,7 +164,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
     # covariates
     oxbar <- array(unlist(lapply(reg, function(x) x$xbar)))
-    out <- list()
     nms <- paste("oX", 1:maxtypes, sep = "")
     for (i in seq_along(nms)) {
       if (i <= types) {
@@ -214,21 +214,31 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
     has_offset <- array(sapply(obs, function(x) x$has_offset * 1))
     offset_ <- array(unlist(lapply(obs, function(x) x$offset)))
+
+    obs_prior_info <- lapply(reg, function(x) x$prior_info)
   }
   else { # set to zero values
-    N_obs <- K_all <- num_ointercepts <-  0
-    obs <- prior_omean <- prior_oscale <-
+    N_obs <- K_all <- num_ointercepts <- num_oaux <- 0
+    dat <- prior_omean <- prior_oscale <-
     prior_mean_for_ointercept <- prior_scale_for_ointercept <-
     prior_mean_for_oaux <- prior_scale_for_oaux <- 
     prior_df_for_oaux <- offset_ <- rep(0,0)
-    obs_group <- obs_date <- obs_type <- oN <- oK <- oxbar <-
-    has_ointercept <- prior_dist_for_oaux <- has_offset <- integer(0)
+    obs_group <- obs_date <- obs_type  <- oxbar <-
+    has_ointercept <- prior_dist_for_oaux <- has_offset <- 
+    has_oaux <- olink <- ofamily <- integer(0)
+    oN <- oK <- rep(0, maxtypes)
     pvecs <- array(0, dim = c(0, nsim))
+    obs_prior_info <- NULL
+
+     # covariates
+    nms <- paste("oX", 1:maxtypes, sep = "")
+    for (i in seq_along(nms)) {
+        out[[nms[i]]] <- array(0, dim = c(0, 0))
+    }
   }
 
   out <- c(out, loo::nlist(
-    reg,
-    obs_prior_info = lapply(reg, function(x) x$prior_info),
+    obs_prior_info,
     N_obs = sum(oN),
     R = types,
     oN,

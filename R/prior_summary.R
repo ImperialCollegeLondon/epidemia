@@ -27,7 +27,7 @@ prior_summary.epimodel <- function(object, digits = 3, ...) {
   )
 
   return(structure(
-    list(out, prior_tau),
+    out,
     class = "prior_summary.epimodel",
     model_name = deparse(substitute(object))
   ))

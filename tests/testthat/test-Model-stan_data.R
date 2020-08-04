@@ -2,8 +2,11 @@ context("Check Model data passed to stan")
 
 load("../data/NYWA2.RData")
 args <- NYWA2
-args$stan_data <- TRUE
-args$formula <- R(code, date) ~ 0 + av_mobility
+args$sampling_args <- list(chains=0)
+
+args$rt <- epirt(
+  formula = R(code, date) ~ 0 + av_mobility
+)
 
 test_that("Expected stan data for various lengths of 'obs' arguments", {
 
