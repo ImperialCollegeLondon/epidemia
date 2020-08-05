@@ -34,227 +34,229 @@ evaluate_forecast <-
            levels = c(50, 95),
            coverage_periods = c("1 week", "2 weeks"),
            cov_by_group = FALSE) {
-
-  if (is.null(type))
+    
+    if (is.null(type))
       stop("must specify an observation type")
-
-  alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
-  if (!(type %in% alltypes)) {
-    stop(paste0("obs does not contain any observations
+    
+    alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
+    if (!(type %in% alltypes)) {
+      stop(paste0("obs does not contain any observations
   for type '", type, "'"), call. = FALSE)
-  }
-
-  group_colname <- .get_group(formula(object))
-
-  groups <- groups %ORifNULL% object$groups
-
-
-  obs <- posterior_predict(
+    }
+    
+    ok_metrics <- c("crps", "mean_abs_error", "median_abs_error")
+    metrics <- metrics %ORifNULL% ok_metrics
+    if (any(!(metrics %in% ok_metrics)))
+      stop("Unrecognised metrics. Allowed metrics include ", 
+           paste(ok_metrics, collapse=", "), call.=FALSE)
+    
+    levels <- check_levels(levels)
+    
+    group_colname <- .get_group(formula(object$rt))
+    groups <- groups %ORifNULL% object$groups
+    
+    obs <- posterior_predict(
       object = object,
       types = type,
-      ...
-  )
+      newdata = newdata
+    )
+    
+    data <- newdata %ORifNULL% object$data
+    
+    f <- function(group) {
+      obs <- gr_subset(obs, group)
+      return(evaluate_group_forecast(obs, levels, type, data))
+    }
+    
+    out <- lapply(groups, f)
 
-  obs <- gr_subset(obs, groups)
+  return(out)
+    
+  }
 
-  ok_metrics <- c("crps", "mean_abs_error", "median_abs_error")
-  metrics <- metrics %ORifNULL% ok_metrics
-  if (any(metrics %in% ok_metrics))
-    stop("Unrecognised metrics. Allowed metrics include ", 
-    paste(ok_metrics, collapse=", "), call.=FALSE)
 
+
+
+
+
+
+
+# evaluate_forecast <- function(object, newdata, observations, type,
+#                               group=NULL,
+#                               metric_names=NULL,
+#                               levels=c(50,95), coverage_periods=c("1 week", "2 weeks"), cov_by_group=FALSE) {
+  
+
+  
+#   # calculate quantiles
+#   qtl <- lapply(posterior_samples, function(x) .get_quantiles(x, levels=levels))
+#   level_names <- lapply(qtl, function(x) unique(x$tag))
+#   qtl <- lapply(qtl, function(x) lapply(unique(x$tag), function(y) x[x$tag==y,]))
+  
+  # # calculate error metrics and coverage
+  # evaluate_group_forecast <- function(group) {
+  #   obs_group <- observations[observations[[group_colname]]==group,][[type]]
+  #   samples <- posterior_samples[[group]] %>% dplyr::select(-date) # could be faster to transpose
+    
+  #   daily_error <- data.frame(group=group,
+  #                             date=posterior_samples[[group]]$date,
+  #                             crps=sapply(1:nrow(samples), function(i) scoringRules::crps_sample(y=obs_group[[i]], dat=samples[,i])),
+  #                             mean_abs_error=sapply(1:nrow(samples), function(i) mean(abs(obs_group[[i]]-samples[,i]))),
+  #                             median_abs_error=sapply(1:nrow(samples), function(i) median(abs(obs_group[[i]]-samples[,i])))
+  #   )
+    
+  #   daily_coverage <- lapply(1:length(levels),
+  #                            function(l) data.frame(
+  #                              group=group,
+  #                              date=qtl[[group]][[l]]$date,
+  #                              tag=level_names[[group]][[l]],
+  #                              in_ci=data.table::between(obs_group, qtl[[group]][[l]]$low, qtl[[group]][[l]]$up)
+  #                            )
+  #   )
+  #   daily_coverage <- data.table::rbindlist(daily_coverage)
+    
+  #   list(error=daily_error, coverage=daily_coverage)
+  # }
+  
+  # # calculate the error metrics and coverage of the CIs by day
+  # forecast_dfs <- lapply(all_groups, evaluate_group_forecast)
+  # error <- data.table::rbindlist(lapply(forecast_dfs, function(x) x$error)) %>%
+  #   tidyr::pivot_longer(c(crps, mean_abs_error, median_abs_error), names_to="metric_name", values_to="metric_value") %>%
+  #   dplyr::rename(!!dplyr::sym(group_colname):=group)
+  # coverage <- data.table::rbindlist(lapply(forecast_dfs, function(x) x$coverage)) %>%
+  #   dplyr::rename(!!dplyr::sym(group_colname):=group)
+  
+#   #
+#   # code below formats the dates in order to make the coverage plot
+#   #
+  
+#   # dates of the posterior by group
+#   post_date_info <- object$data %>%
+#     dplyr::filter(group %in% all_groups) %>%
+#     dplyr::group_by(!!dplyr::sym(group_colname)) %>%
+#     dplyr::summarise(posterior_start=min(date), posterior_end=max(date))
+  
+#   posterior_start <- post_date_info$posterior_start
+#   names(posterior_start) <- post_date_info[[group_colname]]
+#   posterior_end <- post_date_info$posterior_end
+#   names(posterior_end) <- post_date_info[[group_colname]]
+  
+#   # error metric plot by day. also marks the end of the posterior
+#   error_plot <- ggplot2::ggplot(error %>% dplyr::filter(metric_name %in% metric_names),
+#                                 ggplot2::aes(x=date, y=metric_value, colour=metric_name)) +
+#     ggplot2::geom_line() +
+#     ggplot2::facet_wrap(as.formula(paste("~", group_colname)), scales="free_y") +
+#     ggplot2::labs(y="Metric value", x="Date", colour="Metric name") +
+#     ggplot2::theme(legend.position="top") +
+#     ggplot2::geom_vline(data=post_date_info, ggplot2::aes(xintercept=posterior_end), linetype="dashed")
+  
+#   # dates for coverage by group
+#   cov_date_info <- coverage %>%
+#     dplyr::group_by(!!dplyr::sym(group_colname)) %>%
+#     dplyr::summarise(coverage_days=list(seq(min(date), max(date), by="day")))
+#   coverage_days <- cov_date_info$coverage_days
+#   names(coverage_days) <- cov_date_info[[group_colname]]
+  
+#   # try and make the end of the date period from coverage_periods
+#   # also include the posterior
+#   coverage_plot_days <- list()
+#   for(group in all_groups) {
+#     coverage_plot_days[[group]] <- list()
+#     coverage_plot_days[[group]][["posterior"]] <- seq(posterior_start[[group]], posterior_end[[group]], by="day")
+#     for(period_duration in coverage_periods) {
+#       end_date <- tryCatch({
+#         seq(posterior_end[[group]]+1, length=2, by=period_duration)[[2]]
+#       }, warning=function(w) {
+#         warning(paste0("failed to create date sequence for ", period_duration, " with warning:\n", w),
+#                 call. = FALSE)
+#         NULL
+#       } ,error=function(e) {
+#         warning(paste0("failed to create date sequence for ", period_duration, " with error:\n", e),
+#                 call. = FALSE)
+#         NULL
+#       })
+#       if(is.null(end_date))
+#         next
+      
+#       period_days <- seq(posterior_end[[group]]+1, end_date, by="day")
+#       if(any(!(period_days %in% coverage_days[[group]]))) {
+#         warning(paste0("not enough days of coverage data for ", period_duration, " forecast (", group, ")\n"),
+#                 call. = FALSE)
+#       } else coverage_plot_days[[group]][[paste(period_duration, "forecast")]] <- period_days
+#     }
+#   }
+  
+#   # get the coverage results for the right days
+#   coverage_plotdata <- list()
+#   for(group_name in all_groups) {
+#     coverage_plotdata[[group_name]] <- list()
+#     for(label in names(coverage_plot_days[[group_name]])) {
+#       coverage_plotdata[[group_name]][[label]] <- coverage %>%
+#         dplyr::filter(!!dplyr::sym(group_colname)==group_name & date %in% coverage_plot_days[[group_name]][[label]]) %>%
+#         dplyr::group_by(tag) %>%
+#         dplyr::summarise(mean_coverage=mean(in_ci))
+#     }
+#   }
+  
+#   # make the coverage plot. bars are ordered as posterior then the order of coverage_periods
+#   coverage_plotdata <- data.table::rbindlist(
+#     lapply(coverage_plotdata,
+#            function(x) data.table::rbindlist(x, idcol="time_period")),
+#     idcol=group_colname)
+#   coverage_plotdata$time_period <- factor(
+#     coverage_plotdata$time_period,
+#     levels=c("posterior", unique(coverage_plotdata$time_period)[unique(coverage_plotdata$time_period)!="posterior"])
+#   )
+  
+#   coverage_plot <- ggplot2::ggplot(coverage_plotdata, ggplot2::aes(x=time_period, y=mean_coverage, fill=tag)) + 
+#     ggplot2::geom_bar(stat="identity", position="dodge") +
+#     ggplot2::scale_y_continuous(labels=scales::percent_format()) +
+#     ggplot2::labs(fill="CI", y="Mean coverage", x="Time period") +
+#     ggplot2::theme(axis.text.x=ggplot2::element_text(angle=50, vjust=0.5))
+  
+#   if(cov_by_group)
+#     coverage_plot <- coverage_plot + ggplot2::facet_wrap(as.formula(paste("~", group_colname)))
+  
+#   list(error_plot=error_plot,
+#        coverage_plot=coverage_plot,
+#        error_data=error,
+#        coverage_data=coverage)
+# }
+
+
+
+evaluate_group_forecast <- function(obs_group, levels, type, data) {
+  # observed data
+  y <- na.omit(data[data[,group_colname] == group, type])
+  error <- daily_error(obs_group, y)
+  coverage <- daily_coverage(obs_group, levels)
+  return(loo::nlist(error, coverage))
 }
 
-
-evaluate_forecast <- function(object, newdata, observations, type,
-                              group=NULL,
-                              metric_names=NULL,
-                              levels=c(50,95), coverage_periods=c("1 week", "2 weeks"), cov_by_group=FALSE) {
-  
-  if(!(type %in% colnames(observations)))
-    stop(paste0(type, " is not a column in observations"))
-  
-  # extract the name of the group
-  group_colname <- all.vars(update(object$formula, ".~0"))[[1]]
-
-
-  
-  # check the provided metrics
-  if(is.null(metric_names)) {
-    metric_names <- c("crps", "mean_abs_error", "median_abs_error")
-  } else {
-    if(any(!(metric_names %in% c("crps", "mean_abs_error", "median_abs_error")))) {
-      warning(paste0(
-        "metrics ",
-        paste0(
-          metric_names[!(metric_names %in% c("crps", "mean_abs_error", "median_abs_error"))],
-          collapse=", "),
-        " are not valid"
-        ),
-        call. = FALSE
-      )
-      metric_names <- metric_names[metric_names %in% c("crps", "mean_abs_error", "median_abs_error")]
-      if(length(metric_names)==0) {
-        warning("no valid metrics were provided - plotting CRPS, mean absolute error and median absolute error",
-                call. = FALSE)
-        metric_names <- c("crps", "mean_abs_error", "median_abs_error")
-      }
-    }
-  }
-  
-  levels <- check_levels(levels)
-  
-  # draw posterior samples
-  posterior_samples <- tryCatch({
-    posterior_predict(object, newdata=newdata)
-  }, error=function(e) {
-    stop(paste0("failed to draw posterior samples with error:\n", e), call. = FALSE)
-  })
-  posterior_samples <- posterior_samples[all_groups]
-  
-  # check dates match between the observations and the posterior samples
-  # TODO: could just remove missing dates rather than ignore group entirely in case of mismatch
-  dates_match <- sapply(all_groups,
-                        function(group) all(posterior_samples[[group]]$date %in% observations$date[observations[[group_colname]]==group]))
-  if(all(!dates_match)) {
-    stop("Date mismatch between posterior samples and observations for all groups", call. = FALSE)
-  } else if (any(!dates_match)) {
-    warning(paste0("Date mismatch between posterior samples for groups ", paste0(names(dates_match)[!dates_match], collapse=", ")),
-            call. = FALSE)
-    all_groups <- all_groups[dates_match]
-  }
-  
-  # calculate quantiles
-  qtl <- lapply(posterior_samples, function(x) .get_quantiles(x, levels=levels))
-  level_names <- lapply(qtl, function(x) unique(x$tag))
-  qtl <- lapply(qtl, function(x) lapply(unique(x$tag), function(y) x[x$tag==y,]))
-  
-  # calculate error metrics and coverage
-  evaluate_group_forecast <- function(group) {
-    obs_group <- observations[observations[[group_colname]]==group,][[type]]
-    samples <- posterior_samples[[group]] %>% dplyr::select(-date) # could be faster to transpose
-    
-    daily_error <- data.frame(group=group,
-                              date=posterior_samples[[group]]$date,
-                              crps=sapply(1:nrow(samples), function(i) scoringRules::crps_sample(y=obs_group[[i]], dat=samples[,i])),
-                              mean_abs_error=sapply(1:nrow(samples), function(i) mean(abs(obs_group[[i]]-samples[,i]))),
-                              median_abs_error=sapply(1:nrow(samples), function(i) median(abs(obs_group[[i]]-samples[,i])))
-    )
-    
-    daily_coverage <- lapply(1:length(levels),
-                             function(l) data.frame(
-                               group=group,
-                               date=qtl[[group]][[l]]$date,
-                               tag=level_names[[group]][[l]],
-                               in_ci=data.table::between(obs_group, qtl[[group]][[l]]$low, qtl[[group]][[l]]$up)
-                             )
-    )
-    daily_coverage <- data.table::rbindlist(daily_coverage)
-    
-    list(error=daily_error, coverage=daily_coverage)
-  }
-  
-  # calculate the error metrics and coverage of the CIs by day
-  forecast_dfs <- lapply(all_groups, evaluate_group_forecast)
-  error <- data.table::rbindlist(lapply(forecast_dfs, function(x) x$error)) %>%
-    tidyr::pivot_longer(c(crps, mean_abs_error, median_abs_error), names_to="metric_name", values_to="metric_value") %>%
-    dplyr::rename(!!dplyr::sym(group_colname):=group)
-  coverage <- data.table::rbindlist(lapply(forecast_dfs, function(x) x$coverage)) %>%
-    dplyr::rename(!!dplyr::sym(group_colname):=group)
-  
-  #
-  # code below formats the dates in order to make the coverage plot
-  #
-  
-  # dates of the posterior by group
-  post_date_info <- object$data %>%
-    dplyr::filter(group %in% all_groups) %>%
-    dplyr::group_by(!!dplyr::sym(group_colname)) %>%
-    dplyr::summarise(posterior_start=min(date), posterior_end=max(date))
-  
-  posterior_start <- post_date_info$posterior_start
-  names(posterior_start) <- post_date_info[[group_colname]]
-  posterior_end <- post_date_info$posterior_end
-  names(posterior_end) <- post_date_info[[group_colname]]
-  
-  # error metric plot by day. also marks the end of the posterior
-  error_plot <- ggplot2::ggplot(error %>% dplyr::filter(metric_name %in% metric_names),
-                                ggplot2::aes(x=date, y=metric_value, colour=metric_name)) +
-    ggplot2::geom_line() +
-    ggplot2::facet_wrap(as.formula(paste("~", group_colname)), scales="free_y") +
-    ggplot2::labs(y="Metric value", x="Date", colour="Metric name") +
-    ggplot2::theme(legend.position="top") +
-    ggplot2::geom_vline(data=post_date_info, ggplot2::aes(xintercept=posterior_end), linetype="dashed")
-  
-  # dates for coverage by group
-  cov_date_info <- coverage %>%
-    dplyr::group_by(!!dplyr::sym(group_colname)) %>%
-    dplyr::summarise(coverage_days=list(seq(min(date), max(date), by="day")))
-  coverage_days <- cov_date_info$coverage_days
-  names(coverage_days) <- cov_date_info[[group_colname]]
-  
-  # try and make the end of the date period from coverage_periods
-  # also include the posterior
-  coverage_plot_days <- list()
-  for(group in all_groups) {
-    coverage_plot_days[[group]] <- list()
-    coverage_plot_days[[group]][["posterior"]] <- seq(posterior_start[[group]], posterior_end[[group]], by="day")
-    for(period_duration in coverage_periods) {
-      end_date <- tryCatch({
-        seq(posterior_end[[group]]+1, length=2, by=period_duration)[[2]]
-      }, warning=function(w) {
-        warning(paste0("failed to create date sequence for ", period_duration, " with warning:\n", w),
-                call. = FALSE)
-        NULL
-      } ,error=function(e) {
-        warning(paste0("failed to create date sequence for ", period_duration, " with error:\n", e),
-                call. = FALSE)
-        NULL
-      })
-      if(is.null(end_date))
-        next
-      
-      period_days <- seq(posterior_end[[group]]+1, end_date, by="day")
-      if(any(!(period_days %in% coverage_days[[group]]))) {
-        warning(paste0("not enough days of coverage data for ", period_duration, " forecast (", group, ")\n"),
-                call. = FALSE)
-      } else coverage_plot_days[[group]][[paste(period_duration, "forecast")]] <- period_days
-    }
-  }
-  
-  # get the coverage results for the right days
-  coverage_plotdata <- list()
-  for(group_name in all_groups) {
-    coverage_plotdata[[group_name]] <- list()
-    for(label in names(coverage_plot_days[[group_name]])) {
-      coverage_plotdata[[group_name]][[label]] <- coverage %>%
-        dplyr::filter(!!dplyr::sym(group_colname)==group_name & date %in% coverage_plot_days[[group_name]][[label]]) %>%
-        dplyr::group_by(tag) %>%
-        dplyr::summarise(mean_coverage=mean(in_ci))
-    }
-  }
-  
-  # make the coverage plot. bars are ordered as posterior then the order of coverage_periods
-  coverage_plotdata <- data.table::rbindlist(
-    lapply(coverage_plotdata,
-           function(x) data.table::rbindlist(x, idcol="time_period")),
-    idcol=group_colname)
-  coverage_plotdata$time_period <- factor(
-    coverage_plotdata$time_period,
-    levels=c("posterior", unique(coverage_plotdata$time_period)[unique(coverage_plotdata$time_period)!="posterior"])
+daily_error <- function(obs_group, y) {
+  draws <- obs_group$draws
+  mat <- (abs(sweep(t(draws), 1, y)))
+  out <- data.frame(
+    group = obs_group$group,
+    date = obs_group$time,
+    crps = scoringRules::crps_sample(y, t(draws)),
+    mean_abs_error = rowMeans(mat),
+    median_abs_error = apply(mat, 1, median)
   )
-  
-  coverage_plot <- ggplot2::ggplot(coverage_plotdata, ggplot2::aes(x=time_period, y=mean_coverage, fill=tag)) + 
-    ggplot2::geom_bar(stat="identity", position="dodge") +
-    ggplot2::scale_y_continuous(labels=scales::percent_format()) +
-    ggplot2::labs(fill="CI", y="Mean coverage", x="Time period") +
-    ggplot2::theme(axis.text.x=ggplot2::element_text(angle=50, vjust=0.5))
-  
-  if(cov_by_group)
-    coverage_plot <- coverage_plot + ggplot2::facet_wrap(as.formula(paste("~", group_colname)))
-  
-  list(error_plot=error_plot,
-       coverage_plot=coverage_plot,
-       error_data=error,
-       coverage_data=coverage)
+  return(out)
+}
+
+daily_coverage <- function(obs_group, levels) {
+  f <- function(level) {
+    qtl <- get_quantiles(obs_group, level)
+    out <- data.frame(
+      group = obs_group$group,
+      date = qtl$date,
+      tag = qtl$tag[1],
+      in_ci = (qtl$lower <= df) * (df <= qtl$upper)
+    )
+  return(out)
+  }
+  dfs <- lapply(levels, f)
+  return(do.call(rbind, dfs))
 }

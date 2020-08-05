@@ -449,7 +449,7 @@ cumul <- function(object) {
 #
 # @param object Result of a posterior_ function
 # @param levels A numeric vector defining levels
-get_quantiles <- function(object, levels, dates, date_format) {
+get_quantiles <- function(object, levels, dates=NULL, date_format=NULL) {
   levels <- levels[order(levels)]
   f <- function(level) {
     res <- apply(
@@ -471,11 +471,13 @@ get_quantiles <- function(object, levels, dates, date_format) {
   out <- lapply(levels, f)
   out <- do.call(rbind, out)
   out$tag <- factor(out$tag, ordered = T, levels = rev(levels(out$tag)))
-  out <- subset_for_dates(
-    out,
-    dates,
-    date_format
-  )
+  if (!is.null(dates)){
+    out <- subset_for_dates(
+      out,
+      dates,
+      date_format
+    )
+  }
   return(out)
 }
 
