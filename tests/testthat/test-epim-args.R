@@ -91,7 +91,7 @@ test_that("throws error if NA in pops", {
 test_that("error if group missing from pops", {
   broken.args <- working.args
   broken.args$pops <- broken.args$pops[-1,]
-  expect_error(do.call("epim", args=broken.args), regexp = "Levels in 'formula' response missing in 'pops': Denmark")
+  expect_error(do.call("epim", args=broken.args), regexp = "Levels in")
 })
 
 test_that("error if group_subset contains invalid group", {

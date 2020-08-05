@@ -15,7 +15,7 @@ parse_mm <- function(formula, data, offset = NULL, ...) {
   mf$data <- data
   mf$offset <- offset
 
-  if (is_mixed(formula)) {
+  if (is.mixed(formula)) {
     mf[[1L]] <- quote(lme4::glFormula)
     mf$control <- make_glmerControl(
       ignore_lhs = TRUE,

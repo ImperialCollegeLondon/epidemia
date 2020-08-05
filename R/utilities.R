@@ -11,12 +11,6 @@ check_integer <- function(x, tol = .Machine$double.eps) {
   }
 }
 
-check_numeric <- function(x) {
-  s <- substitute(x)
-  if (anyNA(as.numeric(x)))
-    stop(paste0(s, " should be coercible to numeric"))
-}
-
 check_character <- function(x) {
   s <- substitute(x)
   if (anyNA(as.character(x)))
@@ -35,10 +29,6 @@ check_offset <- function(offset, y) {
 
 # syntactic sugar for the formula
 R <- function(group, date) {
-}
-
-is_mixed <- function(formula) {
-  !is.null(lme4::findbars(norws(formula)))
 }
 
 is_autocor <- function(formula) {
@@ -110,7 +100,7 @@ check_obs_formula <- function(formula) {
     stop("'formula' must have class formula.", call. = FALSE)
   }
 
-  if (is_mixed(formula)) {
+  if (is.mixed(formula)) {
     stop("random effects terms found in 'formula', but are not currently
       supported", call. = FALSE)
   }
@@ -283,7 +273,8 @@ check_df <- function(df, name, nc) {
     stop(paste0(name, " has zero rows"), call. = FALSE)
   
   if(ncol(df) < nc)
-    stop(paste0("Not enough columns in ", name, " - at least ", nc, " are required"), call. = FALSE)
+    stop(paste0("Not enough columns in ", name, 
+    " - at least ", nc, " are required"), call. = FALSE)
   
   if(any(is.na.data.frame(df[,1:nc])))
     stop(paste0("NAs exist in ", name), call. = FALSE)
@@ -307,13 +298,16 @@ check_pops <- function(pops, levels) {
       pops
     },
     error = function(cond) {
-      stop(paste0("Columns of 'pops' are not coercible to required classes [factor, integer]. Original message: ", cond))
+      stop(paste0("Columns of 'pops' are not coercible to
+       required classes [factor, integer]. Original message: ", cond))
     }
   )
   if(any(is.na(pops$group)))
-    stop(paste0("NAs exist in column ", oldnames[[1]], " of 'pops' after coercion to factor"), call. = FALSE)
+    stop(paste0("NAs exist in column ", oldnames[[1]], " of
+     'pops' after coercion to factor"), call. = FALSE)
   if(any(is.na(pops$pop)))
-    stop(paste0("NAs exist in column", oldnames[[2]], " of 'pops' after coercion to integer"), call. = FALSE)
+    stop(paste0("NAs exist in column", oldnames[[2]], " of
+     'pops' after coercion to integer"), call. = FALSE)
   
   # removing rows not represented in response groups
   pops <- pops[pops$group %in% levels,]
@@ -322,14 +316,17 @@ check_pops <- function(pops, levels) {
   missing.levels <- !(levels %in% pops$group)
   if (any(missing.levels)) {
     missing.levels <- levels[missing.levels]
-    stop(paste0("Levels in 'formula' response missing in 'pops': ", paste0(missing.levels, collapse=", ")), call. = FALSE)
+    stop(paste0("Levels in 'formula' response missing in
+     'pops': ", paste0(missing.levels, collapse=", ")), call. = FALSE)
   }
 
   if(any(duplicated(pops$group)))
-    stop("Populations for a given group must be unique. Please check 'pops'.", call. = FALSE)
+    stop("Populations for a given group must be unique.
+     Please check 'pops'.", call. = FALSE)
 
   if(any(pops$pop < 0))
-    stop("Populations must take nonnegative. Plase check 'pops'", call. = FALSE)
+    stop("Populations must take nonnegative.
+     Plase check 'pops'", call. = FALSE)
 
   # sort by group
   pops <- pops[order(pops$group),]
@@ -401,4 +398,28 @@ all_vars_obs <- function(formula) {
   vars <- all.vars(formula)
   vars <- c(vars, .get_obs(formula))
   return(vars)
+}
+
+is.epimodel <- function(x) inherits(x, "epimodel")
+
+
+
+
+
+is.mixed <- function(object, ...) UseMethod("is.mixed")
+
+is.mixed.epimodel <- function(object) {
+  stopifnot(is.epimodel(object))
+  check1 <- inherits(object, "mixed")
+  check2 <- !is.null(object$glmod)
+  if (check1 && !check2) {
+    stop("Bug found. 'object' has class 'mixed' but no 'glmod' component.")
+  } else if (!check1 && check2) {
+    stop("Bug found. 'object' has 'glmod' component but not class 'mixed'.")
+  }
+  isTRUE(check1 && check2)
+}
+
+is.mixed.formula <- function(object) {
+  !is.null(lme4::findbars(norws(object)))
 }

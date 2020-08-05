@@ -2,6 +2,7 @@ context("Test plotting")
 
 # load data
 example.fit <- readRDS("../data/plot_test_fit.rds")
+fm <- example.fit
 
 test_that("wrong group throws error", {
   expect_error(plot_rt(example.fit, groups = c("Germany", "FakeCountry")), regexp = "group\\(s\\) FakeCountry not found.")
@@ -66,4 +67,37 @@ test_that(".check_dates works as expected", {
                as.Date(c("2020-02-06","2020-04-06")))
 }
 )
+
+
+test_that("plot_rt runs through with varioud arguments", {
+  fun <- plot_rt
+  expect_true(inherits(fun(fm), "ggplot"))
+  expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
+  expect_true(inherits(fun(fm, plotly=T), "plotly"))
+  expect_true(inherits(fun(fm, smooth=7), "ggplot"))
+})
+
+test_that("plot_obs runs through with varioud arguments", {
+fun <- function(x, ...) plot_obs(x, type="deaths", ...)
+expect_true(inherits(fun(fm), "ggplot"))
+expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
+expect_true(inherits(fun(fm, plotly=T), "plotly"))
+expect_true(inherits(fun(fm, cumulative=T), "ggplot"))
+})
+
+test_that("plot_infections runs through with varioud arguments", {
+fun <- plot_infections
+expect_true(inherits(fun(fm), "ggplot"))
+expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
+expect_true(inherits(fun(fm, plotly=T), "plotly"))
+expect_true(inherits(fun(fm, cumulative=T), "ggplot"))
+})
+
+test_that("plot_infectious runs through with varioud arguments", {
+fun <- plot_infectious
+expect_true(inherits(fun(fm), "ggplot"))
+expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
+expect_true(inherits(fun(fm, plotly=T), "plotly"))
+expect_true(inherits(fun(fm, cumulative=T), "ggplot"))
+})
 

@@ -1,8 +1,5 @@
 context("Test all make name functions in epim")
 
-source("~/Documents/R/Library/imperialcovid/epidemia/R/epim.R")
-source("~/Documents/R/Library/imperialcovid/epidemia/R/utilities.R")
-
 data("EuropeCovid")
 data <- EuropeCovid$data
 formula <- R(country, date) ~ 1 + rw()
@@ -38,9 +35,3 @@ test_that("make_oaux_nms", {
   obs <- list(deaths=deaths, cases=cases)
   expect_equal(make_oaux_nms(obs), "cases|recipricol dispersion")
 })
-
-make_obeta_nms()
-
-make_ointercept_nms()
-
-make_obeta_nms()

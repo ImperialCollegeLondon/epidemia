@@ -113,7 +113,7 @@ epim <- function(rt,
     if (length(sampling_args$chains) > 0 &&
         sampling_args$chains == 0) {
           message("Returning standata as chains = 0")
-          return(sdat)
+          return(eval(sdat, parent.frame()))
         }
   }
 
