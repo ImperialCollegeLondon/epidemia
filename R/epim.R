@@ -119,7 +119,6 @@ epim <- function(rt,
 
   if (init_run) {
     print("Prefit to obtain reasonable starting values")
-    return(list(obs=obs, sdat=sdat))
     cobs <- lapply(obs, function(x) cumulate(x))
     # replace obs with cobs for initial fit
     sdat_init <- sdat
