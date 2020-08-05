@@ -31,9 +31,13 @@ epimodel <- function(object) {
     function(x) stan_summary[x, "50%", drop = F]
   )
   stanmat <- as.matrix(stanfit)
+  print(idx)
   ses <- lapply(
     idx,
-    function(x) apply(stanmat[, x, drop = F], 2L, mad)
+    function(x) {
+      print(x)
+      print(colnames(stanmat)[x])
+      apply(stanmat[, x, drop = F], 2L, stats::mad)}
   )
 
   # function removes RE and autocor terms from matrix

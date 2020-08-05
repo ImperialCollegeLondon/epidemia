@@ -24,6 +24,48 @@
 #' with the suffix \code{_data} are used to make the corresponding \code{_plot}. See the vignettes for an explanation what these plots
 #' show.
 #' @export
+
+evaluate_forecast <-
+  function(object,
+           newdata,
+           type,
+           groups = NULL,
+           metrics = NULL,
+           levels = c(50, 95),
+           coverage_periods = c("1 week", "2 weeks"),
+           cov_by_group = FALSE) {
+
+  if (is.null(type))
+      stop("must specify an observation type")
+
+  alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
+  if (!(type %in% alltypes)) {
+    stop(paste0("obs does not contain any observations
+  for type '", type, "'"), call. = FALSE)
+  }
+
+  group_colname <- .get_group(formula(object))
+
+  groups <- groups %ORifNULL% object$groups
+
+
+  obs <- posterior_predict(
+      object = object,
+      types = type,
+      ...
+  )
+
+  obs <- gr_subset(obs, groups)
+
+  ok_metrics <- c("crps", "mean_abs_error", "median_abs_error")
+  metrics <- metrics %ORifNULL% ok_metrics
+  if (any(metrics %in% ok_metrics))
+    stop("Unrecognised metrics. Allowed metrics include ", 
+    paste(ok_metrics, collapse=", "), call.=FALSE)
+
+}
+
+
 evaluate_forecast <- function(object, newdata, observations, type,
                               group=NULL,
                               metric_names=NULL,
@@ -34,22 +76,8 @@ evaluate_forecast <- function(object, newdata, observations, type,
   
   # extract the name of the group
   group_colname <- all.vars(update(object$formula, ".~0"))[[1]]
-  
-  if(!(group_colname %in% colnames(observations)))
-    stop(paste0(group_colname, " (group name) is not a column in observations"), call. = FALSE)
-  
-  if(is.null(group)) {
-    all_groups <- object$groups
-  } else all_groups <- group
-  
-  missing_groups <- !(all_groups %in% unique(observations[[group_colname]]))
-  if(all(missing_groups)) {
-    stop("all groups missing from observations", call. = FALSE)
-  } else if(any(missing_groups)) {
-    warning(paste0("groups ", paste0(all_groups[missing_groups], collapse=", "), " are not present in observations"),
-            call. = FALSE)
-    all_groups <- all_groups[!missing_groups]
-  }
+
+
   
   # check the provided metrics
   if(is.null(metric_names)) {
