@@ -256,6 +256,13 @@ plot_obs.epimodel <-
       alpha = 0.7
     )
 
+    p <- p + ggplot2::scale_y_continuous(
+      labels = scales::comma,
+      expand = ggplot2::expansion(mult = c(0, 0.1)),
+      trans = ifelse(log, "pseudo_log", "identity"),
+      limits = c(ifelse(log, NA, 0), NA)
+    )
+
     if (plotly) {
       p <- plotly::ggplotly(p)
     }
@@ -354,6 +361,13 @@ plot_infections.epimodel <-
 
     p <- p + ggplot2::ylab("Infections")
 
+     p <- p + ggplot2::scale_y_continuous(
+      labels = scales::comma,
+      expand = ggplot2::expansion(mult = c(0, 0.1)),
+      trans = ifelse(log, "pseudo_log", "identity"),
+      limits = c(ifelse(log, NA, 0), NA)
+    )
+
     if (plotly) {
       p <- plotly::ggplotly(p)
     }
@@ -419,6 +433,13 @@ plot_infectious.epimodel <-
     )
 
     p <- p + ggplot2::ylab("Infectiousness")
+
+    p <- p + ggplot2::scale_y_continuous(
+      labels = scales::comma,
+      expand = ggplot2::expansion(mult = c(0, 0.1)),
+      trans = ifelse(log, "pseudo_log", "identity"),
+      limits = c(ifelse(log, NA, 0), NA)
+    )
 
     if (plotly) {
       p <- plotly::ggplotly(p)
