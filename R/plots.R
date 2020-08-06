@@ -98,7 +98,7 @@ plot_rt.epimodel <-
       dates,
       date_format
     )
-    p <- base_plot(qtl, log, date_breaks)
+    p <- base_plot(qtl, log, date_breaks, TRUE)
 
     p <- p + ggplot2::scale_fill_manual(
       name = "CI", 
@@ -256,13 +256,6 @@ plot_obs.epimodel <-
       alpha = 0.7
     )
 
-    p <- p + ggplot2::scale_y_continuous(
-      labels = scales::comma,
-      expand = ggplot2::expansion(mult = c(0, 0.1)),
-      trans = ifelse(log, "pseudo_log", "identity"),
-      limits = c(ifelse(log, NA, 0), NA)
-    )
-
     if (plotly) {
       p <- plotly::ggplotly(p)
     }
@@ -361,13 +354,6 @@ plot_infections.epimodel <-
 
     p <- p + ggplot2::ylab("Infections")
 
-     p <- p + ggplot2::scale_y_continuous(
-      labels = scales::comma,
-      expand = ggplot2::expansion(mult = c(0, 0.1)),
-      trans = ifelse(log, "pseudo_log", "identity"),
-      limits = c(ifelse(log, NA, 0), NA)
-    )
-
     if (plotly) {
       p <- plotly::ggplotly(p)
     }
@@ -432,14 +418,7 @@ plot_infectious.epimodel <-
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
-    p <- p + ggplot2::ylab("Infectiousness")
-
-    p <- p + ggplot2::scale_y_continuous(
-      labels = scales::comma,
-      expand = ggplot2::expansion(mult = c(0, 0.1)),
-      trans = ifelse(log, "pseudo_log", "identity"),
-      limits = c(ifelse(log, NA, 0), NA)
-    )
+    p <- p + ggplot2::ylab("Infectious")
 
     if (plotly) {
       p <- plotly::ggplotly(p)
@@ -663,7 +642,7 @@ check_dates <- function(dates, date_format, min_date, max_date) {
 #
 # @param qtl dataframe giving quantiles
 # @param date_breaks Determines breaks uses on x-axis
-base_plot <- function(qtl, log, date_breaks) {
+base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
 
   p <- ggplot2::ggplot(qtl) +
     ggplot2::geom_ribbon(
@@ -680,7 +659,9 @@ base_plot <- function(qtl, log, date_breaks) {
       labels = scales::date_format("%e %b")
     ) +
     ggplot2::scale_y_continuous(
-      trans = ifelse(log, "log10", "identity"),
+      labels = scales::comma,
+      expand = ggplot2::expansion(mult = c(0, 0.1)),
+      trans = ifelse(log, "pseudo_log", "identity"),
       limits = c(ifelse(log, NA, 0), NA)
     ) +
     ggplot2::theme_bw() +
@@ -692,8 +673,13 @@ base_plot <- function(qtl, log, date_breaks) {
       axis.text = ggplot2::element_text(size = 12),
       axis.title = ggplot2::element_text(size = 12)
     ) +
-    ggplot2::theme(legend.position = "right") +
-    ggplot2::facet_wrap(~group)
+    ggplot2::theme(legend.position = "right") 
+  
+  if (rt) {
+    p <- p + ggplot2::facet_wrap(~group)
+  } else {
+    p <- p + ggplot2::facet_wrap(~group, scale = "free_y")
+  }
   return(p)
 }
 
