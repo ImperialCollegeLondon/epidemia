@@ -218,6 +218,9 @@ plot_obs.epimodel <-
       ...
     )
 
+    # transform data
+    obs <- gr_subset(obs, groups)
+
     data_orig <- object$data
     data_orig <- data_orig[data_orig$group %in% groups, ]
 
