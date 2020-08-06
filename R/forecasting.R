@@ -98,7 +98,7 @@ posterior_coverage <-
 #' @inherit plot_obs
 #' @return A dataframe giving forecast error for each metric and observation
 #' @export
-posterior_error <-
+posterior_metrics <-
   function(object,
            type,
            newdata = NULL,
@@ -143,7 +143,8 @@ plot_coverage <-
       object = object,
       type = type,
       groups = groups,
-      newdata = newdata
+      newdata = newdata,
+      levels = levels
     )
 
     if (!is.null(period)) {
@@ -229,6 +230,80 @@ plot_coverage <-
     }
     return(p)
   }
+
+
+#' Plot CRPS, Median/Mean Absolute Error
+#'
+#' Plots various metrics for evaluating probabilistic forecasts by group.
+#'
+#' @inherit plot_rt params return
+#' @inherit posterior_metrics params
+#' @export
+plot_metrics <-
+  function(object,
+           groups = NULL,
+           type,
+           metrics = NULL,
+           newdata = NULL,
+           plotly = FALSE) {
+    groups <- groups %ORifNULL% object$groups
+    df <- posterior_metrics(
+      object = object,
+      type = type,
+      groups = groups,
+      newdata = newdata,
+      metrics = metrics
+    )
+
+    df <- df %>%
+      tidyr::pivot_longer(
+        c(crps, mean_abs_error, median_abs_error),
+        names_to = "metric",
+        values_to = "value"
+      )
+
+    data <- object$data
+    data <- data[data$group %in% groups, c("group", "date", type)]
+    data <- data %>% dplyr::rename(DUMMY = type)
+    df <- dplyr::left_join(df, data, by = c("group", "date"))
+    df <- df %>% dplyr::rename(unseen = DUMMY)
+    w <- is.na(df$unseen)
+    df$unseen[w] <- "Unseen"
+    df$unseen[!w] <- "Seen"
+
+    p <- ggplot2::ggplot(
+      df,
+      ggplot2::aes(
+        x = date,
+        y = value,
+        linetype = metric,
+        color = unseen
+      )
+    ) +
+      ggplot2::geom_line(alpha = 0.7, size = 0.8) +
+      ggplot2::facet_wrap(
+        ~group,
+        scales = "free_y"
+      ) +
+      ggplot2::labs(
+        y = "Value",
+        x = "Date",
+        linetype = "Metric"
+      ) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(legend.position = "right")
+
+    p <- p + scale_color_manual(
+      values = c("coral4", "darkslategray4")
+    )
+
+    if (plotly) {
+      p <- plotly::ggplotly(p)
+    }
+
+    return(p)
+  }
+
 
 
 daily_error <- function(obs, metrics, y) {
