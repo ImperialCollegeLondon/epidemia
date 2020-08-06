@@ -87,10 +87,6 @@ evaluate_forecast <-
   }
 
 
-
-
-
-
 # evaluate_forecast <- function(object, newdata, observations, type,
 #                               group=NULL,
 #                               metric_names=NULL,
@@ -140,61 +136,61 @@ evaluate_forecast <-
 #   # code below formats the dates in order to make the coverage plot
 #   #
   
-  # dates of the posterior by group
-  post_date_info <- object$data %>%
-    dplyr::filter(group %in% all_groups) %>%
-    dplyr::group_by(!!dplyr::sym(group_colname)) %>%
-    dplyr::summarise(posterior_start=min(date), posterior_end=max(date))
+  # # dates of the posterior by group
+  # post_date_info <- object$data %>%
+  #   dplyr::filter(group %in% all_groups) %>%
+  #   dplyr::group_by(!!dplyr::sym(group_colname)) %>%
+  #   dplyr::summarise(posterior_start=min(date), posterior_end=max(date))
   
-  posterior_start <- post_date_info$posterior_start
-  names(posterior_start) <- post_date_info[[group_colname]]
-  posterior_end <- post_date_info$posterior_end
-  names(posterior_end) <- post_date_info[[group_colname]]
+  # posterior_start <- post_date_info$posterior_start
+  # names(posterior_start) <- post_date_info[[group_colname]]
+  # posterior_end <- post_date_info$posterior_end
+  # names(posterior_end) <- post_date_info[[group_colname]]
   
-  # error metric plot by day. also marks the end of the posterior
-  error_plot <- ggplot2::ggplot(error %>% dplyr::filter(metric_name %in% metric_names),
-                                ggplot2::aes(x=date, y=metric_value, colour=metric_name)) +
-    ggplot2::geom_line() +
-    ggplot2::facet_wrap(as.formula(paste("~", group_colname)), scales="free_y") +
-    ggplot2::labs(y="Metric value", x="Date", colour="Metric name") +
-    ggplot2::theme(legend.position="top") +
-    ggplot2::geom_vline(data=post_date_info, ggplot2::aes(xintercept=posterior_end), linetype="dashed")
+  # # error metric plot by day. also marks the end of the posterior
+  # error_plot <- ggplot2::ggplot(error %>% dplyr::filter(metric_name %in% metric_names),
+  #                               ggplot2::aes(x=date, y=metric_value, colour=metric_name)) +
+  #   ggplot2::geom_line() +
+  #   ggplot2::facet_wrap(as.formula(paste("~", group_colname)), scales="free_y") +
+  #   ggplot2::labs(y="Metric value", x="Date", colour="Metric name") +
+  #   ggplot2::theme(legend.position="top") +
+  #   ggplot2::geom_vline(data=post_date_info, ggplot2::aes(xintercept=posterior_end), linetype="dashed")
   
-  # dates for coverage by group
-  cov_date_info <- coverage %>%
-    dplyr::group_by(!!dplyr::sym(group_colname)) %>%
-    dplyr::summarise(coverage_days=list(seq(min(date), max(date), by="day")))
-  coverage_days <- cov_date_info$coverage_days
-  names(coverage_days) <- cov_date_info[[group_colname]]
+  # # dates for coverage by group
+  # cov_date_info <- coverage %>%
+  #   dplyr::group_by(!!dplyr::sym(group_colname)) %>%
+  #   dplyr::summarise(coverage_days=list(seq(min(date), max(date), by="day")))
+  # coverage_days <- cov_date_info$coverage_days
+  # names(coverage_days) <- cov_date_info[[group_colname]]
   
-  # try and make the end of the date period from coverage_periods
-  # also include the posterior
-  coverage_plot_days <- list()
-  for(group in all_groups) {
-    coverage_plot_days[[group]] <- list()
-    coverage_plot_days[[group]][["posterior"]] <- seq(posterior_start[[group]], posterior_end[[group]], by="day")
-    for(period_duration in coverage_periods) {
-      end_date <- tryCatch({
-        seq(posterior_end[[group]]+1, length=2, by=period_duration)[[2]]
-      }, warning=function(w) {
-        warning(paste0("failed to create date sequence for ", period_duration, " with warning:\n", w),
-                call. = FALSE)
-        NULL
-      } ,error=function(e) {
-        warning(paste0("failed to create date sequence for ", period_duration, " with error:\n", e),
-                call. = FALSE)
-        NULL
-      })
-      if(is.null(end_date))
-        next
+  # # try and make the end of the date period from coverage_periods
+  # # also include the posterior
+  # coverage_plot_days <- list()
+  # for(group in all_groups) {
+  #   coverage_plot_days[[group]] <- list()
+  #   coverage_plot_days[[group]][["posterior"]] <- seq(posterior_start[[group]], posterior_end[[group]], by="day")
+  #   for(period_duration in coverage_periods) {
+  #     end_date <- tryCatch({
+  #       seq(posterior_end[[group]]+1, length=2, by=period_duration)[[2]]
+  #     }, warning=function(w) {
+  #       warning(paste0("failed to create date sequence for ", period_duration, " with warning:\n", w),
+  #               call. = FALSE)
+  #       NULL
+  #     } ,error=function(e) {
+  #       warning(paste0("failed to create date sequence for ", period_duration, " with error:\n", e),
+  #               call. = FALSE)
+  #       NULL
+  #     })
+  #     if(is.null(end_date))
+  #       next
       
-      period_days <- seq(posterior_end[[group]]+1, end_date, by="day")
-      if(any(!(period_days %in% coverage_days[[group]]))) {
-        warning(paste0("not enough days of coverage data for ", period_duration, " forecast (", group, ")\n"),
-                call. = FALSE)
-      } else coverage_plot_days[[group]][[paste(period_duration, "forecast")]] <- period_days
-    }
-  }
+  #     period_days <- seq(posterior_end[[group]]+1, end_date, by="day")
+  #     if(any(!(period_days %in% coverage_days[[group]]))) {
+  #       warning(paste0("not enough days of coverage data for ", period_duration, " forecast (", group, ")\n"),
+  #               call. = FALSE)
+  #     } else coverage_plot_days[[group]][[paste(period_duration, "forecast")]] <- period_days
+  #   }
+  # }
   
 #   # get the coverage results for the right days
 #   coverage_plotdata <- list()
