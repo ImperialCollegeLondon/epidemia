@@ -65,12 +65,9 @@ evaluate_forecast <-
     obj <- epiobs_(object$obs[[w]], data)
     y <- get_obs(obj)
 
-    error <- daily_error(obs, y)
-    coverage <- daily_coverage(obs, levels, y)
-
     return(list(
-      error = error, 
-      coverage = coverage)
+      error = daily_error(obs, metrics, y), 
+      coverage = daily_coverage(obs, levels, y))
       )
   }
 
@@ -226,16 +223,22 @@ plot_coverage <-
 
 
 
-daily_error <- function(obs, y) {
+daily_error <- function(obs, metrics, y) {
   draws <- obs$draws
   mat <- (abs(sweep(t(draws), 1, y)))
   out <- data.frame(
     group = obs$group,
-    date = obs$time,
-    crps = scoringRules::crps_sample(y, t(draws)),
-    mean_abs_error = rowMeans(mat),
-    median_abs_error = apply(mat, 1, median)
+    date = obs$time
   )
+  if ("crps" %in% metrics)
+    out$crps <- scoringRules::crps_sample(y, t(draws))
+
+  if ("mean_abs_error" %in% metrics)
+    out$mean_abs_error <- rowMeans(mat)
+  
+  if ("median_abs_error" %in% metrics)
+    out$median_abs_error <- apply(mat, 1, median)
+
   return(out)
 }
 
