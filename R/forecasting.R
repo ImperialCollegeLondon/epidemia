@@ -36,7 +36,6 @@ evaluate_forecast <-
     if (is.null(type)) {
       stop("must specify an observation type")
     }
-
     alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
     w <- which(type %in% alltypes)
     if (length(w) == 0) {
@@ -80,11 +79,119 @@ evaluate_forecast <-
     obj <- epiobs_(object$obs[[w]], data)
     y <- get_obs(obj)
 
-    error <- daily_error(obs, data[, 3])
-    coverage <- daily_coverage(obs, levels, data[, 3])
+    error <- daily_error(obs, y)
+    coverage <- daily_coverage(obs, levels, y)
 
     return(list(error = error, coverage = coverage))
   }
+
+
+
+
+
+
+plot_coverage <-
+  function(object,
+           type,
+           groups = NULL,
+           metrics = NULL,
+           levels = c(50, 95),
+           period = NULL,
+           by_group = FALSE,
+           by_unseen = FALSE,
+           plotly = FALSE,
+           ...) {
+
+    # TODO: change this to some coverage code
+    cov <- out$coverage
+    if (!is.null(period)) {
+      cov$period <- cut(cov$date, period)
+    }
+
+    cols <- c(
+      "tag",
+      if (!is.null(period)) "period",
+      if (by_group) "group",
+      if (by_unseen) "unseen"
+    )
+
+    if (by_unseen) { # need to check which observations are new
+      data <- object$data
+      data <- data[data$group %in% groups, c("group", "date", type)]
+      data <- data %>% rename(DUMMY = type)
+      cov <- left_join(cov, data, by = c("group", "date"))
+      cov <- cov %>% rename(unseen = DUMMY)
+      w <- is.na(cov$unseen)
+      cov$unseen[w] <- "Unseen"
+      cov$unseen[!w] <- "Seen"
+    }
+
+    df <- cov %>%
+      group_by_at(cols) %>%
+      summarise(value = mean(in_ci))
+
+    if (is.null(period)) {
+      p <- ggplot2::ggplot(
+        df,
+        ggplot2::aes(x = tag, y = value, fill = tag)
+      ) +
+        ggplot2::labs(
+          y = "Mean Coverage",
+          x = "Credible Interval"
+        )
+    } else {
+      p <- ggplot2::ggplot(
+        df,
+        ggplot2::aes(x = period, y = value, fill = tag)
+      ) +
+        ggplot2::labs(
+          y = "Mean Coverage",
+          x = "period"
+        )
+    }
+
+    # general formatting
+    p <- p + ggplot2::geom_bar(
+      stat = "identity",
+      position = "dodge"
+    ) +
+      ggplot2::scale_y_continuous(
+        labels = scales::percent_format(),
+        minor_breaks = seq(0, 1, 0.05),
+        breaks = seq(0, 1, 0.1)
+      ) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(
+        axis.text.x = ggplot2::element_text(angle = 50, vjust = 0.5)
+      )
+
+    if ("group" %in% cols && "unseen" %in% cols) {
+      p <- p + ggplot2::facet_grid(vars(group), vars(unseen))
+    } else if ("group" %in% cols) {
+      p <- p + ggplot2::facet_wrap(~group)
+    } else if ("unseen" %in% cols) {
+      p <- p + ggplot2::facet_wrap(~unseen)
+    }
+
+    p <- p +
+      scale_fill_manual(
+        name = "Fill",
+        values = ggplot2::alpha(
+          "deepskyblue4",
+          rev(levels) / 100
+        )
+      )
+
+    if (plotly) {
+      p <- plotly::ggplotly(p)
+    }
+    return(p)
+  }
+
+
+
+
+
 
 
 # evaluate_forecast <- function(object, newdata, observations, type,
