@@ -115,8 +115,19 @@ posterior_error <-
   }
   
 
-
-      
+#' Plot coverage probability of posterior credible intervals
+#' 
+#' Plots histograms showing empirical coverage of credible intervals 
+#' specified using 'levels'. Can bucket by time period, by group, by 
+#' whether the observation is new (not used in fitting).
+#' 
+#' inherit plot_rt params return
+#' @param period Buckets computed empirical probabilities into time periods 
+#' if specified.
+#' @param by_group Plot coverage for each group individually
+#' @param by_unseen Plot coverage separately for seen and unseen observations. 
+#' Observations are 'seen' if they were used for fitting.
+#' @export
 plot_coverage <-
   function(object,
            type,
@@ -220,7 +231,6 @@ plot_coverage <-
     }
     return(p)
   }
-
 
 
 daily_error <- function(obs, metrics, y) {
