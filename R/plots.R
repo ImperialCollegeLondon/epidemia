@@ -101,8 +101,7 @@ plot_rt.epimodel <-
     p <- base_plot(qtl, log, date_breaks, TRUE)
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "CI", 
-      labels = paste0(rev(levels),"%"), 
+      name = "Fill", 
       values = ggplot2::alpha("seagreen", levels/100)
     )
 
@@ -281,7 +280,7 @@ plot_obs.epimodel <-
       "coral4",
       "darkslategray4"
     )
-    names(cols) <- c(paste0(levels, "%"), "Original", "New")
+    names(cols) <- c(paste0(levels, "% CI"), "Original", "New")
 
     cols <- ggplot2::scale_fill_manual(name = "Fill", values = cols)
 
@@ -481,8 +480,7 @@ plot_infections.epimodel <-
     p <- base_plot(qtl, log, date_breaks)
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "CI", 
-      labels = paste0(rev(levels),"%"), 
+      name = "Fill", 
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
@@ -547,8 +545,7 @@ plot_infectious.epimodel <-
     p <- base_plot(qtl, log, date_breaks)
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "CI", 
-      labels = paste0(rev(levels),"%"), 
+      name = "Fill", 
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
@@ -597,7 +594,7 @@ get_quantiles <- function(object, levels, dates=NULL, date_format=NULL) {
         lower = res[1, ],
         upper = res[2, ],
         group = object$group,
-        tag = paste0(level, "%"),
+        tag = paste0(level, "% CI"),
         level = level
       )
     )
