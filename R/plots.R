@@ -181,6 +181,7 @@ plot_rt.epimodel <-
 #' @export
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
+
 #' @rdname plot_rt
 #' @export
 plot_obs.epimodel <-
@@ -198,14 +199,18 @@ plot_obs.epimodel <-
            ...) {
     levels <- check_levels(levels)
 
-    if (is.null(type))
+    if (is.null(type)) {
       stop("must specify an observation type")
+    }
 
     alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
-    if (!(type %in% alltypes)) {
+    w <- which(type %in% alltypes)
+    if (length(w) == 0) {
       stop(paste0("obs does not contain any observations
     for type '", type, "'"), call. = FALSE)
     }
+
+    groups <- groups %ORifNULL% object$groups
 
     obs <- posterior_predict(
       object = object,
@@ -214,15 +219,37 @@ plot_obs.epimodel <-
       ...
     )
 
-    df <- na.omit(object$data[, c("group", "date", type)])
-    names(df)[3] <- "obs"
+    data_orig <- object$data
+    data_orig <- data_orig[data_orig$group %in% groups, ]
 
-    # transform data
-    obs <- gr_subset(obs, groups)
-    # also subset the true data
-    groups <- groups %ORifNULL% levels(obs$group)
-    w <- df$group %in% groups
-    df <- df[df$group %in% groups, ]
+    newdata <- list(...)$newdata
+    if (is.null(newdata)) {
+      data <- data_orig
+    } else {
+      data <- check_data(
+        formula = formula(object$rt),
+        data = newdata,
+        group_subset = groups
+      )
+    }
+
+    # get observed outcomes
+    obj <- epiobs_(object$obs[[w]], data)
+    df <- data.frame(
+      group = get_gr(obj),
+      date = get_time(obj),
+      obs = get_obs(obj)
+    )
+    # remove negative values
+    df <- df[df$obs >= 0, ]
+
+    # classify data as prediction or not a prediction
+    data_orig <- data_orig[, c("group", "date", type)]
+    df <- left_join(df, data_orig, , by = c("group", "date"))
+    names(df)[4] <- c("new")
+    w <- is.na(df$new)
+    df$new[w] <- "New"
+    df$new[!w] <- "Original"
 
     if (cumulative) {
       obs <- cumul(obs)
@@ -239,28 +266,135 @@ plot_obs.epimodel <-
       date_format
     )
 
+    names(df)[3] <- type
     p <- base_plot(qtl, log, date_breaks)
 
-    p <- p + ggplot2::scale_fill_manual(
-      name = "CI", 
-      labels = paste0(rev(levels),"%"), 
-      values = ggplot2::alpha("deepskyblue4", levels/100)
-    )
-
-    names(df)[3] <- type
-    p <- p + ggplot2::geom_bar(
+    p <- p + geom_bar(
+      mapping = aes_string(x = "date", y = type, fill = "new"),
       data = df,
-      ggplot2::aes_string(x = "date", y = type),
-      fill = "coral4",
       stat = "identity",
       alpha = 0.7
     )
+
+    cols <- c(
+      ggplot2::alpha("deepskyblue4", rev(levels) / 100),
+      "coral4",
+      "darkslategray4"
+    )
+    names(cols) <- c(paste0(levels, "%"), "Original", "New")
+
+    cols <- ggplot2::scale_fill_manual(name = "Fill", values = cols)
+
+    p <- p + cols
 
     if (plotly) {
       p <- plotly::ggplotly(p)
     }
     return(p)
   }
+
+
+
+# #' @rdname plot_rt
+# #' @export
+# plot_obs.epimodel <-
+#   function(object,
+#            type,
+#            posterior_mean = FALSE,
+#            groups = NULL,
+#            dates = NULL,
+#            date_breaks = "2 weeks",
+#            date_format = "%Y-%m-%d",
+#            cumulative = FALSE,
+#            levels = c(20, 50, 95),
+#            log = FALSE,
+#            plotly = FALSE,
+#            ...) {
+#     levels <- check_levels(levels)
+
+#     if (is.null(type))
+#       stop("must specify an observation type")
+
+#     alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
+#     if (!(type %in% alltypes)) {
+#       stop(paste0("obs does not contain any observations
+#     for type '", type, "'"), call. = FALSE)
+#     }
+
+#     obs <- posterior_predict(
+#       object = object,
+#       types = type,
+#       posterior_mean = posterior_mean,
+#       ...
+#     )
+
+#     newdata <- list(...)$newdata
+
+#     if (is.null(newdata)) {
+#       data <- object$data
+#       data <- data[data$group %in% groups, ]
+#     } else {
+#       data <- check_data(
+#         formula = formula(object$rt),
+#         data = newdata,
+#         group_subset = groups
+#       )
+#     }
+
+#     # get observed outcomes
+#     obj <- epiobs_(object$obs[[w]], data)
+#     y <- get_obs(obj)
+
+
+#     df <- na.omit(object$data[, c("group", "date", type)])
+#     names(df)[3] <- "obs"
+
+#     # transform data
+#     obs <- gr_subset(obs, groups)
+#     # also subset the true data
+#     groups <- groups %ORifNULL% levels(obs$group)
+#     w <- df$group %in% groups
+#     df <- df[df$group %in% groups, ]
+
+
+
+#     if (cumulative) {
+#       obs <- cumul(obs)
+#       df <- df %>%
+#         dplyr::group_by(group) %>%
+#         dplyr::mutate(obs = cumsum(obs))
+#       df <- as.data.frame(df)
+#     }
+
+#     qtl <- get_quantiles(
+#       obs,
+#       levels,
+#       dates,
+#       date_format
+#     )
+
+#     p <- base_plot(qtl, log, date_breaks)
+
+#     p <- p + ggplot2::scale_fill_manual(
+#       name = "CI", 
+#       labels = paste0(rev(levels),"%"), 
+#       values = ggplot2::alpha("deepskyblue4", levels/100)
+#     )
+
+#     names(df)[3] <- type
+#     p <- p + ggplot2::geom_bar(
+#       data = df,
+#       ggplot2::aes_string(x = "date", y = type),
+#       fill = "coral4",
+#       stat = "identity",
+#       alpha = 0.7
+#     )
+
+#     if (plotly) {
+#       p <- plotly::ggplotly(p)
+#     }
+#     return(p)
+#   }
 
 
 #' Plotting the underlying number of infections over time
