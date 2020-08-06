@@ -113,19 +113,18 @@ posterior_error <-
     )
     return(out$error)
   }
-  
 
 #' Plot coverage probability of posterior credible intervals
-#' 
-#' Plots histograms showing empirical coverage of credible intervals 
-#' specified using 'levels'. Can bucket by time period, by group, by 
+#'
+#' Plots histograms showing empirical coverage of credible intervals
+#' specified using 'levels'. Can bucket by time period, by group, by
 #' whether the observation is new (not used in fitting).
-#' 
-#' inherit plot_rt params return
-#' @param period Buckets computed empirical probabilities into time periods 
+#'
+#' @inherit plot_rt params return
+#' @param period Buckets computed empirical probabilities into time periods
 #' if specified.
 #' @param by_group Plot coverage for each group individually
-#' @param by_unseen Plot coverage separately for seen and unseen observations. 
+#' @param by_unseen Plot coverage separately for seen and unseen observations.
 #' Observations are 'seen' if they were used for fitting.
 #' @export
 plot_coverage <-
@@ -137,9 +136,9 @@ plot_coverage <-
            period = NULL,
            by_group = FALSE,
            by_unseen = FALSE,
-           plotly = FALSE,
-           ...) {
+           plotly = FALSE) {
 
+    groups <- groups %ORifNULL% object$groups
     cov <- posterior_coverage(
       object = object,
       type = type,
@@ -147,7 +146,6 @@ plot_coverage <-
       newdata = newdata
     )
 
-    cov <- out$coverage
     if (!is.null(period)) {
       cov$period <- cut(cov$date, period)
     }
@@ -162,9 +160,9 @@ plot_coverage <-
     if (by_unseen) { # need to check which observations are new
       data <- object$data
       data <- data[data$group %in% groups, c("group", "date", type)]
-      data <- data %>% rename(DUMMY = type)
-      cov <- left_join(cov, data, by = c("group", "date"))
-      cov <- cov %>% rename(unseen = DUMMY)
+      data <- data %>% dplyr::rename(DUMMY = type)
+      cov <- dplyr::left_join(cov, data, by = c("group", "date"))
+      cov <- cov %>% dplyr::rename(unseen = DUMMY)
       w <- is.na(cov$unseen)
       cov$unseen[w] <- "Unseen"
       cov$unseen[!w] <- "Seen"
