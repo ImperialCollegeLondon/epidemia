@@ -1,38 +1,24 @@
-#' Plot model evaluations
-#'
-#' Calculate the daily forecast error using one of three metrics, plus the coverage
-#' of the credible intervals. Forecasts are evaluated using continuous ranked probability
-#' score (CRPS), mean absolute error and median absolute error. See the forecasting vignette
-#' for more details on these quantities and code examples.
+#' Posterior model evaluations
 #' 
-#' @templateVar epimodelArg object
-#' @template args-epimodel-object
-#' @param newdata the data used for sampling from the predictive posterior. See the \code{newdata} argument to \link[epidemia]{posterior_predict}.
-#' @param observations observed data for evaluating the forecasts. Formatting must match \code{odata} in the \code{data} argument to \link[epidemia]{epim}.
-#' For each group, the dates in \code{newdata} must exactly match those in \code{observations}
-#' @param type the name of the observations to plot. This should match one of the names
-#' of the \code{obs} argument to \code{epim} when the model was fitted, as well as one of the column names of \code{observations}.
-#' @param group \code{NULL}, string or character vector specifying which groups
-#' to plot. Default is \code{NULL}, which plots all possible groups.
-#' @param metric_names string or character vector specifying the plotted forecast error metrics. One of \code{NULL}, \code{"crps"}, \code{"mean_abs_error"}
-#' or \code{"median_abs_error"}. Default is \code{NULL}, which plots all three metrics. See the forecasting vignette for more details.
-#' @param levels numeric vector giving the levels of the credible intervals whose coverage will be calculated
-#' @param coverage_periods the forecast periods over which the credible interval mean coverage will be calculated. Default value is \code{c("1 week", "2 weeks")}, which calculates the mean coverage over
-#' the first week and first two weeks of forecast, in addition to the posterior (dates where the model was fitted).
-#' @param cov_by_group logical indicating whether to plot the coverage by group or to combine the groups. Default is \code{FALSE}.
-#' @return a list with names \code{error_plot}, \code{coverage_plot}, \code{error_data}, \code{coverage_data}. Items
-#' with the suffix \code{_data} are used to make the corresponding \code{_plot}. See the vignettes for an explanation what these plots
-#' show.
+#' Calculate daily error using one of three metrics, and also return coverage 
+#' of credible intervals. Uses continuous ranked probability
+#' score (CRPS), mean absolute error and median absolute error. 
+#' 
+#' @inherit plot_obs
+#' @param newdata  If provided, the original \code{data} used
+#'  in \code{object} is overidden. Useful for forecasting
+#' @param metrics A string or character vector specifying the plotted
+#'  forecast error metrics. One of \code{NULL}, \code{"crps"},
+#'  \code{"mean_abs_error"}
+#' @return A named list with dataframes giving metrics and coverage.
 #' @export
 evaluate_forecast <-
   function(object,
-           newdata,
+           newdata = NULL,
            type,
            groups = NULL,
            metrics = NULL,
-           levels = c(50, 95),
-           coverage_periods = c("1 week", "2 weeks"),
-           cov_by_group = FALSE) {
+           levels = c(50, 95)) {
     if (is.null(type)) {
       stop("must specify an observation type")
     }
@@ -82,19 +68,61 @@ evaluate_forecast <-
     error <- daily_error(obs, y)
     coverage <- daily_coverage(obs, levels, y)
 
-    return(list(error = error, coverage = coverage))
+    return(list(
+      error = error, 
+      coverage = coverage)
+      )
   }
 
+#' Coverage of posterior credible intervals
+#'
+#' @inherit evaluate_forecast
+#' @return A dataframe indicating whether observations fall within the
+#'  specified credible intervals
+#' @export
+posterior_coverage <-
+  function(object,
+           type,
+           newdata = NULL,
+           groups = NULL,
+           levels = c(50, 95)) {
+    out <- evaluate_forecast(
+      object = object,
+      type = type,
+      newdata = newdata,
+      groups = groups,
+      levels = levels
+    )
+    return(out$coverage)
+}
 
-
-
-
-
+#' CRPS, Mean Absolute Error, Median Absolute Error
+#' 
+#' @inherit plot_obs
+#' @return A dataframe giving forecast error for each metric and observation
+#' @export
+posterior_error <-
+  function(object,
+           type,
+           newdata = NULL,
+           groups = NULL,
+           metrics = NULL) {
+    out <- evaluate_forecast(
+      object = object,
+      type = type,
+      newdata = newdata,
+      groups = groups,
+      metrics = metrics
+    )
+    return(out$error)
+  }
+  
+         
 plot_coverage <-
   function(object,
            type,
+           newdata = NULL,
            groups = NULL,
-           metrics = NULL,
            levels = c(50, 95),
            period = NULL,
            by_group = FALSE,
@@ -102,7 +130,13 @@ plot_coverage <-
            plotly = FALSE,
            ...) {
 
-    # TODO: change this to some coverage code
+    cov <- posterior_coverage(
+      object = object,
+      type = type,
+      groups = groups,
+      newdata = newdata
+    )
+
     cov <- out$coverage
     if (!is.null(period)) {
       cov$period <- cut(cov$date, period)
