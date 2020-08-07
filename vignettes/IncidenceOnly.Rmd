@@ -26,6 +26,23 @@ flu$incidence <- c(rep(NA,1),flu$incidence) ## pad before initialisation
 flu$fludate <- as.Date("1918-01-01")+seq(0,along.with=flu$incidence)
 obs <- !is.na(flu$incidence)
 
+
+args <- list()
+
+args$data <- data.frame(
+  country = "A", # dummy
+  date = flu$fludate,
+  cases = flu$incidence
+  week = format(flu$fludate, "%V")
+)
+
+args$rt <- epirt(
+  formula = R(country, date) ~ 0 + rw(time=week, prior_scale=0.1)
+)
+
+cases <- epiobs(
+  formula = 
+)
 args <- list(formula=Rt(country,date)~ 0 + rw(time=week,prior_scale=0.1),
              data=data.frame(country="A",
                              date=flu$fludate,

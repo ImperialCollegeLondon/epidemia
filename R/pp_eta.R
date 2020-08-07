@@ -27,7 +27,9 @@ pp_eta <- function(object, stanmat) {
 pp_eta_fe <- function(object, stanmat) {
   nme <- .get_obs(formula(object))
   x <- object$fe
-  par_nms <- paste0(nme, "|", colnames(x))
+  par_nms <- NULL
+  if (NCOL(x) > 0)
+    par_nms <- paste0(nme, "|", colnames(x))
   w <- match(par_nms, colnames(stanmat))
   if (anyNA(w)) {
     stop("Bug found. Unmatched fixed effects in newdata.")
