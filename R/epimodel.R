@@ -31,14 +31,17 @@ epimodel <- function(object) {
     function(x) stan_summary[x, "50%", drop = F]
   )
   stanmat <- as.matrix(stanfit)
-  print(idx)
-  ses <- lapply(
-    idx,
-    function(x) {
-      print(x)
-      print(colnames(stanmat)[x])
-      apply(stanmat[, x, drop = F], 2L, stats::mad)}
-  )
+  # print(idx)
+  # ses <- lapply(
+  #   idx,
+  #   function(x) {
+  #     print(x)
+  #     print(colnames(stanmat)[x])
+  #     print(class(stanmat[, x, drop = FALSE]))
+  #     print(dim(stanmat[, x, drop = FALSE]))
+  #     print(apply(stanmat[, x, drop = FALSE], 2L, stats::mad))
+  #     apply(stanmat[, x, drop = FALSE], 2L, stats::mad)}
+  # )
 
   # function removes RE and autocor terms from matrix
   just_fe <- function(x) {
@@ -53,7 +56,7 @@ epimodel <- function(object) {
   # covmat of parameters within the same regression
   covmat <- lapply(
     idx, 
-    function(x) cov(just_fe(stanmat[, x, drop = F])))
+    function(x) cov(just_fe(stanmat[, x, drop = FALSE])))
 
   # linear predictors (not transformed)
   f <- function(coefs, x) linear_predictor(drop(coefs), drop(x))
@@ -65,8 +68,7 @@ epimodel <- function(object) {
 
   # correct names for output
   names(y) <- obs_nms
-  names(x) <- names(mf) <- names(coefs) <-
-    names(ses) <- names(covmat) <- nms
+  names(x) <- names(mf) <- names(coefs) <- names(covmat) <- nms
 
   out <- loo::nlist(
     rt = object$rt_orig,
@@ -77,7 +79,7 @@ epimodel <- function(object) {
     pops = object$pops,
     si = object$si,
     coefficients = coefs,
-    ses,
+    ses = NULL,
     linear.predictors = eta,
     covmat,
     y,

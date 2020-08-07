@@ -247,7 +247,7 @@ plot_obs.epimodel <-
 
     # classify data as prediction or not a prediction
     data_orig <- data_orig[, c("group", "date", type)]
-    df <- left_join(df, data_orig, , by = c("group", "date"))
+    df <- dplyr::left_join(df, data_orig, , by = c("group", "date"))
     names(df)[4] <- c("new")
     w <- is.na(df$new)
     df$new[w] <- "New"
@@ -271,8 +271,8 @@ plot_obs.epimodel <-
     names(df)[3] <- type
     p <- base_plot(qtl, log, date_breaks)
 
-    p <- p + geom_bar(
-      mapping = aes_string(x = "date", y = type, fill = "new"),
+    p <- p + ggplot2::geom_bar(
+      mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
       data = df,
       stat = "identity",
       alpha = 0.7
