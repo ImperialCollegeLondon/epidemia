@@ -619,8 +619,8 @@ subset_for_dates <- function(qtl, dates, date_format) {
   dates <- check_dates(
     dates,
     date_format,
-    max(qtl$date),
-    min(qtl$date)
+    min(qtl$date),
+    max(qtl$date)
   )
   if (!is.null(dates)) {
     date_range <- seq(dates[1], dates[2], by = "day")

@@ -69,9 +69,10 @@ data("EuropeCovid")
 args <- EuropeCovid
 args$group_subset <- "France"
 args$algorithm <- "meanfield"
-args$formula <- R(country,date) ~ 1 + schools_universities + lockdown 
+args$rt <- epirt(
+  formula = R(country,date) ~ 1 + schools_universities + lockdown 
+)
 fm <- do.call("epim", args)
-
 # default prior scale not adjusted
 prior_summary(fm)
 ```

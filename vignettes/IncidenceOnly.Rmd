@@ -89,7 +89,7 @@ fm <- epim(
 ```
 
 The resulting fit can be examined using various plotting functions provided by **epidemia**.
-```{r, warning=FALSE, fig_width=15}
+```{r, warning=FALSE, out.width='100%'}
 subplot(
 plot_rt(fm, plotly=T, smooth=7),
 plot_infections(fm, plotly=T),

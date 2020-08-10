@@ -15,46 +15,6 @@ vignette: |
   \usepackage[utf8]{inputenc}
 ---
 
-<style type="text/css">
-body{ /* Normal */
-font-size: 16px;
-}
-td { /* Table */
-font-size: 14px;
-}
-h1.title {
-font-size: 38px;
-color: Black;
-}
-h1 { /* Header 1 */
-font-size: 28px;
-color: Black;
-}
-h2 { /* Header 2 */
-font-size: 22px;
-color: DarkBlue;
-}
-h3 { /* Header 3 */
-font-size: 18px;
-color: DarkBlue;
-}
-}
-h3 { /* Header 4 */
-font-size: 16px;
-color: DarkBlue;
-}
-h4 { /* Header 4 */
-font-size: 16px;
-color: DarkBlue;
-}
-code.r{ /* Code block */
-font-size: 12px;
-}
-pre { /* Code block - determines code spacing between lines */
-font-size: 14px;
-}
-</style>
-
 This vignette shows how to evaluate a models forecasts and credible intervals in *epidemia*.
 
 Two ways of evaluating a fitted model are
