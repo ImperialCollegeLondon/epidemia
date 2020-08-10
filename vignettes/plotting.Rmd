@@ -100,7 +100,7 @@ plot_rt(fit, dates=c("09-03-20", "06-04-20"), date_format="%d-%m-%y", date_break
 To restrict the dates from one direction only, set the appropriate element of `dates` to `NA`. 
 
 ```{r fig.width=9, fig.height=4, fig.align="center"}
-plot_rt(fit, dates=c("09-03-20", NA))
+plot_rt(fit, dates=c("2020-03-09", NA))
 ```
 
 

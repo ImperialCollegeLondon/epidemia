@@ -19,16 +19,26 @@ vignette: |
 
 # Overview
 
-Recall the parameterisation for the time-varying reproduction number, given by \@ref(eq:rt).
-\begin{equation}
-R = 2A f\left(X\beta + Zb\right),
-(\#eq:rt)
-\end{equation}
-where $f$ is the standard logistic function. Prior distributions should be specified for the parameters in \@ref(eq:rt), and for additional model parameters. Here we focus on those arising from \@ref(eq:rt).
+Prior distributions need to be set for all model parameters. This include in the `epirt` object and all 
+`epiobs` objects used by a call to the model fitting function `epim`. Here we focus only on `epirt`, because 
+this allows for the most complex models. Using priors in `epiobs` is similar to what is discussed here.
 
 *Please note that the current default priors may not be appropriate, 
 and should not be relied upon. In future versions of the package, 
 we hope to set reasonable default priors.*
+
+
+Recall the parameterisation of the time-varying basic reproduction number introduced in the introductory vignette. To recap, $\tilde{R}_t$ is expressable as
+\begin{equation}
+\tilde{R}_t = 2R' \text{logit}^{-1}\left(\eta_t\right),
+(\#eq:rt)
+\end{equation}
+where $R'$ is a constant and $\eta_t$ is a linear predictor. $\eta_t$ can be decomposed as
+\begin{equation}
+\eta_t = X'_t\beta + Z'_t b + Q'_t\gamma_t.
+(\#eq:eta)
+\end{equation}
+For more detailed information about this decomposition, please refer to the [introductory vignette](introduction.html).
 
 The priors for $\beta$ are set using the `prior` and 
 `prior_intercept` arguments. These will only have an effect if the formula 
@@ -37,8 +47,7 @@ to the same arguments in [`stan_lm`](https://mc-stan.org/rstanarm/reference/stan
 To understand which families can be used please refer to 
 [rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html). 
 
-
-Suppose we are modeling a single group and \@ref(eq:rt) specifies an intercept. If `center=FALSE` in a call to `epim`, then `prior_intercept` sets the prior on the raw intercept. If all other covariates are zero at the beginning of the epidemic then 
+Suppose we are modeling a single group and \@ref(eq:rt) specifies an intercept. If `center=FALSE` in a call to `epirt`, then `prior_intercept` sets the prior on the raw intercept. If all other covariates are zero at the beginning of the epidemic then 
 this can be viewed as specifying a prior on the initial reproduction rate. We do not recommend 
 using `center=TRUE`, because `prior_intercept` then refers to 
 the prior on the intercept after all covariates have been centered. This is a difficult 
@@ -72,7 +81,7 @@ args$algorithm <- "meanfield"
 args$rt <- epirt(
   formula = R(country,date) ~ 1 + schools_universities + lockdown 
 )
-fm <- do.call("epim", args)
+fm <- do.call(epim, args)
 # default prior scale not adjusted
 prior_summary(fm)
 ```
@@ -82,7 +91,7 @@ Notice that no rescaling occurs and the default priors are used.
 ```{r priorAS2, message=FALSE, warning=FALSE}
 # rescale lockdown indicator
 args$data$lockdown <- 100 * args$data$lockdown
-fm2 <- do.call("epim", args)
+fm2 <- do.call(epim, args)
 # notice the rescaled prior for lockdown
 prior_summary(fm2)
 
