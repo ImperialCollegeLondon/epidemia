@@ -3,8 +3,6 @@
   }
   else eta = rep_vector(0.0, N);
 
-  //print(eta);
-
   if (t > 0) {
     if (special_case == 1) {
       int start = 1;

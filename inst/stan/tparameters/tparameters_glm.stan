@@ -8,18 +8,6 @@
   }
   else if (prior_dist == 3) {
     real c2 = square(slab_scale) * caux[1];
-      //print("z_beta:");
-      //print(z_beta);
-      //print("global:");
-      //print(global);
-      //print("local:");
-      //print(local);
-      //print("global_prior_scale:");
-      //print(global_prior_scale);
-      //print("aux:");
-      //print(aux);
-      //print("c2:");
-      //print(c2);
       beta = hs_prior(z_beta, global, local, global_prior_scale, 1, c2);
   }
   else if (prior_dist == 4) {

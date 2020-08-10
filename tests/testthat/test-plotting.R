@@ -2,6 +2,7 @@ context("Test plotting")
 
 # load data
 example.fit <- readRDS("../data/plot_test_fit.rds")
+
 fm <- example.fit
 
 test_that("wrong group throws error", {
