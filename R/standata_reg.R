@@ -58,9 +58,6 @@ standata_reg <- function(object, ...) {
   if (is.null(prior_intercept)) {
     prior_intercept <- list()
   }
-  if (is.null(prior_aux)) {
-    prior_aux <- list()
-  }
 
   x_stuff <- process_x(x, center)
 
@@ -105,14 +102,23 @@ standata_reg <- function(object, ...) {
   }
 
   ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
-  has_aux <- length(prior_aux) > 0
+  
+  has_aux <- !is.null(prior_aux) 
+  if (has_aux) {
   prior_aux_stuff <- handle_glm_prior(
     prior = prior_aux,
     nvars = 1,
     default_scale = 1,
     link = NULL,
     ok_dists = ok_aux_dists
-  )
+  )}
+  else {
+    prior_aux_stuff <- list(
+      prior_dist = NULL,
+      prior_mean = NULL,
+      prior_scale = NULL,
+      prior_df = NULL)
+  }
   names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_oaux")
   for (i in names(prior_aux_stuff)) {
     assign(i, prior_aux_stuff[[i]])
@@ -371,10 +377,12 @@ summarize_glm_prior <-
       !is.na(user_prior_intercept$prior_dist_name_for_intercept) &&
       (user_prior_intercept$prior_scale_for_intercept != adjusted_prior_intercept_scale)
 
+    if (has_aux) {
     rescaled_aux <- user_prior_aux$prior_autoscale_for_oaux &&
       has_aux &&
       !is.na(user_prior_aux$prior_dist_name_for_oaux) &&
       (user_prior_aux$prior_scale_for_oaux != adjusted_prior_oaux_scale)
+    }
     
     if (has_predictors && user_prior$prior_dist_name %in% "t") {
       if (all(user_prior$prior_df == 1)) {

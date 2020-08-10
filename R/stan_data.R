@@ -197,7 +197,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     # auxiliary params
     ofamily <- array(sapply(reg, function(x) x$family))
     olink <- array(sapply(reg, function(x) x$link))
-    has_oaux <- sapply(reg, function(x) !is.null(x$prior_dist_for_oaux))
+    has_oaux <- ofamily != 1
     num_oaux <- sum(has_oaux)
     has_oaux <- array(has_oaux * cumsum(has_oaux))
 
@@ -209,7 +209,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     )
     for (i in nms_aux){
       temp <- unlist(lapply(reg, function(x) x[[i]]))
-      assign(i, array(temp %ORifNULL% rep(0,0)))
+      assign(i, array(as.numeric(temp) %ORifNULL% rep(0,0)))
     }
 
     has_offset <- array(sapply(obs, function(x) x$has_offset * 1))

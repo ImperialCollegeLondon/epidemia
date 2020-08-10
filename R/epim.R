@@ -337,7 +337,7 @@ make_oaux_nms <- function(obs) {
   )
   return(paste0(
     obs_nms[has_oaux],
-    "|recipricol dispersion"
+    "|reciprocal dispersion"
   ))
 }
 

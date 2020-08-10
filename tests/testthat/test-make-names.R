@@ -33,5 +33,5 @@ test_that("make_oaux_nms", {
   )
   
   obs <- list(deaths=deaths, cases=cases)
-  expect_equal(make_oaux_nms(obs), "cases|recipricol dispersion")
+  expect_equal(make_oaux_nms(obs), "cases|reciprocal dispersion")
 })
