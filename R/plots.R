@@ -203,7 +203,7 @@ plot_obs.epimodel <-
     }
 
     alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
-    w <- which(type %in% alltypes)
+    w <- which(type == alltypes)
     if (length(w) == 0) {
       stop(paste0("obs does not contain any observations
     for type '", type, "'"), call. = FALSE)
@@ -242,6 +242,7 @@ plot_obs.epimodel <-
       date = get_time(obj),
       obs = get_obs(obj)
     )
+
     # remove negative values
     df <- df[df$obs >= 0, ]
 
