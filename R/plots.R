@@ -247,7 +247,7 @@ plot_obs.epimodel <-
 
     # classify data as prediction or not a prediction
     data_orig <- data_orig[, c("group", "date", type)]
-    df <- left_join(df, data_orig, , by = c("group", "date"))
+    df <- dplyr::left_join(df, data_orig, , by = c("group", "date"))
     names(df)[4] <- c("new")
     w <- is.na(df$new)
     df$new[w] <- "New"
