@@ -14,7 +14,7 @@
 #' transformed by the inverse link function, then multiplied by the weighted
 #' previous infections. This quantity represents the mean of the response
 #' distribution.
-#' @param lag A probability vector with the following interpretation.
+#' @param i2o A probability vector with the following interpretation.
 #' Conditional on an observation "event" (i.e. a single death or
 #' hospitalisation etc.), the nth element represents the probability that the
 #' individual was infected exactly n days prior to this.
@@ -37,7 +37,7 @@
 epiobs <- function(formula,
                    family = "neg_binom",
                    link = "logit",
-                   lag,
+                   i2o,
                    center = FALSE,
                    offset = NULL,
                    prior = rstanarm::normal(scale = .1),
@@ -61,10 +61,10 @@ epiobs <- function(formula,
     )
   }
 
-  # lag <- check_sv(lag, name = "lag") no longer required to be simplex
-  lag <- check_v(lag, name = "lag")
-  if (sum(lag) != 1) {
-    warning("'lag' does not sum to 1
+  # i2o <- check_sv(i2o, name = "i2o") no longer required to be simplex
+  i2o <- check_v(i2o, name = "i2o")
+  if (sum(i2o) != 1) {
+    warning("'i2o' does not sum to 1
      - check that this is intentional")
   }
 
@@ -97,10 +97,10 @@ epiobs <- function(formula,
     formula,
     family,
     link,
-    lag,
+    i2o,
     has_offset = any(offset != 0),
     offset,
-    lagtype = "density",
+    i2otype = "density",
     link = "logit",
     center,
     prior,

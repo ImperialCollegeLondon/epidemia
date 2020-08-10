@@ -57,7 +57,7 @@ cases <- epiobs(
   formula = cases(country, fludate) ~ 1,
   prior_intercept = rstanarm::normal(location=1, scale=0.01),
   link = "identity",
-  lag = rep(.25,4)
+  i2o = rep(.25,4)
 )
 ```
 In this case, we assume that everybody infected is recorded as a case, and that this happens with equal probability in the four 

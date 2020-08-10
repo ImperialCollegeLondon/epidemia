@@ -23,13 +23,13 @@ test_that("make_oaux_nms", {
   deaths <- epiobs(
     formula = deaths(country,date) ~ 1,
     family = "poisson",
-    lag = rep(1/7,7)
+    i2o = rep(1/7,7)
   )
   
   cases <- epiobs(
     formula = cases(country, date) ~ 1,
     family = "neg_binom",
-    lag = rep(1/7,7)
+    i2o = rep(1/7,7)
   )
   
   obs <- list(deaths=deaths, cases=cases)

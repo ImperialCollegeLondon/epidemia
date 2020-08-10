@@ -320,7 +320,7 @@ Following @Flaxman2020, the start dates shown above are thirty days prior to the
 
 This gives a list of observation models. Each component of the list must be a call to `epiobs`. As in `epirt`, this has a `formula` argument and arguments `prior` and `prior_intercept` to specify model priors. There is no `prior_covariance` argument because random effect terms are not permitted in `formula`. This may be allowed in future versions of **epidemia**.
 
-The `family` argument specifies whether the error model is negative binomial or Poisson. In the former case, `prior_aux` specifies the prior on the reciprocal dispersion. In the latter, `prior_aux` is ignored because there is no auxiliary parameter. The function $f^{(l)}$ introduced in Section \@ref(observations) is controlled by `link`.The `lag` argument gives the infection to observation distribution $\pi^{(l)}$.
+The `family` argument specifies whether the error model is negative binomial or Poisson. In the former case, `prior_aux` specifies the prior on the reciprocal dispersion. In the latter, `prior_aux` is ignored because there is no auxiliary parameter. The function $f^{(l)}$ introduced in Section \@ref(observations) is controlled by `link`.The `i2o` argument gives the infection to observation distribution $\pi^{(l)}$.
 
 The `EuropeCovid` data contains an example of the `obs` argument. It uses only one type of observation, death data, and so $L=1$ in this case.
 
@@ -337,7 +337,7 @@ deaths$formula
 
 Visualise the distribution of time from disease onset to death.
 ```{r pvec, fig.align="center"}
-barplot(deaths$lag, names.arg=1:101)
+barplot(deaths, names.arg=1:101)
 ```
 Following @Flaxman2020, this is a discretization of the distribution of $\text{Gamma}(1.35,3.77) + \text{Gamma}(4.94,3.60)$, where the notation $\text{Gamma}(\alpha, \theta)$ refers to a Gamma random variable with shape $\alpha$ and scale $\theta$.
 

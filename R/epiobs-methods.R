@@ -31,12 +31,12 @@ get_time.epiobs_ <- function(object, ...) {
   return(object$time %ORifNULL% stop("time not found"))
 }
 
-# Extract lag vector from the object
-get_lag <- function(object, ...) UseMethod("get_lag")
+# Extract i2o vector from the object
+get_i2o <- function(object, ...) UseMethod("get_i2o")
 
 # @export
-get_lag.epiobs_ <- function(object, ...) {
-  return(object$lag)
+get_i2o.epiobs_ <- function(object, ...) {
+  return(object$i2o)
 }
 
 # Get total number of observations
@@ -48,7 +48,7 @@ nobs.epiobs_ <- function(object, ...) {
 
 # Turn observations into cumulatives
 #
-# Cumsums the obervation vector and the lag vector.
+# Cumsums the obervation vector and the i2o vector.
 # This is useful for getting good starting values for
 # the sampler.
 cumulate <- function(object, ...) UseMethod("cumulate")
@@ -56,19 +56,19 @@ cumulate <- function(object, ...) UseMethod("cumulate")
 # @export
 cumulate.epiobs_ <- function(object, ...) {
   object$obs <- cumsum(get_obs(object))
-  object$lag <- cumsum(get_lag(object))
-  object$lagtype <- "distribution"
+  object$i2o <- cumsum(get_i2o(object))
+  object$i2otype <- "distribution"
   return(object)
 }
 
-# Get lag padded out to a certain length
-pad_lag <- function(object, ...) UseMethod("pad_lag")
+# Get i2o padded out to a certain length
+pad_i2o <- function(object, ...) UseMethod("pad_i2o")
 
-pad_lag.epiobs_ <- function(object, len, ...) {
-  lag <- get_lag(object)
-  is_density <- object$lagtype == "density"
+pad_i2o.epiobs_ <- function(object, len, ...) {
+  i2o <- get_i2o(object)
+  is_density <- object$i2otype == "density"
   if (is_density)
-    return(pad(lag, len, 0, FALSE))
+    return(pad(i2o, len, 0, FALSE))
   else
-    return(pad(lag, len, tail(lag, 1)))
+    return(pad(i2o, len, tail(i2o, 1)))
 }

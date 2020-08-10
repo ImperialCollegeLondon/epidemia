@@ -128,7 +128,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oN <- array(pad(oN, maxtypes, 0))
 
     pvecs <- as.array(lapply(obs,
-      function(x) pad_lag(x, len = nsim)))
+      function(x) pad_i2o(x, len = nsim)))
 
     dat <- array(unlist(
       lapply(

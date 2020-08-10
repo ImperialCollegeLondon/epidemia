@@ -54,7 +54,7 @@ cases <- epiobs(
   formula = cases(country,date) ~ 1,
   prior_intercept = rstanarm::normal(1, 0.01),
   link = "identity",
-  lag = rep(1/4,4)
+  i2o = rep(1/4,4)
 )
 ```
 

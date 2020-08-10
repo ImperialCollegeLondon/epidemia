@@ -21,10 +21,6 @@
 #'  the regression intercept (if it exists).
 #' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only
 #'  used if the \code{formula} argument specifies random effects.
-#' @param lag A probability vector with the following interpretation.
-#' Conditional on an observation "event" (i.e. a single death or
-#' hospitalisation etc.), the nth element represents the probability that the
-#' individual was infected exactly n days prior to this.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
 epirt <- function(formula,
