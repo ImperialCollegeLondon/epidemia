@@ -188,7 +188,7 @@ plot_rt.epimodel <-
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
 
-#' @rdname plot_rt
+#' @rdname plot_obs
 #' @export
 plot_obs.epimodel <-
   function(object,
@@ -415,7 +415,7 @@ plot_infections.epimodel <-
 #' @export
 plot_infectious <- function(object, ...) UseMethod("plot_infectious", object)
 
-#' @rdname plot_infections
+#' @rdname plot_infectious
 #' @export
 plot_infectious.epimodel <- 
   function(object, 

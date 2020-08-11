@@ -31,17 +31,16 @@ epimodel <- function(object) {
     function(x) stan_summary[x, "50%", drop = F]
   )
   stanmat <- as.matrix(stanfit)
-  # print(idx)
-  # ses <- lapply(
-  #   idx,
-  #   function(x) {
-  #     print(x)
-  #     print(colnames(stanmat)[x])
-  #     print(class(stanmat[, x, drop = FALSE]))
-  #     print(dim(stanmat[, x, drop = FALSE]))
-  #     print(apply(stanmat[, x, drop = FALSE], 2L, stats::mad))
-  #     apply(stanmat[, x, drop = FALSE], 2L, stats::mad)}
-  # )
+  ses <- lapply(
+    idx,
+    function(x) {
+      print(x)
+      print(colnames(stanmat)[x])
+      print(class(stanmat[, x, drop = FALSE]))
+      print(dim(stanmat[, x, drop = FALSE]))
+      print(apply(stanmat[, x, drop = FALSE], 2L, stats::mad))
+      apply(stanmat[, x, drop = FALSE], 2L, stats::mad)}
+  )
 
   # function removes RE and autocor terms from matrix
   just_fe <- function(x) {
@@ -79,7 +78,7 @@ epimodel <- function(object) {
     pops = object$pops,
     si = object$si,
     coefficients = coefs,
-    ses = NULL,
+    ses,
     linear.predictors = eta,
     covmat,
     y,
