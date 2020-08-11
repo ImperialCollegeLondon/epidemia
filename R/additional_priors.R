@@ -2,15 +2,20 @@
 #'
 #' A gamma prior distribution which can be shifted.
 #' 
-#' \pkg{rstanarm} provides a set of distributions (see \code{\link[rstanarm]{priors}}) which
-#' can be used for the priors on regression parameters. Intuitively, non-pharmaceutical interventions are 
-#' unlikely to a-priori cause a large increase in the reproduction number. A shifted gamma prior can 
+#' \pkg{rstanarm} provides a set of distributions 
+#' (see \code{\link[rstanarm]{priors}}) which can be used for the priors 
+#' on regression parameters. Intuitively, non-pharmaceutical interventions are 
+#' unlikely to a-priori cause a large increase in the reproduction number.
+#'  A shifted gamma prior can 
 #' be used to model this idea, and has been used in 
-#' \insertCite{Flaxman2020;textual}{epidemia}.  \code{shifted_gamma} can be used as the \code{prior} argument 
-#' to \code{epim}.
+#' \insertCite{Flaxman2020;textual}{epidemia}.  \code{shifted_gamma} can be
+#'  used as the \code{prior} argument 
+#' to \code{epim}. This specified a shifted gamma prior on the negative of the 
+#' regression parameters. i.e. if there is no shift, the support is on the 
+#' negative half of the real line.
 #' 
 #' @param shape,scale Sets the shape and scale parameters of the Gamma prior.
-#' @param shift The Gamma prior can be shifted to allow for negative support.
+#' @param shift The Gamma prior can be shifted to allow for positive support.
 #' @param autoscale Same as in \code{\link[rstanarm]{priors}}.
 #' 
 #' @return A named list to be parsed internally by \code{\link[epidemia]{epim}}.

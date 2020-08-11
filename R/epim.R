@@ -58,7 +58,7 @@
 #'  formula=R(country, date) ~ 0 + lockdown,
 #'  args$prior <- shifted_gamma(shape = 1 / 6,
 #'                              scale = 1,
-#'                              shift = -log(1.05) / 6)
+#'                              shift = log(1.05) / 6)
 #' )
 #'
 #' fit <- do.call("epim", args)

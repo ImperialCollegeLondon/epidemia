@@ -397,7 +397,7 @@ And example of using a shifted gamma prior...
 ```{r gammaPrior, results="hide", cache=TRUE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%'}
 args$rt <- epirt(
   formula = R(country,date) ~ (1 | country) + schools_universities + self_isolating_if_ill + public_events + lockdown + social_distancing_encouraged,
-  prior = shifted_gamma(shape=1/6, scale=1, shift = -log(1.05)/6),
+  prior = shifted_gamma(shape=1/6, scale=1, shift = log(1.05)/6),
   prior_intercept = rstanarm::normal(location=0, scale = 0.5)
 )
 fit <- do.call(epim, args)
