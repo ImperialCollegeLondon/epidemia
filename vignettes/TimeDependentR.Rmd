@@ -94,10 +94,9 @@ plot_obs(fit,type="deaths", plotly=TRUE)
 In principle, splines can also be used by leveraging the functionality in the splines package. Below, a quadratic spline is used for one country.
 
 ```{r computeUKsplines,results='hide',cache=TRUE}
-library(splines)
 args$data$day <- as.integer(args$data$date-min(args$data$date))
 args$rt <- epirt(
-  formula = R(country, date) ~ bs(day, df=8, degree=3)
+  formula = R(country, date) ~ splines::bs(day, df=8, degree=3)
 )
 
 args$group_subset <- c("United_Kingdom")

@@ -337,7 +337,7 @@ deaths$formula
 
 Visualise the distribution of time from disease onset to death.
 ```{r pvec, fig.align="center"}
-barplot(deaths, names.arg=1:101)
+barplot(deaths$i2o, names.arg=1:101)
 ```
 Following @Flaxman2020, this is a discretization of the distribution of $\text{Gamma}(1.35,3.77) + \text{Gamma}(4.94,3.60)$, where the notation $\text{Gamma}(\alpha, \theta)$ refers to a Gamma random variable with shape $\alpha$ and scale $\theta$.
 
