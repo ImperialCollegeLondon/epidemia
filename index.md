@@ -73,31 +73,43 @@ The best way to get started is to read the
 ## Usage
 
 ``` r
-library(epidemia)
-options(mc.cores=parallel::detectCores())
-
 data(EuropeCovid)
 # Collect args for epim
 args <- EuropeCovid
 args$algorithm <- "sampling"
 args$group_subset <- c("Germany", "United_Kingdom")
-args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
-args$formula <- R(country, date) ~ schools_universities + self_isolating_if_ill +
-  public_events + lockdown + social_distancing_encouraged
-args$prior <- shifted_gamma(shape = 1/6, scale = 1, shift = -log(1.05)/6)
-fit <- do.call("epim", args)
+args$sampling_args <- list(iter=1e3,seed=12345)
+
+# model for reproduction number
+args$rt <- epirt(
+  formula = R(country, date) ~ schools_universities + self_isolating_if_ill + 
+    public_events + lockdown + social_distancing_encouraged,
+  prior = shifted_gamma(shape = 1/6, scale = 1, shift = log(1.05)/6)
+)
+
+# model for daily death observations
+deaths <- epiobs(
+  formula = deaths(country, date) ~ 1,
+  prior_intercept = rstanarm::normal(0.01, 0.0001),
+  i2o = EuropeCovid$obs$deaths$i2o,
+  prior_aux = rstanarm::normal(location=10, scale=2)
+)
+
+args$obs <- list(deaths = deaths)
+
+fit <- do.call(epim, args)
 ```
 
 ``` r
 # Inspect Rt
-plot_rt(fit, group = "United_Kingdom", levels = c(20,50,80,95))
+plot_rt(fit, group = "United_Kingdom", plotly=TRUE)
 ```
 
-![](reference/figures/plot-1.png)<!-- -->
+![](reference/figures/plot-1.html)<!-- -->
 
 ``` r
 # And deaths
-plot_obs(fit, type = "deaths", group = "United_Kingdom", levels = c(20,50,80,95))
+plot_obs(fit, type = "deaths", group = "United_Kingdom", plotly=TRUE)
 ```
 
-![](reference/figures/plot-2.png)<!-- -->
+![](reference/figures/plot-2.html)<!-- -->
