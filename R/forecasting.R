@@ -121,7 +121,7 @@ posterior_metrics <-
 #' whether the observation is new (not used in fitting).
 #'
 #' @inherit evaluate_forecast params
-#' @inherit plot_obs return
+#' @inherit plot_obs params
 #' @param period Buckets computed empirical probabilities into time periods
 #' if specified.
 #' @param by_group Plot coverage for each group individually

@@ -36,7 +36,7 @@
     target += normal_lpdf(z_beta | 0, 1);
   }
   else if (prior_dist == 8) { // shifted gamma
-    target += gamma_lpdf(z_beta | prior_shape, 1.0 ./ prior_scale);
+    target += gamma_lpdf(-z_beta | prior_shape, 1.0 ./ prior_scale);
   }
   /* else prior_dist is 0 and nothing is added */
   
