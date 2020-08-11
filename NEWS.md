@@ -1,4 +1,14 @@
 
+# epidemia 0.6.0
+* Substantial changes to interface: Added epirt and epiobs objects
+* Different and more flexible observation models
+* Improved structure to epimodel objects
+* Refactoring of main epim function
+* Improved plots, including interactive plots using plotly
+* Forecast evaluation using coverage and diffeent metrics
+* Ability to do an initial run fit to cumulatives within epim
+* Updated tests, documentation and vignettes
+
 # epidemia 0.5.3
 * Improved model description in introduction vignette
 

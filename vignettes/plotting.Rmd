@@ -15,52 +15,12 @@ vignette: |
   \usepackage[utf8]{inputenc}
 ---
 
-<style type="text/css">
-body{ /* Normal */
-font-size: 16px;
-}
-td { /* Table */
-font-size: 14px;
-}
-h1.title {
-font-size: 38px;
-color: Black;
-}
-h1 { /* Header 1 */
-font-size: 28px;
-color: Black;
-}
-h2 { /* Header 2 */
-font-size: 22px;
-color: DarkBlue;
-}
-h3 { /* Header 3 */
-font-size: 18px;
-color: DarkBlue;
-}
-}
-h3 { /* Header 4 */
-font-size: 16px;
-color: DarkBlue;
-}
-h4 { /* Header 4 */
-font-size: 16px;
-color: DarkBlue;
-}
-code.r{ /* Code block */
-font-size: 12px;
-}
-pre { /* Code block - determines code spacing between lines */
-font-size: 14px;
-}
-</style>
-
 This vignette demonstrates some of the plotting utilities available in **epidemia**.
 
 **epidemia** provides three plotting functions:
 1. `plot_rt`: for plotting the reproduction number
 2. `plot_obs`: for plotting the predictve posterior for a single type of observation (for example, daily cases or daily deaths).
-3. `plot_infections`: for plotting hte nymber of infections.
+3. `plot_infections`: for plotting the number of infections.
 
 The first argument of all three functions is an `epimodel` object returned by calling `epim`
 
@@ -68,7 +28,7 @@ The first argument of all three functions is an `epimodel` object returned by ca
 
 We start by fitting a model, the results of which we are going to plot. The model is fitted for three countries: Italy, Austria and Germany.
 
-```{r message=FALSE}
+```{r message=FALSE, cache=T}
 library(epidemia)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
@@ -78,18 +38,19 @@ args <- EuropeCovid
 args$algorithm <- "sampling"
 args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
 args$group_subset <- c("Italy", "Austria", "Germany")
-args$formula <- R(country,date) ~  1 + lockdown
-args$prior <- rstanarm::normal(location=0,scale=.5)
-args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+args$rt <- epirt(
+  formula = R(country, date) ~ 1 + lockdown,
+  prior = rstanarm::normal(location=0, scale=.5),
+  prior_intercept = rstanarm::normal(location=0, scale=2) 
+)
 fit <- do.call("epim", args)
-
 ```
 
 # Default plotting behaviour
 
 ## Reproduction number
 
-Calling `plot_rt` with no arguments other than the fitted `epimodel` plots the repdoduction for every group for the entire date range for which the model was fitted. The 50% and 95% credible intervals are plotted.
+Calling `plot_rt` with no arguments other than the fitted `epimodel` plots the repdoduction for every group for the entire date range for which the model was fitted.
 
 ```{r fig.width=9, fig.height=4, fig.align="center"}
 plot_rt(fit)
@@ -111,10 +72,10 @@ plot_infections(fit)
 
 # Plotting a subset of the groups
 
-Use the `group` argument to plot a subset of the available group. For example, we can plot the repduction number for just Austria and Germany.
+Use the `groups` argument to plot a subset of the available group. For example, we can plot the repduction number for just Austria and Germany.
 
 ```{r fig.width=9, fig.height=4, fig.align="center"}
-plot_rt(fit, group=c("Austria", "Germany"))
+plot_rt(fit, groups=c("Austria", "Germany"))
 ```
 
 # Restricting the date range
@@ -139,7 +100,7 @@ plot_rt(fit, dates=c("09-03-20", "06-04-20"), date_format="%d-%m-%y", date_break
 To restrict the dates from one direction only, set the appropriate element of `dates` to `NA`. 
 
 ```{r fig.width=9, fig.height=4, fig.align="center"}
-plot_rt(fit, dates=c("09-03-20", NA))
+plot_rt(fit, dates=c("2020-03-09", NA))
 ```
 
 

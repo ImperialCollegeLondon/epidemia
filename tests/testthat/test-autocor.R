@@ -2,13 +2,15 @@ context("Test models with autocorrelation terms")
 
 data("EuropeCovid")
 args <- EuropeCovid
-args$stan_data <- TRUE
+args$sampling_args <- list(chains=0)
 
 test_that("Invalid arguments relating to random walks throw errors", {
 
     args$group_subset <- c("Germany", "United_Kingdom")
     args$data$week <- format(args$data$date, "%V")
-    args$formula <- Rt(country, date) ~ rw(time=week, gr=country)
+    args$rt <- epirt(
+        formula = R(country, date) ~ rw(time=week, gr=country)
+    )
 
     w <- args$data$country %in% args$group_subset
     args$data <- args$data[w,]
@@ -34,12 +36,12 @@ test_that("Invalid arguments relating to random walks throw errors", {
 })
 
 
-test_that("Introducing new groups in 'newdata' throw errors", {
+#test_that("Introducing new groups in 'newdata' throw errors", {
+#
+#})
 
-})
 
-
-test_that("Parsing of rw calls in formula", {
-    data <- args$data
-})
+#test_that("Parsing of rw calls in formula", {
+#    data <- args$data
+#})
 

@@ -1,6 +1,3 @@
-
-
-
 # formula method for epiformula objects
 # 
 # @param x An epiformula object.

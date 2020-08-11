@@ -2,94 +2,114 @@
 ---
 title: "Time-dependent Modelling of R"
 output: 
-  github_document:
-    fig_width: 10
-    fig_height: 4
+  html_document
 vignette: >
   %\VignetteIndexEntry{Time-dpendent Modelling of R}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
 
-This vignette describes how changes in $R_t$ can be modelled over time.
+This vignette describes how changes in the reproduction number can be modelled over time.
 
 ## Data
 
-We use the Europe data as example. 
-```{r}
+We use the Europe Covid-19 data as an example. 
+```{r, message = FALSE}
 library(epidemia)
+library(plotly)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
 ```
 
 ### Single Country, Random Walk
 
-This considers a single country, modelling a weekly change in $R_t$ as a random walk.
+This considers a single country, modelling a weekly change in the reproduction number as a random walk. We recommend becoming familiar with the `EuropeCovid` dataset before proceeding with this vignette.
 
 ```{r computeItalyrw,results='hide', cache=TRUE}
 args <- EuropeCovid
-args$algorithm <- "sampling"
-args$sampling_args <- list(iter=600,control=list(adapt_delta=0.98,max_treedepth=15),seed=7988)
-args$group_subset <- c("Italy")
+
+# add a week column, which is required for the random walk
 args$data$week <- format(args$data$date, "%V")
-args$formula <- R(country,date) ~  1+rw(week) 
+
+args$rt <- epirt(
+  formula = R(country, date) ~ 1 + rw(time=week),
+)
+
+# use MCMC sampling
+args$algorithm <- "sampling"
+args$sampling_args <- list(
+  iter=600,
+  control=list(adapt_delta=0.98,max_treedepth=15),
+  seed=7988
+)
+
+# consider only Italy
+args$group_subset <- c("Italy")
 fit <- do.call("epim", args)
 ```
-```{r plotItaly}
-library(gridExtra)
-grid.arrange(plot_obs(fit, type="deaths"),plot_infections(fit),plot_rt(fit),nrow=2)
+```{r plotItaly, out.width='100%'}
+subplot(
+  plot_rt(fit, plotly=TRUE),
+  plot_obs(fit, type = "deaths", plotly=TRUE),
+  plot_infections(fit, plotly=TRUE),
+  margin=0.05
+)
 ```
 
-### Multiple Countries, Country specific weekly effect via random walk
+### Multiple Countries, country specific weekly effect via random walk
+
+It is also possible to have a separate random walk depending on some grouping variable. 
+This is specified using the `gr` argument to `epirt`.
+The most obvious application of this is to have a separate random walk for each modeled population.
+However, one could group by other factor variables; by region rather than country, for example.
+
+The code below gives a straightforward example of having a separate random walk by country.
 
 ```{r compute4countries,results='hide',cache=TRUE}
-args <- EuropeCovid
-args$data$week <- format(args$data$date, "%V")
-args$formula <- R(country,date) ~ 1+ rw(week,country)
+args$rt <- epirt(
+  formula = R(country, date) ~ 1 + rw(time=week, gr=country)
+)
 args$group_subset <- c("Germany","United_Kingdom","France","Italy")
-args$algorithm <- "sampling"
-args$sampling_args <- list(iter=600,control=list(adapt_delta=0.95,max_treedepth=15),seed=74756)
+
 fit <- do.call("epim", args)
 ```
 
+Visualising the fits by group.
 
-
-```{r plot4countries_rt}
-plot_rt(fit)
+```{r plot4countries_rt, out.width='100%'}
+plot_rt(fit, plotly=TRUE)
 ```
 
-```{r plot4countries_infections}
-plot_infections(fit)
+```{r plot4countries_infections, out.width='100%'}
+plot_infections(fit, plotly=TRUE)
 ```
 
-
-```{r plot4countries_obs}
-plot_obs(fit,type="deaths")
+```{r plot4countries_obs, out.width='100%'}
+plot_obs(fit,type="deaths", plotly=TRUE)
 ```
-
 
 
 ### Splines 
 
-
-Splines can, in principle, be used as well. For this one can simply
-use the functionality in the splines package, below with quadratic
-splines for one country..
-
+In principle, splines can also be used by leveraging the functionality in the splines package. Below, a quadratic spline is used for one country.
 
 ```{r computeUKsplines,results='hide',cache=TRUE}
-library(splines)
-args <- EuropeCovid
-args$formula <- R(country,date) ~ bs(day,df=8,degree=3)
-args$group_subset <- c("United_Kingdom")
 args$data$day <- as.integer(args$data$date-min(args$data$date))
-args$algorithm <- "sampling"
-args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=15),seed=1231)
+args$rt <- epirt(
+  formula = R(country, date) ~ splines::bs(day, df=8, degree=3)
+)
+
+args$group_subset <- c("United_Kingdom")
+args$sampling_args$iter <- 1e3
 fit <- do.call("epim", args)
 ```
 
-```{r plotsplineUK}
-grid.arrange(plot_obs(fit, type="deaths"),plot_infections(fit),plot_rt(fit),nrow=2)
+```{r plotsplineUK, out.width='100%'}
+subplot(
+  plot_obs(fit, type="deaths", plotly=TRUE),
+  plot_infections(fit, plotly=TRUE),
+  plot_rt(fit, plotly=TRUE)
+)
 ```
 
 

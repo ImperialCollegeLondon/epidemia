@@ -1,125 +1,159 @@
 # Generate posterior draws of time series of interest
 #
 # This used rstan::gqs to generate posterior draws of time series,
-# including latent series such as daily infections, reproduction number and 
+# including latent series such as daily infections, reproduction number and
 # also the observation series.
 #
 # @inheritParams posterior_infections
-# return A names list, with each elements containing draws of a particular type of series
-posterior_sims <- function(object, newdata=NULL, draws=NULL, seed=NULL, ...) {
-  if (!is.null(seed))
+# return A names list, with each elements containing draws of a
+# particular type of series
+posterior_sims <- function(object,
+                           newdata = NULL,
+                           draws = NULL,
+                           seed = NULL,
+                           ...) {
+  if (!is.null(seed)) {
     set.seed(seed)
-  dots <- list(...)
+  }
+  
 
-  # subsampled matrix of posterior draws
-  stanmat <- subsamp(object, as.matrix(object$stanfit), draws)
-
-  if (is.null(newdata))
-    groups <- levels(object$data$group)
-  else {
-    newdata <- checkData(formula(object), newdata, NULL)
-    groups <- levels(newdata$group)
-    w <- !(groups %in% object$groups)
-    if (any(w))
-      stop(paste0("Groups ", groups[w], " not modeled. 'newdata' only supported for existing populations."))
+  all <- c(list(R = object$rt), object$obs)
+  if (!is.null(newdata)) {
+    newdata <- check_data(
+      formula = formula(object$rt),
+      data = newdata,
+      group_subset = object$groups
+    )
+    all <- Map( # enforce original factor levels
+      add_xlev,
+      all,
+      lapply(object$mf, mflevels)
+    )
   }
 
-  # construct linear predictor
-  dat <- pp_data(object=object, newdata=newdata, ...)
-  eta <- pp_eta(object, dat, stanmat)
-  colnames(eta) <- paste0("eta[",1:ncol(eta),"]")
+  data <- newdata %ORifNULL% object$data
+  rt <- epirt_(all$R, data)
 
-  # stanmatrix may require relabelling
-  stanmat <- pp_stanmat(object, stanmat, groups)
-  stanmat <- cbind(stanmat, eta)
+  obs <- lapply(all[-1], epiobs_, data)
 
-  standata <- pp_standata(object, newdata)
+  stanmat <- subsamp(
+    object,
+    as.matrix(object$stanfit),
+    draws
+  )
 
-  sims <- rstan::gqs(stanmodels$epidemia_pp_base, 
-                     data = standata, 
-                     draws=stanmat)
+  standata <- pp_standata(
+    object = object,
+    rt = rt,
+    obs = obs,
+    data = data
+  )
 
-  data = newdata %ORifNULL% object$data
-  out <- list()
-  out$rt_unadj <- parse_latent(sims, data, "Rt_unadj")
-  out$rt <- parse_latent(sims, data, "Rt")
-  out$infections <- parse_latent(sims, data, "infections")
+  # construct linear predictors
+  eta <- pp_eta(rt, stanmat)
+  if (length(eta) > 0) {
+    colnames(eta) <- paste0("eta[", seq_len(ncol(eta)), "]")
+    stanmat <- cbind(stanmat, as.matrix(eta))
+  }
 
-  # get posterior predictive
-  out$obs <- list()
-  types <- names(object$obs)
-  for(i in seq_along(types))
-    out$obs[[types[i]]] <- parse_obs(sims, data, i)
+  oeta <- do.call(cbind, lapply(obs, pp_eta, stanmat))
+  if (length(oeta) > 0) {
+    oeta <- sweep(oeta, 2, standata$offset, "+")
+    colnames(oeta) <- paste0("oeta[", seq_len(ncol(oeta)), "]")
+    stanmat <- cbind(stanmat, as.matrix(oeta))
+  }
+
+  # stanmatrix may require relabeling
+  stanmat <- pp_stanmat(
+    stanmat = stanmat,
+    orig_nms = object$orig_names,
+    groups = levels(data$group)
+  )
+
+  sims <- rstan::gqs(stanmodels$epidemia_pp_base,
+    data = standata,
+    draws = stanmat
+  )
+
+  # get list of indices for slicing result of gqs
+  ind <- Map(
+    function(x, y) x:y,
+    standata$starts,
+    standata$starts + standata$NC - 1
+  )
+
+  # get latent series
+  nms <- c("Rt_unadj", "Rt", "infections", "infectiousness")
+  out <- lapply(
+    nms,
+    function(x) parse_latent(sims, x, ind, rt)
+  )
+  names(out) <- nms
+
+  # add posterior predictive
+  n <- standata$oN[seq_len(standata$R)]
+
+  out <- c(out, list(
+    obs = parse_obs(sims, "obs", n, obs),
+    E_obs = parse_obs(sims, "E_obs", n, obs)
+  ))
 
   return(out)
 }
 
-# Parses a given latent quantity from the result of rstan::qgs
+# Formats draws of observations (or expected)
+# from the posterior
 #
-# @param sims Result of calling rstan::gqs in posterior_sims
-# @param data data.frame used 
-# @param nme Name of the latent series to return
-# @inherits posterior_infections return
-parse_latent <- function(sims, data, nme) {
-
-  starts <- NC <- NULL
-
-  # get useful quantities
-  sdat <- get_sdat_data(data)
-  for (name in names(sdat))
-    assign(name, sdat[[name]])
-  ends    <- starts + NC - 1
-
-  sims <- rstan::extract(sims, nme)[[1]]
-
-  out <- list()
-  for (i in seq_along(groups)) {
-    t <- starts[i]:ends[i]
-    df <- as.data.frame(t(sims[,t,i]))
-
-    w <- data$group %in% groups[i]
-    df <- do.call("cbind.data.frame", 
-                  args = list(date = data$date[w], 
-                              df))
-      
-    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
-    out[[groups[i]]] <- df
+# @param sims The result of rstan::extract
+# @param nme Either "obs" or "E_obs"
+# @param n An integer vector giving number of observations 
+# of each type
+# @param obs List of epiobs_ objects
+parse_obs <- function(sims, nme, n, obs) {
+  if (!length(n)) {
+    return(NULL)
   }
+  draws <- rstan::extract(sims, nme)[[1]]
+  # split draws into components for each type
+  i <- lapply(n, function(x) 1:x)
+  i <- Map(function(x, y) x + y, i, utils::head(c(0,cumsum(n)),-1))
+  draws <- lapply(i, function(x) draws[, x])
+
+  f <- function(x, y) {
+    list(
+      group = get_gr(x),
+      time = get_time(x),
+      draws = y
+    )
+  }
+
+  out <- Map(f, obs, draws)
+  names(out) <- lapply(
+    obs,
+    function(x) .get_obs(formula(x))
+  )
   return(out)
 }
 
-# Parses a given latent quantity from the result of rstan::qgs
+# Formats draws of latent quantities from rstan::gqs
 #
-# @inherits parse_latent param sims, data, return
-# @param idx index of the latent observation series to return
-parse_obs <- function(sims, data, idx) {
-
-  starts <- NC <- NULL
-
-  sims <- rstan::extract(sims, "pred")[[1]]
-
-  # get useful quantities
-  sdat <- get_sdat_data(data)
-  for (name in names(sdat))
-    assign(name, sdat[[name]])
-  ends    <- starts + NC - 1
-
-  out <- list()
-  for (i in seq_along(groups)) {
-    t <- starts[i]:ends[i]
-    df <- t(sims[,idx,t,i])
-    df <- as.data.frame(df)
-    
-    # attach corresponding dates
-    w <- data$group %in% groups[i]
-    df <- do.call("cbind.data.frame", 
-                  args = list(date = data$date[w], 
-                              df))
-    
-    colnames(df) <- c("date", paste0("draw", 1:(ncol(df)-1)))
-    out[[groups[i]]] <- df
-  }
-  return(out)
+# @param sims The result of rstan::extract
+# @param nme One of "Rt_unadj", "Rt" or "infections"
+# @param ind A list giving the indices at which to extract for each group
+# @param rt An epirt_ object
+parse_latent <- function(sims, nme, ind, rt) {
+  draws <- rstan::extract(sims, nme)[[1]]
+  ng <- dim(draws)[3]
+  draws <- lapply( # 3d array to list of matrices
+    seq_len(ng),
+    function(x) draws[, , x]
+  )
+  draws <- Map(function(x, y) x[, y], draws, ind)
+  return(list(
+    group = rt$gr,
+    time = rt$time,
+    draws = do.call(cbind, draws)
+  ))
 }
 
 # Subsample a matrix of posterior parameter draws
@@ -144,221 +178,59 @@ subsamp <- function(object, mat, draws=NULL) {
   return(mat)
 }
 
-# Creates standata from newdata, which is passed into rstan::gqs
+# standata passed into rstan::gqs
 #
 # @param object An \code{epimodel} object
-# @param newdata The result of checkData
-pp_standata <- function(object, newdata=NULL) {
+# @param rt An epirt_ object
+# @param obs A list of epiobs_ objects
+# @param data The checked data (either original or newdata)
+pp_standata <- function(object, rt, obs, data) {
+  out <- standata_data(data)
+  pops <- check_pops( # reduce to only modeled pops
+    object$pops,
+    out$groups
+  )
+  out <- c(out, standata_obs(
+    obs = obs,
+    groups = out$groups,
+    nsim = out$NS,
+    begin = out$begin
+  ))
 
-  sdat <- object$standata
-
-  if (is.null(newdata))
-    return(sdat)
-
-  groups <- levels(newdata$group)
-  obs    <- checkObs(object$obs, newdata)
-  pops  <- checkPops(object$pops, groups)
-
-  standata <- get_sdat_data(newdata)
-  standata <- get_sdat_obs(standata, obs)
-  standata$pop <- as.array(pops$pop)
-  standata$si <- padSV(sdat$si, standata$NS, 0)
-  standata$r0 <- sdat$r0
-  standata$N0 <- sdat$N0
-  standata$N <- nrow(newdata)
-
-  return(standata)
-}
-
-# Parses a matrix of posterior draws into form required for rstan::gqs
-#
-# @param object An \code{epimodel} object
-# @param groups Ordered vector of unique populations to be modelled 
-pp_stanmat <- function(object, stanmat, groups) {
-
-  stanms <- object$orig_names
-  
-  # replace original names for the seeds
-  seeds_idx <- grep(paste0("seeds["), colnames(stanmat), fixed=TRUE)
-  seeds_idx_keep <- sapply(groups, function(x) grep(paste0("seeds[", x, "]"), colnames(stanmat), fixed=TRUE))
-  stanms[seeds_idx_keep] <- paste0("y[", seq_along(groups), "]")
-
-  noise_idx <- NULL
-  noise_idx_keep <- NULL
-  R <- object$standata$R
-  if (R > 0) {
-  # replace original names for the noise
-  noise_idx <- grep(paste0("noise["), colnames(stanmat), fixed=TRUE)
-  noise_idx_keep <- sapply(groups, function(x) grep(paste0("noise[", x), colnames(stanmat), fixed=TRUE))
-  combs <- expand.grid(seq_along(groups), 1:R)
-  stanms[noise_idx_keep] <- paste0("noise[", combs[,1], ",", combs[,2], "]")
-  }
-
-  colnames(stanmat) <- stanms
-  # remove redundant indices to avoid name conflicts
-  col_rm <- union(setdiff(seeds_idx, seeds_idx_keep),setdiff(noise_idx, noise_idx_keep))
-
-  if (length(col_rm) > 0)
-    stanmat <- stanmat[,-col_rm]
-
-  # bug in rstan::gqs means we have to pad parameters if M=1...
-  mat <- matrix(0, nrow=nrow(stanmat), ncol= 2+R)
-  colnames(mat) <- c(paste0("y[",length(groups)+1,"]"),
-                     paste0("phi[",R+1,"]"),
-                     paste0("noise[",length(groups)+1,",",1:R,"]"))
-
-  stanmat <- cbind(stanmat, mat)
-
-  return(stanmat)
-}
-
-# Construct a linear predictor from the posterior samples and provided dataframe.
-# Adapted from \code{rstanarm:::pp_eta}
-#
-# @param object, data, stanmat  See \code{rstanarm:::pp_eta}
-pp_eta <- function(object, data, stanmat) {
-  x <- data$x
-
-  # start with fixed effects
-  beta <- stanmat[, seq_len(ncol(x)), drop = FALSE]
-  eta <- linear_predictor(beta, x)
-  
-  # similar for random effects
-  if (!is.null(data$Zt)) {
-    b_sel <- grepl("^b\\[*", colnames(stanmat))
-    b <- stanmat[, b_sel, drop = FALSE]
-    if (is.null(data$Z_names)) {
-      b <- b[, !grepl("_NEW_", colnames(b), fixed = TRUE), drop = FALSE]
-    } else {
-      b <- pp_b_ord(b, data$Z_names)
-    }
-    eta <- eta + as.matrix(b %*% data$Zt)
-  }
-
-  if (!is.null(data$ac_Z)) {
-    rw <- new_rw_stanmat(stanmat=stanmat,
-                         newnms=data$ac_Z_names)
-    eta <- eta + as.matrix(rw %*% Matrix::t(data$ac_Z))
-  }
-  return(eta)
-}
-
-# extract RW label from parameter names
-get_labels <- function(nms) {
-  return(sub("\\[.*", "", nms))
-}
-
-# extract group label from parameter names
-get_grs <- function(nms) {
-  out <- sub(".*,", "", nms)
-  out <- substr(out, 1, nchar(out)-1)
+  # add remaining data
+  out <- c(out, list(
+    si = pad(object$si, out$NS, 0, TRUE),
+    N0 = object$seed_days,
+    pop = as.array(pops$pop),
+    N = nrow(data),
+    r0 = rt$r0
+  ))
   return(out)
 }
 
-# extract time index from parameter names
-get_times <- function(nms) {
-  out <- sub(".*\\[", "", nms)
-  out <- sub(",.*", "", out)
-  out <- tryCatch({as.Date(out)}, 
-                  error=function(cond)
-                    return(as.numeric(out)))
-  return(out)
-}
-
-parse_rw_labels <- function(nms) {
-  return(data.frame(label = get_labels(nms),
-                    gr = get_grs(nms),
-                    time = get_times(nms)))
-}
-
-# Creates a new stanmatrix for random walks
-# from an existing matrix and the new names
+# Renames stanmat for passing into rstan::gqs. This is because the
+# modeled groups may differ from the original.
 #
-# @param stanmat The original stanmatrix
-# @param znames The new random walk parameters from newdata.
-new_rw_stanmat <- function(stanmat, newnms=NULL) {
+# @param stanmat An matrix of parameter draws
+# @param orig_nms The original names for stan parameters
+# @param groups Sorted character vector of groups to simulate for
+pp_stanmat <- function(stanmat, orig_nms, groups) {
+  nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
+  m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
+  nms[m] <- paste0("y[", seq_along(groups), "]")
+  colnames(stanmat)[seq_along(nms)] <- nms
 
-  if (is.null(newnms)) 
-    newnms <- grep(pattern="(^(rw)\\([^:]*\\))\\[[^:]*\\]$", 
-                   x=colnames(stanmat),
-                   value=TRUE)
+  noaux <- length(grep("^oaux\\[", colnames(stanmat)))
+  neta <- length(grep("^eta\\[", colnames(stanmat)))
+  noeta <- length(grep("^oeta\\[", colnames(stanmat)))
 
-  # df of all parsed terms
-  df <- parse_rw_labels(newnms)
-  df$name <- newnms
-  df$walk <- paste0(df$label, "[", df$gr, "]")
-  df$sigma <- paste0("sigma:",df$walk)
-  
-  # add draws to dataframe
-  draws <- paste0("draw ", 1:nrow(stanmat))
-  locs <- sapply(newnms, function(x) which(x == colnames(stanmat)))
-  locs <- as.numeric(locs)
-  unmtchd <- which(is.na(locs))
-  mtchd <- setdiff(seq_along(newnms), unmtchd)
-  
-  df[mtchd, draws] <- t(stanmat[,na.omit(locs), drop=FALSE])
-  df[unmtchd, draws] <- 0
-  
-  # impute terms for new walk periods
-  sds <- stanmat[,df$sigma[unmtchd]]
-  n <- nrow(sds)
-  m <- ncol(sds)
-  df[unmtchd, draws] <- t(matrix(rnorm(n*m), nrow=n, ncol=m) * sds)
-  
-  # ensure ordered by walk then by time period
-  w <- order(df$walk, df$time)
-  df <- df[w,]
-  
-  # cumulate errors by walk
-  dfs <- split(df, df$walk)
-  f <- function(x) apply(x[,draws], 2, cumsum)
-  dfs <- Map(f, dfs)
-  df[,draws] <- do.call(rbind, dfs)
-  
-  w <- sapply(newnms, function(x) which(x == df$name))
-  w <- as.numeric(w)
-  
-  out <- t(as.matrix(df[w,draws]))
-  colnames(out) <- newnms
-  return(out)
-}
-
-### Helper from rstanarm ###
-
-# reorders the random effect draws to match newdata
-pp_b_ord <- function(b, Z_names) {
-  b_ord <- function(x) {
-    m <- grep(paste0("b[", x, "]"), colnames(b), fixed = TRUE)
-    len <- length(m)
-    if (len == 1)
-      return(m)
-    if (len > 1)
-      stop("multiple matches bug")
-    m <- grep(paste0("b[", sub(" (.*):.*$", " \\1:_NEW_\\1", x), "]"),
-              colnames(b), fixed = TRUE)
-    len <- length(m)
-    if (len == 1)
-      return(m)
-    if (len > 1)
-      stop("multiple matches bug")
-    x <- strsplit(x, split = ":", fixed = TRUE)[[1]]
-    stem <- strsplit(x[[1]], split = " ", fixed = TRUE)[[1]]
-    x <- paste(x[1], x[2], paste0("_NEW_", stem[2]), x[2], sep = ":")
-    m <- grep(paste0("b[", x, "]"), colnames(b), fixed = TRUE)
-    len <- length(m)
-    if (len == 1)
-      return(m)
-    if (len > 1)
-      stop("multiple matches bug")
-    x <- paste(paste(stem[1], stem[2]), paste0("_NEW_", stem[2]), sep = ":")
-    m <- grep(paste0("b[", x, "]"), colnames(b), fixed = TRUE)
-    len <- length(m)
-    if (len == 1)
-      return(m)
-    if (len > 1)
-      stop("multiple matches bug")
-    stop("no matches bug")
-  }
-  ord <- sapply(Z_names, FUN = b_ord)
-  b[, ord, drop = FALSE]
+  # need to pad out for rstan::gqs
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 8)
+  colnames(mat) <- c(
+    paste0("y[", length(groups) + 1:2, "]"),
+    paste0("oaux[", noaux + 1:2, "]"),
+    paste0("eta[", neta + 1:2, "]"),
+    paste0("oeta[", noeta + 1:2, "]")
+  )
+  return(cbind(stanmat, mat))
 }

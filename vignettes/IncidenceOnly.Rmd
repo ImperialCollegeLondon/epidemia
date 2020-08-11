@@ -1,64 +1,104 @@
 ---
-title: "Modelling of R  with only Incidence data"
+title: "Modelling of R with Case data only"
 output: 
-  github_document:
-    fig_width: 10
-    fig_height: 4
+  html_document
 vignette: >
   %\VignetteIndexEntry{Modelling of R  with only Incidence data}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
 
-This vignette describes how changes in $R_t$ can be modelled with just incidence data and discrete SI.
+This vignette describes how changes in the reproduction number can be modelled with just case data and 
+with a discrete serial interval.
 
 ## Flu 1918
 
-We use Flu data from 1918 as an example. This is provided in @EpiEstim.
-```{r Flu1918comp}
+Data from the 1918 Flu pandemic is used as an example. This data is provided in the R package @EpiEstim.
+
+```{r Flu1918comp, message=FALSE}
 library(epidemia)
 library(EpiEstim)
+library(plotly)
 data("Flu1918")
 options(mc.cores = parallel::detectCores())
 print(Flu1918)
 flu <- Flu1918
-flu$incidence <- c(rep(NA,1),flu$incidence) ## pad before initialisation
-flu$fludate <- as.Date("1918-01-01")+seq(0,along.with=flu$incidence)
-obs <- !is.na(flu$incidence)
-
-args <- list(formula=Rt(country,date)~ 0 + rw(time=week,prior_scale=0.1),
-             data=data.frame(country="A",
-                             date=flu$fludate,
-                             week=format(flu$fludate, "%V")),
-             obs=list(
-                 incidence=list(
-                     odata=data.frame(country="A",
-                                      date=flu$fludate[obs],incidence=flu$incidence[obs]),
-                     rates=list(means=data.frame(factor("A"),1),
-                                scale=.01),
-                     pvec=c(.25,.25,.25,.25)
-                 )
-             ),
-             seed_days=7,
-             algorithm="sampling",
-             r0=3,
-             pops=data.frame(country="A",pop=1e6),
-             si=flu$si,
-             prior = rstanarm::normal(location=0,scale=.2),
-             prior_intercept = rstanarm::normal(location=0,scale=.5),
-             prior_tau = rstanarm::exponential(rate=4)             
-             )
-args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=15),seed=713)
 ```
 
-```{r sampleflu, results='hide', cache=TRUE}
-fit <- do.call("epim",args)
+First, we form the `data` argument to `epim`. Recall that this must store all observations and covariates needed to fit the model.
+In our case, this is easy because there are no covariates, and there is just one observation type - case data.
+
+```{r}
+data <- data.frame(
+  country = "A",
+  cases = c(NA, flu$incidence), # pad start
+  fludate = as.Date("1918-01-01") + seq(0, along.with=c(NA,flu$incidence)) 
+)
+
+# needed for weekly random walk
+data$week <- format(data$fludate, "%V")
 ```
 
-```{r plotflu, fig_height= 4}
-library(gridExtra)
-grid.arrange(plot_rt(fit),
-             plot_obs(fit,"incidence"),
-             nrow=2)
+A week column as been added to `data` because we will parameterise the reproduction number as a weekly random walk. 
+This is done as follows.
+```{r}
+# model the rep number as weekly random walk (no covariates)
+rt <- epirt(
+  formula = R(country, fludate) ~ 0 + rw(time=week, prior_scale=0.1),
+  r0=3 # prior expected reproduction number
+)
 ```
+
+We will also need to specify a model for how the observations (daily cases) are observed from the latent infection series.
+This is done through the `epiobs` function.
+```{r}
+# model observed cases as a proportion of infections constant over time
+cases <- epiobs(
+  formula = cases(country, fludate) ~ 1,
+  prior_intercept = rstanarm::normal(location=1, scale=0.01),
+  link = "identity",
+  i2o = rep(.25,4)
+)
+```
+In this case, we assume that everybody infected is recorded as a case, and that this happens with equal probability in the four 
+days subsequent to infection.
+
+We will use the NUTs sampler to fit the model. It is useful to explicitly control the parameters for sampling.
+```{r}
+# use NUTs with given parameters
+sampling_args <- list(
+  iter=1000,
+  control=list(adapt_delta=0.95,max_treedepth=15),
+  seed=12345
+)
+```
+We are ready to fit the model. This is done through a call to `epim`.
+```{r Flu1918fit, cache=TRUE}
+# fit the model with various model params
+fm <- epim(
+  rt = rt,
+  obs = list(cases),
+  data = data,
+  pops = data.frame(country="A", pop=1e6),
+  si = flu$si_distr,
+  seed_days = 6,
+  prior_tau = rstanarm::exponential(rate=4),
+  algorithm = "sampling",
+  sampling_args = sampling_args
+)
+```
+
+The resulting fit can be examined using various plotting functions provided by **epidemia**.
+```{r, warning=FALSE, out.width='100%'}
+subplot(
+plot_rt(fm, plotly=T, smooth=7),
+plot_infections(fm, plotly=T),
+plot_obs(fm, type = "cases", plotly=T),
+plot_infectious(fm, plotly=T),
+shareX = T,
+nrows=2,
+margin=0.04
+)
+```
+
 

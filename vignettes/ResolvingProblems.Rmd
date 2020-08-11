@@ -1,210 +1,202 @@
 ---
-title: "Resolving Problems"
+title: "Resolving Convergence Problems"
 output: 
-  github_document:
-    fig_width: 10
-    fig_height: 7
+  html_document
 vignette: >
   %\VignetteIndexEntry{Resolving Problems}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
 
-## SARS 2003  - using cumulatives to obtain starting values for MCMC
+# Local Modes
 
-We use the SARS data from 2003 as an example. This is provided in @EpiEstim. 
+For some sample data and MCMC starting values, the model stays in a part of the parameter space which induces 
+herd immunity. This is likely because daily death and case counts towards the end of the observed period can be low. Such low counts can be explained by policies surpressing the virus, or alternatively by the virus spreading through the entire susceptible population. Herd immunity can act as a local mode that is difficult to escape, even if it poorly fits the observed data at the peak of the epidemic.
 
-In the example below, the sampler would have difficulties converging with the
-default random starting values of rstan. It usually stays in a part of the parameter space where all of the population gets infected. 
+Data from the SARS 2003 outbreak is used as an example, and we show how the convergence problem can potentially be overcome. The data is provided by the R package @EpiEstim.
 
-Below is one approach how to resolve this. This is at the moment
-hard-coded. Future versions of epidemia may provide a more convenient
-way of doing this.
+## SARS 2003 - using cumulatives to obtain starting values for MCMC
 
-We first fit the model to cumulative counts to get starting values for
-the main run (the fit to cumulative counts will not be correct itself
-due an assumed independence of the cumulative counts).  
+First load and inspect the data.
 
-First we load the data.
-
-```{r}
+```{r, message=FALSE}
 library(epidemia)
 library(EpiEstim)
+library(plotly)
 data("SARS2003")
 options(mc.cores = parallel::detectCores())
 print(SARS2003)
 ```
-Then we set up and run the model for cumulative observed cases.
-```{r SARS2003}
-sars <- SARS2003
-sars$incidence <- c(rep(NA,20),cumsum(sars$incidence)) ## pad before initialisation
-sars$sarsdate <- as.Date("2003-01-01")+seq(0,along.with=sars$incidence)
-obs <- !is.na(sars$incidence)
 
-args <- list(formula=Rt(country,date)~ rw(time=week,prior_scale=0.1),
-     data=data.frame(country="A",
-                     date=sars$sarsdate,
-                     week = format(sars$sarsdate, "%V")),
-             obs=list(
-                 incidence=list(
-                     odata=data.frame(country="A",
-                                      date=sars$sarsdate[obs],incidence=sars$incidence[obs]),
-                     rates=list(means=data.frame(factor("A"),1),
-                                scale=.01),
-                     pvec=c(.25,.5,.75,1),
-                     ptype="distribution"
-                 )
-             ),
-             seed_days=7,
-             algorithm="sampling",
-             r0=3,
-             pops=data.frame(country="A",pop=1e6),
-             si=sars$si,
-             prior = rstanarm::normal(location=0,scale=.2),
-             prior_intercept = rstanarm::normal(location=0,scale=.5),
-             prior_tau = rstanarm::exponential(rate=4)             
-     )
+Set up the `data` argument for `epim` as follows. Here it is assumed that seeding of infections begins 20 days prior to the first observed cases.
+
+```{r}
+data <- data.frame(
+  country = "A",
+  date = as.Date("2003-01-01") + seq(0,length(SARS2003$incidence) + 19),
+  cases = c(rep(NA,20), SARS2003$incidence)
+)
+data$week <- format(data$date, "%V")
 ```
 
-```{r SARS_cumulative_pre, results='hide', cache=TRUE}
-args$debug=TRUE ## to get original parameter values
-args$sampling_args <- list(iter=100,control=list(adapt_delta=0.95,max_treedepth=15),seed=77239,chains=1)
-fitpre <- do.call("epim",args)
-```
-The above run may give some error messages, but they can be ignored as this run is only used to get starting values for the chains of the main run.
+The reproduction number is modeled using a weekly random walk.
 
-Now update the model to work with individually reported cases.
-```{r SARS_prepdata}
-sars <- SARS2003
-sars$incidence <- c(rep(NA,20),sars$incidence) ## pad before initialisation
-sars$sarsdate <- as.Date("2003-01-01")+seq(0,along.with=sars$incidence)
-obs <- !is.na(sars$incidence)
-args$obs=list(
-    incidence=list(
-        odata=data.frame(country="A",
-                         date=sars$sarsdate[obs],incidence=sars$incidence[obs]),
-        rates=list(means=data.frame(factor("A"),1),
-                   scale=.01),
-        pvec=c(.25,.25,.25,.25),
-        ptype="density"
-    )
+```{r}
+rt <- epirt(
+  formula = R(country, date) ~ rw(time = week, prior_scale = 0.1),
 )
 ```
 
-Next we prepare the initialisation values. This is very crude at the moment and better ways probably do exist. 
+A model is required to link infections to the observations. It is assumed that close to all infections are recorded as a case, and that this happens with equal probability in the four days after infection.
+
 ```{r}
-initf <- function(){
-    i <- sample(1:50,1)
-    res <- lapply(rstan::extract(fitpre$stanfit),
-                  function(x) {
-                      if (length(dim(x))==1){
-                          as.array(x[i])
-                      }
-                      else if (length(dim(x))==2)
-                          x[i,]
-                      else x[i,,]
-                  }
-                  )
-    for (j in names(res)){
-        if (length(res[j])==1)
-            res[[j]] <- as.array(res[[j]])
-    }
-    res$tau_raw <- c(res$tau_raw)
-    res$noise<- NULL
-    res
-}
-args$debug <- F
-args$sampling_args <- list(iter=1000,control=list(adapt_delta=0.95,max_treedepth=15),seed=713,init=initf)
+cases <- epiobs(
+  formula = cases(country,date) ~ 1,
+  prior_intercept = rstanarm::normal(1, 0.01),
+  link = "identity",
+  i2o = rep(1/4,4)
+)
 ```
 
+Now we collect all arguments for `epim`, and sample.
 
-Now we starte the main sampling run.
-
-```{r SARS_sampling, cache=TRUE, results='hide'}
-fit <- do.call("epim",args)
+```{r badRun, cache=TRUE}
+args <- list(
+  rt = rt,
+  obs = list(cases),
+  data = data,
+  algorithm = "sampling",
+  sampling_args = list(iter=500, chains=4, seed=12345),
+  seed_days = 7,
+  pops = data.frame(countrty="A", pop=1e6),
+  si = SARS2003$si_distr,
+  prior_tau = rstanarm::exponential(rate=4)
+)
+fm <- do.call(epim, args)
 ```
 
+The warnings above indicate convergence problems. This becomes clearer when plotting the reproduction number and cases. The reproduction number remains high until mid-march when it falls due to a herd immunity effect. Looking at the posterior predictive distribution for the daily cases, it is clear that this looks nothing like the true data.
 
-And here are the resulting fits. 
-```{r SARScumulativeplot}
-library(gridExtra)
-grid.arrange(plot_rt(fit),
-             plot_obs(fit,"incidence"),
-             nrow=2)
+```{r, warning=FALSE}
+subplot(
+plot_rt(fm),
+plot_obs(fm, type="cases"),
+margin=0.1
+)
 ```
 
-## Collinearity
+We now show one method of resolving this. `epim` has an `init_run` argument. If specified, this will do a short initial run fitting to the cumulative cases numbers. This changes the shape of the posterior distribution, allowing the sampler to move out of the local mode causing herd immunity. The output of this initial run is used to set the initial values in the MCMC chain for the full run. 
 
-In our experience, a leading cause of pathologies in the model fitting stage is collinearity between the predictors explaining the time-varying reproduction number. This can lead to divergent transitions and long sampling times.
+```{r withInit, cache=T}
+args$init_run = T
+fm <- do.call(epim, args)
+```
 
-Take the example of modeling the effect of several non-pharmaceutical interventions (NPIs). There are two primary reasons why these effects can be highly confounded. Most obviously, the interventions will often take place in quick succession, and so they will be highly collinear. The second cause is the time distribution from infection to an event - for example a death. This is often such that conditional on observing a death at a particular time, there is a wide range of plausible dates at which the individual was infected. Any effects on the reproduction number from interventions occuring close to one-another will be smoothed over in the death data, and the signal as to which intervention actually had an effect becomes weaker.
+Note that the R-hat warning above pertains to the initial run, and does not signal a problem for the full run. The effective sample size warnings are to be expected as we are doing only 500 iterations. Plotting shows a more reasonable fit to the data.
+
+```{r}
+subplot(
+plot_rt(fm),
+plot_obs(fm, type="cases"),
+margin=0.1
+)
+```
+
+# Collinearity
+
+In our experience, a leading cause of convergence problems in the model fitting stage is collinearity between the predictors explaining the time-varying reproduction number. This can lead to divergent transitions and long sampling times.
+
+Take the example of modeling the effect of several non-pharmaceutical interventions (NPIs). There are two primary reasons why these effects can be highly confounded. Most obviously, the interventions will often take place in quick succession, and so they will be collinear. The second cause is the time distribution from infection to an event - for example a death. This is often such that conditional on observing a death at a particular time, there is a wide range of plausible dates at which the individual was infected. Any effects on the reproduction number from interventions occuring close to one-another will be smoothed over in the death data, and the signal as to which intervention actually had an effect becomes weaker.
 
 One possible remedy for this is to pool the effects over different groups. This incorporates more data to delineate each effect. Another approach is to regularize the problem by using more informative priors. Of course this should be done in a principled manner; for example by using results from previous studies.
 
 In this section, we illustrate this phenomenon with a simulated dataset. The code below simulates death data using an assumed initial reproduction number, and assumed effect sizes for the `schools_universities` and `lockdown` NPIs. The aim will be to recover the parameters under which the data was simulated.
 
-```{r priorSampling, cache=TRUE}
+The code below considers France during the covid-19 pandemic, parameterising the reproduction number as a function of the lockdown NPI, and closing schools/universities. For our purposes, we assume the counterfactual scenario where the schools/universites NPI came into effect on 1st March 2020.
+
+```{r priorSampling, cache=TRUE, message=FALSE}
+library(dplyr)
 data("EuropeCovid")
-EuropeCovid$data[EuropeCovid$data$country == "France" & EuropeCovid$data$date >= as.Date("2020-03-01"), "schools_universities"] = 1
 args <- EuropeCovid
+
+w <- args$data$country == "France" & args$data$date >= as.Date("2020-03-01")
+args$data[w, "schools_universities"] = 1
+
 args$group_subset <- "France"
 args$algorithm <- "sampling"
 args$sampling_args <- list(iter = 1e3, seed=12345)
-args$formula <- R(country, date) ~ schools_universities + lockdown
+
+# setting prior effect sizes
+args$rt <- epirt(
+  formula = R(country, date) ~ schools_universities + lockdown,
+  prior = rstanarm::normal(location = c(0.5,1.5), scale = 0.01),
+  prior_intercept = rstanarm::normal(location=0, scale=0.01),
+  r0 = 3
+)
+
 args$prior_PD <- TRUE
 
-# set some reasonable prior values
-args$r0 <- 3
-args$prior_intercept <- rstanarm::normal(location=0, scale = 0.01)
-args$prior <- rstanarm::normal(location = c(0.5,1.5), scale=0.01)
-
 fm <- do.call("epim", args)
-# look at prior predictive distribution
+```
+
+
+Above, the initial reproduction number is close to 3, and the coefficients for the schools/universities and lockdown NPIs of around 0.5 and 1.5 respectively. The assumed reproduction number looks as follows.
+
+```{r}
 plot_rt(fm)
 ```
-In the above code, we have assumed that the initial reproduction number is close to 3, and have assumed regression parameters for the schools/universities and lockdown NPIs of around 0.5 and 1.5 respectively. Now we simulate daily death counts under this model, which will be used in place of the true death data. 
-```{r replaceData}
-# use posterior data from prior run
-obs <- posterior_predict(fm, type="deaths")$France
-dates <- obs[,1]
-obs <- as.integer(rowMeans(obs[,-1]))
 
-# replace France deaths data with simulated data
-deaths <- args$obs$deaths
-w <- deaths$odata$country == "France"
-deaths$odata <- deaths$odata[w,]
-deaths$odata$deaths <- obs
-args$obs$deaths <- deaths
+Daily death counts are simulated under this model, and used in place of the true death data.
+
+```{r, replaceData}
+obs <- posterior_predict(fm, type = "deaths")
+obs <- as.integer(colMeans(obs$draws))
+
+w <- args$data$country == "France"
+args$data[w,"deaths"] <- obs
+
 ```
 
-Fitting the model to the simulared data with uninformative priors for the initial reproduction number and effects.
+Fitting the model to the simulated data with uninformative priors for the initial reproduction number and effects.
+
 ```{r divergentRun, cache=TRUE}
 # fit the model with uninformative priors
 args$prior_PD <- FALSE
-args$prior_intercept <- rstanarm::normal(scale=10)
-args$prior <- rstanarm::normal(scale=10)
+
+args$rt <- epirt(
+  formula = R(country, date) ~ schools_universities + lockdown,
+  prior = rstanarm::normal(scale=10),
+  prior_intercept = rstanarm::normal(scale=10)
+)
+
 system.time(fm2 <- do.call("epim", args))
 ```
-Notice the warnings over exceeding the maximum-tree depath and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.
-```{r regularized}
-# more informative prior intercept
-args$prior_intercept <- rstanarm::normal(scale=0.5)
-args$prior <- rstanarm::normal(scale=0.5)
-system.time(fm3 <- do.call("epim", args))
+Notice the warnings over exceeding the maximum-tree depth and the long run time. The reason for this will become clear soon. But first we attempt to regularize the problem by assuming more information on the initial reproduction number.
+
+```{r regularized, cache=TRUE}
+args$rt <- epirt(
+  formula = R(country, date) ~ schools_universities + lockdown,
+  prior = rstanarm::normal(scale=0.5),
+  prior_intercept = rstanarm::normal(scale=0.5)
+)
+
+system.time(fm3 <- do.call(epim, args))
 ```
-This seems to more computationally stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.
+
+
+This seems more stable. As shown below, the problem is caused by posterior correlation between the initial reproduction rate and the effect size of the schools/universities NPI. This NPI occurs before there is much informative data on deaths, and when the number of infections is likely to be quite low. Therefore it is difficult to distinguish whether early on in the disease there was a high reproduction rate and a large effect from the NPI, or a lower initial reproduction rate and a less substantial effect.
 
 We now plot the posterior correlations between these two parameters.
 ```{r}
 par(mfrow=c(1,2))
 mat <- as.array(fm2)
-r0 <- mat[,1,"(Intercept)"]
-schools_universities <- mat[,1,"schools_universities"]
+r0 <- mat[,1,"R|(Intercept)"]
+schools_universities <- mat[,1,"R|schools_universities"]
 plot(r0, schools_universities, type = "o")
 
 mat <- as.array(fm3)
-r0 <- mat[,1,"(Intercept)"]
-schools_universities <- mat[,1,"schools_universities"]
+r0 <- mat[,1,"R|(Intercept)"]
+schools_universities <- mat[,1,"R|schools_universities"]
 plot(r0, schools_universities, type = "o")
 ```
 The left hand plot shows the posterior distribution from `fm2`, where less informative priors were used. The divergent transitions appear to be caused by the small step-size required to traverse the distribution horizontally/vertically, and the large step size desired for traversing the diagonal; there is a *ridge* in the posterior. For more information on why this can pose a problem for Hamiltonian Monte Carlo, please refer to [the stan user guide](https://mc-stan.org/docs/2_20/stan-users-guide/collinearity-section.html). Using stronger prior information reduces the posterior correlation and the sampler explores the space better, as shown in the right hand plot.

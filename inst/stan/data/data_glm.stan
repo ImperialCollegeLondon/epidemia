@@ -4,9 +4,6 @@ int<lower=0,upper=1> prior_PD;  // 1 = yes
 // intercept
 int<lower=0,upper=1> has_intercept;  // 1 = yes
 
-// link function from location to linear predictor 
-int<lower=1> link;  // interpretation varies by .stan file
-
 // prior family: 0 = none, 1 = normal, 2 = student_t, 3 = hs, 4 = hs_plus, 
 //   5 = laplace, 6 = lasso, 7 = product_normal
 int<lower=0,upper=8> prior_dist;

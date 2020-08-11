@@ -1,4 +1,4 @@
-vector<lower=(prior_dist == 8 ? 0 : negative_infinity())>[prior_dist == 7 ? sum(num_normals) : K] z_beta;
+vector<upper=(prior_dist == 8 ? 0 : positive_infinity())>[prior_dist == 7 ? sum(num_normals) : K] z_beta;
 real<lower=0> global[hs];
 vector<lower=0>[K] local[hs];
 real<lower=0> caux[hs > 0];
