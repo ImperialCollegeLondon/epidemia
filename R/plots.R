@@ -6,7 +6,7 @@
 #' 
 #' @templateVar epimodelArg object
 #' @template args-epimodel-object
-#' @param group \code{NULL}, string or character vector specifying which groups
+#' @param groups \code{NULL}, string or character vector specifying which groups
 #' to plot. Default is \code{NULL}, which plots all possible groups.
 #' @param dates a vector of (start date, end date) defining the date range
 #'  to be plotted. Must be coercible to date if not NA. If NA, this means
@@ -123,19 +123,22 @@ plot_rt.epimodel <-
 
 #' Plotting the posterior predictive distribution
 #'
-#' Plots credible intervals for the observed data under the posterior predictive distribution.
-#' Plots for a specific observation type. 
+#' Plots credible intervals for the observed data under the posterior
+#' predictive distribution, and for a specific observation type. 
 #' The user can control the levels of the intervals and the plotted group(s).
 #' This is a generic function.
 #' 
 #' @inherit plot_rt params return
-#' @param type the name of the observations to plot. This should match one of the names
-#' of the \code{obs} argument to \code{epim}.
-#' @param posterior_mean If true, the credible intervals are plotted for the posterior mean. Defaults to FALSE, 
+#' @param type the name of the observations to plot. This should match one
+#'  of the names of the \code{obs} argument to \code{epim}.
+#' @param posterior_mean If true, the credible intervals are plotted for the
+#'  posterior mean. Defaults to FALSE, 
 #'  in which case the posterior predictive is plotted.
-#' @param cumulative If TRUE, plots the cumulative observations. Defaults to FALSE
-#' @param log If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE. 
-#' @param ... Additional arguments for \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include \code{newdata}, which allows 
+#' @param cumulative If TRUE, plots the cumulative observations. 
+#' @param log If TRUE, plots the observations on a pseudo-linear scale.
+#' @param ... Additional arguments for
+#'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
+#'  \code{newdata}, which allows 
 #'  predictions or counterfactuals.
 #' @examples
 #' \dontrun{
@@ -145,37 +148,41 @@ plot_rt.epimodel <-
 #' ## setup sampling
 #' args <- EuropeCovid
 #' args$algorithm <- "sampling"
-#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$sampling_args <- list(
+#'  iter=1e3,
+#'  control=list(adapt_delta=0.95,max_treedepth=15),
+#'  seed=12345
+#' )
 #' args$group_subset <- c("Italy")
 #' args$formula <- R(country,date) ~  1 + lockdown
 #' args$prior <- rstanarm::normal(location=0,scale=.5)
 #' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
-#' 
+#'
 #' ## run sampling
 #' fit <- do.call("epim", args)
-#' 
+#'
 #' ## make plots
-#' plot_obs(fit, type="deaths") # default, plots all groups and dates
-#' plot_obs(fit, type="deaths", 
-#'               dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-#' plot_obs(fit, 
-#'          type="deaths", 
-#'          dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_obs(fit, 
-#'          type="deaths", 
-#'          dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
-#' plot_obs(fit, 
-#'          type="deaths", 
-#'          dates=c("2020-03-20", "2020-04-20"), 
-#'          date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
-#' plot_obs(fit, 
-#'          type="deaths", 
-#'          dates=c("2020-03-20", "2020-04-20"), 
-#'          date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
-#' plot_obs(fit, 
-#'          type="deaths", 
-#'          dates=c("2020-20-03", "2020-20-04"), 
-#'          date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' plot_obs(fit, type="deaths")
+#' plot_obs(fit, type="deaths",
+#'               dates=c("2020-03-21", NA))
+#' plot_obs(fit,
+#'          type="deaths",
+#'          dates=c(NA, "2020-03-20"))
+#' plot_obs(fit,
+#'          type="deaths",
+#'          dates=c("2020-03-20", "2020-04-20"))
+#' plot_obs(fit,
+#'          type="deaths",
+#'          dates=c("2020-03-20", "2020-04-20"),
+#'          date_breaks="1 day")
+#' plot_obs(fit,
+#'          type="deaths",
+#'          dates=c("2020-03-20", "2020-04-20"),
+#'          date_breaks="1 week")
+#' plot_obs(fit,
+#'          type="deaths",
+#'          dates=c("2020-20-03", "2020-20-04"),
+#'          date_format="%Y-%d-%m")
 #' }
 #' @export
 plot_obs <- function(object, ...) UseMethod("plot_obs", object)

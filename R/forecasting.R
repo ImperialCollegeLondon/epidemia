@@ -1,10 +1,10 @@
 #' Posterior model evaluations
-#' 
-#' Calculate daily error using one of three metrics, and also return coverage 
+#'
+#' Calculate daily error using one of three metrics, and also return coverage
 #' of credible intervals. Uses continuous ranked probability
-#' score (CRPS), mean absolute error and median absolute error. 
-#' 
-#' @inherit plot_rt params 
+#' score (CRPS), mean absolute error and median absolute error.
+#'
+#' @inherit plot_obs params
 #' @param newdata  If provided, the original \code{data} used
 #'  in \code{object} is overidden. Useful for forecasting
 #' @param metrics A string or character vector specifying the plotted
@@ -95,7 +95,7 @@ posterior_coverage <-
 
 #' CRPS, Mean Absolute Error, Median Absolute Error
 #' 
-#' @inherit plot_obs
+#' @inherit evaluate_forecast
 #' @return A dataframe giving forecast error for each metric and observation
 #' @export
 posterior_metrics <-
@@ -120,7 +120,8 @@ posterior_metrics <-
 #' specified using 'levels'. Can bucket by time period, by group, by
 #' whether the observation is new (not used in fitting).
 #'
-#' @inherit plot_rt params return
+#' @inherit evaluate_forecast params
+#' @inherit plot_obs return
 #' @param period Buckets computed empirical probabilities into time periods
 #' if specified.
 #' @param by_group Plot coverage for each group individually
@@ -209,7 +210,7 @@ plot_coverage <-
       )
 
     if ("group" %in% cols && "unseen" %in% cols) {
-      p <- p + ggplot2::facet_grid(ggplot2::vars(group), ggplot2::vars(unseen))
+      p <- p + ggplot2::facet_grid(ggplot2::vars(~group), ggplot2::vars(~unseen))
     } else if ("group" %in% cols) {
       p <- p + ggplot2::facet_wrap(~group)
     } else if ("unseen" %in% cols) {
@@ -236,8 +237,8 @@ plot_coverage <-
 #'
 #' Plots various metrics for evaluating probabilistic forecasts by group.
 #'
-#' @inherit plot_rt params return
-#' @inherit posterior_metrics params
+#' @inherit evaluate_forecast params
+#' @inherit plot_rt return
 #' @export
 plot_metrics <-
   function(object,

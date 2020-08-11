@@ -9,7 +9,7 @@
 #'  variables to consider. If unspecified, uses all.
 #' @param posterior_mean If TRUE, return samples of posterior means rather than
 #'  from the posterior predictive.
-#' @param A named list of draws from the posterior predictive. Each element
+#' @return A named list of draws from the posterior predictive. Each element
 #'  corresponds to a specific outcome.
 #' @export
 posterior_predict.epimodel <-

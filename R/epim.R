@@ -17,8 +17,8 @@
 #'
 #' @param rt An object of class \code{\link[epidemia]{epirt}}. This specifies
 #'  the model for the time-varying reproduction number.
-#' #' @param obs A list of \code{\link[epidemia]{epiobs}} objects. Each
-#'  element defines a model for the specified observation.
+#' @param obs A list of \code{\link[epidemia]{epiobs}} objects. Each
+#'  element defines a model for the specified observation vector.
 #' @param data A dataframe containing all data required to fit the model.
 #'  See [lm].
 #' @param pops  A two column dataframe giving the total population of each
