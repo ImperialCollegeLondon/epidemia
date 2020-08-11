@@ -77,7 +77,8 @@ options(mc.cores = parallel::detectCores())
 data("EuropeCovid")
 args <- EuropeCovid
 args$group_subset <- "France"
-args$algorithm <- "meanfield"
+args$algorithm <- "sampling"
+args$sampling_args <- list(iter = 10, seed=12345)
 args$rt <- epirt(
   formula = R(country,date) ~ 1 + schools_universities + lockdown 
 )
