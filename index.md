@@ -111,5 +111,4 @@ plot_rt(fit, group = "United_Kingdom", plotly=TRUE)
 # And deaths
 plot_obs(fit, type = "deaths", group = "United_Kingdom", plotly=TRUE)
 ```
-
 ![](reference/figures/plot-2.html)<!-- -->
