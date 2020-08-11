@@ -257,7 +257,7 @@ plot_obs.epimodel <-
     if (cumulative) {
       obs <- cumul(obs)
       df <- df %>%
-        dplyr::group_by(group) %>%
+        dplyr::group_by(~group) %>%
         dplyr::mutate(obs = cumsum(obs))
       df <- as.data.frame(df)
     }

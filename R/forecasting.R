@@ -161,22 +161,22 @@ plot_coverage <-
     if (by_unseen) { # need to check which observations are new
       data <- object$data
       data <- data[data$group %in% groups, c("group", "date", type)]
-      data <- data %>% dplyr::rename(DUMMY = type)
+      data <- data %>% dplyr::rename("DUMMY" = type)
       cov <- dplyr::left_join(cov, data, by = c("group", "date"))
-      cov <- cov %>% dplyr::rename(unseen = DUMMY)
+      cov <- cov %>% dplyr::rename("unseen" = ~DUMMY)
       w <- is.na(cov$unseen)
       cov$unseen[w] <- "Unseen"
       cov$unseen[!w] <- "Seen"
     }
 
     df <- cov %>%
-      group_by_at(cols) %>%
-      summarise(value = mean(in_ci))
+      dplyr::group_by_at(cols) %>%
+      dplyr::summarise(value = mean(~in_ci))
 
     if (is.null(period)) {
       p <- ggplot2::ggplot(
         df,
-        ggplot2::aes(x = tag, y = value, fill = tag)
+        ggplot2::aes(x = ~tag, y = ~value, fill = ~tag)
       ) +
         ggplot2::labs(
           y = "Mean Coverage",
@@ -185,7 +185,7 @@ plot_coverage <-
     } else {
       p <- ggplot2::ggplot(
         df,
-        ggplot2::aes(x = period, y = value, fill = tag)
+        ggplot2::aes(x = ~period, y = ~value, fill = ~tag)
       ) +
         ggplot2::labs(
           y = "Mean Coverage",
@@ -209,7 +209,7 @@ plot_coverage <-
       )
 
     if ("group" %in% cols && "unseen" %in% cols) {
-      p <- p + ggplot2::facet_grid(vars(group), vars(unseen))
+      p <- p + ggplot2::facet_grid(ggplot2::vars(group), ggplot2::vars(unseen))
     } else if ("group" %in% cols) {
       p <- p + ggplot2::facet_wrap(~group)
     } else if ("unseen" %in% cols) {
@@ -217,7 +217,7 @@ plot_coverage <-
     }
 
     p <- p +
-      scale_fill_manual(
+      ggplot2::scale_fill_manual(
         name = "Fill",
         values = ggplot2::alpha(
           "deepskyblue4",
@@ -257,16 +257,16 @@ plot_metrics <-
 
     df <- df %>%
       tidyr::pivot_longer(
-        c(crps, mean_abs_error, median_abs_error),
+        c(~crps, ~mean_abs_error, ~median_abs_error),
         names_to = "metric",
         values_to = "value"
       )
 
     data <- object$data
     data <- data[data$group %in% groups, c("group", "date", type)]
-    data <- data %>% dplyr::rename(DUMMY = type)
+    data <- data %>% dplyr::rename("DUMMY" = type)
     df <- dplyr::left_join(df, data, by = c("group", "date"))
-    df <- df %>% dplyr::rename(unseen = DUMMY)
+    df <- df %>% dplyr::rename("unseen" = ~DUMMY)
     w <- is.na(df$unseen)
     df$unseen[w] <- "Unseen"
     df$unseen[!w] <- "Seen"
@@ -274,10 +274,10 @@ plot_metrics <-
     p <- ggplot2::ggplot(
       df,
       ggplot2::aes(
-        x = date,
-        y = value,
-        linetype = metric,
-        color = unseen
+        x = ~date,
+        y = ~value,
+        linetype = ~metric,
+        color = ~unseen
       )
     ) +
       ggplot2::geom_line(alpha = 0.7, size = 0.8) +
@@ -293,7 +293,7 @@ plot_metrics <-
       ggplot2::theme_bw() +
       ggplot2::theme(legend.position = "right")
 
-    p <- p + scale_color_manual(
+    p <- p + ggplot2::scale_color_manual(
       values = c("coral4", "darkslategray4")
     )
 

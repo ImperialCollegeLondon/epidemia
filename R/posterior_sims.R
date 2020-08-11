@@ -116,7 +116,7 @@ parse_obs <- function(sims, nme, n, obs) {
   draws <- rstan::extract(sims, nme)[[1]]
   # split draws into components for each type
   i <- lapply(n, function(x) 1:x)
-  i <- Map(function(x, y) x + y, i, head(c(0,cumsum(n)),-1))
+  i <- Map(function(x, y) x + y, i, utils::head(c(0,cumsum(n)),-1))
   draws <- lapply(i, function(x) draws[, x])
 
   f <- function(x, y) {

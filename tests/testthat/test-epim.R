@@ -1,9 +1,9 @@
 
 data("EuropeCovid")
 args0 <- EuropeCovid
-args0$algorithm <- "meanfield"
+args0$algorithm <- "sampling"
 args0$group_subset <- c("Germany", "Italy")
-args0$sampling_args <- list(seed=12345)
+args0$sampling_args <- list(iter=10, chains=1, seed=12345)
 args0$rt <- epirt(formula = R(country, date) ~ 1 + lockdown)
 
 test_that("epim runs through with various rt formula", {

@@ -107,13 +107,14 @@ epim <- function(rt,
   sdat[rm] <- NULL
   checked <- loo::nlist(rt, data, obs, pops, si)
   sdat[names(checked)] <- checked
-  sdat[[1L]] <- quote(epidemia:::standata_all)
+  sdat[[1L]] <- NULL
+  sdat <- as.list(sdat)
 
   if (algorithm == "sampling") { # useful for debugging
     if (length(sampling_args$chains) > 0 &&
         sampling_args$chains == 0) {
           message("Returning standata as chains = 0")
-          return(eval(sdat, parent.frame()))
+          return(do.call(standata_all, sdat))
         }
   }
 
@@ -123,7 +124,7 @@ epim <- function(rt,
     # replace obs with cobs for initial fit
     sdat_init <- sdat
     sdat_init$obs <- cobs
-    sdat_init <- eval(sdat_init, parent.frame())
+    sdat_init <- do.call(standata_all, sdat_init)
 
     args <- list(iter = 100, chains = 1)
     args$object <- stanmodels$epidemia_base
@@ -156,6 +157,7 @@ epim <- function(rt,
     }
   }
 
+  sdat <- do.call(standata_all, sdat)
   sdat <- eval(sdat, parent.frame())
 
     # parameters to keep track of
@@ -366,7 +368,7 @@ make_obeta_nms <- function(obs, sdat) {
   repnms <- unlist(Map(
     rep,
     obs_nms,
-    head(sdat$oK, length(obs_nms))
+    utils::head(sdat$oK, length(obs_nms))
   ))
   obs_beta_nms <- unlist(lapply(
     obs,

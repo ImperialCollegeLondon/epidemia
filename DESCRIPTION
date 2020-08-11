@@ -57,7 +57,6 @@ Biarch: true
 Depends: 
     R (>= 3.5.0)
 Imports: 
-    data.table (>= 1.12.8),
     dplyr (>= 0.8.5),
     loo (>= 2.2.0),
     methods,
@@ -72,8 +71,10 @@ Imports:
     stats,
     zoo,
     magrittr,
-    lubridate,
-    rstanarm
+    rstanarm,
+    plotly,
+    scoringRules,
+    tidyr
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
