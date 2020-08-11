@@ -34,11 +34,6 @@ epimodel <- function(object) {
   ses <- lapply(
     idx,
     function(x) {
-      print(x)
-      print(colnames(stanmat)[x])
-      print(class(stanmat[, x, drop = FALSE]))
-      print(dim(stanmat[, x, drop = FALSE]))
-      print(apply(stanmat[, x, drop = FALSE], 2L, stats::mad))
       apply(stanmat[, x, drop = FALSE], 2L, stats::mad)}
   )
 
