@@ -24,6 +24,7 @@
 #' @importFrom Rdpack reprompt
 #' @importFrom utils tail
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #' @references
 #' \insertAllCited()
 #' Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.19.3. https://mc-stan.org
