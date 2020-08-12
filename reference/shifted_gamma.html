@@ -74,7 +74,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -97,10 +97,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R  with only Incidence data</a>
+      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Problems</a>
+      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
       <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
@@ -160,7 +160,7 @@
     </tr>
     <tr>
       <th>shift</th>
-      <td><p>The Gamma prior can be shifted to allow for negative support.</p></td>
+      <td><p>The Gamma prior can be shifted to allow for positive support.</p></td>
     </tr>
     <tr>
       <th>autoscale</th>
@@ -173,13 +173,18 @@
     <p>A named list to be parsed internally by <code><a href='epim.html'>epim</a></code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><span class="pkg">rstanarm</span> provides a set of distributions (see <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a></code>) which
-can be used for the priors on regression parameters. Intuitively, non-pharmaceutical interventions are
-unlikely to a-priori cause a large increase in the reproduction number. A shifted gamma prior can
+    <p><span class="pkg">rstanarm</span> provides a set of distributions
+(see <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a></code>) which can be used for the priors
+on regression parameters. Intuitively, non-pharmaceutical interventions are
+unlikely to a-priori cause a large increase in the reproduction number.
+A shifted gamma prior can
 be used to model this idea, and has been used in
 Flaxman et al. (2020)
-.  <code>shifted_gamma</code> can be used as the <code>prior</code> argument
-to <code>epim</code>.</p>
+.  <code>shifted_gamma</code> can be
+used as the <code>prior</code> argument
+to <code>epim</code>. This specified a shifted gamma prior on the negative of the
+regression parameters. i.e. if there is no shift, the support is on the
+negative half of the real line.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van

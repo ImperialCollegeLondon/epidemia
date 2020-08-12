@@ -42,8 +42,8 @@
   
 
 <meta property="og:title" content="Plotting the posterior predictive distribution — plot_obs" />
-<meta property="og:description" content="Plots credible intervals for the observed data under the posterior predictive distribution.
-Plots for a specific observation type.
+<meta property="og:description" content="Plots credible intervals for the observed data under the posterior
+predictive distribution, and for a specific observation type.
 The user can control the levels of the intervals and the plotted group(s).
 This is a generic function." />
 
@@ -77,7 +77,7 @@ This is a generic function." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -100,10 +100,10 @@ This is a generic function." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R  with only Incidence data</a>
+      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Problems</a>
+      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
       <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
@@ -149,8 +149,8 @@ This is a generic function." />
     </div>
 
     <div class="ref-description">
-    <p>Plots credible intervals for the observed data under the posterior predictive distribution.
-Plots for a specific observation type.
+    <p>Plots credible intervals for the observed data under the posterior
+predictive distribution, and for a specific observation type.
 The user can control the levels of the intervals and the plotted group(s).
 This is a generic function.</p>
     </div>
@@ -160,15 +160,16 @@ This is a generic function.</p>
 <span class='co'># S3 method for epimodel</span>
 <span class='fu'>plot_obs</span>(
   <span class='no'>object</span>,
-  <span class='kw'>type</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='no'>type</span>,
   <span class='kw'>posterior_mean</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>group</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>groups</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>dates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>date_breaks</span> <span class='kw'>=</span> <span class='st'>"2 weeks"</span>,
   <span class='kw'>date_format</span> <span class='kw'>=</span> <span class='st'>"%Y-%m-%d"</span>,
   <span class='kw'>cumulative</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>95</span>),
+  <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>20</span>, <span class='fl'>50</span>, <span class='fl'>95</span>),
   <span class='kw'>log</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>plotly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -182,49 +183,62 @@ See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments for <code><a href='posterior_predict.epimodel.html'>posterior_predict.epimodel</a></code>. Examples include <code>newdata</code>, which allows
+      <td><p>Additional arguments for
+<code><a href='posterior_predict.epimodel.html'>posterior_predict.epimodel</a></code>. Examples include
+<code>newdata</code>, which allows
 predictions or counterfactuals.</p></td>
     </tr>
     <tr>
       <th>type</th>
-      <td><p>the name of the observations to plot. This should match one of the names
-of the <code>obs</code> argument to <code>epim</code>.</p></td>
+      <td><p>the name of the observations to plot. This should match one
+of the names of the <code>obs</code> argument to <code>epim</code>.</p></td>
     </tr>
     <tr>
       <th>posterior_mean</th>
-      <td><p>If true, the credible intervals are plotted for the posterior mean. Defaults to FALSE,
+      <td><p>If true, the credible intervals are plotted for the
+posterior mean. Defaults to FALSE,
 in which case the posterior predictive is plotted.</p></td>
     </tr>
     <tr>
-      <th>group</th>
+      <th>groups</th>
       <td><p><code>NULL</code>, string or character vector specifying which groups
 to plot. Default is <code>NULL</code>, which plots all possible groups.</p></td>
     </tr>
     <tr>
       <th>dates</th>
-      <td><p>a vector of (start date, end date) defining the date range to be plotted. Must be coercible to date if not
-NA. If NA, this means use the lower/upper limit as appropriate. See examples.</p></td>
+      <td><p>a vector of (start date, end date) defining the date range
+to be plotted. Must be coercible to date if not NA. If NA, this means
+use the lower/upper limit as appropriate. See examples.</p></td>
     </tr>
     <tr>
       <th>date_breaks</th>
-      <td><p>string giving the distance between date tick labels. Default is "2 weeks".
-Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code> - see <a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>https://ggplot2.tidyverse.org/reference/scale_date.html</a></p></td>
+      <td><p>string giving the distance between date tick labels.
+Default is "2 weeks".
+Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code> -
+see <a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>https://ggplot2.tidyverse.org/reference/scale_date.html</a></p></td>
     </tr>
     <tr>
       <th>date_format</th>
-      <td><p>the date format for coercing <code>dates</code>. Default is "%Y-%m-%d"</p></td>
+      <td><p>the date format for coercing <code>dates</code>.
+Default is "%Y-%m-%d"</p></td>
     </tr>
     <tr>
       <th>cumulative</th>
-      <td><p>If TRUE, plots the cumulative observations. Defaults to FALSE</p></td>
+      <td><p>If TRUE, plots the cumulative observations.</p></td>
     </tr>
     <tr>
       <th>levels</th>
-      <td><p>numeric vector giving the levels of the plotted credible intervals</p></td>
+      <td><p>numeric vector giving the levels of the plotted
+credible intervals</p></td>
     </tr>
     <tr>
       <th>log</th>
-      <td><p>If TRUE, plots the observations on a pseudo-linear scale. Defaults to FALSE.</p></td>
+      <td><p>If TRUE, plots the observations on a pseudo-linear scale.</p></td>
+    </tr>
+    <tr>
+      <th>plotly</th>
+      <td><p>If TRUE, wraps the ggplot object into a plotly object, for
+interactive graphing.</p></td>
     </tr>
     </table>
 
@@ -240,7 +254,11 @@ Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code>
 <span class='co'>## setup sampling</span>
 <span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
 <span class='no'>args</span>$<span class='no'>algorithm</span> <span class='kw'>&lt;-</span> <span class='st'>"sampling"</span>
-<span class='no'>args</span>$<span class='no'>sampling_args</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>iter</span><span class='kw'>=</span><span class='fl'>1e3</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>adapt_delta</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>max_treedepth</span><span class='kw'>=</span><span class='fl'>15</span>),<span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>12345</span>)
+<span class='no'>args</span>$<span class='no'>sampling_args</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(
+ <span class='kw'>iter</span><span class='kw'>=</span><span class='fl'>1e3</span>,
+ <span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>adapt_delta</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>max_treedepth</span><span class='kw'>=</span><span class='fl'>15</span>),
+ <span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>12345</span>
+)
 <span class='no'>args</span>$<span class='no'>group_subset</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Italy"</span>)
 <span class='no'>args</span>$<span class='no'>formula</span> <span class='kw'>&lt;-</span> <span class='fu'>R</span>(<span class='no'>country</span>,<span class='no'>date</span>) ~  <span class='fl'>1</span> + <span class='no'>lockdown</span>
 <span class='no'>args</span>$<span class='no'>prior</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>location</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>.5</span>)
@@ -250,27 +268,27 @@ Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code>
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='no'>args</span>)
 
 <span class='co'>## make plots</span>
-<span class='fu'>plot_obs</span>(<span class='no'>fit</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>) <span class='co'># default, plots all groups and dates</span>
+<span class='fu'>plot_obs</span>(<span class='no'>fit</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>)
 <span class='fu'>plot_obs</span>(<span class='no'>fit</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>,
-              <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
+              <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>))
 <span class='fu'>plot_obs</span>(<span class='no'>fit</span>,
          <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>,
-         <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
+         <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>))
 <span class='fu'>plot_obs</span>(<span class='no'>fit</span>,
          <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>,
-         <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
-<span class='fu'>plot_obs</span>(<span class='no'>fit</span>,
-         <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>,
-         <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
-         <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
+         <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>))
 <span class='fu'>plot_obs</span>(<span class='no'>fit</span>,
          <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>,
          <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
-         <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
+         <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 day"</span>)
+<span class='fu'>plot_obs</span>(<span class='no'>fit</span>,
+         <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>,
+         <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
+         <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 week"</span>)
 <span class='fu'>plot_obs</span>(<span class='no'>fit</span>,
          <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"deaths"</span>,
          <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>),
-         <span class='kw'>date_format</span><span class='kw'>=</span><span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>
+         <span class='kw'>date_format</span><span class='kw'>=</span><span class='st'>"%Y-%d-%m"</span>)
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

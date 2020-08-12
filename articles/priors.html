@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -55,10 +55,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R  with only Incidence data</a>
+      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Problems</a>
+      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
       <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
@@ -112,22 +112,30 @@
 <div id="overview" class="section level1">
 <h1 class="hasAnchor">
 <a href="#overview" class="anchor"></a><span class="header-section-number">1</span> Overview</h1>
-<p>Recall the parameterisation for the time-varying reproduction number, given by <a href="#eq:rt">(1.1)</a>.
-<span class="math display" id="eq:rt">\[\begin{equation}
-R = 2A f\left(X\beta + Zb\right),
-\tag{1.1}
-\end{equation}\]</span>
-where <span class="math inline">\(f\)</span> is the standard logistic function. Prior distributions should be specified for the parameters in <a href="#eq:rt">(1.1)</a>, and for additional model parameters. Here we focus on those arising from <a href="#eq:rt">(1.1)</a>.</p>
+<p>Prior distributions need to be set for all model parameters. This include in the <code>epirt</code> object and all
+<code>epiobs</code> objects used by a call to the model fitting function <code>epim</code>. Here we focus only on <code>epirt</code>, because
+this allows for the most complex models. Using priors in <code>epiobs</code> is similar to what is discussed here.</p>
 <p><em>Please note that the current default priors may not be appropriate,
 and should not be relied upon. In future versions of the package,
 we hope to set reasonable default priors.</em></p>
+<p>Recall the parameterisation of the time-varying basic reproduction number introduced in the introductory vignette. To recap, <span class="math inline">\(\tilde{R}_t\)</span> is expressable as
+<span class="math display" id="eq:rt">\[\begin{equation}
+\tilde{R}_t = 2R' \text{logit}^{-1}\left(\eta_t\right),
+\tag{1.1}
+\end{equation}\]</span>
+where <span class="math inline">\(R'\)</span> is a constant and <span class="math inline">\(\eta_t\)</span> is a linear predictor. <span class="math inline">\(\eta_t\)</span> can be decomposed as
+<span class="math display" id="eq:eta">\[\begin{equation}
+\eta_t = X'_t\beta + Z'_t b + Q'_t\gamma_t.
+\tag{1.2}
+\end{equation}\]</span>
+For more detailed information about this decomposition, please refer to the <a href="introduction.html">introductory vignette</a>.</p>
 <p>The priors for <span class="math inline">\(\beta\)</span> are set using the <code>prior</code> and
 <code>prior_intercept</code> arguments. These will only have an effect if the formula
 specifies covariates and an intercept respectively. These function similarly
 to the same arguments in <a href="https://mc-stan.org/rstanarm/reference/stan_lm.html"><code>stan_lm</code></a>.
 To understand which families can be used please refer to
 <a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm’s priors</a>.</p>
-<p>Suppose we are modeling a single group and <a href="#eq:rt">(1.1)</a> specifies an intercept. If <code>center=FALSE</code> in a call to <code>epim</code>, then <code>prior_intercept</code> sets the prior on the raw intercept. If all other covariates are zero at the beginning of the epidemic then
+<p>Suppose we are modeling a single group and <a href="#eq:rt">(1.1)</a> specifies an intercept. If <code>center=FALSE</code> in a call to <code>epirt</code>, then <code>prior_intercept</code> sets the prior on the raw intercept. If all other covariates are zero at the beginning of the epidemic then
 this can be viewed as specifying a prior on the initial reproduction rate. We do not recommend
 using <code>center=TRUE</code>, because <code>prior_intercept</code> then refers to
 the prior on the intercept after all covariates have been centered. This is a difficult
@@ -156,127 +164,57 @@ If an adjustment has been made, this will show both the originally specified pri
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)
 <span class="no">args</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid</span>
 <span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="st">"France"</span>
-<span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"meanfield"</span>
-<span class="no">args</span>$<span class="no">formula</span> <span class="kw">&lt;-</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~ <span class="fl">1</span> + <span class="no">schools_universities</span> + <span class="no">lockdown</span>
-<span class="no">fm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)</pre></body></html></div>
-<pre><code>## Chain 1: ------------------------------------------------------------
-## Chain 1: EXPERIMENTAL ALGORITHM:
-## Chain 1:   This procedure has not been thoroughly tested and may be unstable
-## Chain 1:   or buggy. The interface is subject to change.
-## Chain 1: ------------------------------------------------------------
-## Chain 1: 
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000361 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.61 seconds.
-## Chain 1: Adjust your expectations accordingly!
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Begin eta adaptation.
-## Chain 1: Iteration:   1 / 250 [  0%]  (Adaptation)
-## Chain 1: Iteration:  50 / 250 [ 20%]  (Adaptation)
-## Chain 1: Iteration: 100 / 250 [ 40%]  (Adaptation)
-## Chain 1: Iteration: 150 / 250 [ 60%]  (Adaptation)
-## Chain 1: Iteration: 200 / 250 [ 80%]  (Adaptation)
-## Chain 1: Iteration: 250 / 250 [100%]  (Adaptation)
-## Chain 1: Success! Found best value [eta = 0.1].
-## Chain 1: 
-## Chain 1: Begin stochastic gradient ascent.
-## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-## Chain 1:    100        -1140.795             1.000            1.000
-## Chain 1:    200         -627.065             0.910            1.000
-## Chain 1:    300         -593.766             0.625            0.819
-## Chain 1:    400         -536.079             0.496            0.819
-## Chain 1:    500         -519.643             0.403            0.108
-## Chain 1:    600         -509.700             0.339            0.108
-## Chain 1:    700         -495.902             0.295            0.056
-## Chain 1:    800         -480.562             0.262            0.056
-## Chain 1:    900         -477.826             0.233            0.032
-## Chain 1:   1000         -484.177             0.211            0.032
-## Chain 1:   1100         -473.348             0.114            0.032
-## Chain 1:   1200         -468.735             0.033            0.028
-## Chain 1:   1300         -464.448             0.028            0.023
-## Chain 1:   1400         -461.045             0.018            0.020
-## Chain 1:   1500         -471.828             0.017            0.020
-## Chain 1:   1600         -458.256             0.018            0.023
-## Chain 1:   1700         -467.459             0.017            0.020
-## Chain 1:   1800         -459.133             0.016            0.018
-## Chain 1:   1900         -455.346             0.016            0.018
-## Chain 1:   2000         -449.924             0.016            0.018
-## Chain 1:   2100         -453.713             0.015            0.012
-## Chain 1:   2200         -452.704             0.014            0.012
-## Chain 1:   2300         -451.309             0.013            0.012
-## Chain 1:   2400         -453.167             0.013            0.012
-## Chain 1:   2500         -447.109             0.012            0.012
-## Chain 1:   2600         -450.062             0.010            0.008   MEAN ELBO CONVERGED   MEDIAN ELBO CONVERGED
-## Chain 1: 
-## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
-## Chain 1: COMPLETED.</code></pre>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="co"># default prior scale not adjusted</span>
+<span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"sampling"</span>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span> <span class="kw">=</span> <span class="fl">10</span>, <span class="kw">seed</span><span class="kw">=</span><span class="fl">12345</span>)
+<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
+  <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~ <span class="fl">1</span> + <span class="no">schools_universities</span> + <span class="no">lockdown</span>
+)
+<span class="no">fm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)
+<span class="co"># default prior scale not adjusted</span>
 <span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="no">fm</span>)</pre></body></html></div>
 <pre><code>## Priors for model 'fm' 
-## ------
+## ----------
+##  Regression for  R :
+## ----
 ## Intercept
 ##  ~ normal(location = 0, scale = 0.5)
 ## 
 ## Coefficients
 ##  ~ normal(location = [0,0], scale = [0.5,0.5])
-## ------
+## ----
+##  Regression for  deaths :
+## ----
+## Intercept
+##  ~ normal(location = 0.01, scale = 0.001)
+## 
+##  reciprocal dispersion
+##  ~ exponential(rate = 1)
+## ----
 ## See help('prior_summary.epimodel') for more details</code></pre>
 <p>Notice that no rescaling occurs and the default priors are used.</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="co"># rescale lockdown indicator</span>
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="co"># rescale lockdown indicator</span>
 <span class="no">args</span>$<span class="no">data</span>$<span class="no">lockdown</span> <span class="kw">&lt;-</span> <span class="fl">100</span> * <span class="no">args</span>$<span class="no">data</span>$<span class="no">lockdown</span>
-<span class="no">fm2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)</pre></body></html></div>
-<pre><code>## Chain 1: ------------------------------------------------------------
-## Chain 1: EXPERIMENTAL ALGORITHM:
-## Chain 1:   This procedure has not been thoroughly tested and may be unstable
-## Chain 1:   or buggy. The interface is subject to change.
-## Chain 1: ------------------------------------------------------------
-## Chain 1: 
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000316 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 3.16 seconds.
-## Chain 1: Adjust your expectations accordingly!
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Begin eta adaptation.
-## Chain 1: Iteration:   1 / 250 [  0%]  (Adaptation)
-## Chain 1: Iteration:  50 / 250 [ 20%]  (Adaptation)
-## Chain 1: Iteration: 100 / 250 [ 40%]  (Adaptation)
-## Chain 1: Iteration: 150 / 250 [ 60%]  (Adaptation)
-## Chain 1: Iteration: 200 / 250 [ 80%]  (Adaptation)
-## Chain 1: Success! Found best value [eta = 1] earlier than expected.
-## Chain 1: 
-## Chain 1: Begin stochastic gradient ascent.
-## Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-## Chain 1:    100         -535.700             1.000            1.000
-## Chain 1:    200         -465.832             0.575            1.000
-## Chain 1:    300         -432.015             0.409            0.150
-## Chain 1:    400         -416.488             0.316            0.150
-## Chain 1:    500         -401.316             0.261            0.078
-## Chain 1:    600         -399.170             0.218            0.078
-## Chain 1:    700         -398.961             0.187            0.038
-## Chain 1:    800         -402.168             0.165            0.038
-## Chain 1:    900         -398.921             0.147            0.037
-## Chain 1:   1000         -399.199             0.133            0.037
-## Chain 1:   1100         -398.863             0.033            0.008   MEDIAN ELBO CONVERGED
-## Chain 1: 
-## Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
-## Chain 1: COMPLETED.</code></pre>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="co"># notice the rescaled prior for lockdown</span>
+<span class="no">fm2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)
+<span class="co"># notice the rescaled prior for lockdown</span>
 <span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="no">fm2</span>)</pre></body></html></div>
 <pre><code>## Priors for model 'fm2' 
-## ------
+## ----------
+##  Regression for  R :
+## ----
 ## Intercept
 ##  ~ normal(location = 0, scale = 0.5)
 ## 
 ## Coefficients
-##   Specified prior:
-##     ~ normal(location = [0,0], scale = [0.5,0.5])
-##   Adjusted prior:
-##     ~ normal(location = [0,0], scale = [0.500,0.005])
-## ------
+##  ~ normal(location = [0,0], scale = [0.5,0.5])
+## ----
+##  Regression for  deaths :
+## ----
+## Intercept
+##  ~ normal(location = 0.01, scale = 0.001)
+## 
+##  reciprocal dispersion
+##  ~ exponential(rate = 1)
+## ----
 ## See help('prior_summary.epimodel') for more details</code></pre>
 <p>Rescaling the lockdown indicator has lead to an adjusted prior on the lockdown coefficient.</p>
 </div>

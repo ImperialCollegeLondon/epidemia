@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generic function for getting posterior draws of a specified latent sequence — posterior_latent • epidemia</title>
+<title>Generic function for getting posterior draws of a specified latent
+sequence — posterior_latent • epidemia</title>
 
 
 <!-- jquery -->
@@ -41,11 +42,13 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Generic function for getting posterior draws of a specified latent sequence — posterior_latent" />
-<meta property="og:description" content="Draws samples from one of a number of unobserved time series using the posterior
-parameter draws from the passed object. Can retrieve posterior estimate of the
-reproduction number over time (unadjusted or adjusted), the daily new infections,
-or the total &quot;infectiousness&quot; of the population over time." />
+<meta property="og:title" content="Generic function for getting posterior draws of a specified latent
+sequence — posterior_latent" />
+<meta property="og:description" content="Draws samples from one of a number of unobserved time series using
+the posterior parameter draws from the passed object. Can retrieve
+posterior estimate of the reproduction number over time
+(unadjusted or adjusted), the daily new infections,  or the total
+&quot;infectiousness&quot; of the population over time." />
 
 
 
@@ -77,7 +80,7 @@ or the total &quot;infectiousness&quot; of the population over time." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -100,10 +103,10 @@ or the total &quot;infectiousness&quot; of the population over time." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R  with only Incidence data</a>
+      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Problems</a>
+      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
       <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
@@ -143,16 +146,18 @@ or the total &quot;infectiousness&quot; of the population over time." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generic function for getting posterior draws of a specified latent sequence</h1>
+    <h1>Generic function for getting posterior draws of a specified latent
+sequence</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/posterior_latents.R'><code>R/posterior_latents.R</code></a></small>
     <div class="hidden name"><code>posterior_latent.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Draws samples from one of a number of unobserved time series using the posterior
-parameter draws from the passed object. Can retrieve posterior estimate of the
-reproduction number over time (unadjusted or adjusted), the daily new infections,
-or the total "infectiousness" of the population over time.</p>
+    <p>Draws samples from one of a number of unobserved time series using
+the posterior parameter draws from the passed object. Can retrieve
+posterior estimate of the reproduction number over time
+(unadjusted or adjusted), the daily new infections,  or the total
+"infectiousness" of the population over time.</p>
     </div>
 
     <pre class="usage"><span class='fu'>posterior_latent</span>(<span class='no'>object</span>, <span class='no'>...</span>)
@@ -161,7 +166,7 @@ or the total "infectiousness" of the population over time.</p>
 <span class='fu'>posterior_latent</span>(
   <span class='no'>object</span>,
   <span class='kw'>newdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>series</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"rt"</span>, <span class='st'>"rt_unadj"</span>, <span class='st'>"infections"</span>),
+  <span class='kw'>series</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Rt"</span>, <span class='st'>"Rt_unadj"</span>, <span class='st'>"infections"</span>),
   <span class='kw'>draws</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>seed</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='no'>...</span>
@@ -181,7 +186,9 @@ See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
     </tr>
     <tr>
       <th>newdata</th>
-      <td><p>If provided, the original <code>data</code> used in <code>object</code> is overidden. Useful both for conterfactual and prediction analysis</p></td>
+      <td><p>If provided, the original <code>data</code> used
+in <code>object</code> is overidden. Useful both for conterfactual
+and prediction analysis</p></td>
     </tr>
     <tr>
       <th>series</th>
@@ -189,7 +196,8 @@ See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
     </tr>
     <tr>
       <th>draws</th>
-      <td><p>Number of posterior draws to use. Defaults to the number of parameter draws in the fitted model.</p></td>
+      <td><p>Number of posterior draws to use. Defaults to the number
+of parameter draws in the fitted model.</p></td>
     </tr>
     <tr>
       <th>seed</th>
@@ -199,8 +207,8 @@ See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A named list, each element of which corresponds to a modeled population. Each element is itself a dataframe with
-<code><a href='https://rdrr.io/r/base/nrow.html'>nrow(newdata)</a></code> rows and <code>draws+1</code> columns. First column gives dates, subsequent are different draws of the series.</p>
+    <p>A named list with draws of the series, and vectors giving the
+corresponding dates and population.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

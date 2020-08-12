@@ -42,7 +42,8 @@
   
 
 <meta property="og:title" content="Fits an Epidemiological Model — epim" />
-<meta property="og:description" content="Fits a Bayesian epidemiological model specified by the formula argument." />
+<meta property="og:description" content="Fits a Bayesian epidemiological model specified by the formula
+argument." />
 
 
 
@@ -74,7 +75,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -97,10 +98,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R  with only Incidence data</a>
+      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Problems</a>
+      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
       <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
@@ -146,29 +147,23 @@
     </div>
 
     <div class="ref-description">
-    <p>Fits a Bayesian epidemiological model specified by the <code>formula</code> argument.</p>
+    <p>Fits a Bayesian epidemiological model specified by the <code>formula</code>
+argument.</p>
     </div>
 
     <pre class="usage"><span class='fu'>epim</span>(
-  <span class='no'>formula</span>,
+  <span class='no'>rt</span>,
+  <span class='kw'>obs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(),
   <span class='no'>data</span>,
-  <span class='no'>obs</span>,
   <span class='no'>pops</span>,
   <span class='no'>si</span>,
   <span class='kw'>seed_days</span> <span class='kw'>=</span> <span class='fl'>6</span>,
   <span class='kw'>algorithm</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"sampling"</span>, <span class='st'>"meanfield"</span>, <span class='st'>"fullrank"</span>),
   <span class='kw'>group_subset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>stan_data</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>center</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.5</span>),
-  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.5</span>),
-  <span class='kw'>prior_covariance</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>decov</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.5</span>),
-  <span class='kw'>r0</span> <span class='kw'>=</span> <span class='fl'>3.28</span>,
-  <span class='kw'>prior_phi</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>location</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>5</span>),
   <span class='kw'>prior_tau</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='kw'>rate</span> <span class='kw'>=</span> <span class='fl'>0.03</span>),
   <span class='kw'>prior_PD</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>sampling_args</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(),
-  <span class='kw'>debug</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>init_run</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -176,48 +171,30 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>formula</th>
-      <td><p>An R object of class <code>"formula"</code>. The left hand side must take the form <code>R(group,date)</code>,
-with <code>group</code> representing a factor vector indicating group membership (i.e. country, state, age cohort),
-and <code>date</code> being a vector of Date objects.</p></td>
-    </tr>
-    <tr>
-      <th>data</th>
-      <td><p>A dataframe with columns corresponding to the terms appearing in 'formula'. See <a href='https://rdrr.io/r/stats/lm.html'>lm</a>.</p></td>
+      <th>rt</th>
+      <td><p>An object of class <code><a href='epirt.html'>epirt</a></code>. This specifies
+the model for the time-varying reproduction number.</p></td>
     </tr>
     <tr>
       <th>obs</th>
-      <td><p>A list of lists giving available observations. Each element of 'obs' must itself be a names
-list containing the following three elements</p><ul>
-<li><p><code>odata</code>: A three column dataframe representing some type of observed data that is a function of the true
-number of infections. Examples include recorded incidence, deaths or hospitalisations. The first column
-represents group membership and must be coercible to class <code>factor</code>. The second column indicates the observation
-date and must be coercible to class <code>Date</code>. The third column contain the data.</p></li>
-<li><p><code>rates</code>: A named list specifying the prior for the proportion of infected individuals recorded as an
-observation. For example if recording deaths this would be some estimate of each groups infection fatality
-ratio (IFR). The priors are assumed normal. Contains:</p><ul>
-<li><p><code>means</code>: A two column dataframe giving the estimated mean proportion of
-infected individuals recorded as an observation. First column represents the group, while the second
-the corresponding proportion.</p></li>
-<li><p><code>scale</code>: The standard deviation around the mean values. Default value is 0.1.</p></li>
-</ul></li>
-<li><p><code>pvec</code>: A probability vector with the following interpretation. Conditional on an observation "event"
-(i.e. a single death or hospitalisation etc.), the nth element represents the probability that the individual
-was infected exactly n days prior to this.</p></li>
-<li><p><code>ptype</code>: A string, either "density", "distribution" or "unadjusted". Indicates how <code>pvec</code> should be treated.
-If "density" then rescaled to simplex vector, If "distribution", ensures it takes the form of a distribution function.
-If "unadjusted", only checks values are between 0 and 1.
-simplex vector. Otherwise, this is treated as a cumulative distribution. Defaults to TRUE.</p></li>
-</ul></td>
+      <td><p>A list of <code><a href='epiobs.html'>epiobs</a></code> objects. Each
+element defines a model for the specified observation vector.</p></td>
+    </tr>
+    <tr>
+      <th>data</th>
+      <td><p>A dataframe containing all data required to fit the model.
+See <a href='https://rdrr.io/r/stats/lm.html'>lm</a>.</p></td>
     </tr>
     <tr>
       <th>pops</th>
-      <td><p>A two column dataframe giving the total population of each group. First column represents the group,
-with the second giving the corresponding population.</p></td>
+      <td><p>A two column dataframe giving the total population of each
+group. First column represents the group, with the second giving the
+corresponding population.</p></td>
     </tr>
     <tr>
       <th>si</th>
-      <td><p>A vector representing the serial interval of the disease (a probability vector).</p></td>
+      <td><p>A vector representing the serial interval of the disease (a
+probability vector).</p></td>
     </tr>
     <tr>
       <th>seed_days</th>
@@ -225,60 +202,41 @@ with the second giving the corresponding population.</p></td>
     </tr>
     <tr>
       <th>algorithm</th>
-      <td><p>One of <code>"sampling"</code>, <code>"meanfield"</code> or <code>"fullrank"</code>. This specifies which <span class="pkg">rstan</span>
-function to use for fitting the model.</p></td>
+      <td><p>One of <code>"sampling"</code>, <code>"meanfield"</code> or
+<code>"fullrank"</code>. This specifies which <span class="pkg">rstan</span> function to use for
+fitting the model.</p></td>
     </tr>
     <tr>
       <th>group_subset</th>
-      <td><p>An optional vector specifying a subset of groups to model. Elements should correspond to the group levels
-specified through the <code>data</code> argument.</p></td>
-    </tr>
-    <tr>
-      <th>stan_data, debug</th>
-      <td><p>Mainly for internal use. Will be removed in future versions.</p></td>
-    </tr>
-    <tr>
-      <th>center</th>
-      <td><p>If <code>TRUE</code> then the covariates for the \(R_t\) regression are centered to have mean zero. All of the priors are then interpreted as
-prior on the centered covariates. Defaults to <code>FALSE</code>.</p></td>
-    </tr>
-    <tr>
-      <th>prior</th>
-      <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. In addition to the <span class="pkg">rstanarm</span> provided <a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a>,
-a <a href='shifted_gamma.html'>shifted_gamma</a> can be used. <strong>Note:</strong> If <code>autoscale=TRUE</code> (Default) in the call to the prior distribution then
-automatic rescaling of the prior may take place.</p></td>
-    </tr>
-    <tr>
-      <th>prior_intercept</th>
-      <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. Prior for the regression intercept (if it exists).</p></td>
-    </tr>
-    <tr>
-      <th>prior_covariance</th>
-      <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glmer.html'>stan_glmer</a></code>. Only used if the <code>formula</code> argument specifies a</p></td>
-    </tr>
-    <tr>
-      <th>r0</th>
-      <td><p>The prior expected value of \(R_0\). The maximum \(R_0\) in the simulations will be limited to twice this value.</p></td>
-    </tr>
-    <tr>
-      <th>prior_phi</th>
-      <td><p>The prior distribution on \(\phi\). This parameter is described in the introductory vignette, and determined the variance
-of the observed data around its mean. Must be a call to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></code>, which again is transformed to a half normal distribution.</p></td>
+      <td><p>An optional vector specifying a subset of groups to
+model. Elements should correspond to the group levels specified through the
+<code>data</code> argument.</p></td>
     </tr>
     <tr>
       <th>prior_tau</th>
-      <td><p>The prior for \(\tau\).This parameter is described in the introductory vignette, and controls the variability in the number of
-seeded infections at the beginning of the epidemic. Must be a call to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>.</p></td>
+      <td><p>The prior for \(\tau\).This parameter is described in the
+introductory vignette, and controls the variability in the number of
+seeded infections at  the beginning of the epidemic. Must be a call to
+<code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>.</p></td>
     </tr>
     <tr>
       <th>prior_PD</th>
-      <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. If <code>TRUE</code>, samples parameters from the prior disribution.
+      <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. If <code>TRUE</code>,
+samples parameters from the prior disribution.
 Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>sampling_args</th>
-      <td><p>An (optional) named list of parameters to pass to the <span class="pkg">rstan</span> function used for model fitting,
-for example <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>rstan::sampling</a></code>.</p></td>
+      <td><p>An (optional) named list of parameters to pass to the
+<span class="pkg">rstan</span> function used for model fitting, for example
+<code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>rstan::sampling</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>init_run</th>
+      <td><p>For certain datasets the sampler can find itself trapped in a
+local mode where herd immunity is achieved. If TRUE, a short MCMC run
+fitting to cumulative data is used to initialize the parameters for the main
+sampler.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -291,13 +249,17 @@ for example <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-
     <p>An object of class "epimodel".</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>epim</code> is the primary model fitting function in <span class="pkg">epidemia</span>, and fits models
+    <p><code>epim</code> is the primary model fitting function in <span class="pkg">epidemia</span>, and
+fits models
 in the style of Flaxman et al. (2020)
-. Multiple groups (countries/states/age cohorts)
-can be modeled simultaneously using multilevel models. The time-varying reproduction number can be
-paramterised by a number of covariates through the <code>formula</code> argument. This is reasonably flexible. For example,
+. Multiple groups
+(countries/states/age cohorts)
+can be modeled simultaneously using multilevel models. The time-varying
+reproduction number can be paramterised by a number of covariates through
+the <code>formula</code> argument. This is reasonably flexible. For example,
 random effects terms in the style of the <span class="pkg">lme4</span> package can be included.
-The prior distribution on the parameters in the regression are handled through the arguments <code>prior</code>,
+The prior distribution on the parameters in the regression are handled
+through the arguments <code>prior</code>,
 <code>prior_intercept</code> and <code>prior_covariance</code>.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
@@ -314,8 +276,12 @@ ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038
 
 <span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
 <span class='no'>args</span>$<span class='no'>algorithm</span> <span class='kw'>&lt;-</span> <span class='st'>"sampling"</span>
-<span class='no'>args</span>$<span class='no'>formula</span> <span class='kw'>&lt;-</span> <span class='fu'>R</span>(<span class='no'>country</span>,<span class='no'>date</span>) ~ <span class='fl'>0</span> + <span class='no'>lockdown</span>
-<span class='no'>args</span>$<span class='no'>prior</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shifted_gamma.html'>shifted_gamma</a></span>(<span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span>/<span class='fl'>6</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>shift</span> <span class='kw'>=</span> -<span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.05</span>)/<span class='fl'>6</span>)
+<span class='no'>args</span>$<span class='no'>rt</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='epirt.html'>epirt</a></span>(
+ <span class='kw'>formula</span><span class='kw'>=</span><span class='fu'>R</span>(<span class='no'>country</span>, <span class='no'>date</span>) ~ <span class='fl'>0</span> + <span class='no'>lockdown</span>,
+ <span class='no'>args</span>$<span class='no'>prior</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shifted_gamma.html'>shifted_gamma</a></span>(<span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span> / <span class='fl'>6</span>,
+                             <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+                             <span class='kw'>shift</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.05</span>) / <span class='fl'>6</span>)
+)
 
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='no'>args</span>)
 <span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fit</span>, <span class='kw'>group</span> <span class='kw'>=</span> <span class='st'>"Germany"</span>)

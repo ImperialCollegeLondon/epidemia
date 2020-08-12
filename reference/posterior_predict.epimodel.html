@@ -42,7 +42,9 @@
   
 
 <meta property="og:title" content="Draws samples from the posterior predictive distribution of the observations — posterior_predict.epimodel" />
-<meta property="og:description" content="Draws samples from the posterior predictive distribution of the observations" />
+<meta property="og:description" content="Generate data from the posterior predictive distribution. This is useful for
+assessing the fit of a model. Alternatively this can be used for assessing
+counterfactuals or for prediction using the newdata argument." />
 
 
 
@@ -74,7 +76,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -97,10 +99,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R  with only Incidence data</a>
+      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Problems</a>
+      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
       <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
@@ -146,7 +148,9 @@
     </div>
 
     <div class="ref-description">
-    <p>Draws samples from the posterior predictive distribution of the observations</p>
+    <p>Generate data from the posterior predictive distribution. This is useful for
+assessing the fit of a model. Alternatively this can be used for assessing
+counterfactuals or for prediction using the newdata argument.</p>
     </div>
 
     <pre class="usage"><span class='co'># S3 method for epimodel</span>
@@ -156,6 +160,7 @@
   <span class='kw'>draws</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>types</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>seed</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>posterior_mean</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -169,23 +174,28 @@ See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
     </tr>
     <tr>
       <th>newdata</th>
-      <td><p>If provided, the original <code>data</code> used in <code>object</code> is overidden. Useful both for conterfactual and prediction analysis</p></td>
+      <td><p>If provided, the original <code>data</code> used
+in <code>object</code> is overidden. Useful both for conterfactual
+and prediction analysis</p></td>
     </tr>
     <tr>
       <th>draws</th>
-      <td><p>Number of posterior draws to use. Defaults to the number of parameter draws in the fitted model.</p></td>
+      <td><p>Number of posterior draws to use. Defaults to the number
+of parameter draws in the fitted model.</p></td>
     </tr>
     <tr>
       <th>types</th>
-      <td><p>A character vector specifying the observation types to consider. If NULL, uses all
-types. Defaults to NULL.
-Generate data from the posterior predictive distribution. This is useful for
-assessing the fit of a model. Alternatively this can be used for assessing
-counterfactuals or for prediction using the newdata argument.</p></td>
+      <td><p>A character vector specifying the names of the outcome
+variables to consider. If unspecified, uses all.</p></td>
     </tr>
     <tr>
       <th>seed</th>
       <td><p>An optional seed.</p></td>
+    </tr>
+    <tr>
+      <th>posterior_mean</th>
+      <td><p>If TRUE, return samples of posterior means rather than
+from the posterior predictive.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -193,6 +203,10 @@ counterfactuals or for prediction using the newdata argument.</p></td>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A named list of draws from the posterior predictive. Each element
+corresponds to a specific outcome.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

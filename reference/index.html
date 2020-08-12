@@ -73,7 +73,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -96,10 +96,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R  with only Incidence data</a>
+      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Problems</a>
+      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
       <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
@@ -195,6 +195,24 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="epiobs.html">epiobs()</a></code> </p>
+        </td>
+        <td><p>Helper for constructing an object of class 'epiobs'</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="epirt.html">epirt()</a></code> </p>
+        </td>
+        <td><p>Helper for constructing an object of class 'epirt'</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="evaluate_forecast.html">evaluate_forecast()</a></code> </p>
+        </td>
+        <td><p>Posterior model evaluations</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="formula.epimodel.html">formula(<i>&lt;epimodel&gt;</i>)</a></code> </p>
         </td>
         <td><p>formula method for epimodel objects</p></td>
@@ -220,9 +238,27 @@ for more details.</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="plot_coverage.html">plot_coverage()</a></code> </p>
+        </td>
+        <td><p>Plot coverage probability of posterior credible intervals</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="plot_infections.html">plot_infections()</a></code> </p>
         </td>
         <td><p>Plotting the underlying number of infections over time</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_infectious.html">plot_infectious()</a></code> </p>
+        </td>
+        <td><p>Plotting the underlying total infectiousness over time</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_metrics.html">plot_metrics()</a></code> </p>
+        </td>
+        <td><p>Plot CRPS, Median/Mean Absolute Error</p></td>
       </tr><tr>
         
         <td>
@@ -238,6 +274,12 @@ for more details.</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="posterior_coverage.html">posterior_coverage()</a></code> </p>
+        </td>
+        <td><p>Coverage of posterior credible intervals</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="posterior_infections.html">posterior_infections()</a></code> </p>
         </td>
         <td><p>Generic function for getting posterior draws of daily infections over time</p></td>
@@ -246,13 +288,21 @@ for more details.</p></td>
         <td>
           <p><code><a href="posterior_infectious.html">posterior_infectious()</a></code> </p>
         </td>
-        <td><p>Generic function for getting posterior draws of total infectiousness over time</p></td>
+        <td><p>Generic function for getting posterior draws of total infectiousness
+over time</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="posterior_latent.html">posterior_latent()</a></code> </p>
         </td>
-        <td><p>Generic function for getting posterior draws of a specified latent sequence</p></td>
+        <td><p>Generic function for getting posterior draws of a specified latent
+sequence</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="posterior_metrics.html">posterior_metrics()</a></code> </p>
+        </td>
+        <td><p>CRPS, Mean Absolute Error, Median Absolute Error</p></td>
       </tr><tr>
         
         <td>
@@ -264,7 +314,8 @@ for more details.</p></td>
         <td>
           <p><code><a href="posterior_rt.html">posterior_rt()</a></code> </p>
         </td>
-        <td><p>Generic function for getting posterior draws of the time-varying reproduction rates</p></td>
+        <td><p>Generic function for getting posterior draws of the time-varying
+reproduction rates</p></td>
       </tr><tr>
         
         <td>
@@ -277,6 +328,12 @@ for more details.</p></td>
           <p><code><a href="print.prior_summary.epimodel.html">print(<i>&lt;prior_summary.epimodel&gt;</i>)</a></code> </p>
         </td>
         <td><p>Print method for <code>prior_summary.epimodel</code> objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="print.prior_summary_reg.epimodel.html">print(<i>&lt;prior_summary_reg.epimodel&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Print method for <code>prior_summary_reg.epimodel</code> objects</p></td>
       </tr><tr>
         
         <td>
