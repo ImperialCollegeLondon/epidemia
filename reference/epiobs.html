@@ -106,9 +106,6 @@ the model assumptions please refer to the online vignettes." />
       <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
-      <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
-    </li>
-    <li>
       <a href="../articles/introduction.html">Flexible Epidemic Modeling with epidemia</a>
     </li>
     <li>
@@ -156,16 +153,16 @@ the model assumptions please refer to the online vignettes.</p>
     </div>
 
     <pre class="usage"><span class='fu'>epiobs</span>(
-  <span class='no'>formula</span>,
-  <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"neg_binom"</span>,
-  <span class='kw'>link</span> <span class='kw'>=</span> <span class='st'>"logit"</span>,
-  <span class='no'>i2o</span>,
-  <span class='kw'>center</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>offset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.1</span>),
-  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.1</span>),
-  <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>),
-  <span class='no'>...</span>
+  <span class='kw'>formula</span>,
+  family = <span class='st'>"neg_binom"</span>,
+  link = <span class='st'>"logit"</span>,
+  <span class='kw'>i2o</span>,
+  center = <span class='fl'>FALSE</span>,
+  offset = <span class='kw'>NULL</span>,
+  prior = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.1</span>),
+  prior_intercept = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.1</span>),
+  prior_aux = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(autoscale = <span class='fl'>TRUE</span>),
+  <span class='kw'>...</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -245,7 +242,7 @@ represents the prior on the reciprocal of the dispersion parameter. See
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
 </div>
 
       </footer>

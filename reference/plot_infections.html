@@ -105,9 +105,6 @@ This is a generic function." />
       <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
     </li>
     <li>
-      <a href="../articles/TimeDependentR.html">Time-dependent Modelling of R</a>
-    </li>
-    <li>
       <a href="../articles/introduction.html">Flexible Epidemic Modeling with epidemia</a>
     </li>
     <li>
@@ -153,20 +150,20 @@ The user can control the levels of the intervals and the plotted group(s).
 This is a generic function.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_infections</span>(<span class='no'>object</span>, <span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>plot_infections</span>(<span class='kw'>object</span>, <span class='kw'>...</span>)
 
 <span class='co'># S3 method for epimodel</span>
 <span class='fu'>plot_infections</span>(
-  <span class='no'>object</span>,
-  <span class='kw'>groups</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>dates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>date_breaks</span> <span class='kw'>=</span> <span class='st'>"2 weeks"</span>,
-  <span class='kw'>date_format</span> <span class='kw'>=</span> <span class='st'>"%Y-%m-%d"</span>,
-  <span class='kw'>cumulative</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>20</span>, <span class='fl'>50</span>, <span class='fl'>95</span>),
-  <span class='kw'>log</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>plotly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='no'>...</span>
+  <span class='kw'>object</span>,
+  groups = <span class='kw'>NULL</span>,
+  dates = <span class='kw'>NULL</span>,
+  date_breaks = <span class='st'>"2 weeks"</span>,
+  date_format = <span class='st'>"%Y-%m-%d"</span>,
+  cumulative = <span class='fl'>FALSE</span>,
+  levels = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>20</span>, <span class='fl'>50</span>, <span class='fl'>95</span>),
+  log = <span class='fl'>FALSE</span>,
+  plotly = <span class='fl'>FALSE</span>,
+  <span class='kw'>...</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -175,11 +172,11 @@ This is a generic function.</p>
     <tr>
       <th>object</th>
       <td><p>A fitted model object returned by <code>epim</code>.
-See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
+See <code>epimodel-objects</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments for <code><a href='posterior_infections.html'>posterior_infections</a></code>. Examples include <code>newdata</code>, which allows
+      <td><p>Additional arguments for <code><a href='https://rdrr.io/pkg/epidemia/man/posterior_infections.html'>posterior_infections</a></code>. Examples include <code>newdata</code>, which allows
 predictions or counterfactuals.</p></td>
     </tr>
     <tr>
@@ -230,39 +227,39 @@ interactive graphing.</p></td>
     <p>A ggplot object which can be further modified.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+    <pre class="examples"><div class='input'><span class='co'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='co'>## load required data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>epidemia</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='kw'><a href='https://github.com/ImperialCollegeLondon/epidemia'>epidemia</a></span>)
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid"</span>)
 <span class='co'>## setup sampling</span>
-<span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
-<span class='no'>args</span>$<span class='no'>algorithm</span> <span class='kw'>&lt;-</span> <span class='st'>"sampling"</span>
-<span class='no'>args</span>$<span class='no'>sampling_args</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>iter</span><span class='kw'>=</span><span class='fl'>1e3</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>adapt_delta</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>max_treedepth</span><span class='kw'>=</span><span class='fl'>15</span>),<span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>12345</span>)
-<span class='no'>args</span>$<span class='no'>group_subset</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Italy"</span>)
-<span class='no'>args</span>$<span class='no'>formula</span> <span class='kw'>&lt;-</span> <span class='fu'>R</span>(<span class='no'>country</span>,<span class='no'>date</span>) ~  <span class='fl'>1</span> + <span class='no'>lockdown</span>
-<span class='no'>args</span>$<span class='no'>prior</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>location</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>.5</span>)
-<span class='no'>args</span>$<span class='no'>prior_intercept</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>location</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>2</span>)
+<span class='kw'>args</span> <span class='op'>&lt;-</span> <span class='kw'>EuropeCovid</span>
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>algorithm</span> <span class='op'>&lt;-</span> <span class='st'>"sampling"</span>
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>sampling_args</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(iter=<span class='fl'>1e3</span>,control=<span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(adapt_delta=<span class='fl'>0.95</span>,max_treedepth=<span class='fl'>15</span>),seed=<span class='fl'>12345</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>group_subset</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Italy"</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>formula</span> <span class='op'>&lt;-</span> <span class='fu'>R</span>(<span class='kw'>country</span>,<span class='kw'>date</span>) <span class='op'>~</span>  <span class='fl'>1</span> <span class='op'>+</span> <span class='kw'>lockdown</span>
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>&lt;-</span> <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(location=<span class='fl'>0</span>,scale=<span class='fl'>.5</span>)
+<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior_intercept</span> <span class='op'>&lt;-</span> <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(location=<span class='fl'>0</span>,scale=<span class='fl'>2</span>)
 
 <span class='co'>## run sampling</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='no'>args</span>)
+<span class='kw'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='kw'>args</span>)
 
 <span class='co'>## make plots</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>) <span class='co'># default, plots all groups and dates</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
-                <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
-                <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>),
-                <span class='kw'>date_format</span><span class='kw'>=</span><span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>) <span class='co'># default, plots all groups and dates</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>), 
+                date_breaks=<span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
+                date_breaks=<span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
+<span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/plot_infections.html'>plot_infections</a></span>(<span class='kw'>fit</span>, 
+                dates=<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>), 
+                date_format=<span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -279,7 +276,7 @@ interactive graphing.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
 </div>
 
       </footer>
