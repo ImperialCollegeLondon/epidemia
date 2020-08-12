@@ -105,10 +105,10 @@ fit <- do.call(epim, args)
 plot_rt(fit, group = "United_Kingdom", plotly=TRUE)
 ```
 
-![](reference/figures/plot-1.html)<!-- -->
+![](reference/figures/plot-1.png)<!-- -->
 
 ``` r
 # And deaths
 plot_obs(fit, type = "deaths", group = "United_Kingdom", plotly=TRUE)
 ```
-![](reference/figures/plot-2.html)<!-- -->
+![](reference/figures/plot-2.png)<!-- -->
