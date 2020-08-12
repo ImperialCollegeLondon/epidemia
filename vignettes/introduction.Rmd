@@ -52,13 +52,9 @@ args$rt <- epirt(
 args$group_subset <- c("Italy")
 fit <- do.call(epim, args)
 ```
-```{r plotItaly, message=FALSE, warning=FALSE, out.width='100%'}
-library(plotly)
-subplot(
-  plot_rt(fit, plotly=TRUE),
-  plot_obs(fit, type = "deaths", plotly = TRUE),
-  margin = c(0,0.05,0,0)
-)
+```{r plotItaly, message=FALSE, warning=FALSE, fig.align="center", fig.width=12}
+plot_rt(fit)
+plot_obs(fit, type = "deaths")
 ```
 
 **epidemia** can model the evolution of an epidemic in multiple populations using hierarchical models. Here is an example where the parameterization of the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using `(1 + lockdown | country)` in place of `(1 | country)` below.
@@ -74,9 +70,9 @@ args$rt <- epirt(
 )
 fit <- do.call("epim", args)
 ```
-```{r plotIU,results='hold',fig.align="center", out.width='100%'}
-plot_rt(fit, plotly=T)
-plot_obs(fit, type = "deaths", plotly=T)
+```{r plotIU,results='hold',fig.align="center", fig.width=12}
+plot_rt(fit)
+plot_obs(fit, type = "deaths")
 ```
 
 # Model Overview
@@ -384,7 +380,7 @@ Here we focus on specifying the `prior` argument. This controls the prior distri
 
 To quickly visualise the effect of the prior distribution we can used the `prior_PD` flag to `epim`. If `TRUE` epim will sample all parameters from their prior distribution. We specify the prior for the intercept as follows.
 
-```{r normalPrior, results="hide", cache=TRUE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%'}
+```{r normalPrior, results="hide", cache=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
 args$algorithm <- "sampling"
 args$sampling_args <- list(iter=500,control=list(adapt_delta=0.95,max_treedepth=15))
 args$prior_PD <- TRUE
@@ -394,7 +390,7 @@ plot_rt(fit, adjusted=F)
 
 And example of using a shifted gamma prior...
 
-```{r gammaPrior, results="hide", cache=TRUE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%'}
+```{r gammaPrior, results="hide", cache=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
 args$rt <- epirt(
   formula = R(country,date) ~ (1 | country) + schools_universities + self_isolating_if_ill + public_events + lockdown + social_distancing_encouraged,
   prior = shifted_gamma(shape=1/6, scale=1, shift = log(1.05)/6),
