@@ -35,7 +35,7 @@ is working, please first install **rstan** by following these
 
 After installing **rstan**, running
 ``` r
-#install.packages(devtools)
+#install.packages("devtools")
 devtools::install_github("ImperialCollegeLondon/epidemia")
 ```
 will install the latest development version of **epidemia**.
