@@ -114,7 +114,7 @@
 <p>epidemia requires R v3.5.0 or above. The latest version of R can be downloaded <a href="https://cloud.r-project.org/bin/">here</a>.</p>
 <p>The package can be installed directly from github. However, this requires you to have a working C++ toolchain. To ensure that this is working, please first install <strong>rstan</strong> by following these <a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">installation instructions</a>.</p>
 <p>After installing <strong>rstan</strong>, running</p>
-<div class="sourceCode" id="cb1"><pre class="r"><span class="co">#install.packages(devtools)</span>
+<div class="sourceCode" id="cb1"><pre class="r"><span class="co">#install.packages("devtools")</span>
 <span class="kw pkg">devtools</span><span class="kw ns">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span>(<span class="st">"ImperialCollegeLondon/epidemia"</span>)</pre></div>
 <p>will install the latest development version of <strong>epidemia</strong>.</p>
 <p>If using windows, you can alternatively install the <a href="https://github.com/ImperialCollegeLondon/epidemia/releases/latest">binary</a>.</p>
@@ -171,10 +171,10 @@
 <span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)</pre></div>
 <div class="sourceCode" id="cb3"><pre class="r"><span class="co"># Inspect Rt</span>
 <span class="fu"><a href="reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">group</span> <span class="kw">=</span> <span class="st">"United_Kingdom"</span>, <span class="kw">plotly</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></div>
-<p><embed src="reference/figures/plot-1.html"></embed><!-- --></p>
+<p><img src="reference/figures/plot-1.png"><!-- --></p>
 <div class="sourceCode" id="cb4"><pre class="r"><span class="co"># And deaths</span>
 <span class="fu"><a href="reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"deaths"</span>, <span class="kw">group</span> <span class="kw">=</span> <span class="st">"United_Kingdom"</span>, <span class="kw">plotly</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></div>
-<p><embed src="reference/figures/plot-2.html"></embed><!-- --></p>
+<p><img src="reference/figures/plot-2.png"><!-- --></p>
 </div>
 </div>
   </div>
