@@ -33,14 +33,14 @@ The line `options(mc.cores = parallel::detectCores())` is important if MCMC samp
 
 # Example Usage
 Here we provide code snippets showing basic usage of **epidemia**. Below considers fitting a model to the Italian data, and demonstrates usage of various arguments to `epim`. 
-```{r computeItaly, cache=TRUE}
+```{r computeItaly, cache=TRUE, message=FALSE}
 # collect arguments for 'epim'
 args <- EuropeCovid
 print(names(args))
 
 # use NUTs sampler to fit the model
 args$algorithm <- "sampling"
-args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+args$sampling_args <- list(iter=500,seed=12345)
 
 # model for the reproduction number
 args$rt <- epirt(
@@ -59,7 +59,7 @@ plot_obs(fit, type = "deaths")
 
 **epidemia** can model the evolution of an epidemic in multiple populations using hierarchical models. Here is an example where the parameterization of the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using `(1 + lockdown | country)` in place of `(1 | country)` below.
 
-```{r computeIU, cache=TRUE}
+```{r computeIU, cache=TRUE, message=FALSE}
 # consider two countries
 args$group_subset <- c("Italy", "United_Kingdom")
 args$rt <- epirt(
@@ -382,7 +382,7 @@ To quickly visualise the effect of the prior distribution we can used the `prior
 
 ```{r normalPrior, results="hide", cache=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
 args$algorithm <- "sampling"
-args$sampling_args <- list(iter=500,control=list(adapt_delta=0.95,max_treedepth=15))
+args$sampling_args <- list(iter=500)
 args$prior_PD <- TRUE
 fit <- do.call(epim, args)
 plot_rt(fit, adjusted=F)
