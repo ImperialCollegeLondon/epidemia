@@ -101,7 +101,7 @@ plot_rt.epimodel <-
     p <- base_plot(qtl, log, date_breaks, TRUE)
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "Fill", 
+      name = "R_t", 
       values = ggplot2::alpha("seagreen", levels/100)
     )
 
@@ -258,8 +258,15 @@ plot_obs.epimodel <-
     df <- dplyr::left_join(df, data_orig, , by = c("group", "date"))
     names(df)[4] <- c("new")
     w <- is.na(df$new)
-    df$new[w] <- "New"
-    df$new[!w] <- "Original"
+    if (!any(w))
+      all_in_sample <- TRUE
+
+    if (all_in_sample)
+      df$new <- "Observed"
+    else {
+      df$new[w] <- "Out-of-sample"
+      df$new[!w] <- "In-sample"
+    }
 
     if (cumulative) {
       obs <- cumul(obs)
@@ -291,9 +298,13 @@ plot_obs.epimodel <-
       "coral4",
       "darkslategray4"
     )
-    names(cols) <- c(paste0(levels, "% CI"), "Original", "New")
-
-    cols <- ggplot2::scale_fill_manual(name = "Fill", values = cols)
+    if (all_in_sample) {
+      names(cols) <- c(paste0(levels, "% CI"), "Observed", "dummy")
+    }
+    else {
+      names(cols) <- c(paste0(levels, "% CI"), "In-sample", "Out-of-sample")
+    }
+    cols <- ggplot2::scale_fill_manual(name = type, values = cols)
 
     p <- p + cols
 
@@ -387,7 +398,7 @@ plot_infections.epimodel <-
     p <- base_plot(qtl, log, date_breaks)
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "Fill", 
+      name = "Infections", 
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
@@ -452,7 +463,7 @@ plot_infectious.epimodel <-
     p <- base_plot(qtl, log, date_breaks)
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "Fill", 
+      name = "Infectious", 
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
