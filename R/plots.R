@@ -101,7 +101,7 @@ plot_rt.epimodel <-
     p <- base_plot(qtl, log, date_breaks, TRUE)
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "Fill", 
+      name = "R_t", 
       values = ggplot2::alpha("seagreen", levels/100)
     )
 
@@ -135,6 +135,7 @@ plot_rt.epimodel <-
 #'  posterior mean. Defaults to FALSE, 
 #'  in which case the posterior predictive is plotted.
 #' @param cumulative If TRUE, plots the cumulative observations. 
+#' @param by_100k If TRUE, plots data per 100k of the population.
 #' @param log If TRUE, plots the observations on a pseudo-linear scale.
 #' @param ... Additional arguments for
 #'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
@@ -199,6 +200,7 @@ plot_obs.epimodel <-
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
            cumulative = FALSE,
+           by_100k = FALSE,
            levels = c(20, 50, 95),
            log = FALSE,
            plotly = FALSE,
@@ -258,8 +260,15 @@ plot_obs.epimodel <-
     df <- dplyr::left_join(df, data_orig, , by = c("group", "date"))
     names(df)[4] <- c("new")
     w <- is.na(df$new)
-    df$new[w] <- "New"
-    df$new[!w] <- "Original"
+    if (!any(w))
+      all_in_sample <- TRUE
+
+    if (all_in_sample)
+      df$new <- "Observed"
+    else {
+      df$new[w] <- "Out-of-sample"
+      df$new[!w] <- "In-sample"
+    }
 
     if (cumulative) {
       obs <- cumul(obs)
@@ -267,6 +276,12 @@ plot_obs.epimodel <-
         dplyr::group_by(.data$group) %>%
         dplyr::mutate(obs = cumsum(obs))
       df <- as.data.frame(df)
+    }
+
+    pops <- object$pops
+    if (by_100k) {
+      obs <- norm_obs(pops, obs)
+      df <- norm_df(pops, df)
     }
 
     qtl <- get_quantiles(
@@ -291,9 +306,18 @@ plot_obs.epimodel <-
       "coral4",
       "darkslategray4"
     )
-    names(cols) <- c(paste0(levels, "% CI"), "Original", "New")
+    if (all_in_sample) {
+      names(cols) <- c(paste0(levels, "% CI"), "Observed", "dummy")
+    }
+    else {
+      names(cols) <- c(paste0(levels, "% CI"), "In-sample", "Out-of-sample")
+    }
 
-    cols <- ggplot2::scale_fill_manual(name = "Fill", values = cols)
+    nme <- type
+    if (by_100k) {
+      nme <- paste0(nme, " per 100k")
+    }
+    cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
 
     p <- p + cols
 
@@ -359,6 +383,7 @@ plot_infections.epimodel <-
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
   cumulative=FALSE, 
+  by_100k = FALSE,
   levels = c(20, 50, 95), 
   log=FALSE,
   plotly = FALSE, 
@@ -377,6 +402,11 @@ plot_infections.epimodel <-
       inf <- cumul(inf)
     }
 
+    pops <- object$pops
+    if (by_100k) {
+      inf <- norm_obs(pops, inf)
+    }
+
     qtl <- get_quantiles(
       inf,
       levels,
@@ -386,8 +416,13 @@ plot_infections.epimodel <-
 
     p <- base_plot(qtl, log, date_breaks)
 
+    nme <- "Infections"
+    if (by_100k) {
+      nme <- paste0(nme, " per 100k")
+    }
+
     p <- p + ggplot2::scale_fill_manual(
-      name = "Fill", 
+      name = nme,
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
@@ -423,7 +458,7 @@ plot_infectious.epimodel <-
   dates=NULL, 
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
-  cumulative=FALSE, 
+  by_100k = FALSE,
   levels = c(20, 50, 95), 
   log=FALSE,
   plotly = FALSE, 
@@ -438,8 +473,9 @@ plot_infectious.epimodel <-
     # transform data
     inf <- gr_subset(inf, groups)
 
-    if (cumulative) {
-      inf <- cumul(inf)
+    pops <- object$pops
+    if (by_100k) {
+      inf <- norm_obs(pops, inf)
     }
 
     qtl <- get_quantiles(
@@ -449,10 +485,16 @@ plot_infectious.epimodel <-
       date_format
     )
 
+
     p <- base_plot(qtl, log, date_breaks)
 
+    nme <- "Infectious"
+    if (by_100k) {
+      nme <- paste0(nme, " per 100k")
+    }
+
     p <- p + ggplot2::scale_fill_manual(
-      name = "Fill", 
+      name = nme, 
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
@@ -568,6 +610,18 @@ smooth_obs <- function(object, smooth) {
   w <- complete.cases(df)
   object$draws <- t(df)
   return(sub_(object, w))
+}
+
+norm_obs <- function(pops, obs) {
+  p <- pops$pop[match(obs$group, pops$group)]
+  obs$draws <- sweep(obs$draws,MARGIN=2,FUN="/",STATS=p) * 1e5
+  return(obs)
+}
+
+norm_df <- function(pops, df) {
+  df$pops <- pops$pop[match(df$group, pops$group)]
+  df$obs <- (df$obs / df$pops) * 1e5
+  return(df)
 }
 
 # subsets observations for a given

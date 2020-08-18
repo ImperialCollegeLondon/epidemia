@@ -36,7 +36,7 @@ options(mc.cores = parallel::detectCores())
 # collect arguments for 'epim'
 args <- EuropeCovid
 args$algorithm <- "sampling"
-args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+args$sampling_args <- list(iter=1e3,seed=12345)
 args$group_subset <- c("Italy", "Austria", "Germany")
 args$rt <- epirt(
   formula = R(country, date) ~ 1 + lockdown,
