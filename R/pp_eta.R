@@ -144,6 +144,7 @@ pp_b_ord <- function(nms, stanmat) {
       colnames(stanmat),
       fixed = T
     )
+    len <- length(m)
     if (len == 1) {
       return(m)
     }
