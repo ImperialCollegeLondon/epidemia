@@ -47,6 +47,9 @@
 #'  local mode where herd immunity is achieved. If TRUE, a short MCMC run
 #'  fitting to cumulative data is used to initialize the parameters for the main
 #'  sampler.
+#' @param pop_adjust The population adjustment is a major contributor to algorithm 
+#'  runtime. Although it should be implemented for a final model run, it may be 
+#'  quicker to develop models without the adjustment. Defaults to TRUE.
 #' @param ... Not used.
 #' @examples
 #' \dontrun{
@@ -80,6 +83,7 @@ epim <- function(rt,
                  prior_PD = FALSE,
                  sampling_args = list(),
                  init_run = FALSE,
+                 pop_adjust = TRUE,
                  ...) {
 
   call    <- match.call(expand.dots = TRUE)
@@ -159,6 +163,7 @@ epim <- function(rt,
 
   sdat <- do.call(standata_all, sdat)
   sdat <- eval(sdat, parent.frame())
+  sdat$pop_adjust <- pop_adjust
 
     # parameters to keep track of
   pars <- c(

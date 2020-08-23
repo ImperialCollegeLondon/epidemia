@@ -128,8 +128,8 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oN <- sapply(obs, function(x) nobs(x))
     oN <- array(pad(oN, maxtypes, 0))
 
-    pvecs_len <- as.array(lapply(obs,
-      function(x) length(obs$i2o)))
+    pvecs_len <- sapply(obs,
+      function(x) length(obs$i2o))
 
     pvecs <- as.array(lapply(obs,
       function(x) pad_i2o(x, len = nsim)))
