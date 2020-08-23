@@ -21,11 +21,12 @@ for (m in 1:M){
         real convolution = dot_product(sub_col(infections, start, m, i - start), tail(si_rev, i - start));
         if (pop_adjust) {
             infections[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(-Rt_unadj[i,m] * convolution / pop[m]));
+            Rt[i,m] =  (pop[m] - cumm_sum[i-1,m]) * Rt_unadj[i,m] / pop[m];
         } else {
             infections[i,m] = Rt_unadj[i,m] * convolution;
+            Rt[i,m] = Rt_unadj[i,m];
         }
         infectiousness[i,m] = convolution / max(si);
-        Rt[i,m] =  (pop[m] - cumm_sum[i-1,m]) * Rt_unadj[i,m] / pop[m];
         cumm_sum[i,m] = cumm_sum[i-1,m] + infections[i,m];
     }
 }
