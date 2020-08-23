@@ -107,7 +107,7 @@ epim <- function(rt,
   fml <- formals()
   dft <- fml[setdiff(names(fml), names(sdat))]
   sdat[names(dft)] <- dft
-  rm <- c("algorithm", "sampling_args", "init_run", "...")
+  rm <- c("algorithm", "sampling_args", "init_run", "pop_adjust", "...")
   sdat[rm] <- NULL
   checked <- loo::nlist(rt, data, obs, pops, si)
   sdat[names(checked)] <- checked
