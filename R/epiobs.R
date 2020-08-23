@@ -8,7 +8,7 @@
 #'
 #' @param formula A formula defining the model for the observations.
 #' @param family A string representing the error distribution for the model.
-#'  Can be either "poisson" or "neg_binom".
+#'  Can be either "poisson", "neg_binom" or "quasi_poisson".
 #' @param link A string representing the link function used to transform the
 #'  covariates. The linear predictor constructed from the covariates is
 #' transformed by the inverse link function, then multiplied by the weighted
@@ -47,7 +47,7 @@ epiobs <- function(formula,
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
 
-  ok_families <- c("poisson", "neg_binom")
+  ok_families <- c("poisson", "neg_binom", "quasi_poisson")
   if (!(family %in% ok_families)) {
     stop("'family' must be one of ", paste(ok_families, collapse= ", "),
       call. = FALSE

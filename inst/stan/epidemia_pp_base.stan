@@ -36,9 +36,13 @@ generated quantities {
       if (ofamily[r] == 1) { // poisson
         obs[i:(i+oN[r]-1)] = poisson_rng(segment(E_obs, i, oN[r]) + 1e-15);
       }
-      else { // neg binom
+      else if (ofamily[r] == 2) { // neg binom
         obs[i:(i+oN[r]-1)] = neg_binomial_2_rng(segment(E_obs, i, oN[r]) + 1e-15, 
           oaux[has_oaux[r]]);
+      }
+      else { // quasi-poisson
+        obs[i:(i+oN[r]-1)] = neg_binomial_2_rng( segment(E_obs, i, oN[r]) + 1e-15, 
+        segment(E_obs, i, oN[r]) / oaux[has_oaux[r]]);
       }
       i += oN[r];
     }

@@ -48,7 +48,7 @@ posterior_sims <- function(object,
     obs = obs,
     data = data
   )
-
+ 
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)
   if (length(eta) > 0) {
@@ -199,6 +199,8 @@ pp_standata <- function(object, rt, obs, data) {
 
   # add remaining data
   out <- c(out, list(
+    si_len = length(object$si),
+    pop_adjust = object$pop_adjust,
     si = pad(object$si, out$NS, 0, TRUE),
     N0 = object$seed_days,
     pop = as.array(pops$pop),

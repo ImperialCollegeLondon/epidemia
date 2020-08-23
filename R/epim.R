@@ -270,7 +270,8 @@ epim <- function(rt,
     pops,
     algorithm,
     standata = sdat,
-    orig_names
+    orig_names,
+    pop_adjust
   )
   return(epimodel(out))
 }
@@ -334,19 +335,35 @@ make_rw_sigma_nms <- function(formula, data) {
 }
 
 make_oaux_nms <- function(obs) {
-  has_oaux <- sapply(
-    obs,
-    function(x) !is.null(x$prior_aux)
-  )
-  obs_nms <- sapply(
-    obs,
-    function(x) .get_obs(formula(x))
-  )
-  return(paste0(
-    obs_nms[has_oaux],
-    "|reciprocal dispersion"
-  ))
+  nms <- list()
+  for (o in obs) {
+    if (!is.null(o$prior_aux)) {
+      if (o$family == "neg_binom") {
+        x <- "|reciprocal dispersion"
+      } else {
+        x <- "| dispersion"
+      }
+      nms <- c(nms,
+      paste0(.get_obs(formula(o)), x))
+    }
+  }
+  return(unlist(nms))
 }
+
+# make_oaux_nms <- function(obs) {
+#   has_oaux <- sapply(
+#     obs,
+#     function(x) !is.null(x$prior_aux)
+#   )
+#   obs_nms <- sapply(
+#     obs,
+#     function(x) .get_obs(formula(x))
+#   )
+#   return(paste0(
+#     obs_nms[has_oaux],
+#     "|reciprocal dispersion"
+#   ))
+# }
 
 make_ointercept_nms <- function(obs, sdat) {
   if (sdat$num_ointercepts == 0) {

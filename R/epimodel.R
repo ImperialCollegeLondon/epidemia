@@ -87,7 +87,8 @@ epimodel <- function(object) {
     sdat = object$standata,
     orig_names = object$orig_names,
     rt_prior_info = object$standata$rt_prior_info,
-    obs_prior_info = object$standata$obs_prior_info
+    obs_prior_info = object$standata$obs_prior_info,
+    pop_adjust = object$pop_adjust
   )
 
   class(out) <- "epimodel"

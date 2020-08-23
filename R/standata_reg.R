@@ -28,7 +28,7 @@ standata_reg <- function(object, ...) {
 
 
   if (inherits(object, "epiobs_")) { # expect family and link
-    ok_families <- c("poisson", "neg_binom")
+    ok_families <- c("poisson", "neg_binom", "quasi_poisson")
     fam <- which(pmatch(ok_families, family, nomatch=0L) == 1L)
     if (!length(fam)) {
       stop("'family' must be one of ", paste(ok_families, collapse=", "))
