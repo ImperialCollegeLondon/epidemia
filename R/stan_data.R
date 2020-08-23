@@ -19,6 +19,7 @@ standata_all <- function(rt,
   out <- c(
     out,
     list(
+      si_len = length(si),
       si = pad(si, out$NS, 0, TRUE),
       N0 = seed_days,
       prior_PD = prior_PD,
@@ -127,6 +128,9 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oN <- sapply(obs, function(x) nobs(x))
     oN <- array(pad(oN, maxtypes, 0))
 
+    pvecs_len <- as.array(lapply(obs,
+      function(x) length(obs$i2o)))
+
     pvecs <- as.array(lapply(obs,
       function(x) pad_i2o(x, len = nsim)))
 
@@ -225,7 +229,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_df_for_oaux <- offset_ <- rep(0,0)
     obs_group <- obs_date <- obs_type  <- oxbar <-
     has_ointercept <- prior_dist_for_oaux <- has_offset <- 
-    has_oaux <- olink <- ofamily <- integer(0)
+    has_oaux <- olink <- ofamily <- pvecs_len <- integer(0)
     oN <- oK <- rep(0, maxtypes)
     pvecs <- array(0, dim = c(0, nsim))
     obs_prior_info <- NULL
@@ -264,6 +268,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_scale_for_oaux,
     prior_df_for_oaux,
     pvecs,
+    pvecs_len,
     has_offset,
     offset_
   ))

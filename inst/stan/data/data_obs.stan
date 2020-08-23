@@ -5,7 +5,8 @@ int obs_date[N_obs]; // observation date (1 to N2)
 
 int<lower=0> R; // number of different observation types
 int<lower=0> oN[10];  // number of each observation type
-vector<lower=0>[NS] pvecs[R]; // the 'lag' for each type of observation.
+int<lower=1> pvecs_len[R]; // maximum lag for each i2o distribution
+vector<lower=0>[NS] pvecs[R]; // the 'i2o' for each type of observation
 
 int<lower=0, upper=1> has_offset[R];
 vector[N_obs] offset_;
