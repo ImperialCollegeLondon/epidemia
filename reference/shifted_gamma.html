@@ -146,7 +146,7 @@
     <p>A gamma prior distribution which can be shifted.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a></span>(shape = <span class='fl'>1</span>, scale = <span class='fl'>1</span>, shift = <span class='fl'>0</span>, autoscale = <span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='fu'>shifted_gamma</span>(<span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>shift</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>autoscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -157,7 +157,7 @@
     </tr>
     <tr>
       <th>shift</th>
-      <td><p>The Gamma prior can be shifted to allow for negative support.</p></td>
+      <td><p>The Gamma prior can be shifted to allow for positive support.</p></td>
     </tr>
     <tr>
       <th>autoscale</th>
@@ -167,16 +167,21 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A named list to be parsed internally by <code><a href='https://rdrr.io/pkg/epidemia/man/epim.html'>epim</a></code>.</p>
+    <p>A named list to be parsed internally by <code><a href='epim.html'>epim</a></code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><span class="pkg">rstanarm</span> provides a set of distributions (see <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a></code>) which
-can be used for the priors on regression parameters. Intuitively, non-pharmaceutical interventions are
-unlikely to a-priori cause a large increase in the reproduction number. A shifted gamma prior can
+    <p><span class="pkg">rstanarm</span> provides a set of distributions
+(see <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a></code>) which can be used for the priors
+on regression parameters. Intuitively, non-pharmaceutical interventions are
+unlikely to a-priori cause a large increase in the reproduction number.
+A shifted gamma prior can
 be used to model this idea, and has been used in
 Flaxman et al. (2020)
-.  <code>shifted_gamma</code> can be used as the <code>prior</code> argument
-to <code>epim</code>.</p>
+.  <code>shifted_gamma</code> can be
+used as the <code>prior</code> argument
+to <code>epim</code>. This specified a shifted gamma prior on the negative of the
+regression parameters. i.e. if there is no shift, the support is on the
+negative half of the real line.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van
@@ -188,11 +193,10 @@ ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='kw'><a href='https://github.com/ImperialCollegeLondon/epidemia'>epidemia</a></span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='kw'>EuropeCovid</span>)
-<span class='kw'>args</span> <span class='op'>&lt;-</span> <span class='kw'>EuropeCovid</span>
-<span class='kw'>args</span><span class='op'>$</span><span class='kw'>prior</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a></span>(shape=<span class='fl'>1</span>, scale=<span class='fl'>1</span>, shift=<span class='op'>-</span><span class='fl'>0.5</span>)
-</div></pre>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>epidemia</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>EuropeCovid</span>)
+<span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
+<span class='no'>args</span>$<span class='no'>prior</span> <span class='kw'>&lt;-</span> <span class='fu'>shifted_gamma</span>(<span class='kw'>shape</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>shift</span><span class='kw'>=</span>-<span class='fl'>0.5</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -208,7 +212,7 @@ ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

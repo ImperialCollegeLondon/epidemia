@@ -92,7 +92,7 @@
 
       
 
-      </header><div class="row">
+      </header><script src="plotting_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Plotting with epidemia</h1>
@@ -115,23 +115,21 @@
 <h1 class="hasAnchor">
 <a href="#fitting-a-model" class="anchor"></a><span class="header-section-number">1</span> Fitting a model</h1>
 <p>We start by fitting a model, the results of which we are going to plot. The model is fitted for three countries: Italy, Austria and Germany.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/ImperialCollegeLondon/epidemia">epidemia</a></span>)
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">epidemia</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(mc.cores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
+<span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 
 <span class="co"># collect arguments for 'epim'</span>
-<span class="kw">args</span> <span class="op">&lt;-</span> <span class="kw">EuropeCovid</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">algorithm</span> <span class="op">&lt;-</span> <span class="st">"sampling"</span>
-<span class="kw">args</span><span class="op">$</span><span class="kw">sampling_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(iter=<span class="fl">1e3</span>,control=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(adapt_delta=<span class="fl">0.95</span>,max_treedepth=<span class="fl">15</span>),seed=<span class="fl">12345</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">group_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>, <span class="st">"Austria"</span>, <span class="st">"Germany"</span>)
-<span class="kw">args</span><span class="op">$</span><span class="kw">rt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
-  formula = <span class="fu">R</span>(<span class="kw">country</span>, <span class="kw">date</span>) <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="kw">lockdown</span>,
-  prior = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>, scale=<span class="fl">.5</span>),
-  prior_intercept = <span class="kw">rstanarm</span>::<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(location=<span class="fl">0</span>, scale=<span class="fl">2</span>) 
+<span class="no">args</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid</span>
+<span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"sampling"</span>
+<span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">1e3</span>,<span class="kw">control</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">adapt_delta</span><span class="kw">=</span><span class="fl">0.95</span>,<span class="kw">max_treedepth</span><span class="kw">=</span><span class="fl">15</span>),<span class="kw">seed</span><span class="kw">=</span><span class="fl">12345</span>)
+<span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>, <span class="st">"Austria"</span>, <span class="st">"Germany"</span>)
+<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
+  <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>, <span class="no">date</span>) ~ <span class="fl">1</span> + <span class="no">lockdown</span>,
+  <span class="kw">prior</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>, <span class="kw">scale</span><span class="kw">=</span><span class="fl">.5</span>),
+  <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>, <span class="kw">scale</span><span class="kw">=</span><span class="fl">2</span>)
 )
-<span class="kw">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="kw">args</span>)
-</pre></div>
+<span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)</pre></body></html></div>
 </div>
 <div id="default-plotting-behaviour" class="section level1">
 <h1 class="hasAnchor">
@@ -140,26 +138,20 @@
 <h2 class="hasAnchor">
 <a href="#reproduction-number" class="anchor"></a><span class="header-section-number">2.1</span> Reproduction number</h2>
 <p>Calling <code>plot_rt</code> with no arguments other than the fitted <code>epimodel</code> plots the repdoduction for every group for the entire date range for which the model was fitted.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>)
-</pre></div>
+<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-2-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
 <div id="observations" class="section level2">
 <h2 class="hasAnchor">
 <a href="#observations" class="anchor"></a><span class="header-section-number">2.2</span> Observations</h2>
 <p>To plot observations, the name of the observation type must also be specified using the <code>type</code> argument.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>)
-</pre></div>
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"deaths"</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/plotItaly-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
 <div id="number-of-infections" class="section level2">
 <h2 class="hasAnchor">
 <a href="#number-of-infections" class="anchor"></a><span class="header-section-number">2.3</span> Number of infections</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>)
-</pre></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="no">fit</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-3-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
 </div>
@@ -167,9 +159,7 @@
 <h1 class="hasAnchor">
 <a href="#plotting-a-subset-of-the-groups" class="anchor"></a><span class="header-section-number">3</span> Plotting a subset of the groups</h1>
 <p>Use the <code>groups</code> argument to plot a subset of the available group. For example, we can plot the repduction number for just Austria and Germany.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, groups=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Austria"</span>, <span class="st">"Germany"</span>))
-</pre></div>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">groups</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Austria"</span>, <span class="st">"Germany"</span>))</pre></body></html></div>
 <pre><code>## Warning: smooth=1 is too large 
 ##       (one group has 0 unique dates)
 ##        - no smoothing will be performed</code></pre>
@@ -186,36 +176,24 @@
 <li>
 <code>date_format</code>: passed as the the <code>format</code> argument to <code>as.Date</code> when coercing <code>dates</code> to class <code>Date</code>. Default is “%Y-%m-%d”. This date format should match the date format in the data used to fit the model.</li>
 </ul>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"2020-03-09"</span>, <span class="st">"2020-04-06"</span>), date_breaks=<span class="st">"1 week"</span>)
-</pre></div>
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">dates</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"2020-03-09"</span>, <span class="st">"2020-04-06"</span>), <span class="kw">date_breaks</span><span class="kw">=</span><span class="st">"1 week"</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-5-1.png" width="864" style="display: block; margin: auto;"></p>
 <p>The same plot with a different date format:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"09-03-20"</span>, <span class="st">"06-04-20"</span>), date_format=<span class="st">"%d-%m-%y"</span>, date_breaks=<span class="st">"1 week"</span>)
-</pre></div>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">dates</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"09-03-20"</span>, <span class="st">"06-04-20"</span>), <span class="kw">date_format</span><span class="kw">=</span><span class="st">"%d-%m-%y"</span>, <span class="kw">date_breaks</span><span class="kw">=</span><span class="st">"1 week"</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-6-1.png" width="864" style="display: block; margin: auto;"></p>
 <p>To restrict the dates from one direction only, set the appropriate element of <code>dates</code> to <code>NA</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"2020-03-09"</span>, <span class="fl">NA</span>))
-</pre></div>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">dates</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"2020-03-09"</span>, <span class="fl">NA</span>))</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-7-1.png" width="864" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, dates=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">NA</span>, <span class="st">"2020-04-06"</span>))
-</pre></div>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">dates</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">NA</span>, <span class="st">"2020-04-06"</span>))</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-8-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
 <div id="plotting-cumulative-quantities" class="section level1">
 <h1 class="hasAnchor">
 <a href="#plotting-cumulative-quantities" class="anchor"></a><span class="header-section-number">5</span> Plotting cumulative quantities</h1>
 <p>For obsersevations and infections set <code>cumulative=TRUE</code> to plot the cumulative quantitity.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="kw">fit</span>, type=<span class="st">"deaths"</span>, cumulative=<span class="fl">TRUE</span>)
-</pre></div>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"deaths"</span>, <span class="kw">cumulative</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-9-1.png" width="864" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="kw">fit</span>, cumulative=<span class="fl">TRUE</span>)
-</pre></div>
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_infections.html">plot_infections</a></span>(<span class="no">fit</span>, <span class="kw">cumulative</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-10-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
 <div id="smoothing-the-repdoduction-number" class="section level1">
@@ -223,9 +201,7 @@
 <a href="#smoothing-the-repdoduction-number" class="anchor"></a><span class="header-section-number">6</span> Smoothing the repdoduction number</h1>
 <p>The reproduction number can be smoothed by taking the mean value over a rolling window. The size of this window is controlled using the <code>smooth</code> argument to <code>plot_rt</code>. It is an integer giving the size of the window in days. The default value of 1 corresponds to no smoothing.</p>
 <p>The smoothing is applied separately to each posterior draw.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit">
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="kw">fit</span>, smooth=<span class="fl">7</span>)
-</pre></div>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">smooth</span><span class="kw">=</span><span class="fl">7</span>)</pre></body></html></div>
 <p><img src="plotting_files/figure-html/unnamed-chunk-11-1.png" width="864" style="display: block; margin: auto;"></p>
 </div>
   </div>
@@ -243,7 +219,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

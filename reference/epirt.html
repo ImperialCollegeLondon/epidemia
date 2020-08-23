@@ -149,13 +149,13 @@ details on the model assumptions please refer to the online vignettes.</p>
     </div>
 
     <pre class="usage"><span class='fu'>epirt</span>(
-  <span class='kw'>formula</span>,
-  r0 = <span class='fl'>3.28</span>,
-  center = <span class='fl'>FALSE</span>,
-  prior = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.5</span>),
-  prior_intercept = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(scale = <span class='fl'>0.5</span>),
-  prior_covariance = <span class='kw'>rstanarm</span>::<span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>decov</a></span>(scale = <span class='fl'>0.5</span>),
-  <span class='kw'>...</span>
+  <span class='no'>formula</span>,
+  <span class='kw'>r0</span> <span class='kw'>=</span> <span class='fl'>3.28</span>,
+  <span class='kw'>center</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.5</span>),
+  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.5</span>),
+  <span class='kw'>prior_covariance</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>decov</a></span>(<span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>0.5</span>),
+  <span class='no'>...</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -183,7 +183,7 @@ prior on the centered covariates. Defaults to <code>FALSE</code>.</p></td>
       <th>prior</th>
       <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. In addition to the
 <span class="pkg">rstanarm</span> provided <a href='https://mc-stan.org/rstanarm/reference/priors.html'>priors</a>,
-a <a href='https://rdrr.io/pkg/epidemia/man/shifted_gamma.html'>shifted_gamma</a> can be used. <strong>Note:</strong> If
+a <a href='shifted_gamma.html'>shifted_gamma</a> can be used. <strong>Note:</strong> If
 <code>autoscale=TRUE</code> in the call to the prior distribution then
 automatic rescaling of the prior may take place.</p></td>
     </tr>
@@ -219,7 +219,7 @@ used if the <code>formula</code> argument specifies random effects.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>
