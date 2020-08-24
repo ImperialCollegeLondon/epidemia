@@ -216,7 +216,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
       assign(i, array(as.numeric(temp) %ORifNULL% rep(0,0)))
     }
 
-    has_offset <- array(sapply(obs, function(x) x$has_offset * 1))
+    has_offset <- array(sapply(obs, function(x) any(x$offset != 0) * 1))
     offset_ <- array(unlist(lapply(obs, function(x) x$offset)))
 
     obs_prior_info <- lapply(reg, function(x) x$prior_info)

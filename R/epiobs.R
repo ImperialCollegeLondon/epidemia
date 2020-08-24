@@ -21,7 +21,6 @@
 #' @param center If \code{TRUE} then the covariates are centered to
 #'  have mean zero. All of the priors are then interpreted as
 #'  priors on the centered covariates. Defaults to \code{FALSE}.
-#' @param offset Same as \code{\link[stats]{glm}}
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. **Note:**
 #'  If \code{autoscale=TRUE} in the call to the prior distribution
 #'  then automatic rescaling of the prior may take place.
@@ -39,7 +38,6 @@ epiobs <- function(formula,
                    link = "logit",
                    i2o,
                    center = FALSE,
-                   offset = NULL,
                    prior = rstanarm::normal(scale = .1),
                    prior_intercept = rstanarm::normal(scale = .1),
                    prior_aux = rstanarm::exponential(autoscale = TRUE),
@@ -68,10 +66,6 @@ epiobs <- function(formula,
      - check that this is intentional")
   }
 
-  if (!is.null(offset) && !is.numeric(offset))
-    stop("offset should be either null or a numeric vector",
-    call. = FALSE)
-
   # only supported prior family is normal. (will change in future)
   ok_dists <- c("normal")
   if (!(prior$dist %in% ok_dists)) {
@@ -98,8 +92,6 @@ epiobs <- function(formula,
     family,
     link,
     i2o,
-    has_offset = any(offset != 0),
-    offset,
     i2otype = "density",
     link = "logit",
     center,
@@ -141,10 +133,8 @@ epiobs_ <- function(object, data) {
   args <- c(args, list(
     formula = update(formula,
       paste0(.get_obs(formula), "~.")),
-    data = data,
-    offset = object$offset
+    data = data
   ))
-  object$offset <- NULL
   out <- c(object, do.call(parse_mm, args))
 
   obs <- data[, .get_obs(formula)]
