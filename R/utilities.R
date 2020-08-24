@@ -161,7 +161,9 @@ check_data <- function(formula, data, group_subset) {
   data <- tryCatch(
     {
       data$group <- droplevels(as.factor(data$group))
+      data[, group] <- droplevels(as.factor(data[, group]))
       data$date <- as.Date(data$date)
+      data[, date] <- as.Date(data[, date])
       data
     },
     error = function(cond) {
