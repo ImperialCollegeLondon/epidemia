@@ -49,12 +49,6 @@ parse_mm <- function(formula, data, ...) {
   y <- model.response(mf)
   offset <- check_offset(model.offset(mf), y)
 
-  print(formula)
-  print(form)
-  print(y)
-  print(offset)
-  names(mf)
-
   autocor <- NULL
   if (is_autocor(formula)) {
     trms <- terms_rw(formula)
