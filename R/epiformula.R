@@ -27,9 +27,18 @@ parse_formula <- function(x, fixed.only = FALSE, random.only = FALSE, ...) {
 # string based method of removing random walk terms
 norws <- function(x) {
   form <- as.string.formula(x)
-  form <- gsub("rw\\(.*?\\) \\+", "", form)
+  form <- gsub("rw\\(.*?\\) \\+ ", "", form)
   form <- gsub("\\+ rw\\(.*?\\)", "", form)
-  as.formula(form)
+  form <- gsub("rw\\(.*?\\)", "", form)
+
+  form <- tryCatch({
+    as.formula(form)
+    }, 
+    error = function(cond) { # missing terms on r.h.s.
+      as.formula(paste(form, 1))
+    }
+  )
+  return(form)
 }
 
 as.string.formula <- function(x) {

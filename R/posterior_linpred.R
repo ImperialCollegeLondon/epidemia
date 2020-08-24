@@ -72,7 +72,7 @@ posterior_linpred <- function(object,
   colnames(draws) <- paste0("eta[", seq_len(ncol(draws)), "]")
 
   return(list(
-    draws = draws,
+    draws = as.matrix(draws),
     group = object$data$group,
     time = object$data$date
   ))

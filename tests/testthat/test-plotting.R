@@ -2,7 +2,6 @@ context("Test plotting")
 
 # load data
 example.fit <- readRDS("../data/plot_test_fit.rds")
-
 fm <- example.fit
 
 test_that("wrong group throws error", {
@@ -70,7 +69,7 @@ test_that(".check_dates works as expected", {
 )
 
 
-test_that("plot_rt runs through with varioud arguments", {
+test_that("plot_rt runs through with various arguments", {
   fun <- plot_rt
   expect_true(inherits(fun(fm), "ggplot"))
   expect_true(inherits(fun(fm, log=TRUE), "ggplot"))

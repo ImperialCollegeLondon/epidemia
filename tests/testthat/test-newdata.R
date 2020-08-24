@@ -1,9 +1,11 @@
 context("Correct data constructed with newdata")
 
+
 test_that("Test identical predictions when using same data that the model was fit with.", {
   
   load(file = "../data/fm-uk.rds")
   fit <- uk$fm
+  
   data <- uk$data
 
   # check predictions are the same using same seeds
