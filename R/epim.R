@@ -46,7 +46,10 @@
 #' @param init_run For certain datasets the sampler can find itself trapped in a
 #'  local mode where herd immunity is achieved. If TRUE, a short MCMC run
 #'  fitting to cumulative data is used to initialize the parameters for the main
-#'  sampler.
+#'  sampler. If TRUE this is done with default parameters. If instead a list is
+#'  provided, this is the equivalent to \code{sampling_args} but for the
+#'  initial run. The seed used is that specified in \code{init_run}, or that
+#'  specified in \code{sampling_args}, or no seed, in that order.
 #' @param pop_adjust The population adjustment is a major contributor to algorithm 
 #'  runtime. Although it should be implemented for a final model run, it may be 
 #'  quicker to develop models without the adjustment. Defaults to TRUE.
@@ -94,6 +97,9 @@ epim <- function(rt,
   pops    <- check_pops(pops, groups)
   si      <- check_sv(si, "si")
   algorithm <- match.arg(algorithm)
+  op <- options("warn")
+  on.exit(options(op))
+  options(warn=1)
 
   if (seed_days < 1) {
     stop("'seed_days' must be greater than zero", call. = FALSE)
@@ -122,7 +128,7 @@ epim <- function(rt,
         }
   }
 
-  if (init_run) {
+  if (!isFALSE(init_run)) {
     print("Prefit to obtain reasonable starting values")
     cobs <- lapply(obs, function(x) cumulate(x))
     # replace obs with cobs for initial fit
@@ -130,10 +136,22 @@ epim <- function(rt,
     sdat_init$obs <- cobs
     sdat_init <- do.call(standata_all, sdat_init)
 
-    args <- list(iter = 100, chains = 1)
+    if (is.list(init_run)) {
+      args <- init_run
+    } else if (isTRUE(init_run)) {
+      args <- list(iter=100, chains=1)
+    } else {
+      stop("init_run must be logical or a list", .call=FALSE)
+    }
+
+    if (is.null(args$seed)) { # use seed for main run if specified
+      args$seed <- sampling_args$seed
+    }
+
     args$object <- stanmodels$epidemia_base
     args$data <- sdat_init
     prefit <- do.call("sampling", args)
+    print(warnings())
 
     # function defining parameter initialisation
     initf <- function() {
@@ -189,7 +207,7 @@ epim <- function(rt,
     )
   )
   
-  if (init_run) 
+  if (!isFALSE(init_run)) 
     args$init <- initf 
 
   sampling <- algorithm == "sampling"
