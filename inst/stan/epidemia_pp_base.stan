@@ -42,7 +42,7 @@ generated quantities {
       }
       else { // quasi-poisson
         obs[i:(i+oN[r]-1)] = neg_binomial_2_rng( segment(E_obs, i, oN[r]) + 1e-15, 
-        segment(E_obs, i, oN[r]) / oaux[has_oaux[r]]);
+        (segment(E_obs, i, oN[r]) + 1e-15) / oaux[has_oaux[r]]);
       }
       i += oN[r];
     }

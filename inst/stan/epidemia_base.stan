@@ -109,7 +109,7 @@ model {
         segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
       } else { // quasi-poisson
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
-        segment(E_obs, i, oN[r]) + 1e-15, segment(E_obs, i, oN[r]) / oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, (segment(E_obs, i, oN[r]) + 1e-15) / oaux[has_oaux[r]]);
       }
       i += oN[r];
     }
