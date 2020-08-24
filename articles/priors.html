@@ -163,12 +163,12 @@ If an adjustment has been made, this will show both the originally specified pri
 <span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="st">"France"</span>
 <span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"sampling"</span>
 <span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span> <span class="kw">=</span> <span class="fl">10</span>, <span class="kw">seed</span><span class="kw">=</span><span class="fl">12345</span>)
-<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
+<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu">epirt</span>(
   <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~ <span class="fl">1</span> + <span class="no">schools_universities</span> + <span class="no">lockdown</span>
 )
 <span class="no">fm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)
 <span class="co"># default prior scale not adjusted</span>
-<span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="no">fm</span>)</pre></body></html></div>
+<span class="fu">prior_summary</span>(<span class="no">fm</span>)</pre></body></html></div>
 <pre><code>## Priors for model 'fm' 
 ## ----------
 ##  Regression for  R :
@@ -193,7 +193,7 @@ If an adjustment has been made, this will show both the originally specified pri
 <span class="no">args</span>$<span class="no">data</span>$<span class="no">lockdown</span> <span class="kw">&lt;-</span> <span class="fl">100</span> * <span class="no">args</span>$<span class="no">data</span>$<span class="no">lockdown</span>
 <span class="no">fm2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)
 <span class="co"># notice the rescaled prior for lockdown</span>
-<span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="no">fm2</span>)</pre></body></html></div>
+<span class="fu">prior_summary</span>(<span class="no">fm2</span>)</pre></body></html></div>
 <pre><code>## Priors for model 'fm2' 
 ## ----------
 ##  Regression for  R :

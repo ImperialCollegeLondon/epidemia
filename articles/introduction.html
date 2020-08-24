@@ -127,7 +127,7 @@
 <span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">500</span>,<span class="kw">seed</span><span class="kw">=</span><span class="fl">12345</span>)
 
 <span class="co"># model for the reproduction number</span>
-<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
+<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu">epirt</span>(
   <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~  <span class="fl">1</span> + <span class="no">lockdown</span>,
   <span class="kw">prior</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">.5</span>),
   <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">2</span>)
@@ -141,21 +141,21 @@
 <pre><code>## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 ## Running the chains for more iterations may help. See
 ## http://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu">plot_rt</span>(<span class="no">fit</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/plotItaly-1.png" width="1152" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"deaths"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu">plot_obs</span>(<span class="no">fit</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"deaths"</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/plotItaly-2.png" width="1152" style="display: block; margin: auto;"></p>
 <p><strong>epidemia</strong> can model the evolution of an epidemic in multiple populations using hierarchical models. Here is an example where the parameterization of the time-varying reproduction number includes a country-specific intercept. This could also be extended to group specific slopes; for example by using <code>(1 + lockdown | country)</code> in place of <code>(1 | country)</code> below.</p>
 <div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="co"># consider two countries</span>
 <span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Italy"</span>, <span class="st">"United_Kingdom"</span>)
-<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
+<span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu">epirt</span>(
   <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>, <span class="no">date</span>) ~ <span class="fl">0</span> + (<span class="fl">1</span> <span class="kw">|</span> <span class="no">country</span>) + <span class="no">lockdown</span>,
   <span class="kw">prior</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">.5</span>),
   <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>,<span class="kw">scale</span><span class="kw">=</span><span class="fl">2</span>),
   <span class="kw">prior_covariance</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">decov</a></span>(<span class="kw">scale</span><span class="kw">=</span><span class="fl">0.1</span>)
 )
 <span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="st">"epim"</span>, <span class="no">args</span>)</pre></body></html></div>
-<pre><code>## Warning: There were 87 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
+<pre><code>## Warning: There were 2 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
 ## http://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded</code></pre>
 <pre><code>## Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
 <pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
@@ -164,9 +164,9 @@
 <pre><code>## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 ## Running the chains for more iterations may help. See
 ## http://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="fu">plot_rt</span>(<span class="no">fit</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/plotIU-1.png" width="1152" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fit</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"deaths"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu">plot_obs</span>(<span class="no">fit</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"deaths"</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/plotIU-2.png" width="1152" style="display: block; margin: auto;"></p>
 </div>
 <div id="model-overview" class="section level1">
@@ -472,7 +472,7 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <p>Here we demonstrate how to specify different prior distributions in practice, using the Europe data restricted to Germany and the United Kingdom as an example. In particular, we demonstrate the utility of the <code>prior_PD</code> flag for sampling from the prior predictive distribution. This allows you to easily visualise the prior assumptions on the reproduction number. Various methods that can be used on fitted models (<code>epimodel</code>) are demonstrated.</p>
 <div class="sourceCode" id="cb26"><html><body><pre class="r"><span class="no">args</span>$<span class="no">group_subset</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Germany"</span>, <span class="st">"United_Kingdom"</span>)</pre></body></html></div>
 <p>Similar to <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, we specify the following model.</p>
-<div class="sourceCode" id="cb27"><html><body><pre class="r"><span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
+<div class="sourceCode" id="cb27"><html><body><pre class="r"><span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu">epirt</span>(
   <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~ (<span class="fl">1</span> <span class="kw">|</span> <span class="no">country</span>) + <span class="no">schools_universities</span> + <span class="no">self_isolating_if_ill</span> + <span class="no">public_events</span> + <span class="no">lockdown</span> + <span class="no">social_distancing_encouraged</span>,
   <span class="kw">prior</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">scale</span> <span class="kw">=</span> <span class="fl">0.5</span>),
   <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>, <span class="kw">scale</span> <span class="kw">=</span> <span class="fl">0.5</span>)
@@ -487,16 +487,16 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <span class="no">args</span>$<span class="no">sampling_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">iter</span><span class="kw">=</span><span class="fl">500</span>)
 <span class="no">args</span>$<span class="no">prior_PD</span> <span class="kw">&lt;-</span> <span class="fl">TRUE</span>
 <span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">adjusted</span><span class="kw">=</span><span class="no">F</span>)</pre></body></html></div>
+<span class="fu">plot_rt</span>(<span class="no">fit</span>, <span class="kw">adjusted</span><span class="kw">=</span><span class="no">F</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/normalPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>And example of using a shifted gamma prior…</p>
-<div class="sourceCode" id="cb29"><html><body><pre class="r"><span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
+<div class="sourceCode" id="cb29"><html><body><pre class="r"><span class="no">args</span>$<span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu">epirt</span>(
   <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>,<span class="no">date</span>) ~ (<span class="fl">1</span> <span class="kw">|</span> <span class="no">country</span>) + <span class="no">schools_universities</span> + <span class="no">self_isolating_if_ill</span> + <span class="no">public_events</span> + <span class="no">lockdown</span> + <span class="no">social_distancing_encouraged</span>,
-  <span class="kw">prior</span> <span class="kw">=</span> <span class="fu"><a href="../reference/shifted_gamma.html">shifted_gamma</a></span>(<span class="kw">shape</span><span class="kw">=</span><span class="fl">1</span>/<span class="fl">6</span>, <span class="kw">scale</span><span class="kw">=</span><span class="fl">1</span>, <span class="kw">shift</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)/<span class="fl">6</span>),
+  <span class="kw">prior</span> <span class="kw">=</span> <span class="fu">shifted_gamma</span>(<span class="kw">shape</span><span class="kw">=</span><span class="fl">1</span>/<span class="fl">6</span>, <span class="kw">scale</span><span class="kw">=</span><span class="fl">1</span>, <span class="kw">shift</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)/<span class="fl">6</span>),
   <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">0</span>, <span class="kw">scale</span> <span class="kw">=</span> <span class="fl">0.5</span>)
 )
 <span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)
-<span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fit</span>, <span class="kw">adjusted</span><span class="kw">=</span><span class="no">F</span>)</pre></body></html></div>
+<span class="fu">plot_rt</span>(<span class="no">fit</span>, <span class="kw">adjusted</span><span class="kw">=</span><span class="no">F</span>)</pre></body></html></div>
 <p><img src="introduction_files/figure-html/gammaPrior-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>The above plots give a good indication of the implications of different prior families.</p>
 </div>
@@ -510,7 +510,7 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <p>Printing the object gives a brief summary of estimated coefficients and standard errors. This is very similar to the print method for <a href="http://mc-stan.org/rstanarm/reference/stanreg-objects.html"><code>stanreg</code></a> objects.</p>
 <div class="sourceCode" id="cb31"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">fit</span>, <span class="kw">digits</span> <span class="kw">=</span> <span class="fl">2</span>)</pre></body></html></div>
 <p>You can retrieve the prior distributions used easily with the following.</p>
-<div class="sourceCode" id="cb32"><html><body><pre class="r"><span class="fu"><a href="https://mc-stan.org/rstantools/reference/prior_summary.html">prior_summary</a></span>(<span class="no">fit</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb32"><html><body><pre class="r"><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/prior_summary.stanreg.html">prior_summary</a></span>(<span class="no">fit</span>)</pre></body></html></div>
 <pre><code>## Priors for model 'fit' 
 ## ----------
 ##  Regression for  R :
@@ -538,18 +538,18 @@ where <span class="math inline">\(\alpha\)</span> and <span class="math inline">
 <span class="no">draws</span>[<span class="fl">1</span>:<span class="fl">5</span>,<span class="fl">1</span>:<span class="fl">5</span>]</pre></body></html></div>
 <pre><code>##           parameters
 ## iterations R|(Intercept) R|schools_universities R|self_isolating_if_ill
-##       [1,]     0.6449549           -0.001450861           -0.0149474809
-##       [2,]     0.4775644            0.008131694            0.0057495470
-##       [3,]     0.7223587            0.008131694            0.0002947634
-##       [4,]     0.3569020            0.008131694            0.0045849389
-##       [5,]     0.5335970            0.008131694           -0.0014559287
+##       [1,]      1.163623            -0.05187751              -0.7799500
+##       [2,]      1.079339            -0.38279940              -0.2587764
+##       [3,]      1.073892            -0.10345410              -0.6801492
+##       [4,]      1.107030            -0.07204396              -0.7061908
+##       [5,]      1.093277            -0.23023524              -0.4474518
 ##           parameters
 ## iterations R|public_events R|social_distancing_encouraged
-##       [1,]       -2.734961                   -0.229920822
-##       [2,]       -2.773931                   -0.024414790
-##       [3,]       -2.859479                    0.007936648
-##       [4,]       -2.711006                   -0.234486967
-##       [5,]       -2.953832                    0.007371029</code></pre>
+##       [1,]       -2.490127                   -0.010511272
+##       [2,]       -2.487662                   -0.010512444
+##       [3,]       -2.428197                   -0.008749939
+##       [4,]       -2.412966                   -0.008162703
+##       [5,]       -2.626406                   -0.050732880</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
