@@ -154,18 +154,18 @@ epim <- function(rt,
     print(warnings())
 
     # function defining parameter initialisation
+    # function defining parameter initialisation
     initf <- function() {
-      i <- sample(1:50, 1)
       res <- lapply(
         rstan::extract(prefit),
         function(x) {
           if (length(dim(x)) == 1) {
-            as.array(x[i])
+            as.array(x[length(x)])
           }
           else if (length(dim(x)) == 2) {
-            x[i, ]
+            array(x[dim(x)[1],], dim = c(dim(x)[2]))
           } else {
-            x[i, , ]
+            array(x[dim(x)[1],,], dim = c(dim(x)[2], dim(x)[3]))
           }
         }
       )
@@ -177,7 +177,7 @@ epim <- function(rt,
       res$tau_raw <- c(res$tau_raw)
       res
     }
-  }
+    }
 
   sdat <- do.call(standata_all, sdat)
   sdat <- eval(sdat, parent.frame())
@@ -208,8 +208,8 @@ epim <- function(rt,
     )
   )
   
-  if (!isFALSE(init_run)) 
-    args$init <- initf 
+  if (!isFALSE(init_run))
+    args$init <- initf
 
   sampling <- algorithm == "sampling"
 
