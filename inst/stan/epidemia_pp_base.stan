@@ -21,6 +21,7 @@ parameters {
   vector<lower=0>[num_oaux+2] oaux;
   vector[N+2] eta;
   vector[N_obs+2] oeta;
+  matrix[N2, M] infection_noise;
 }
 
 generated quantities {

@@ -40,6 +40,7 @@ parameters {
   vector[num_ointercepts] ogamma;
   real gamma[has_intercept];
   vector<lower=0>[num_oaux] oaux_raw;
+  matrix[N2, M] infection_noise;
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
@@ -89,6 +90,10 @@ transformed parameters {
 model {
   target += exponential_lpdf(tau_raw | 1);
   target += exponential_lpdf(y_raw | 1);
+
+  for (m in 1:M) {
+    target += std_normal_lpdf(infection_noise[,m]);
+  }
 
 #include /model/priors_glm.stan
 #include /model/priors_ac.stan

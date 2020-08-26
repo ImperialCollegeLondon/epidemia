@@ -135,7 +135,7 @@ epim <- function(rt,
     sdat_init <- sdat
     sdat_init$obs <- cobs
     sdat_init <- do.call(standata_all, sdat_init)
-    
+
     if (is.list(init_run)) {
       args <- init_run
     } else if (isTRUE(init_run)) {
@@ -195,7 +195,8 @@ epim <- function(rt,
     "y",
     "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
-    if (sdat$num_oaux > 0) "oaux"
+    if (sdat$num_oaux > 0) "oaux",
+    "infection_noise"
   )
 
   args <- c(
@@ -267,9 +268,9 @@ epim <- function(rt,
     if (sdat$num_oaux > 0) {
       make_oaux_nms(obs)
     },
+    grep("infection_", fit@sim$fnames_oi, value=T),
     "log-posterior"
   )
-
 
   # replace names for the simulation
   orig_names <- fit@sim$fnames_oi
