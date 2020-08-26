@@ -73,18 +73,28 @@ epiobs <- function(formula,
       call. = FALSE
     )
   }
-  if (!(prior_intercept$dist %in% ok_dists)) {
-    stop("'prior_intercept' must be a call to rstanarm::normal",
-      call. = FALSE
-    )
+
+  if (attr(terms(formula), "intercept")) {
+    if (!(prior_intercept$dist %in% ok_dists)) {
+      stop("'prior_intercept' must be a call to rstanarm::normal",
+        call. = FALSE
+      )
+    }
+  } else {
+    prior_intercept <- NULL
   }
 
-  ok_aux_dists <- c("normal", "t", "cauchy", "exponential")
-  if (!(prior_aux$dist %in% ok_aux_dists)) {
-    stop("'prior_aux' must be one of ", paste(ok_aux_dists, collapse=", "),
-      call. = FALSE
-    )
+  if (family != "poisson") {
+    ok_aux_dists <- c("normal", "t", "cauchy", "exponential")
+    if (!(prior_aux$dist %in% ok_aux_dists)) {
+      stop("'prior_aux' must be one of ", paste(ok_aux_dists, collapse=", "),
+        call. = FALSE
+      )
+    }
+  } else {
+    prior_aux <- NULL
   }
+
 
   out <- loo::nlist(
     call,
@@ -93,11 +103,10 @@ epiobs <- function(formula,
     link,
     i2o,
     i2otype = "density",
-    link = "logit",
     center,
     prior,
     prior_intercept,
-    prior_aux = if (family == "poisson") NULL else prior_aux,
+    prior_aux,
     mfargs <- list(...)
   )
   class(out) <- "epiobs"

@@ -7,174 +7,99 @@
 # @return A named list giving data to pass to stan
 standata_reg <- function(object, ...) {
 
+  out <- list()
+  x_stuff <- process_x(just_fe(object$x), object$center)
+  xtemp <- x_stuff$xtemp
 
-  # local bindings to satisfy R CMD Check
-  formula <- x <- family <- link <- center <- prior <- prior_intercept <-
-  prior_covariance <- group <- has_intercept <- xtemp <- xbar <-
-  prior_shape <- prior_shift <- prior_df <- prior_df_for_intercept <-
-  prior_dist <- prior_dist_for_intercept <- prior_mean <-
-  prior_mean_for_intercept <- prior_scale <- prior_aux <- prior_scale_for_intercept <-
-  prior_autoscale <- prior_autoscale_for_intercept <- global_prior_scale <-
-  global_prior_df <- slab_df <- slab_scale <- prior_dist_for_oaux <-
-  prior_mean_for_oaux <- prior_scale_for_oaux <- prior_df_for_oaux <-
-  prior_autoscale_for_oaux <- NULL
+  p_ <- handle_glm_prior(
+    object$prior,
+    nvars = ncol(xtemp),
+    link = NULL,
+    default_scale = 0.25
+  )
 
-  # put used parts of object directly in the namespace
-  nms <- c("formula", "x", "family", "link", "center", "prior",
-  "prior_intercept", "prior_covariance", "prior_aux", "group")
+  p_int <- handle_glm_prior(
+    object$prior_intercept,
+    x_stuff$has_intercept,
+    link = NULL,
+    default_scale = 0.25,
+    ok_dists = loo::nlist("normal", student_t = "t", "cauchy")
+  )
 
-  for(nm in nms)
-    assign(nm, object[[nm]])
+  names(p_int) <- paste0(names(p_int), "_for_intercept")
+  out <- c(out, p_, p_int)
 
+  # automatic secaling of prior
+  if (out$prior_dist > 0L && out$prior_autoscale) {
+    min_prior_scale <- 1e-12
+    out$prior_scale <- pmax(min_prior_scale, out$prior_scale /
+                          apply(xtemp, 2L, FUN = function(x) {
+                            num.categories <- length(unique(x))
+                            x.scale <- 1
+                            if (num.categories == 2) {
+                              x.scale <- diff(range(x))
+                            } else if (num.categories > 2) {
+                              x.scale <- sd(x)
+                            }
+                            return(x.scale)
+                          }))
+  }
 
-  if (inherits(object, "epiobs_")) { # expect family and link
+  out$prior_scale <-
+    as.array(pmin(.Machine$double.xmax, out$prior_scale))
+  out$prior_scale_for_intercept <-
+    as.array(pmin(.Machine$double.xmax, out$prior_scale_for_intercept))
+
+  if (inherits(object, "epiobs_")) {
+    
+    # match family
     ok_families <- c("poisson", "neg_binom", "quasi_poisson")
-    fam <- which(pmatch(ok_families, family, nomatch=0L) == 1L)
-    if (!length(fam)) {
+    family <- which(pmatch(ok_families, object$family, nomatch=0L) == 1L)
+    if (!length(family)) {
       stop("'family' must be one of ", paste(ok_families, collapse=", "))
     }
-    family = fam
+    
+    # match link
     ok_links <- c("logit", "probit", "cauchit", "cloglog", "identity")
-    link <- which(ok_links == link)
+    link <- which(ok_links == object$link)
     if (!length(link)) 
       stop("'link' must be one of ", paste(ok_links, collapse = ", "))
+    
+    # process prior for auxiliary variable
+    p_aux <- handle_glm_prior(
+      object$prior_aux,
+      family > 1L,
+      link = NULL,
+      default_scale = 0.25,
+      ok_dists = loo::nlist("normal", student_t = "t", "cauchy", "exponential")
+    )
+    
+    names(p_aux) <- paste0(names(p_aux), "_for_oaux")
+    out <- c(out, p_aux)
+    out$family <- family
+    out$link <- link
   }
 
-  x <- just_fe(x)
-
-  autocor <- NULL
-  if (inherits(object, "epirt_")) {
-    autocor <- standata_autocor(object)
-  }
-
-  # formula with no response and no autocorrelation terms
-  formula <- rhs(formula)
-  formula <- norws(formula)
-  linkstr <- link # will need checking when generalised
-
-  if (is.null(prior)) {
-    prior <- list()
-  }
-  if (is.null(prior_intercept)) {
-    prior_intercept <- list()
-  }
-
-  x_stuff <- process_x(x, center)
-
-  for (i in names(x_stuff)) { # xtemp, xbar, has_intercept
-    assign(i, x_stuff[[i]])
-  }
-  nvars <- ncol(xtemp)
-
-  ok_dists <- loo::nlist("normal",
-    student_t = "t", "cauchy", "hs", "hs_plus",
-    "laplace", "lasso", "product_normal", "gamma"
-  )
-  ok_intercept_dists <- ok_dists[1:3]
-  # prior distributions
-  prior_stuff <- handle_glm_prior(
-    prior,
-    nvars,
-    link = NULL,
-    default_scale = 0.25,
-    ok_dists = ok_dists
-  )
-
-  # prior_{dist, mean, scale, df, dist_name, autoscale},
-  # global_prior_df, global_prior_scale, slab_df, slab_scale
-  for (i in names(prior_stuff)) {
-    assign(i, prior_stuff[[i]])
-  }
-
-  prior_intercept_stuff <- handle_glm_prior(
-    prior_intercept,
-    nvars = 1,
-    default_scale = 0.25,
-    link = NULL,
-    ok_dists = ok_intercept_dists
-  )
-  # prior_{dist, mean, scale, df, dist_name, autoscale}_for_intercept
-  names(prior_intercept_stuff) <- paste0(
-    names(prior_intercept_stuff), "_for_intercept"
-  )
-  for (i in names(prior_intercept_stuff)) {
-    assign(i, prior_intercept_stuff[[i]])
-  }
-
-  ok_aux_dists <- c(ok_dists[1:3], exponential = "exponential")
-  
-  has_aux <- !is.null(prior_aux) 
-  if (has_aux) {
-  prior_aux_stuff <- handle_glm_prior(
-    prior = prior_aux,
-    nvars = 1,
-    default_scale = 1,
-    link = NULL,
-    ok_dists = ok_aux_dists
-  )}
-  else {
-    prior_aux_stuff <- list(
-      prior_dist = NULL,
-      prior_mean = NULL,
-      prior_scale = NULL,
-      prior_df = NULL)
-  }
-  names(prior_aux_stuff) <- paste0(names(prior_aux_stuff), "_for_oaux")
-  for (i in names(prior_aux_stuff)) {
-    assign(i, prior_aux_stuff[[i]])
-  }
-
-  if (prior_dist > 0L && prior_autoscale) {
-    min_prior_scale <- 1e-12
-    prior_scale <- pmax(min_prior_scale, prior_scale /
-      apply(xtemp, 2L, FUN = function(x) {
-        num.categories <- length(unique(x))
-        x.scale <- 1
-        if (num.categories == 2) {
-          x.scale <- diff(range(x))
-        } else if (num.categories > 2) {
-          x.scale <- sd(x)
-        }
-        return(x.scale)
-      }))
-  }
-  prior_scale <-
-    as.array(pmin(.Machine$double.xmax, prior_scale))
-  prior_scale_for_intercept <-
-    min(.Machine$double.xmax, prior_scale_for_intercept)
-
-  out <- loo::nlist(
+  # additional data
+  out <- c(out, list(
     N = nrow(xtemp),
     K = ncol(xtemp),
-    xbar = as.array(xbar),
-    family,
-    link,
-    has_intercept,
-    prior_dist,
-    prior_mean,
-    prior_scale,
-    prior_shape,
-    prior_shift,
-    prior_df,
-    prior_dist_for_intercept,
-    prior_scale_for_intercept = c(prior_scale_for_intercept),
-    prior_mean_for_intercept = c(prior_mean_for_intercept),
-    prior_df_for_intercept = c(prior_df_for_intercept),
-    global_prior_df, global_prior_scale, slab_df, slab_scale, # for hs priors
-    prior_df_for_intercept = c(prior_df_for_intercept),
-    num_normals = if (prior_dist == 7) as.integer(prior_df) else integer(0),
-    prior_dist_for_oaux,
-    prior_mean_for_oaux,
-    prior_scale_for_oaux,
-    prior_df_for_oaux
+    X = xtemp,
+    xbar = as.array(x_stuff$xbar),
+    has_intercept = x_stuff$has_intercept,
+    num_normals = if (out$prior_dist == 7) as.integer(prior_df) else integer(0)
+    )
   )
 
-  out <- c(out, autocor) # add data for autocorrelation terms
+  if (inherits(object, "epirt_")) { # autocorrelation data
+    out <- c(out, standata_autocor(object))
+  }
+
 
   # make a copy of user specification before modifying 'group'
   # (used for keeping track of priors)
-  group <- group
-  prior_covariance <- prior_covariance
+  group <- object$group
+  prior_covariance <- object$prior_covariance
   user_covariance <- if (!length(group)) NULL else prior_covariance
 
   if (length(group) && length(group$flist)) {
@@ -236,21 +161,18 @@ standata_reg <- function(object, ...) {
     out$len_regularization <- 0L
   }
 
-  prior_info <- summarize_glm_prior(
-    user_prior = prior_stuff,
-    user_prior_intercept = prior_intercept_stuff,
-    user_prior_aux = prior_aux_stuff,
+  out$prior_info <- summarize_glm_prior(
+    user_prior = p_,
+    user_prior_intercept = p_int,
+    user_prior_aux = p_aux,
     user_prior_covariance = user_covariance,
-    has_intercept = has_intercept,
-    has_predictors = nvars > 0,
-    has_aux = has_aux,
-    adjusted_prior_scale = prior_scale,
-    adjusted_prior_intercept_scale = prior_scale_for_intercept,
-    adjusted_prior_oaux_scale = prior_scale_for_oaux
+    has_intercept = out$has_intercept,
+    has_predictors = out$K > 0,
+    has_aux = inherits(object, "epiobs_") && out$family > 1L,
+    adjusted_prior_scale = out$prior_scale,
+    adjusted_prior_intercept_scale = out$prior_scale_for_intercept,
+    adjusted_prior_oaux_scale = out$prior_scale_for_oaux
   )
-
-  out$prior_info <- prior_info
-  out$X <- xtemp
 
   return(out)
 }
@@ -371,12 +293,13 @@ summarize_glm_prior <-
       has_predictors &&
       !is.na(user_prior$prior_dist_name) &&
       !all(user_prior$prior_scale == adjusted_prior_scale)
-    rescaled_int <-
-      user_prior_intercept$prior_autoscale_for_intercept &&
-      has_intercept &&
-      !is.na(user_prior_intercept$prior_dist_name_for_intercept) &&
-      (user_prior_intercept$prior_scale_for_intercept != adjusted_prior_intercept_scale)
-
+    if (has_intercept) {
+      rescaled_int <-
+        user_prior_intercept$prior_autoscale_for_intercept &&
+        has_intercept &&
+        !is.na(user_prior_intercept$prior_dist_name_for_intercept) &&
+        (user_prior_intercept$prior_scale_for_intercept != adjusted_prior_intercept_scale)
+    }
     if (has_aux) {
     rescaled_aux <- user_prior_aux$prior_autoscale_for_oaux &&
       has_aux &&

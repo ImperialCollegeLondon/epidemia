@@ -34,6 +34,12 @@ standata_all <- function(rt,
     ),
     standata_rt(rt)
   )
+
+  # treat this differently
+  out$prior_dist <- as.numeric(out$prior_dist)
+  if (out$K == 0)
+    out$prior_dist <- 0L
+
   return(out)
 }
 
@@ -189,14 +195,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
       reg,
       function(x) x$prior_scale
     )))
-    prior_mean_for_ointercept <- array(sapply(
-      reg,
-      function(x) x$prior_mean_for_intercept
-    ))
-    prior_scale_for_ointercept <- array(sapply(
-      reg,
-      function(x) x$prior_scale_for_intercept
-    ))
 
     # auxiliary params
     ofamily <- array(sapply(reg, function(x) x$family))
@@ -205,13 +203,21 @@ standata_obs <- function(obs, groups, nsim, begin) {
     num_oaux <- sum(has_oaux)
     has_oaux <- array(has_oaux * cumsum(has_oaux))
 
-    nms_aux <- c(
-      "prior_dist_for_oaux",
-      "prior_mean_for_oaux",
-      "prior_scale_for_oaux",
-      "prior_df_for_oaux"
-    )
-    for (i in nms_aux){
+    # can only take normal for now
+    prior_mean_for_ointercept <- array(unlist(lapply(
+      reg, 
+      function(x) x$prior_mean_for_intercept
+    )))
+
+    prior_scale_for_ointercept <- array(unlist(lapply(
+      reg, 
+      function(x) x$prior_scale_for_intercept
+    )))
+
+    nms <- c("prior_dist", "prior_mean", 
+                "prior_scale","prior_df")
+
+    for (i in paste0(nms, "_for_oaux")){
       temp <- unlist(lapply(reg, function(x) x[[i]]))
       assign(i, array(as.numeric(temp) %ORifNULL% rep(0,0)))
     }
