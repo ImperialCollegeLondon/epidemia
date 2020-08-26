@@ -45,7 +45,7 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
                                               "cauchy", "hs", "hs_plus", 
                                               "laplace", "lasso", "product_normal")) {
 
-  if (!length(prior))
+  if (!length(prior) | nvars == 0)
     return(list(prior_dist = as.array(rep(0, nvars)), prior_mean = as.array(rep(0, nvars)),
                 prior_scale = as.array(rep(1, nvars)),
                 prior_shift = as.array(rep(0, nvars)),

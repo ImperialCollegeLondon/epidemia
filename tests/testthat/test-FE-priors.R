@@ -32,7 +32,7 @@ test_that("test manual prior specification works (for parameters and intercept)"
     prior_intercept = do.call("student_t", args = pargs)
   )
   sdat <- do.call("epim", args=args)
-  expect_equal(sdat$prior_dist_for_intercept, 2)
+  expect_equal(sdat$prior_dist_for_intercept, array(2))
   expect_equal(as.numeric(sdat$prior_mean_for_intercept), pargs$location)
   expect_equal(as.numeric(sdat$prior_scale_for_intercept), pargs$scale)
   expect_equal(as.numeric(sdat$prior_df_for_intercept), pargs$df)

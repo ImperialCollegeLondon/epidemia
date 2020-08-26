@@ -18,6 +18,13 @@ standata_reg <- function(object, ...) {
     default_scale = 0.25
   )
 
+  if (inherits(object, "epirt_")) { # prior_dist needs to be a constant for rt
+    prior_dist <- p_$prior_dist
+    if (length(prior_dist) == 0)
+      prior_dist <- 1L
+    p_$prior_dist <- as.numeric(prior_dist)
+  }
+
   p_int <- handle_glm_prior(
     object$prior_intercept,
     x_stuff$has_intercept,
@@ -86,13 +93,13 @@ standata_reg <- function(object, ...) {
     K = ncol(xtemp),
     X = xtemp,
     xbar = as.array(x_stuff$xbar),
-    has_intercept = x_stuff$has_intercept,
-    num_normals = if (out$prior_dist == 7) as.integer(prior_df) else integer(0)
+    has_intercept = x_stuff$has_intercept
     )
   )
 
   if (inherits(object, "epirt_")) { # autocorrelation data
     out <- c(out, standata_autocor(object))
+    out$num_normals = if (out$prior_dist == 7) as.integer(out$prior_df) else integer(0)
   }
 
 

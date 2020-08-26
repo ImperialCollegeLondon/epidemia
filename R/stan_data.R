@@ -35,11 +35,6 @@ standata_all <- function(rt,
     standata_rt(rt)
   )
 
-  # treat this differently
-  out$prior_dist <- as.numeric(out$prior_dist)
-  if (out$K == 0)
-    out$prior_dist <- 0L
-
   return(out)
 }
 
