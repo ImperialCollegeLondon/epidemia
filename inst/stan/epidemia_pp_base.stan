@@ -22,6 +22,7 @@ parameters {
   vector[N+2] eta;
   vector[N_obs+2] oeta;
   matrix[N2, M] infection_noise;
+  real<lower=0> aux_inf[2];
 }
 
 generated quantities {

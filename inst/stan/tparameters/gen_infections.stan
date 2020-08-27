@@ -21,7 +21,7 @@
             real convolution = dot_product(sub_col(infections, start, m, i - start), tail(si_rev, i - start));
 
             real rc = Rt_unadj[i,m] * convolution;
-            real sig = sqrt(log(1/rc + 1));
+            real sig = sqrt(log((1 + aux_inf[1])/rc + 1));
             infections[i,m] = rc * exp(- sig * sig / 2 + sig * infection_noise[i,m]);
             Rt[i,m] = Rt_unadj[i,m];
 

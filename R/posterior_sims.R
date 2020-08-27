@@ -244,12 +244,13 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   noeta <- length(grep("^oeta\\[", colnames(stanmat)))
 
   # need to pad out for rstan::gqs
-  mat <- matrix(0, nrow = nrow(stanmat), ncol = 8)
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 9)
   colnames(mat) <- c(
     paste0("y[", length(groups) + 1:2, "]"),
     paste0("oaux[", noaux + 1:2, "]"),
     paste0("eta[", neta + 1:2, "]"),
-    paste0("oeta[", noeta + 1:2, "]")
+    paste0("oeta[", noeta + 1:2, "]"),
+    "aux_inf[2]"
   )
   return(cbind(stanmat, mat))
 }

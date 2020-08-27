@@ -11,6 +11,8 @@ functions {
 }
 
 data {
+  real<lower=0> aux_inf_alpha;
+  real<lower=0> aux_inf_beta;
 #include /data/data_indices.stan
 #include /data/data_obs.stan
 int obs[N_obs]; // vector of observations
@@ -37,6 +39,7 @@ for(r in 1:R)
 }
 
 parameters {
+  real<lower=0> aux_inf[1];
   vector[num_ointercepts] ogamma;
   real gamma[has_intercept];
   vector<lower=0>[num_oaux] oaux_raw;
@@ -90,6 +93,8 @@ transformed parameters {
 model {
   target += exponential_lpdf(tau_raw | 1);
   target += exponential_lpdf(y_raw | 1);
+
+  target += gamma_lpdf(aux_inf[1] | aux_inf_alpha, aux_inf_beta);
 
   for (m in 1:M) {
     target += std_normal_lpdf(infection_noise[,m]);

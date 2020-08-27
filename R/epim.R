@@ -87,6 +87,8 @@ epim <- function(rt,
                  sampling_args = list(),
                  init_run = FALSE,
                  pop_adjust = TRUE,
+                 alpha = 1,
+                 beta = 1,
                  ...) {
 
   call    <- match.call(expand.dots = TRUE)
@@ -113,7 +115,7 @@ epim <- function(rt,
   fml <- formals()
   dft <- fml[setdiff(names(fml), names(sdat))]
   sdat[names(dft)] <- dft
-  rm <- c("algorithm", "sampling_args", "init_run", "pop_adjust", "...")
+  rm <- c("algorithm", "sampling_args", "init_run", "pop_adjust", "alpha", "beta", "...")
   sdat[rm] <- NULL
   checked <- loo::nlist(rt, data, obs, pops, si)
   sdat[names(checked)] <- checked
@@ -135,6 +137,9 @@ epim <- function(rt,
     sdat_init <- sdat
     sdat_init$obs <- cobs
     sdat_init <- do.call(standata_all, sdat_init)
+
+    sdat_init$aux_inf_alpha <- alpha
+    sdat_init$aux_inf_beta <- beta
 
     if (is.list(init_run)) {
       args <- init_run
@@ -182,6 +187,8 @@ epim <- function(rt,
   sdat <- do.call(standata_all, sdat)
   sdat <- eval(sdat, parent.frame())
   sdat$pop_adjust <- pop_adjust
+  sdat$aux_inf_alpha <- alpha
+  sdat$aux_inf_beta <- beta
 
     # parameters to keep track of
   pars <- c(
@@ -196,7 +203,8 @@ epim <- function(rt,
     "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
     if (sdat$num_oaux > 0) "oaux",
-    "infection_noise"
+    "infection_noise",
+    "aux_inf"
   )
 
   args <- c(
@@ -269,6 +277,7 @@ epim <- function(rt,
       make_oaux_nms(obs)
     },
     make_inf_nms(sdat$begin, sdat$N2, sdat$groups),
+    "aux_inf",
     "log-posterior"
   )
 
