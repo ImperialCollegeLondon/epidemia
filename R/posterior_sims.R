@@ -63,12 +63,25 @@ posterior_sims <- function(object,
     stanmat <- cbind(stanmat, as.matrix(oeta))
   }
 
+  # add new noise terms
+
+  #return(list(standata=standata, stanmat=stanmat))
+
+  stanmat <- new_inf_stanmat(
+    stanmat, 
+    standata$begin, 
+    standata$N2, 
+    standata$groups
+  )
+
   # stanmatrix may require relabeling
   stanmat <- pp_stanmat(
     stanmat = stanmat,
     orig_nms = object$orig_names,
     groups = levels(data$group)
   )
+
+  #return(list(standata=standata, stanmat=stanmat))
 
   sims <- rstan::gqs(stanmodels$epidemia_pp_base,
     data = standata,
@@ -217,6 +230,10 @@ pp_standata <- function(object, rt, obs, data) {
 # @param orig_nms The original names for stan parameters
 # @param groups Sorted character vector of groups to simulate for
 pp_stanmat <- function(stanmat, orig_nms, groups) {
+
+  # hack for dealing with infection noise
+  orig_nms <- grep("infection_", orig_nms, value=T, invert=T)
+
   nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
   nms[m] <- paste0("y[", seq_along(groups), "]")
@@ -235,4 +252,27 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
     paste0("oeta[", noeta + 1:2, "]")
   )
   return(cbind(stanmat, mat))
+}
+
+
+# create new stanmat with new infection noises
+new_inf_stanmat <- function(stanmat, begin, nsim, groups) {
+  newnms <- make_inf_nms(begin, nsim, groups)
+  
+  nr <- nrow(stanmat)
+  nc <- length(newnms)
+  mat <- matrix(rnorm(nr * nc), nrow=nr, ncol=nc)
+  colnames(mat) <- newnms
+  
+  
+  locs <- match(newnms, colnames(stanmat))
+  # impute sampled effects
+  mat[,!is.na(locs)] <- stanmat[,na.omit(locs), drop=FALSE]
+  temp <- expand.grid(seq_len(nsim), seq_along(groups))
+  colnames(mat) <- paste0("infection_noise[", temp[,1], ",", temp[,2], "]")
+  
+  w <- grep("infection_", colnames(stanmat), invert=T)
+  stanmat <- cbind(stanmat[,w], mat)
+  
+  return(as.matrix(stanmat))
 }
