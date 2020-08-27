@@ -268,7 +268,7 @@ epim <- function(rt,
     if (sdat$num_oaux > 0) {
       make_oaux_nms(obs)
     },
-    grep("infection_", fit@sim$fnames_oi, value=T),
+    make_inf_nms(sdat$begin, sdat$N2, sdat$groups),
     "log-posterior"
   )
 
@@ -407,4 +407,13 @@ make_obeta_nms <- function(obs, sdat) {
     value = T
   )
   return(paste0(repnms, "|", obs_beta_nms))
+}
+
+# @param begin First simulation date
+# @param N2 Total simulation periods
+# @param groups Character vector giving all simulated groups
+make_inf_nms <- function(begin, N2, groups) {
+  temp <- expand.grid(begin + seq_len(N2) - 1, groups)
+  nms <- paste0("infection_noise(", temp[,1], ", ", temp[,2],")")
+  return(nms)
 }
