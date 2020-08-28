@@ -436,6 +436,127 @@ plot_infections.epimodel <-
     return(p)
   }
 
+#' Plotting the infection noise over time
+#'
+#' Plots credible intervals for the underlying number of infections.
+#' The user can control the levels of the intervals and the plotted group(s).
+#' This is a generic function.
+#' 
+#' @inherit plot_obs params return
+#' @param ... Additional arguments for \code{\link[epidemia]{posterior_infections}}. Examples include \code{newdata}, which allows 
+#'  predictions or counterfactuals.
+#' @examples
+#' \dontrun{
+#' ## load required data
+#' library(epidemia)
+#' data("EuropeCovid")
+#' ## setup sampling
+#' args <- EuropeCovid
+#' args$algorithm <- "sampling"
+#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
+#' args$group_subset <- c("Italy")
+#' args$formula <- R(country,date) ~  1 + lockdown
+#' args$prior <- rstanarm::normal(location=0,scale=.5)
+#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+#' 
+#' ## run sampling
+#' fit <- do.call("epim", args)
+#' 
+#' ## make plots
+#' plot_infections(fit) # default, plots all groups and dates
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' plot_infections(fit, 
+#'                 dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20"), 
+#'                 date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
+#' plot_infections(fit, 
+#'                 dates=c("2020-03-20", "2020-04-20"),
+#'                 date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
+#' plot_infections(fit, 
+#'                 dates=c("2020-20-03", "2020-20-04"), 
+#'                 date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
+#' }
+#' @export
+plot_inf_noise <- function(object, ...) UseMethod("plot_inf_noise", object)
+
+#' @rdname plot_infections
+#' @export
+plot_inf_noise.epimodel <- 
+  function(object, 
+  groups = NULL,
+  dates=NULL, 
+  date_breaks="2 weeks", 
+  date_format="%Y-%m-%d",
+  levels = c(20, 50, 95), 
+  plotly = FALSE, 
+  ...) {
+    levels <- check_levels(levels)
+
+    inf <- posterior_infections(
+      object = object,
+      ...
+    )
+
+    inf$draws <- as.matrix(object, regex_pars = "infection_noise")
+
+    # transform data
+    inf <- gr_subset(inf, groups)
+
+    pops <- object$pops
+
+    qtl <- get_quantiles(
+      inf,
+      levels,
+      dates,
+      date_format
+    )
+
+    p <- ggplot2::ggplot(qtl) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes_string(
+        x = "date",
+        ymin = "lower",
+        ymax = "upper",
+        group = "tag",
+        fill = "tag"
+    )) +
+    ggplot2::xlab("") +
+    ggplot2::scale_x_date(
+      date_breaks = date_breaks,
+      labels = scales::date_format("%e %b")
+    )  +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(
+        angle = 45,
+        hjust = 1
+      ),
+      axis.text = ggplot2::element_text(size = 12),
+      axis.title = ggplot2::element_text(size = 12)
+    ) +
+    ggplot2::theme(legend.position = "right") 
+
+    p <- p + ggplot2::facet_wrap(~group, scale = "free_y")
+ 
+    nme <- "Infection Noise"
+
+    p <- p + ggplot2::scale_fill_manual(
+      name = nme,
+      values = ggplot2::alpha("deepskyblue4", levels/100)
+    )
+
+    p <- p + ggplot2::ylab("Infection Noise")
+
+    if (plotly) {
+      p <- plotly::ggplotly(p)
+    }
+    return(p)
+  }  
+
 
   #' Plotting the underlying total infectiousness over time
 #'
