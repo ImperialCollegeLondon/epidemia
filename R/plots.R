@@ -306,7 +306,7 @@ plot_obs.epimodel <-
     cols <- c(
       ggplot2::alpha("deepskyblue4", rev(levels) / 100),
       "coral4",
-      "darkslategray4"
+      "#0f1010"
     )
 
     if (all_in_sample) {
