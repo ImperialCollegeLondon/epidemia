@@ -132,14 +132,15 @@ epim <- function(rt,
 
   if (!isFALSE(init_run)) {
     print("Prefit to obtain reasonable starting values")
-    cobs <- lapply(obs, function(x) cumulate(x))
+    
     # replace obs with cobs for initial fit
     sdat_init <- sdat
-    sdat_init$obs <- cobs
+    sdat_init$obs <- obs
     sdat_init <- do.call(standata_all, sdat_init)
 
     sdat_init$aux_inf_alpha <- alpha
     sdat_init$aux_inf_beta <- beta
+    sdat_init$pop_adjust <- FALSE
 
     if (is.list(init_run)) {
       args <- init_run
