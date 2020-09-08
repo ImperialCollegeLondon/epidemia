@@ -67,6 +67,8 @@ The best way to get started is to read the
     walk.
   - [Resolving Problems](articles/ResolvingProblems.html) will
     demonstrate how to resolve common computational problems when using the package.
+  - [Forecasting](articles/forecasting.html) demonstrates how to evaluate the 
+    forecasts of a fitted model.
 
 ## Usage
 
