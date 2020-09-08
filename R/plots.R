@@ -552,7 +552,7 @@ get_quantiles <- function(object, levels, dates=NULL, date_format=NULL) {
   }
   out <- lapply(levels, f)
   out <- do.call(rbind, out)
-  out$tag <- factor(out$tag, ordered = T, levels = rev(levels(out$tag)))
+  out$tag <- factor(out$tag, ordered = T, levels = rev(levels(factor(out$tag))))
   if (!is.null(dates)){
     out <- subset_for_dates(
       out,
