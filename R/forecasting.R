@@ -138,7 +138,7 @@ plot_coverage <-
            by_group = FALSE,
            by_unseen = FALSE,
            plotly = FALSE) {
-
+    
     groups <- groups %ORifNULL% object$groups
     cov <- posterior_coverage(
       object = object,
@@ -147,37 +147,37 @@ plot_coverage <-
       newdata = newdata,
       levels = levels
     )
-
+    
     if (!is.null(period)) {
       cov$period <- cut(cov$date, period)
     }
-
+    
     cols <- c(
       "tag",
       if (!is.null(period)) "period",
       if (by_group) "group",
       if (by_unseen) "unseen"
     )
-
+    
     if (by_unseen) { # need to check which observations are new
       data <- object$data
       data <- data[data$group %in% groups, c("group", "date", type)]
       data <- data %>% dplyr::rename("DUMMY" = type)
       cov <- dplyr::left_join(cov, data, by = c("group", "date"))
-      cov <- cov %>% dplyr::rename("unseen" = ~DUMMY)
+      cov <- cov %>% dplyr::rename("unseen" = DUMMY)
       w <- is.na(cov$unseen)
       cov$unseen[w] <- "Unseen"
       cov$unseen[!w] <- "Seen"
     }
-
+    
     df <- cov %>%
       dplyr::group_by_at(cols) %>%
-      dplyr::summarise(value = mean(~in_ci))
-
+      dplyr::summarise(value = mean(in_ci))
+    
     if (is.null(period)) {
       p <- ggplot2::ggplot(
         df,
-        ggplot2::aes(x = ~tag, y = ~value, fill = ~tag)
+        ggplot2::aes(x = tag, y = value, fill = tag)
       ) +
         ggplot2::labs(
           y = "Mean Coverage",
@@ -186,14 +186,14 @@ plot_coverage <-
     } else {
       p <- ggplot2::ggplot(
         df,
-        ggplot2::aes(x = ~period, y = ~value, fill = ~tag)
+        ggplot2::aes(x = period, y = value, fill = tag)
       ) +
         ggplot2::labs(
           y = "Mean Coverage",
           x = "period"
         )
     }
-
+    
     # general formatting
     p <- p + ggplot2::geom_bar(
       stat = "identity",
@@ -208,15 +208,15 @@ plot_coverage <-
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(angle = 50, vjust = 0.5)
       )
-
+    
     if ("group" %in% cols && "unseen" %in% cols) {
-      p <- p + ggplot2::facet_grid(ggplot2::vars(~group), ggplot2::vars(~unseen))
+      p <- p + ggplot2::facet_grid(ggplot2::vars(group), ggplot2::vars(unseen))
     } else if ("group" %in% cols) {
       p <- p + ggplot2::facet_wrap(~group)
     } else if ("unseen" %in% cols) {
       p <- p + ggplot2::facet_wrap(~unseen)
     }
-
+    
     p <- p +
       ggplot2::scale_fill_manual(
         name = "Fill",
@@ -225,7 +225,7 @@ plot_coverage <-
           rev(levels) / 100
         )
       )
-
+    
     if (plotly) {
       p <- plotly::ggplotly(p)
     }
@@ -248,6 +248,7 @@ plot_metrics <-
            newdata = NULL,
            plotly = FALSE) {
     groups <- groups %ORifNULL% object$groups
+    
     df <- posterior_metrics(
       object = object,
       type = type,
@@ -255,30 +256,31 @@ plot_metrics <-
       newdata = newdata,
       metrics = metrics
     )
-
+    metrics <- colnames(df)[colnames(df) %in% c("crps", "mean_abs_error", "median_abs_error")]
+    
     df <- df %>%
       tidyr::pivot_longer(
-        c(~crps, ~mean_abs_error, ~median_abs_error),
+        c(tidyselect::all_of(metrics)),
         names_to = "metric",
         values_to = "value"
       )
-
+    
     data <- object$data
     data <- data[data$group %in% groups, c("group", "date", type)]
     data <- data %>% dplyr::rename("DUMMY" = type)
     df <- dplyr::left_join(df, data, by = c("group", "date"))
-    df <- df %>% dplyr::rename("unseen" = ~DUMMY)
+    df <- df %>% dplyr::rename("unseen" = DUMMY)
     w <- is.na(df$unseen)
     df$unseen[w] <- "Unseen"
     df$unseen[!w] <- "Seen"
-
+    
     p <- ggplot2::ggplot(
       df,
       ggplot2::aes(
-        x = ~date,
-        y = ~value,
-        linetype = ~metric,
-        color = ~unseen
+        x = date,
+        y = value,
+        linetype = metric,
+        color = unseen
       )
     ) +
       ggplot2::geom_line(alpha = 0.7, size = 0.8) +
@@ -293,19 +295,17 @@ plot_metrics <-
       ) +
       ggplot2::theme_bw() +
       ggplot2::theme(legend.position = "right")
-
+    
     p <- p + ggplot2::scale_color_manual(
       values = c("coral4", "darkslategray4")
     )
-
+    
     if (plotly) {
       p <- plotly::ggplotly(p)
     }
-
+    
     return(p)
   }
-
-
 
 daily_error <- function(obs, metrics, y) {
   draws <- obs$draws
