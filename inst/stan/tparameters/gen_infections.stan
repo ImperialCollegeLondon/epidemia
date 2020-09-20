@@ -9,7 +9,7 @@ for (m in 1:M){
     int len;
 
     // impute unadjusted Rt from the linear predictor
-    Rt_unadj[n0:n2,m] = r0 * exp(eta[idx:(idx+NC[m]-1)]);
+    Rt_unadj[n0:n2,m] = exp(eta[idx:(idx+NC[m]-1)]);
     Rt[n0:n1,m] = Rt_unadj[n0:n1,m]; 
     idx += NC[m];
 
