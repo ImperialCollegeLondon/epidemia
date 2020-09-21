@@ -16,6 +16,7 @@ data {
 #include /data/data_indices.stan
 #include /data/data_obs.stan
 int obs[N_obs]; // vector of observations
+real obs_real[N_obs]; // vector of observations
 #include /data/data_obs_mm.stan
 #include /data/data_model.stan
 #include /data/NKX.stan
@@ -117,9 +118,14 @@ model {
       else if (ofamily[r] == 2) { // neg binom
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
         segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
-      } else { // quasi-poisson
+      } 
+      else if (ofamily[r] == 3) { // quasi-poisson
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
         segment(E_obs, i, oN[r]) + 1e-15, (segment(E_obs, i, oN[r]) + 1e-15) / oaux[has_oaux[r]]);
+      } 
+      else { // normal
+        target += normal_lpdf(segment(obs_real, i, oN[r]) |
+        segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
       }
       i += oN[r];
     }
