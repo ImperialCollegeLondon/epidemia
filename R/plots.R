@@ -76,7 +76,7 @@ plot_rt.epimodel <-
            dates = NULL,
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
-           levels = c(20, 50, 95),
+           levels = c(30, 60, 90),
            log = FALSE,
            smooth = 1,
            plotly = FALSE,
@@ -100,9 +100,21 @@ plot_rt.epimodel <-
     )
     p <- base_plot(qtl, log, date_breaks, TRUE)
 
+    df <- data.frame(
+      date = rt$time, 
+      median = apply(rt$draws, 2, function(x) quantile(x, 0.5)),
+      group = rt$group
+    )
+
+    p <- p + ggplot2::geom_line(
+      mapping = ggplot2::aes(x = date, y = median), 
+      data = df, 
+      color = "seagreen"
+    )
+
     p <- p + ggplot2::scale_fill_manual(
       name = "R_t", 
-      values = ggplot2::alpha("seagreen", levels/100)
+      values = ggplot2::alpha("seagreen", levels * 0.7/100)
     )
 
     p <- p + ggplot2::geom_hline(
@@ -201,7 +213,7 @@ plot_obs.epimodel <-
            date_format = "%Y-%m-%d",
            cumulative = FALSE,
            by_100k = FALSE,
-           levels = c(20, 50, 95),
+           levels = c(30, 60, 90),
            log = FALSE,
            plotly = FALSE,
            ...) {
@@ -303,16 +315,29 @@ plot_obs.epimodel <-
       alpha = 0.7
     )
 
+    df1 <- data.frame(
+      date = obs$time, 
+      median = apply(obs$draws, 2, function(x) quantile(x, 0.5)),
+      group = obs$group
+    )
+
+    p <- p + ggplot2::geom_line(
+      mapping = ggplot2::aes(x = date, y = median), 
+      data = df1, 
+      color = "deepskyblue4"
+    )
+
     cols <- c(
-      ggplot2::alpha("deepskyblue4", rev(levels) / 100),
+      "deepskyblue4",
+      ggplot2::alpha("deepskyblue4", rev(levels) * 0.7 / 100),
       "coral4",
-      "darkslategray4"
+      "darkslategray3"
     )
 
     if (all_in_sample) {
-      names(cols) <- c(paste0(levels, "% CI"), "Observed", "dummy")
+      names(cols) <- c("median", paste0(levels, "% CI"), "Observed", "dummy")
     } else {
-      names(cols) <- c(paste0(levels, "% CI"), "In-sample", "Out-of-sample")
+      names(cols) <- c("median", paste0(levels, "% CI"), "In-sample", "Out-of-sample")
     }
 
     nme <- type
