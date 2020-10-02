@@ -64,14 +64,14 @@ parse_term <- function(trm, data) {
   group <- get_autocor_gr(trm, data)
   
   fbygr <- split(time, group)
-  ntime <- sapply(fbygr, function(x) length(unique(x)))
+  ntime <- sapply(fbygr, function(x) length(unique(x[!is.na(x)])))
   nproc <- length(ntime)
   prior_scale <- rep(as.numeric(trm$prior_scale), nproc)
   
   f <- paste0(time,",", group)
   f <- ordered(f, levels=unique(f))
   Z <- Matrix::t(as(f, Class="sparseMatrix"))
-  
+
   return(loo::nlist(nproc, ntime, Z, prior_scale))
 }
 
@@ -94,14 +94,14 @@ get_autocor_gr <- function(trm, data) {
 get_autocor_time <- function(trm, data) {
   time <- if(trm$time=="NA") data$date else data[[trm$time]]
 
-  check_integer(time)
+  check_integer(time, allow_na = TRUE)
   df <- data.frame(group = data$group,
                    time =as.integer(time))
   dfs <- split(df$time, df$group)
   time_diff <- as.numeric(do.call(c,Map(diff, dfs)))
-  if(any(!(time_diff %in% c(0,1))))
+  if(any(!(time_diff %in% c(NA, 0,1))))
     stop(paste0("column ", trm$time, " in 'data' is not compatible 
-    with dates implied by 'formula'. Ths vector must be 
+    with dates implied by 'formula'. This vector must be 
     a) non-decreasing and 
     b) increment by at most one 
     for each modeled group."))
@@ -127,6 +127,10 @@ parse_all_terms <- function(trms, data) {
   nproc <- do.call(c, args=lapply(out, function(x) x$nproc))
   ntime <- do.call(c, args=lapply(out, function(x) x$ntime))
   Z <- do.call(cbind, args=lapply(out, function(x) x$Z))
+
+  # move all NA terms to far end of Z
+  new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
+  Z <- Z[, new_idx]
   prior_scale <- do.call(c, args=lapply(out, function(x) x$prior_scale))
   return(loo::nlist(nproc, ntime, Z, prior_scale))
 }

@@ -70,7 +70,11 @@ pp_eta_ac <- function(object, stanmat) {
   stanmat_orig <- stanmat
   #return(list(stanmat_orig=stanmat_orig,stanmat=stanmat, z=z, object=object))
   stanmat <- new_rw_stanmat(object, stanmat)
-  return(linear_predictor(stanmat, z))
+
+  return(linear_predictor(
+    stanmat, 
+    z[,grep("NA", colnames(z), invert=TRUE)] # remove NA part of this
+  ))
 } 
 
 # Creates a new stanmatrix for random walks
@@ -88,6 +92,7 @@ new_rw_stanmat <- function(object, stanmat) {
   # )
 
   newnms <-  paste0(nme, "|", colnames(object$autocor$Z))
+  newnms <- grep("NA", newnms, invert=TRUE, value=TRUE)
 
   df <- parse_rw_labels(newnms)
   df$name <- newnms

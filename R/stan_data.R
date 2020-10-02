@@ -62,6 +62,9 @@ standata_autocor <- function(object) {
     # add sparse matrix representation
     parts <- rstan::extract_sparse_parts(autocor$Z)
     out$ac_v <- parts$v - 1L
+    
+    # NA terms put to index negative 1
+    out$ac_v[out$ac_v >= out$ac_q] <- -1L
     out$ac_nnz <- length(out$ac_v)
   } else {
     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0

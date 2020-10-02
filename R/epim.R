@@ -242,13 +242,13 @@ epim <- function(rt,
       "R|(Intercept)"
     },
     if (sdat$K > 0) {
-      paste0("R|",colnames(sdat$X))
+      paste0("R|", colnames(sdat$X))
     },
     if (length(rt$group) && length(rt$group$flist)) {
       c(paste0("R|", colnames(rt$group$Z)))
     },
     if (sdat$ac_nterms > 0) {
-      paste0("R|", colnames(rt$autocor$Z))
+      paste0("R|",  grep("NA", colnames(rt$autocor$Z), invert=TRUE, value=TRUE))
     },
     if (sdat$num_ointercepts > 0) {
       make_ointercept_nms(obs, sdat)
@@ -338,7 +338,11 @@ make_rw_nms <- function(formula, data) {
     f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
     nms <- c(nms, f)
   }
-  return(nms)
+
+  return(c(
+    grep("NA", nms, invert=TRUE, value=TRUE),
+    grep("NA", nms, value=TRUE) # NA values go to the end
+  ))
 }
 
 make_rw_sigma_nms <- function(formula, data) {
