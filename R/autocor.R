@@ -99,7 +99,7 @@ get_autocor_time <- function(trm, data) {
                    time =as.integer(time))
   dfs <- split(df$time, df$group)
   time_diff <- as.numeric(do.call(c,Map(diff, dfs)))
-  if(any(!(time_diff %in% c(0,1))))
+  if(any(!(time_diff %in% c(NA, 0,1))))
     stop(paste0("column ", trm$time, " in 'data' is not compatible 
     with dates implied by 'formula'. This vector must be 
     a) non-decreasing and 

@@ -6,7 +6,7 @@ check_integer <- function(x, tol = .Machine$double.eps, allow_na = FALSE) {
   if ((!allow_na) && (anyNA(x))) {
     stop(paste0(s, " should be coercible to numeric."))
   }
-  if (any(abs(x - round(x)) > tol, na.rm == TRUE)) {
+  if (any(abs(x - round(x)) > tol, na.rm = TRUE)) {
     stop(paste0(s, " is not an integer vector."))
   }
 }
