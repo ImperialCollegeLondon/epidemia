@@ -242,13 +242,13 @@ epim <- function(rt,
       "R|(Intercept)"
     },
     if (sdat$K > 0) {
-      paste0("R|", grep("NA", colnames(sdat$X), invert=TRUE, value=TRUE))
+      paste0("R|", colnames(sdat$X))
     },
     if (length(rt$group) && length(rt$group$flist)) {
       c(paste0("R|", colnames(rt$group$Z)))
     },
     if (sdat$ac_nterms > 0) {
-      paste0("R|", colnames(rt$autocor$Z))
+      paste0("R|",  grep("NA", colnames(rt$autocor$Z), invert=TRUE, value=TRUE))
     },
     if (sdat$num_ointercepts > 0) {
       make_ointercept_nms(obs, sdat)
