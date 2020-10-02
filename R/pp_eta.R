@@ -71,8 +71,8 @@ pp_eta_ac <- function(object, stanmat) {
   #return(list(stanmat_orig=stanmat_orig,stanmat=stanmat, z=z, object=object))
   stanmat <- new_rw_stanmat(object, stanmat)
 
-  print(paste0("stanmat: ", dim(stanmat))
-  print(paste0("stanmat: ", colnames(stanmat))
+  print(paste0("stanmat: ", dim(stanmat)))
+  print(paste0("stanmat: ", colnames(stanmat)))
   print(paste0("z: ", dim(z)))
   print(paste0("z: ", colnames(z)))
   return(linear_predictor(stanmat, z))
