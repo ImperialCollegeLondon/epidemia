@@ -94,14 +94,14 @@ get_autocor_gr <- function(trm, data) {
 get_autocor_time <- function(trm, data) {
   time <- if(trm$time=="NA") data$date else data[[trm$time]]
 
-  check_integer(time)
+  check_integer(time, allow_na = TRUE)
   df <- data.frame(group = data$group,
                    time =as.integer(time))
   dfs <- split(df$time, df$group)
   time_diff <- as.numeric(do.call(c,Map(diff, dfs)))
   if(any(!(time_diff %in% c(0,1))))
     stop(paste0("column ", trm$time, " in 'data' is not compatible 
-    with dates implied by 'formula'. Ths vector must be 
+    with dates implied by 'formula'. This vector must be 
     a) non-decreasing and 
     b) increment by at most one 
     for each modeled group."))
