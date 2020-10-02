@@ -336,7 +336,7 @@ make_rw_nms <- function(formula, data) {
     time <- if (trm$time == "NA") data$date else data[[trm$time]]
     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
     f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
-    nms <- c(nms, grep("NA", f, invert=T, value=T))
+    nms <- c(nms, grep("NA", f, invert=TRUE, value=TRUE))
   }
   return(nms)
 }
