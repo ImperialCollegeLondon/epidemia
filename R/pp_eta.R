@@ -75,7 +75,10 @@ pp_eta_ac <- function(object, stanmat) {
   print(paste0("stanmat: ", colnames(stanmat)))
   print(paste0("z: ", dim(z)))
   print(paste0("z: ", colnames(z)))
-  return(linear_predictor(stanmat, z))
+  return(linear_predictor(
+    stanmat, 
+    z[,grep("NA", colnames(z), invert=TRUE)] # remove NA part of this
+  ))
 } 
 
 # Creates a new stanmatrix for random walks

@@ -338,7 +338,11 @@ make_rw_nms <- function(formula, data) {
     f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
     nms <- c(nms, f)
   }
-  return(nms)
+
+  return(c(
+    grep("NA", nms, invert=TRUE, value=TRUE),
+    grep("NA", nms, value=TRUE) # NA values go to the end
+  ))
 }
 
 make_rw_sigma_nms <- function(formula, data) {
