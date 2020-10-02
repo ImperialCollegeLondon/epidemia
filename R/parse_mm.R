@@ -75,8 +75,7 @@ parse_mm <- function(formula, data, ...) {
   }
   
   if (length(autocor$Z)) {
-    nms <- make_rw_nms(formula, data)
-    colnames(autocor$Z)[1:length(nms)] <- nms
+    colnames(autocor$Z) <- make_rw_nms(formula, data)
   }
   
   # overall model matrix includes FE, RE and autocor

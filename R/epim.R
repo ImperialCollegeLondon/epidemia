@@ -242,7 +242,7 @@ epim <- function(rt,
       "R|(Intercept)"
     },
     if (sdat$K > 0) {
-      paste0("R|",colnames(sdat$X))
+      paste0("R|", grep("NA", colnames(sdat$X), invert=TRUE, value=TRUE))
     },
     if (length(rt$group) && length(rt$group$flist)) {
       c(paste0("R|", colnames(rt$group$Z)))
@@ -336,7 +336,7 @@ make_rw_nms <- function(formula, data) {
     time <- if (trm$time == "NA") data$date else data[[trm$time]]
     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
     f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
-    nms <- c(nms, grep("NA", f, invert=TRUE, value=TRUE))
+    nms <- c(nms, f)
   }
   return(nms)
 }
