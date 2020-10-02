@@ -27,7 +27,7 @@ int obs[N_obs]; // vector of observations
 transformed data {
   real aux = not_a_number();
   int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
-  int<lower=1> ac_V[ac_nterms, N] = make_V(N, ac_nterms, ac_v);
+  int<lower=0> ac_V[ac_nterms, N] = make_V(N, ac_nterms, ac_v);
 #include /tdata/tdata_reverse.stan
 #include /tdata/tdata_glm.stan
 

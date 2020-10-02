@@ -131,7 +131,6 @@ parse_all_terms <- function(trms, data) {
   # move all NA terms to far end of Z
   new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
   Z <- Z[, new_idx]
-  print(colnames(Z))
   prior_scale <- do.call(c, args=lapply(out, function(x) x$prior_scale))
   return(loo::nlist(nproc, ntime, Z, prior_scale))
 }
