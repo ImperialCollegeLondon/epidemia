@@ -64,14 +64,14 @@ parse_term <- function(trm, data) {
   group <- get_autocor_gr(trm, data)
   
   fbygr <- split(time, group)
-  ntime <- sapply(fbygr, function(x) length(unique(x)))
+  ntime <- sapply(fbygr, function(x) length(unique(x[!is.na(x)])))
   nproc <- length(ntime)
   prior_scale <- rep(as.numeric(trm$prior_scale), nproc)
   
   f <- paste0(time,",", group)
   f <- ordered(f, levels=unique(f))
   Z <- Matrix::t(as(f, Class="sparseMatrix"))
-  
+
   return(loo::nlist(nproc, ntime, Z, prior_scale))
 }
 
@@ -127,6 +127,11 @@ parse_all_terms <- function(trms, data) {
   nproc <- do.call(c, args=lapply(out, function(x) x$nproc))
   ntime <- do.call(c, args=lapply(out, function(x) x$ntime))
   Z <- do.call(cbind, args=lapply(out, function(x) x$Z))
+
+  # move all NA terms to far end of Z
+  new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
+  Z <- Z[, new_idx]
+  print(colnames(Z))
   prior_scale <- do.call(c, args=lapply(out, function(x) x$prior_scale))
   return(loo::nlist(nproc, ntime, Z, prior_scale))
 }
