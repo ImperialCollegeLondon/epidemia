@@ -38,14 +38,13 @@
 #' ## setup sampling
 #' args <- EuropeCovid
 #' args$algorithm <- "sampling"
-#' args$sampling_args <- list(
-#' iter=1e3,
-#' control=list(adapt_delta=0.95,max_treedepth=15),
-#' seed=12345)
-#' args$group_subset <- c("Italy")
-#' args$formula <- R(country,date) ~  1 + lockdown
-#' args$prior <- rstanarm::normal(location=0,scale=.5)
-#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
+#' args$sampling_args <- list(iter=1e3,seed=12345)
+#' args$group_subset <- c("Italy", "Austria", "Germany")
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ 1 + lockdown,
+#'   prior = rstanarm::normal(location=0, scale=.5),
+#'   prior_intercept = rstanarm::normal(location=0, scale=2) 
+#' )
 #'
 #' ## run sampling
 #' fit <- do.call("epim", args)
@@ -105,6 +104,11 @@ plot_rt.epimodel <-
       median = apply(rt$draws, 2, function(x) quantile(x, 0.5)),
       group = rt$group
     )
+    # only want to plot dates/groups that appear in qtl as it has been
+    # subsetted
+    df <- df %>%
+      dplyr::right_join(qtl %>% dplyr::select(date, group),
+                       by=c("date", "group"))
 
     p <- p + ggplot2::geom_line(
       mapping = ggplot2::aes(x = date, y = median), 
@@ -130,7 +134,7 @@ plot_rt.epimodel <-
       p <- p + ggplot2::ylab(expression(R[t]))
     }
     return(p)
-  }
+}
 
 
 #' Plotting the posterior predictive distribution
@@ -161,19 +165,17 @@ plot_rt.epimodel <-
 #' ## setup sampling
 #' args <- EuropeCovid
 #' args$algorithm <- "sampling"
-#' args$sampling_args <- list(
-#'  iter=1e3,
-#'  control=list(adapt_delta=0.95,max_treedepth=15),
-#'  seed=12345
+#' args$sampling_args <- list(iter=1e3,seed=12345)
+#' args$group_subset <- c("Italy", "Austria", "Germany")
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ 1 + lockdown,
+#'   prior = rstanarm::normal(location=0, scale=.5),
+#'   prior_intercept = rstanarm::normal(location=0, scale=2) 
 #' )
-#' args$group_subset <- c("Italy")
-#' args$formula <- R(country,date) ~  1 + lockdown
-#' args$prior <- rstanarm::normal(location=0,scale=.5)
-#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
 #'
 #' ## run sampling
 #' fit <- do.call("epim", args)
-#'
+#' 
 #' ## make plots
 #' plot_obs(fit, type="deaths")
 #' plot_obs(fit, type="deaths",
@@ -263,7 +265,7 @@ plot_obs.epimodel <-
       date = get_time(obj),
       obs = get_obs(obj)
     )
-
+    
     # remove negative values
     df <- df[df$obs >= 0, ]
 
@@ -304,6 +306,11 @@ plot_obs.epimodel <-
       dates,
       date_format
     )
+    # only want to plot dates/groups that appear in qtl as it has been
+    # subsetted
+    df <- df %>%
+      dplyr::right_join(qtl %>% dplyr::select(date, group),
+                        by=c("date", "group"))
 
     names(df)[3] <- type
     p <- base_plot(qtl, log, date_breaks)
@@ -320,6 +327,11 @@ plot_obs.epimodel <-
       median = apply(obs$draws, 2, function(x) quantile(x, 0.5)),
       group = obs$group
     )
+    # only want to plot dates/groups that appear in qtl as it has been
+    # subsetted
+    df1 <- df1 %>%
+      dplyr::right_join(qtl %>% dplyr::select(date, group),
+                        by=c("date", "group"))
 
     p <- p + ggplot2::geom_line(
       mapping = ggplot2::aes(x = date, y = median), 
@@ -371,12 +383,14 @@ plot_obs.epimodel <-
 #' ## setup sampling
 #' args <- EuropeCovid
 #' args$algorithm <- "sampling"
-#' args$sampling_args <- list(iter=1e3,control=list(adapt_delta=0.95,max_treedepth=15),seed=12345)
-#' args$group_subset <- c("Italy")
-#' args$formula <- R(country,date) ~  1 + lockdown
-#' args$prior <- rstanarm::normal(location=0,scale=.5)
-#' args$prior_intercept <- rstanarm::normal(location=0,scale=2)
-#' 
+#' args$sampling_args <- list(iter=1e3,seed=12345)
+#' args$group_subset <- c("Italy", "Austria", "Germany")
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ 1 + lockdown,
+#'   prior = rstanarm::normal(location=0, scale=.5),
+#'   prior_intercept = rstanarm::normal(location=0, scale=2) 
+#' )
+#'
 #' ## run sampling
 #' fit <- do.call("epim", args)
 #' 
