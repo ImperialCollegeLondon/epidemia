@@ -107,7 +107,9 @@ plot_rt.epimodel <-
     # only want to plot dates/groups that appear in qtl as it has been
     # subsetted
     df <- df %>%
-      dplyr::right_join(qtl %>% dplyr::select(date, group),
+      dplyr::right_join(qtl %>%
+                          dplyr::select(date, group) %>%
+                          dplyr::distinct(),
                        by=c("date", "group"))
 
     p <- p + ggplot2::geom_line(
@@ -309,7 +311,9 @@ plot_obs.epimodel <-
     # only want to plot dates/groups that appear in qtl as it has been
     # subsetted
     df <- df %>%
-      dplyr::right_join(qtl %>% dplyr::select(date, group),
+      dplyr::right_join(qtl %>%
+                          dplyr::select(date, group) %>%
+                          dplyr::distinct(),
                         by=c("date", "group"))
 
     names(df)[3] <- type
@@ -330,7 +334,9 @@ plot_obs.epimodel <-
     # only want to plot dates/groups that appear in qtl as it has been
     # subsetted
     df1 <- df1 %>%
-      dplyr::right_join(qtl %>% dplyr::select(date, group),
+      dplyr::right_join(qtl %>%
+                          dplyr::select(date, group) %>%
+                          dplyr::distinct(),
                         by=c("date", "group"))
 
     p <- p + ggplot2::geom_line(
