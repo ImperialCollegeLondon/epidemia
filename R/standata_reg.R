@@ -60,7 +60,7 @@ standata_reg <- function(object, ...) {
   if (inherits(object, "epiobs_")) {
     
     # match family
-    ok_families <- c("poisson", "neg_binom", "quasi_poisson", "normal")
+    ok_families <- c("poisson", "neg_binom", "quasi_poisson", "normal", "log_normal")
     family <- which(pmatch(ok_families, object$family, nomatch=0L) == 1L)
     if (!length(family)) {
       stop("'family' must be one of ", paste(ok_families, collapse=", "))
@@ -343,8 +343,10 @@ summarize_glm_prior <-
         user_prior_aux$aux_name <- "reciprocal dispersion"
       } else if (family == 3) { # quasi_poisson
         user_prior_aux$aux_name <- "dispersion"
-      } else { # normal
+      } else if (family == 4) { # normal
         user_prior_aux$aux_name <- "standard deviation"
+      } else { # log_normal
+        user_prior_aux$aux_name <- "sigma"
       }
     }
     prior_list <- list(
