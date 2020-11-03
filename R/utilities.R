@@ -105,10 +105,10 @@ check_obs_formula <- function(formula) {
       supported", call. = FALSE)
   }
 
-  if (is_autocor(formula)) {
-    stop("autocorrelation terms found in 'formula', but are not currently
-    supported", call. = FALSE)
-  }
+  # if (is_autocor(formula)) {
+  #   stop("autocorrelation terms found in 'formula', but are not currently
+  #   supported", call. = FALSE)
+  # }
 
   # check left hand side for correct form
   match <- grepl(

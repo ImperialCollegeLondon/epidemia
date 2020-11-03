@@ -113,6 +113,7 @@ epiobs <- function(formula,
   return(out)
 }
 
+
 # This is a constructor for an internal class which is essentially the same
 # as epiobs, however it constructs and stores the model matrix associated with
 # the model, along with some other objects
@@ -131,6 +132,7 @@ epiobs_ <- function(object, data) {
   # deal with NAs before passing to parse_mm
   na_action <- args[["na.action"]]
   vars <- all_vars_obs(formula)
+  vars <- c(vars, "group")
 
   data <- data[, vars]
   data <-
