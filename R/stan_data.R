@@ -407,7 +407,7 @@ make_V <- function(nproc_by_type, v, oN) {
   nobs <- sum(oN)
   types <- length(nproc_by_type)
   nproc <- sum(nproc_by_type)
-  out <- matrix(-1, nrow = nproc, ncol = nobs)
+  out <- matrix(0, nrow = nproc, ncol = nobs)
   
   first <- 1 + c(0, cumsum(oN))
   second <- cumsum(oN)
@@ -417,7 +417,7 @@ make_V <- function(nproc_by_type, v, oN) {
     for (j in first[r]:second[r]) {
       if (nproc_by_type[r] > 0) {
         for (i in 1:nproc_by_type[r]) {
-          out[i,j] <- v[idx]
+          out[i,j] <- v[idx] + 1
           idx <- idx + 1
         }
       }
