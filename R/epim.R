@@ -108,7 +108,7 @@ epim <- function(rt,
   # generates model matrices for each regression
   rt <- epirt_(rt_orig, data)
   obs <- lapply(obs_orig, epiobs_, data)
-  
+
   sdat <- match.call(expand.dots = FALSE)
   fml <- formals()
   dft <- fml[setdiff(names(fml), names(sdat))]
@@ -191,6 +191,7 @@ epim <- function(rt,
     if (length(sdat$ac_nterms)) "ac_noise",
     if (sdat$num_ointercepts > 0) "ogamma",
     if (sdat$K_all > 0) "obeta",
+    if (length(sdat$obs_ac_nterms)) "obs_ac_noise",
     if (sdat$len_theta_L) "theta_L",
     "y",
     "tau2",
