@@ -91,5 +91,5 @@ test_that("Correct handling of NA terms in the time vector", {
   expect_equal(as.numeric(sdat$obs_ac_ntime), rep(ntime,2))
   expect_equal(as.numeric(sdat$obs_ac_prior_scales), rep(0.2,2))
   expect_equal(min(sdat$obs_ac_v), 0)
-  expect_equal(max(sdat$obs_ac_v), 2*ntime-1)
+  expect_equal(max(sdat$obs_ac_v), 2 * ntime-1)
 })

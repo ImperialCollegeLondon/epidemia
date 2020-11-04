@@ -298,8 +298,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
   # move all NA terms to far end of Z
   new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
-  print(colnames(Z))
-  print(new_idx)
 
   autocor$Z <- Z[, new_idx]
   
@@ -307,6 +305,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     autocor <- NULL
 
   autocor <- standata_autocor(autocor)
+  autocor$ac_nproc_bg <-  sapply(obs, function(x) sum(x$autocor$nproc))
   names(autocor) <- paste0("obs_", names(autocor))
   out <- c(out, autocor)
 
