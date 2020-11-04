@@ -108,9 +108,7 @@ epim <- function(rt,
   # generates model matrices for each regression
   rt <- epirt_(rt_orig, data)
   obs <- lapply(obs_orig, epiobs_, data)
-
-  return(obs)
-
+  
   sdat <- match.call(expand.dots = FALSE)
   fml <- formals()
   dft <- fml[setdiff(names(fml), names(sdat))]

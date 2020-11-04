@@ -98,7 +98,7 @@ standata_reg <- function(object, ...) {
   )
 
   if (inherits(object, "epirt_")) { # autocorrelation data
-    out <- c(out, standata_autocor(object))
+    out <- c(out, standata_autocor(object$autocor))
     out$num_normals = if (out$prior_dist == 7) as.integer(out$prior_df) else integer(0)
   }
 

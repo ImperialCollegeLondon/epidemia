@@ -40,38 +40,66 @@ standata_all <- function(rt,
 
 # Generate standata for autocorrelation terms
 #
-# @inheritParams epim
-# @param formula, data Same as in epim
-standata_autocor <- function(object) {
+# @param autocor A list containing nproc, ntime, Z and prior_scale
+# @return A new list
+standata_autocor <- function(autocor) {
   out <- list()
+  if (!is.null(autocor)) {
+  out$ac_nterms <- length(autocor$nproc)
+  out$ac_ntime <- as.array(autocor$ntime)
+  out$ac_q <- sum(autocor$ntime)
+  out$ac_nproc <- sum(autocor$nproc)
+  # todo: implement this as an option
+  out$ac_prior_scales <- as.array(autocor$prior_scale)
 
-  if (!inherits(object, "epirt_"))
-    stop("Bug found. 'object' must have class 'epirt_'.")
+  # add sparse matrix representation
+  parts <- rstan::extract_sparse_parts(autocor$Z)
+  out$ac_v <- parts$v - 1L
 
-  formula <- formula(object)
-
-  if (is_autocor(formula)) {
-    autocor <- object$autocor
-    out$ac_nterms <- length(autocor$nproc)
-    out$ac_ntime <- as.array(autocor$ntime)
-    out$ac_q <- sum(autocor$ntime)
-    out$ac_nproc <- sum(autocor$nproc)
-    # todo: implement this as an option
-    out$ac_prior_scales <- as.array(autocor$prior_scale)
-
-    # add sparse matrix representation
-    parts <- rstan::extract_sparse_parts(autocor$Z)
-    out$ac_v <- parts$v - 1L
-    
-    # NA terms put to index negative 1
-    out$ac_v[out$ac_v >= out$ac_q] <- -1L
-    out$ac_nnz <- length(out$ac_v)
+  # NA terms put to index negative 1
+  out$ac_v[out$ac_v >= out$ac_q] <- -1L
+  out$ac_nnz <- length(out$ac_v)
   } else {
     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0
     out$ac_prior_scales <- out$ac_v <- out$ac_ntime <- numeric()
   }
   return(out)
 }
+
+# Generate standata for autocorrelation terms
+#
+# @inheritParams epim
+# # @param formula, data Same as in epim
+# standata_autocor <- function(object) {
+#   out <- list()
+
+#   if (!inherits(object, "epirt_"))
+#     stop("Bug found. 'object' must have class 'epirt_'.")
+
+#   formula <- formula(object)
+
+#   if (is_autocor(formula)) {
+#     autocor <- object$autocor
+#     out$ac_nterms <- length(autocor$nproc)
+#     out$ac_ntime <- as.array(autocor$ntime)
+#     out$ac_q <- sum(autocor$ntime)
+#     out$ac_nproc <- sum(autocor$nproc)
+#     # todo: implement this as an option
+#     out$ac_prior_scales <- as.array(autocor$prior_scale)
+
+#     # add sparse matrix representation
+#     parts <- rstan::extract_sparse_parts(autocor$Z)
+#     out$ac_v <- parts$v - 1L
+    
+#     # NA terms put to index negative 1
+#     out$ac_v[out$ac_v >= out$ac_q] <- -1L
+#     out$ac_nnz <- length(out$ac_v)
+#   } else {
+#     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0
+#     out$ac_prior_scales <- out$ac_v <- out$ac_ntime <- numeric()
+#   }
+#   return(out)
+# }
 
 # Generate relevant standata from data. Used internally in epim.
 #
@@ -103,6 +131,7 @@ standata_data <- function(data) {
 # @param data data argument to epim
 standata_rt <- function(rt) {
   out <- list()
+  print("in here")
   out$r0 <- rt$r0
   out <- c(
     out,
@@ -161,6 +190,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
     # compute regression quantities
     reg <- lapply(obs, standata_reg)
+
     oK <- sapply(reg, function(x) x$K)
     oK <- array(pad(oK, maxtypes, 0))
     K_all <- sum(oK)
@@ -244,6 +274,41 @@ standata_obs <- function(obs, groups, nsim, begin) {
         out[[nms[i]]] <- array(0, dim = c(0, 0))
     }
   }
+
+  # finally add autocorrelation terms
+  get_Z <- function(x) {
+    if (is.null(x$autocor)) {
+      # return a dummy matrix
+      return(Matrix::Matrix(nrow=length(x$obs), ncol=0))
+    } else {
+      return(x$autocor$Z)
+    }
+  }
+
+  # construct overall autocor object from individual ones
+  autocor <- list(
+    nproc = unlist(lapply(obs, function(x) x$autocor$nproc)),
+    ntime = unlist(lapply(obs, function(x) x$autocor$ntime)),
+    prior_scale = unlist(lapply(obs, function(x) x$autocor$prior_scale))
+  )
+  
+  Z_list <- lapply(obs, function(x) get_Z(x))
+  Z <- Matrix::.bdiag(Z_list)
+  colnames(Z) <- unlist(lapply(Z_list, function(x) colnames(x)))
+
+  # move all NA terms to far end of Z
+  new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
+  print(colnames(Z))
+  print(new_idx)
+
+  autocor$Z <- Z[, new_idx]
+  
+  if (length(autocor$nproc) == 0)
+    autocor <- NULL
+
+  autocor <- standata_autocor(autocor)
+  names(autocor) <- paste0("obs_", names(autocor))
+  out <- c(out, autocor)
 
   out <- c(out, loo::nlist(
     obs_prior_info,
