@@ -131,7 +131,6 @@ standata_data <- function(data) {
 # @param data data argument to epim
 standata_rt <- function(rt) {
   out <- list()
-  print("in here")
   out$r0 <- rt$r0
   out <- c(
     out,
