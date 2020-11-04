@@ -825,3 +825,98 @@ base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
 #' @importFrom magrittr %>%
 #' @export
 magrittr::`%>%`
+
+
+#' Plotting the posterior linear predictor for either the R or observation regressions
+#'
+#' Plots credible intervals for the observed data under the posterior
+#' predictive distribution, and for a specific observation type. 
+#' The user can control the levels of the intervals and the plotted group(s).
+#' This is a generic function.
+#' 
+#' @inherit plot_rt params return
+#' @param type the name of the observations to plot. This should match one
+#'  of the names of the \code{obs} argument to \code{epim}.
+#' @param posterior_mean If true, the credible intervals are plotted for the
+#'  posterior mean. Defaults to FALSE, 
+#'  in which case the posterior predictive is plotted.
+#' @param cumulative If TRUE, plots the cumulative observations. 
+#' @param by_100k If TRUE, plots data per 100k of the population.
+#' @param log If TRUE, plots the observations on a pseudo-linear scale.
+#' @param ... Additional arguments for
+#'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
+#'  \code{newdata}, which allows 
+#'  predictions or counterfactuals.
+#' 
+#' @export
+plot_linpred <- function(object, ...) UseMethod("plot_linpred", object)
+
+
+#' @rdname plot_obs
+#' @export
+plot_linpred.epimodel <-
+  function(object,
+           type = NULL,
+           groups = NULL,
+           dates = NULL,
+           date_breaks = "2 weeks",
+           date_format = "%Y-%m-%d",
+           levels = c(30, 60, 90),
+           plotly = FALSE,
+           ...) {
+    levels <- check_levels(levels)
+
+    groups <- groups %ORifNULL% object$groups
+
+    pred <- posterior_linpred(
+      object = object,
+      type = type,
+      ...
+    )
+
+    # transform data
+    pred <- gr_subset(pred, groups)
+
+    qtl <- get_quantiles(
+      pred,
+      levels,
+      dates,
+      date_format
+    )
+
+    p <- base_plot(qtl, date_breaks = date_breaks)
+
+    df1 <- data.frame(
+      date = pred$time, 
+      median = apply(pred$draws, 2, function(x) quantile(x, 0.5)),
+      group = pred$group
+    )
+    # only want to plot dates/groups that appear in qtl as it has been
+    # subsetted
+    df1 <- df1 %>%
+      dplyr::right_join(qtl %>%
+                          dplyr::select(date, group) %>%
+                          dplyr::distinct(),
+                        by=c("date", "group"))
+
+    p <- p + ggplot2::geom_line(
+      mapping = ggplot2::aes(x = date, y = median), 
+      data = df1, 
+      color = "deepskyblue4"
+    )
+
+    cols <- c(
+      "deepskyblue4",
+      ggplot2::alpha("deepskyblue4", rev(levels) * 0.7 / 100),
+      "coral4",
+      "darkslategray3"
+    )
+    cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
+
+    p <- p + cols
+
+    if (plotly) {
+      p <- plotly::ggplotly(p)
+    }
+    return(p)
+  }
