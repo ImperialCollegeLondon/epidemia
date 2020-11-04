@@ -884,7 +884,31 @@ plot_linpred.epimodel <-
       date_format
     )
 
-    p <- base_plot(qtl, date_breaks = date_breaks)
+    p <- ggplot2::ggplot(qtl) +
+      ggplot2::geom_ribbon(
+        ggplot2::aes_string(
+          x = "date",
+          ymin = "lower",
+          ymax = "upper",
+          group = "tag",
+          fill = "tag"
+      )) +
+      ggplot2::xlab("") +
+      ggplot2::scale_x_date(
+        date_breaks = date_breaks,
+        labels = scales::date_format("%e %b")
+      ) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(
+        axis.text.x = ggplot2::element_text(
+          angle = 45,
+          hjust = 1
+        ),
+        axis.text = ggplot2::element_text(size = 12),
+        axis.title = ggplot2::element_text(size = 12)
+      ) +
+      ggplot2::theme(legend.position = "right") + 
+      ggplot2::facet_wrap(~group, scale="free_y")
 
     df1 <- data.frame(
       date = pred$time, 
@@ -906,11 +930,11 @@ plot_linpred.epimodel <-
     )
 
     cols <- c(
-      "deepskyblue4",
-      ggplot2::alpha("deepskyblue4", rev(levels) * 0.7 / 100),
-      "coral4",
+      ggplot2::alpha("deepskyblue4", levels * 0.7 / 100),
       "darkslategray3"
     )
+
+    nme <- type %ORifNULL% "R_t"
     cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
 
     p <- p + cols
