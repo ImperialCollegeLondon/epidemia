@@ -257,6 +257,9 @@ epim <- function(rt,
     if (sdat$K_all > 0) {
       make_obeta_nms(obs, sdat)
     },
+    if (sdat$obs_ac_nterms > 0) {
+      make_obs_ac_nms(obs)
+    },
     if (sdat$len_theta_L) {
       paste0("R|Sigma[", Sigma_nms, "]")
     },
@@ -327,6 +330,19 @@ transformTheta_L <- function(stanfit, cnms) {
 
   return(stanfit)
 }
+
+
+
+make_obs_ac_nms <- function(obs) {
+  nms <- c()
+  for (o in obs) {
+    x <- grep("NA", colnames(o$autocor$Z), invert=T, value=T)
+    x <- paste0(.get_obs(o$formula), "|", x)
+    nms <- c(nms, x)
+  }
+  return(nms)
+}
+
 
 make_rw_nms <- function(formula, data) {
   trms <- terms_rw(formula)
