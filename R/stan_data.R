@@ -305,7 +305,13 @@ standata_obs <- function(obs, groups, nsim, begin) {
     autocor <- NULL
 
   autocor <- standata_autocor(autocor)
-  autocor$ac_nproc_bg <-  sapply(obs, function(x) sum(x$autocor$nproc))
+  
+  autocor$ac_V <- make_V(
+    nproc_by_type = sapply(obs, function(x) sum(x$autocor$nproc)),
+    v = autocor$ac_v,
+    oN = oN
+  )
+  
   names(autocor) <- paste0("obs_", names(autocor))
   out <- c(out, autocor)
 
@@ -383,6 +389,39 @@ pad <- function(x, len, a, sv = FALSE) {
   out <- out[1:len]
   if (sv) {
     out <- out / sum(out)
+  }
+  return(out)
+}
+
+
+# Creates a matrix giving group membership per observation
+#
+# @param nproc_by_type Integer vector giving number of autocorrelation processes 
+#   to which an observation of a given type is part of
+# @param v Integer vector giving column memberships. Result of 
+#   extract_sparse_parts
+# @param oN A vector giving number of observations of each type
+# @return An Integer vector
+make_V <- function(nproc_by_type, v, oN) {
+  
+  nobs <- sum(oN)
+  types <- length(nproc_by_type)
+  nproc <- sum(nproc_by_type)
+  out <- matrix(-1, nrow = nproc, ncol = nobs)
+  
+  first <- 1 + c(0, cumsum(oN))
+  second <- cumsum(oN)
+  
+  idx <- 1
+  for (r in 1:types) {
+    for (j in first[r]:second[r]) {
+      if (nproc_by_type[r] > 0) {
+        for (i in 1:nproc_by_type[r]) {
+          out[i,j] <- v[idx]
+          idx <- idx + 1
+        }
+      }
+    }
   }
   return(out)
 }
