@@ -2,6 +2,8 @@
 #' Will be extended for observations in future versions
 #'
 #' @inheritParams posterior_infections
+#' @param transform If TRUE, transforms the predictor by the inverse link function. Defaults
+#'  to FALSE.
 #' @param type If NULL, then gives posterior linear predictor for reproduction numbers.
 #'  Otherwise gives the predictor for the specified observation type.
 #' @param fixed Include fixed effects. Defaults to TRUE.
@@ -10,6 +12,7 @@
 #' @param ... Not used.
 #' @export 
 posterior_linpred <- function(object,
+                              transform = FALSE,
                               type = NULL,
                               newdata = NULL,
                               draws = NULL,
@@ -80,9 +83,55 @@ posterior_linpred <- function(object,
 
   colnames(draws) <- paste0("eta[", seq_len(ncol(draws)), "]")
 
+  if (transform) {
+    if (is.null(type)) {
+      draws <- transform_rt(obj, draws)
+    } else {
+      draws <- transform_obs(obj, draws)
+    }
+  }
+
   return(list(
     draws = as.matrix(draws),
     group = object$data$group,
     time = object$data$date
   ))
+}
+
+
+# transforms the linear predictor for R by its link function 
+#
+# @param object An epirt_ object
+# @param eta A matrix of draws of the linear predictor
+# @return the transformed predictor
+transform_rt <- function(object, eta) {
+  link <- object$link
+  if (link == "logit")
+    eta <- 2 * object$r0 * logistic(eta)
+  if (link == "log")
+    eta <- exp(eta)
+  else if (link != "identity")
+    stop("Unsupported link for R")
+  return(eta)
+}
+
+# transforms the linear predictor for obs by its link function 
+#
+# @param object An epiobs_ object
+# @param eta A matrix of draws of the linear predictor
+# @return the transformed predictor
+transform_obs <- function(object, eta) {
+  link <- object$link
+  if (link == "logit") {
+    eta = 1/(1 + exp(-eta))
+  } else if (link == "probit") {
+    eta = pnorm(eta)
+  } else if (link == "cauchit") {
+    eta = pcauchy(eta)
+  } else if (link == "cloglog") {
+    eta = 1 - exp(-exp(eta))
+  } else if (link != "identity") {
+    stop("Unsupported link for obs")
+  }
+  return(eta)
 }
