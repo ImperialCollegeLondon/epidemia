@@ -25,7 +25,7 @@ parameters {
 
 generated quantities {
   vector[N_obs] E_obs;
-  int obs[N_obs];
+  real obs[N_obs];
 #include /tparameters/infections_rt.stan
 #include /tparameters/gen_infections.stan
 #include /tparameters/gen_eobs.stan
@@ -40,9 +40,17 @@ generated quantities {
         obs[i:(i+oN[r]-1)] = neg_binomial_2_rng(segment(E_obs, i, oN[r]) + 1e-15, 
           oaux[has_oaux[r]]);
       }
-      else { // quasi-poisson
+      else if (ofamily[r] == 3) { // quasi-poisson
         obs[i:(i+oN[r]-1)] = neg_binomial_2_rng( segment(E_obs, i, oN[r]) + 1e-15, 
         (segment(E_obs, i, oN[r]) + 1e-15) / oaux[has_oaux[r]]);
+      }
+      else if (ofamily[r] == 4) { //normal
+        obs[i:(i+oN[r]-1)] = normal_rng(segment(E_obs, i, oN[r]) + 1e-15,
+            oaux[has_oaux[r]]);
+      }
+      else { //log normal
+        obs[i:(i+oN[r]-1)] = lognormal_rng(log(segment(E_obs, i, oN[r])) - pow(oaux[has_oaux[r]], 2)/2 + 1e-15,
+            oaux[has_oaux[r]]);
       }
       i += oN[r];
     }
