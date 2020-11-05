@@ -7,8 +7,8 @@
 #' must take the form `R(group,date)`, with `group` representing a factor
 #' vector indicating group membership (i.e. country, state, age cohort),
 #' and `date` being a vector of Date objects.
-#' @param r0 The prior expected value of \eqn{R_0}. The maximum \eqn{R_0} in the
-#'  simulations will be limited to twice this value.
+#' @param link The link function. This must be either "identity", "log", or a call 
+#'  to scaled_logit.
 #' @param center If \code{TRUE} then the covariates for the \eqn{R_t} regression
 #'  are centered to have mean zero. All of the priors are then interpreted as
 #'  prior on the centered covariates. Defaults to \code{FALSE}.
@@ -24,7 +24,7 @@
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
 epirt <- function(formula,
-                  r0 = 3.28,
+                  link = "log",
                   center = FALSE,
                   prior = rstanarm::normal(scale = .5),
                   prior_intercept = rstanarm::normal(scale = .5),
@@ -33,15 +33,19 @@ epirt <- function(formula,
   call <- match.call(expand.dots = TRUE)
   formula <- check_rt_formula(formula)
 
-  if (r0 <= 0) {
-    stop("'r0' must positive", call. = FALSE)
+  msg <- "'link' must be either 'log', 'identity', or a call to scaled_logit"
+  if (is.character(link)) {
+    if (!(link %in% c("log", "identity")) {
+      stop(msg, .call=FALSE)
+    }
+  } else if (class(link) != "scaled_logit") {
+     stop(msg, .call=FALSE)
   }
 
   out <- loo::nlist(
     call,
     formula,
-    r0,
-    link = "logit",
+    link,
     center,
     prior,
     prior_intercept,
@@ -81,4 +85,28 @@ epirt_ <- function(object, data) {
 
   class(out) <- "epirt_"
   return(out)
+}
+
+#' Represents a scaled logit link
+#'
+#' The link function takes the form scaled_logit(x) = log(x/(2*r - x)).
+#' This is similar to the logit link, although x can range between 
+#' [0, 2*r] rather than [0,1]. The parameter r can be chosen. 
+#'
+#' @param r parameterises the link function. The inverse of which then
+#'  takes values in [0, 2*r]. 
+#' @return A list with class "scaled_logit"
+#' @export
+scaled_logit <- function(r = 3) {
+  if (!is.scalar(r)) {
+    stop("'r' must be a scalar", call. = FALSE)
+  }
+  if (r <= 0) {
+    stop("'r' must positive", call. = FALSE)
+  }
+
+  return(structure(
+    list(r=r), 
+    class = "scaled_logit")
+  )
 }

@@ -11,6 +11,8 @@ check_integer <- function(x, tol = .Machine$double.eps, allow_na = FALSE) {
   }
 }
 
+is.scalar <- function(x) is.atomic(x) && length(x) == 1L
+
 check_character <- function(x) {
   s <- substitute(x)
   if (anyNA(as.character(x)))
