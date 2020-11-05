@@ -123,10 +123,13 @@ model {
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
         segment(E_obs, i, oN[r]) + 1e-15, (segment(E_obs, i, oN[r]) + 1e-15) / oaux[has_oaux[r]]);
       } 
-      else { // normal
+      else if (ofamily[r] == 4) { // normal
         target += normal_lpdf(segment(obs_real, i, oN[r]) |
         segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
-      }
+        } else { // log normal
+          target += lognormal_lpdf(segment(obs_real, i, oN[r]) |
+          log(segment(E_obs, i, oN[r])) - pow(oaux[has_oaux[r]], 2)/2 + 1e-15, oaux[has_oaux[r]]);
+        }
       i += oN[r];
     }
   }
