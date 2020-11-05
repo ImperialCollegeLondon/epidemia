@@ -44,9 +44,9 @@
 #'  \pkg{rstan} function used for model fitting, for example
 #'  \code{rstan::sampling}.
 #' @param init_run For certain datasets the sampler can find itself trapped in a
-#'  local mode where herd immunity is achieved. If TRUE, a short MCMC run
-#'  fitting to cumulative data is used to initialize the parameters for the main
-#'  sampler. If TRUE this is done with default parameters. If instead a list is
+#'  local mode where herd immunity is achieved. If TRUE, an MCMC run where 
+#'  the population adjustment is disabled is used to initialise the parameters for 
+#'  the main sampling. If TRUE, this is done with default parameters. If instead a list is
 #'  provided, this is the equivalent to \code{sampling_args} but for the
 #'  initial run. The seed used is that specified in \code{init_run}, or that
 #'  specified in \code{sampling_args}, or no seed, in that order.
