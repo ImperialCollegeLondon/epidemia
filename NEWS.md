@@ -1,4 +1,10 @@
 
+# epidemia 0.7.0
+* Ability to use random walks in the epiobs models
+* Choose between identity, scaled logit, and log link for epirt
+* Plot the (potentially transformed) linear predictors for both epiobs and epirt
+* Additional families for epiobs - normal and lognormal
+
 # epidemia 0.6.0
 * Substantial changes to interface: Added epirt and epiobs objects
 * Different and more flexible observation models
