@@ -106,12 +106,15 @@ posterior_linpred <- function(object,
 # @return the transformed predictor
 transform_rt <- function(object, eta) {
   link <- object$link
-  if (link == "logit")
-    eta <- 2 * object$r0 * logistic(eta)
-  if (link == "log")
+  if (link == "logit") {
+    eta <- 2 * object$r0 / (1 + exp(-eta))
+  }
+  else if (link == "log") {
     eta <- exp(eta)
-  else if (link != "identity")
+  }
+  else if (link != "identity") {
     stop("Unsupported link for R")
+  }
   return(eta)
 }
 
@@ -123,7 +126,7 @@ transform_rt <- function(object, eta) {
 transform_obs <- function(object, eta) {
   link <- object$link
   if (link == "logit") {
-    eta = 1/(1 + exp(-eta))
+    eta = 1 / (1 + exp(-eta))
   } else if (link == "probit") {
     eta = pnorm(eta)
   } else if (link == "cauchit") {
