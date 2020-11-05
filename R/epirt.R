@@ -35,7 +35,7 @@ epirt <- function(formula,
 
   msg <- "'link' must be either 'log', 'identity', or a call to scaled_logit"
   if (is.character(link)) {
-    if (!(link %in% c("log", "identity")) {
+    if (!(link %in% c("log", "identity"))) {
       stop(msg, .call=FALSE)
     }
   } else if (class(link) != "scaled_logit") {
