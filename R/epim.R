@@ -130,12 +130,13 @@ epim <- function(rt,
 
   if (!isFALSE(init_run)) {
     print("Prefit to obtain reasonable starting values")
-    cobs <- lapply(obs, function(x) cumulate(x))
+    
     # replace obs with cobs for initial fit
     sdat_init <- sdat
-    sdat_init$obs <- cobs
+    sdat_init$obs <- obs
     sdat_init <- do.call(standata_all, sdat_init)
-    
+    sdat_init$pop_adjust <- FALSE
+
     if (is.list(init_run)) {
       args <- init_run
     } else if (isTRUE(init_run)) {
@@ -155,17 +156,16 @@ epim <- function(rt,
 
     # function defining parameter initialisation
     initf <- function() {
-      i <- sample(1:50, 1)
       res <- lapply(
         rstan::extract(prefit),
         function(x) {
           if (length(dim(x)) == 1) {
-            as.array(x[i])
+            as.array(x[length(x)])
           }
           else if (length(dim(x)) == 2) {
-            x[i, ]
+            array(x[dim(x)[1],], dim = c(dim(x)[2]))
           } else {
-            x[i, , ]
+            array(x[dim(x)[1],,], dim = c(dim(x)[2], dim(x)[3]))
           }
         }
       )
