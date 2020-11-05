@@ -8,7 +8,7 @@
 #'
 #' @param formula A formula defining the model for the observations.
 #' @param family A string representing the error distribution for the model.
-#'  Can be either "poisson", "neg_binom" or "quasi_poisson".
+#'  Can be "poisson", "neg_binom", "quasi_poisson", "normal" or "log_normal".
 #' @param link A string representing the link function used to transform the
 #'  covariates. The linear predictor constructed from the covariates is
 #' transformed by the inverse link function, then multiplied by the weighted
@@ -27,9 +27,11 @@
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior
 #'  for the regression intercept, if one has been specified.
 #' @param prior_aux Specify the prior distribution for the auxiliary parameter
-#'  if it exists. Only used if family is negative binomial, in which case this
-#'  represents the prior on the reciprocal of the dispersion parameter. See
-#'  \code{\link[rstanarm]{stan_glm}} for more details.
+#'  if it exists. Only used if family is negative binomial (reciprocal
+#'  dispersion), quasi poisson (dispersion), normal (standard deviation) or 
+#'  normal, in which case this represents the prior on the reciprocal 
+#'  log normal (sigma parameter). See \code{\link[rstanarm]{stan_glm}}
+#'  for more details.
 
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
@@ -45,7 +47,7 @@ epiobs <- function(formula,
   call <- match.call(expand.dots = TRUE)
   formula <- check_obs_formula(formula)
 
-  ok_families <- c("poisson", "neg_binom", "quasi_poisson")
+  ok_families <- c("poisson", "neg_binom", "quasi_poisson", "normal", "log_normal")
   if (!(family %in% ok_families)) {
     stop("'family' must be one of ", paste(ok_families, collapse= ", "),
       call. = FALSE
