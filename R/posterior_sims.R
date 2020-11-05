@@ -196,6 +196,10 @@ pp_standata <- function(object, rt, obs, data) {
     begin = out$begin
   ))
 
+  sdat_rt <- standata_rt(rt)
+  out$link <- sdat_rt$link
+  out$r0 <- sdat_rt$r0
+
   # add remaining data
   out <- c(out, list(
     si_len = length(object$si),
@@ -203,9 +207,9 @@ pp_standata <- function(object, rt, obs, data) {
     si = pad(object$si, out$NS, 0, TRUE),
     N0 = object$seed_days,
     pop = as.array(pops$pop),
-    N = nrow(data),
-    r0 = rt$r0
+    N = nrow(data)
   ))
+
   return(out)
 }
 

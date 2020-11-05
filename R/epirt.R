@@ -89,9 +89,9 @@ epirt_ <- function(object, data) {
 
 #' Represents a scaled logit link
 #'
-#' The link function takes the form scaled_logit(x) = log(x/(2*r - x)).
+#' The link function takes the form \eqn{scaled_logit(x) = log(x/(2*r - x))}.
 #' This is similar to the logit link, although x can range between 
-#' [0, 2*r] rather than [0,1]. The parameter r can be chosen. 
+#' \eqn{[0, 2r]} rather than \eqn{[0,1]}. The parameter r can be chosen. 
 #'
 #' @param r parameterises the link function. The inverse of which then
 #'  takes values in [0, 2*r]. 
