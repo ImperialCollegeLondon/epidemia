@@ -131,7 +131,20 @@ standata_data <- function(data) {
 # @param data data argument to epim
 standata_rt <- function(rt) {
   out <- list()
-  out$r0 <- rt$r0
+
+  link <- rt$link
+  if (link == "log") {
+    out$link <- 1
+    out$r0 <- 1 # dummy
+  }
+  else if (class(link) == "scaled_logit") {
+    out$link <- 2
+    out$r0 <- link$r
+  }
+  else if(link == "identity") {
+    out$link <- 3 
+    out$r0 <- 1 # dummy
+  }
   out <- c(
     out,
     standata_reg(rt)

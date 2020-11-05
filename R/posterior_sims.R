@@ -15,7 +15,6 @@ posterior_sims <- function(object,
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  
 
   all <- c(list(R = object$rt), object$obs)
   if (!is.null(newdata)) {
