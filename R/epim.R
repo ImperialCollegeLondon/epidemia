@@ -337,8 +337,10 @@ make_obs_ac_nms <- function(obs) {
   nms <- c()
   for (o in obs) {
     x <- grep("NA", colnames(o$autocor$Z), invert=T, value=T)
-    x <- paste0(.get_obs(o$formula), "|", x)
-    nms <- c(nms, x)
+    if (length(x) > 0) {
+      x <- paste0(.get_obs(o$formula), "|", x)
+      nms <- c(nms, x)
+    }
   }
   return(nms)
 }
@@ -395,18 +397,16 @@ make_oaux_nms <- function(obs) {
   return(unlist(nms))
 }
 
+
 make_ointercept_nms <- function(obs, sdat) {
-  if (sdat$num_ointercepts == 0) {
-    return(character(0))
+  nms <- character()
+  for (i in 1:length(obs)) {
+    if (sdat$has_ointercept[i]) {
+      nms <- c(nms,
+        paste0(.get_obs(formula(obs[[i]])), "|(Intercept)"))
+    }
   }
-  obs_nms <- sapply(
-    obs,
-    function(x) .get_obs(formula(x))
-  )
-  return(paste0(
-    obs_nms[sdat$has_ointercept],
-    "|(Intercept)"
-  ))
+  return(nms)
 }
 
 make_obeta_nms <- function(obs, sdat) {

@@ -154,6 +154,8 @@ plot_rt.epimodel <-
 #'  in which case the posterior predictive is plotted.
 #' @param cumulative If TRUE, plots the cumulative observations. 
 #' @param by_100k If TRUE, plots data per 100k of the population.
+#' @param bar If TRUE, observations are plotted as a bar plot. Otherwise, 
+#' a scatterplot is used.
 #' @param log If TRUE, plots the observations on a pseudo-linear scale.
 #' @param ... Additional arguments for
 #'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
@@ -217,6 +219,7 @@ plot_obs.epimodel <-
            date_format = "%Y-%m-%d",
            cumulative = FALSE,
            by_100k = FALSE,
+           bar = TRUE,
            levels = c(30, 60, 90),
            log = FALSE,
            plotly = FALSE,
@@ -319,12 +322,20 @@ plot_obs.epimodel <-
     names(df)[3] <- type
     p <- base_plot(qtl, log, date_breaks)
 
-    p <- p + ggplot2::geom_bar(
-      mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
-      data = df,
-      stat = "identity",
-      alpha = 0.7
-    )
+    if (bar) {
+      p <- p + ggplot2::geom_bar(
+        mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
+        data = df,
+        stat = "identity",
+        alpha = 0.7
+      )
+    } else {
+      p <- p + ggplot2::geom_point(
+        mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
+        data = df,
+        stat = "identity"
+      )
+    }
 
     df1 <- data.frame(
       date = obs$time, 
