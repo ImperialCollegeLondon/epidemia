@@ -9,6 +9,7 @@
 #' @param fixed Include fixed effects. Defaults to TRUE.
 #' @param random Include random effects. Defaults to TRUE.
 #' @param autocor Include autocorrelation terms. Defaults to TRUE.
+#' @param autocor Include offsets. Defaults to TRUE.
 #' @param ... Not used.
 #' @export 
 posterior_linpred <- function(object,
@@ -19,6 +20,7 @@ posterior_linpred <- function(object,
                               fixed = TRUE,
                               random = TRUE,
                               autocor = TRUE,
+                              offset = TRUE,
                               ...) {
   all <- c(list(R = object$rt), object$obs)
   if (!is.null(newdata)) {
@@ -78,6 +80,10 @@ posterior_linpred <- function(object,
     }
   }
 
+  if (is.null(type) & offset) {
+     draws <- sweep(draws, 2, obj$offset, "+")
+  }
+
   if (is.null(draws))
     return(NULL)
 
@@ -93,8 +99,8 @@ posterior_linpred <- function(object,
 
   return(list(
     draws = as.matrix(draws),
-    group = object$data$group,
-    time = object$data$date
+    group = obj$gr,
+    time = obj$time
   ))
 }
 
