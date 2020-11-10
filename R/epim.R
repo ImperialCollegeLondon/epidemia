@@ -196,6 +196,7 @@ epim <- function(rt,
     "y",
     "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
+    if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
     if (sdat$num_oaux > 0) "oaux"
   )
 
@@ -266,7 +267,10 @@ epim <- function(rt,
     c(paste0("seeds[", groups, "]")),
     "tau",
     if (length(sdat$ac_nterms)) {
-      make_rw_sigma_nms(formula(rt), data)
+      make_rw_sigma_nms(rt, data)
+    },
+    if (length(sdat$obs_ac_nterms)) {
+      sapply(obs, function(x) make_rw_sigma_nms(x, data))
     },
     if (sdat$num_oaux > 0) {
       make_oaux_nms(obs)
@@ -364,16 +368,28 @@ make_rw_nms <- function(formula, data) {
   ))
 }
 
-make_rw_sigma_nms <- function(formula, data) {
-  trms <- terms_rw(formula)
+make_rw_sigma_nms <- function(obj, data) {
+  trms <- terms_rw(formula(obj))
+  nme <- ifelse(class(obj) == "epirt_", "R", .get_obs(formula(obj)))
   nms <- character()
   for (trm in trms) {
     trm <- eval(parse(text = trm))
     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-    nms <- c(nms, unique(paste0("R|sigma:", trm$label, "[", group, "]")))
+    nms <- c(nms, unique(paste0(nme, "|sigma:", trm$label, "[", group, "]")))
   }
   return(nms)
 }
+
+# make_rw_sigma_nms <- function(formula, data) {
+#   trms <- terms_rw(formula)
+#   nms <- character()
+#   for (trm in trms) {
+#     trm <- eval(parse(text = trm))
+#     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
+#     nms <- c(nms, unique(paste0("sigma:", trm$label, "[", group, "]")))
+#   }
+#   return(nms)
+# }
 
 make_oaux_nms <- function(obs) {
   nms <- list()
