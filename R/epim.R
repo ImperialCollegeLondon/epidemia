@@ -266,10 +266,10 @@ epim <- function(rt,
     },
     c(paste0("seeds[", groups, "]")),
     "tau",
-    if (length(sdat$ac_nterms)) {
+    if (sdat$ac_nterms > 0) {
       make_rw_sigma_nms(rt, data)
     },
-    if (length(sdat$obs_ac_nterms)) {
+    if (sdat$obs_ac_nterms > 0) {
       sapply(obs, function(x) make_rw_sigma_nms(x, data))
     },
     if (sdat$num_oaux > 0) {

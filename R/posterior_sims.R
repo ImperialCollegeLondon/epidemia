@@ -93,7 +93,6 @@ posterior_sims <- function(object,
   n <- standata$oN[seq_len(standata$R)]
 
   out <- c(out, list(
-    obs = parse_obs(sims, "obs", n, obs),
     E_obs = parse_obs(sims, "E_obs", n, obs)
   ))
 
