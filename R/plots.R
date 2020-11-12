@@ -825,10 +825,12 @@ base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
     ) +
     ggplot2::theme(legend.position = "right") 
   
-  if (rt) {
-    p <- p + ggplot2::facet_wrap(~group)
-  } else {
-    p <- p + ggplot2::facet_wrap(~group, scale = "free_y")
+  if (length(unique(qtl$group)) > 1) {
+    if (rt) {
+      p <- p + ggplot2::facet_wrap(~group)
+    } else {
+      p <- p + ggplot2::facet_wrap(~group, scale = "free_y")
+    }
   }
   return(p)
 }
