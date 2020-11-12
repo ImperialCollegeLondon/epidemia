@@ -809,7 +809,7 @@ base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
       labels = scales::date_format("%e %b")
     ) +
     ggplot2::scale_y_continuous(
-      labels = scales::comma,
+      labels = fancy_scientific,
       expand = ggplot2::expansion(mult = c(0, 0.1)),
       trans = ifelse(log, "pseudo_log", "identity"),
       limits = c(ifelse(log, NA, 0), NA)
@@ -839,6 +839,23 @@ base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
 #' @export
 magrittr::`%>%`
 
+
+# function to format y axis labels
+# bigger numbers are shown as scientific
+fancy_scientific <- function(l) {
+  if (all(l <= 1e4)) {
+    l <- format(l)
+  } else {
+    # turn in to character string in scientific notation
+    l <- format(l, scientific = TRUE)
+    # quote the part before the exponent to keep all the digits
+    l <- gsub("^(.*)e", "'\\1'e", l)
+    # turn the 'e+' into plotmath format
+    l <- gsub("e", "%*%10^", l)
+  }
+  # return this as an expression
+  parse(text=l)
+}
 
 #' Plotting the posterior linear predictor for either the R or observation regressions
 #'
