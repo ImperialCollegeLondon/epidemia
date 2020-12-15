@@ -5,6 +5,7 @@
 # @param group, x Objects returned by parse_mm
 # @param link Not yet used.
 standata_all <- function(rt,
+                         inf,
                          obs,
                          data,
                          pops,
@@ -152,6 +153,26 @@ standata_rt <- function(rt) {
   out$rt_prior_info = out$prior_info
   return(out)
 }
+
+
+# Parses inf argument into data ready for stan
+#
+# @param inf An object of class "epiinf"
+standata_inf <- function(inf) {
+  out <- list()
+  out$inf_family = ifelse(inf$latent, 0, 1) # gamma is only option at the moment
+  p_aux <- handle_glm_prior(
+    inf$prior_aux,
+    1 * inf$latent,
+    link = NULL,
+    default_scale = 0.25,
+    ok_dists = loo::nlist("normal", student_t = "t", "cauchy", "exponential")
+  )
+  names(p_aux) <- paste0(names(p_aux), "_for_inf_aux")
+  out <- c(out, p_aux)
+  return(out)
+}
+
 
 # Parses obs argument into data ready for stan
 #
