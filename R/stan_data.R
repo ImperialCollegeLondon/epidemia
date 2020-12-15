@@ -27,6 +27,7 @@ standata_all <- function(rt,
       pop = as.array(pops$pop)
     ),
     standata_model_priors(prior_tau),
+    standata_inf(inf),
     standata_obs(
       obs = obs,
       groups = out$groups,
