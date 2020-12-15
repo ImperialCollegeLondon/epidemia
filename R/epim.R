@@ -17,6 +17,8 @@
 #'
 #' @param rt An object of class \code{\link[epidemia]{epirt}}. This specifies
 #'  the model for the time-varying reproduction number.
+#' @param inf An object of class \code{\link[epidemia]{epiinf}}. This specifies 
+#'  the model for latent infections. Defaults to \code{epiinf()}.
 #' @param obs A list of \code{\link[epidemia]{epiobs}} objects. Each
 #'  element defines a model for the specified observation vector.
 #' @param data A dataframe containing all data required to fit the model.
@@ -75,6 +77,7 @@
 #' \insertAllCited{}
 #' @export
 epim <- function(rt,
+                 inf = epiinf(),
                  obs = list(),
                  data,
                  pops,
@@ -115,7 +118,7 @@ epim <- function(rt,
   sdat[names(dft)] <- dft
   rm <- c("algorithm", "sampling_args", "init_run", "pop_adjust", "...")
   sdat[rm] <- NULL
-  checked <- loo::nlist(rt, data, obs, pops, si)
+  checked <- loo::nlist(rt, inf, data, obs, pops, si)
   sdat[names(checked)] <- checked
   sdat[[1L]] <- NULL
   sdat <- as.list(sdat)

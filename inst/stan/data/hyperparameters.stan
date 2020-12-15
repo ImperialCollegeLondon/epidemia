@@ -25,6 +25,12 @@ vector[num_oaux] prior_mean_for_oaux;
 vector<lower=0>[num_oaux] prior_scale_for_oaux;
 vector<lower=0>[num_oaux] prior_df_for_oaux;
 
+// and also for inf auxiliary variables
+int<lower=0, upper=3> prior_dist_for_inf_aux[num_oaux];
+real prior_mean_for_inf_aux;
+real<lower=0> prior_scale_for_inf_aux;
+real<lower=0> prior_df_for_inf_aux;
+
 real<lower=0> prior_scale_for_tau;
 vector<lower=0>[ac_nproc] ac_prior_scales; // prior scale for hyperparameter for each walk.
 vector<lower=0>[obs_ac_nproc] obs_ac_prior_scales;
