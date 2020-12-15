@@ -161,7 +161,7 @@ standata_rt <- function(rt) {
 # @param inf An object of class "epiinf"
 standata_inf <- function(inf) {
   out <- list()
-  out$inf_family = ifelse(inf$latent, 0, 1) # gamma is only option at the moment
+  out$inf_family = ifelse(inf$latent, 1, 0) # gamma is only option at the moment
   p_aux <- handle_glm_prior(
     inf$prior_aux,
     1 * inf$latent,

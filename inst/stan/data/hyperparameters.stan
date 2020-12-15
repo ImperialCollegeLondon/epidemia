@@ -26,10 +26,11 @@ vector<lower=0>[num_oaux] prior_scale_for_oaux;
 vector<lower=0>[num_oaux] prior_df_for_oaux;
 
 // and also for inf auxiliary variables
-int<lower=0, upper=3> prior_dist_for_inf_aux[num_oaux];
-real prior_mean_for_inf_aux;
-real<lower=0> prior_scale_for_inf_aux;
-real<lower=0> prior_df_for_inf_aux;
+int latent = min(inf_family, 1);
+int<lower=0, upper=3> prior_dist_for_inf_aux[latent];
+real prior_mean_for_inf_aux[latent];
+real<lower=0> prior_scale_for_inf_aux[latent];
+real<lower=0> prior_df_for_inf_aux[latent];
 
 real<lower=0> prior_scale_for_tau;
 vector<lower=0>[ac_nproc] ac_prior_scales; // prior scale for hyperparameter for each walk.

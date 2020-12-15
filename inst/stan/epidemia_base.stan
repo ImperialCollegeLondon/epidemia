@@ -41,6 +41,7 @@ parameters {
   vector[num_ointercepts] ogamma;
   real gamma[has_intercept];
   vector<lower=0>[num_oaux] oaux_raw;
+  real<lower=0> inf_aux_raw[latent];
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
@@ -55,6 +56,7 @@ transformed parameters {
   real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
   vector<lower=0>[M] y = tau2 * y_raw;
   vector<lower=0>[num_oaux] oaux = oaux_raw;
+  vector<lower=0>[latent] inf_aux = inf_aux_raw;
 
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
@@ -69,6 +71,17 @@ transformed parameters {
       }
       if (prior_dist_for_oaux[i] <= 2) {
         oaux[i] += prior_mean_for_oaux[i];
+      }
+    }
+  }
+
+  if (latent) {
+    if (prior_dist_for_inf_aux[1] > 0) {
+      if (prior_scale_for_inf_aux[1] > 0) {
+        inf_aux[1] *= prior_scale_for_inf_aux[1];
+      }
+      if (prior_dist_for_inf_aux[1] <= 2) {
+        inf_aux[1] += prior_mean_for_infaux[1];
       }
     }
   }
