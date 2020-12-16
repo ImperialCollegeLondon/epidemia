@@ -13,13 +13,15 @@ if (latent) {
         int n1 = n0 + N0 - 1;
         int n2 = n0 + NC[m] - 1;
         vector[n2-n1] mu = mean_inf[(n1+1):n2,m];
+        real logJ = sum(log(mu * inf_aux[1])) / 2;
 
-        if (pop_adjust) 
+        if (pop_adjust) {
+            logJ += sum(log(pop[m] - cumm_sum[n1:(n2-1),m])) - sum(mu + sqrt(mu * inf_aux[1]) .* inf_noise[(n1+1):n2,m]) / pop[m];
             mu = (pop[m] - cumm_sum[n1:(n2-1),m]) .* (1 - exp(- mu / pop[m]));
+        }
         
         target += gamma_lpdf(infections[(n1+1):n2,m] | mu / inf_aux[1], 1 / inf_aux[1]);
-
-        // ADD JACOBIAN ADJUSTMENT HERE
+        target += logJ;
     }
 }
 
