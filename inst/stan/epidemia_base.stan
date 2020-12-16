@@ -20,6 +20,7 @@ real obs_real[N_obs]; // vector of observations
 #include /data/NKX.stan
 #include /data/data_glm.stan
 #include /data/data_ac.stan
+#include /data/data_inf.stan
 #include /data/hyperparameters.stan
 #include /data/glmer_stuff.stan
 #include /data/glmer_stuff2.stan
@@ -41,7 +42,7 @@ parameters {
   vector[num_ointercepts] ogamma;
   real gamma[has_intercept];
   vector<lower=0>[num_oaux] oaux_raw;
-  real<lower=0> inf_aux_raw[latent];
+  vector<lower=0>[latent] inf_aux_raw;
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
@@ -75,13 +76,14 @@ transformed parameters {
     }
   }
 
+  // transform inf_aux paramaters
   if (latent) {
     if (prior_dist_for_inf_aux[1] > 0) {
       if (prior_scale_for_inf_aux[1] > 0) {
         inf_aux[1] *= prior_scale_for_inf_aux[1];
       }
       if (prior_dist_for_inf_aux[1] <= 2) {
-        inf_aux[1] += prior_mean_for_infaux[1];
+        inf_aux[1] += prior_mean_for_inf_aux[1];
       }
     }
   }
@@ -113,6 +115,7 @@ model {
 #include /model/priors_glm.stan
 #include /model/priors_ac.stan
 #include /model/priors_obs.stan
+#include /model/priors_inf.stan
   if (t > 0) {
     real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
                           regularization, delta, shape, t, p);
