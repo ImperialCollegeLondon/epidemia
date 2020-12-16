@@ -25,17 +25,16 @@ for (m in 1:M){
     for (i in (n1+1):n2) {
         int start = max(n0, i - si_len);
         load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(si_rev, i - start));
-        infections[i,m] = Rt_unadj[i,m] * load[i,m];
-        Rt[i,m] = Rt_unadj[i,m];
+        mean_inf[i,m] = Rt_unadj[i,m] * load[i,m];
 
-        if (latent) {
-            infections[i,m] = infections[i,m] + sqrt(infections[i,m] * inf_aux[1]) * inf_noise[i,m];
+        if (latent) 
+            infections[i,m] = mean_inf[i,m] + sqrt(mean_inf[i,m] * inf_aux[1]) * inf_noise[i,m];
+        else 
+            infections[i,m] = mean_inf[i,m];
         
-        if (pop_adjust) {
+        if (pop_adjust) 
             infections[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(- infections[i,m] / pop[m]));
-            Rt[i,m] =  (pop[m] - cumm_sum[i-1,m]) * Rt[i,m] / pop[m];
-        }
-        infectiousness[i,m] = load[i,m] / max(si);
+        
         cumm_sum[i,m] = cumm_sum[i-1,m] + infections[i,m];
     }
 }
