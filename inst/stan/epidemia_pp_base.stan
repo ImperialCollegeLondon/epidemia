@@ -7,6 +7,7 @@ data {
 #include data/data_indices.stan
 #include data/data_obs.stan
 #include data/data_model.stan
+#include /data/data_inf.stan
 }
 
 transformed data {
@@ -21,6 +22,8 @@ parameters {
   vector<lower=0>[num_oaux+2] oaux;
   vector[N+2] eta;
   vector[N_obs+2] oeta;
+  matrix[N2, M] inf_noise;
+  vector<lower=0>[2] inf_aux;
 }
 
 generated quantities {

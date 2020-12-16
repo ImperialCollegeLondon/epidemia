@@ -1,6 +1,5 @@
 { // predict cases over time
 int idx=1;
-matrix[N2,M] cumm_sum = rep_matrix(0,N2,M);
 for (m in 1:M){
     // time indices for group m: start date, final seed date, final date
     int n0 = starts[m];
@@ -16,9 +15,7 @@ for (m in 1:M){
         Rt_unadj[n0:n2,m] = eta[idx:(idx+NC[m]-1)];
     }
     
-    Rt[n0:n1,m] = Rt_unadj[n0:n1,m]; 
     idx += NC[m];
-
     infections[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
     cumm_sum[n0:n1,m] = cumulative_sum(infections[n0:n1,m]);
 

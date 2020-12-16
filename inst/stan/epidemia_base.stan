@@ -46,6 +46,7 @@ parameters {
 #include /parameters/parameters_glm.stan
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
+#include /parameters/parameters_inf.stan
   vector<lower=0>[M] y_raw;
   real<lower=0> tau_raw;
 }

@@ -8,7 +8,6 @@ if (latent) {
     else if (prior_dist_for_inf_aux[1] == 3)
         target += exponential_lpdf(inf_aux_raw[1] | 1);
 
-
     for (m in 1:M) {
         int n0 = starts[m];
         int n1 = n0 + N0 - 1;
@@ -16,7 +15,7 @@ if (latent) {
         vector[n2-n1] mu = mean_inf[(n1+1):n2,m];
 
         if (pop_adjust) 
-            mu = pop[m] - cumm_sum[n1:(n2-1),m]) .* (1 - exp(- mu / pop[m]));
+            mu = (pop[m] - cumm_sum[n1:(n2-1),m]) .* (1 - exp(- mu / pop[m]));
         
         target += gamma_lpdf(infections[(n1+1):n2,m] | mu / inf_aux[1], 1 / inf_aux[1]);
 
