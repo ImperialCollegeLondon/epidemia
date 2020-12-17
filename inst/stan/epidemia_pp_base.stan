@@ -28,8 +28,20 @@ parameters {
 
 generated quantities {
   vector[N_obs] E_obs;
+  matrix<lower=0>[N2, M] Rt = rep_matrix(0,N2,M);
+  matrix<lower=0>[N2, M] infectiousness;
 #include /tparameters/infections_rt.stan
 #include /tparameters/gen_infections.stan
 #include /tparameters/gen_eobs.stan
+
+  if (pop_adjust) {
+    for (m in 1:M) 
+      Rt[2:N2,m] = ((pop[m] - cumm_sum[1:(N2-1),m]) ./ pop[m]) .* Rt_unadj[,m];
+  } else {
+      Rt = Rt_unadj;
+  }
+
+  infectiousness = load / max(si);
+
 }
 

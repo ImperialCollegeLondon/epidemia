@@ -843,7 +843,7 @@ magrittr::`%>%`
 # function to format y axis labels
 # bigger numbers are shown as scientific
 fancy_scientific <- function(l) {
-  if (all(l <= 1e4)) {
+  if (all(l[!is.na(l)] <= 1e4)) {
     l <- format(l)
   } else {
     # turn in to character string in scientific notation

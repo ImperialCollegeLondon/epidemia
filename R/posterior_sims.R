@@ -66,7 +66,9 @@ posterior_sims <- function(object,
   stanmat <- new_inf_stanmat(
     stanmat, 
     standata$begin, 
-    standata$N2, 
+    standata$starts,
+    standata$N0,
+    standata$NC,
     standata$groups
   )
 
@@ -234,7 +236,7 @@ pp_standata <- function(object, rt, obs, data) {
 pp_stanmat <- function(stanmat, orig_nms, groups) {
 
   # hack for dealing with infection noise
-  orig_nms <- grep("inf_", orig_nms, value=T, invert=T)
+  orig_nms <- grep("inf_noise", orig_nms, value=T, invert=T)
 
   nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
@@ -255,7 +257,7 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
     paste0("eta[", neta + 1:2, "]"),
     paste0("oeta[", noeta + 1:2, "]"),
     paste0("inf_noise[", ninfnoise + 1:2, "]"),
-    paste0("inf_aux[", ninfnoise + 1:2, "]")
+    paste0("inf_aux[", ninfaux + 1:2, "]")
   )
   return(cbind(stanmat, mat))
 }

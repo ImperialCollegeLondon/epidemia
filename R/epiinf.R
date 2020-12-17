@@ -9,7 +9,7 @@
 #'  to be sampled. If \code{FALSE}, the model only consider their expected value given 
 #'  the reproduction numbers and seeded infections. Defaults to \code{FALSE}.
 #' @param family Specifies prior family for latent infections. 
-#'  Only used if \code{latent = TRUE}, and is currently restricted to be "gamma".
+#'  Only used if \code{latent = TRUE}, and is currently restricted to be "log-normal".
 #' @param prior_aux Prior distribution for the coefficient of dispersion \eqn{d} for  
 #'  the offspring distribution. Only used if \code{latent = TRUE}. The number of 
 #'  offspring of a given infection is assumed to have mean \eqn{\mu} and variance \eqn{d \mu}.
@@ -17,7 +17,7 @@
 #'  super-spreading events.
 #' @export
 epiinf <- function(latent = FALSE,
-                   family = "gamma",
+                   family = "log-normal",
                    prior_aux = rstanarm::exponential(autoscale = TRUE)) {
   call <- match.call(expand.dots = TRUE)
 
@@ -26,7 +26,7 @@ epiinf <- function(latent = FALSE,
       call. = FALSE)
   }
 
-  ok_families <- c("gamma")
+  ok_families <- c("log-normal")
   if ((latent == TRUE) && !(family %in% ok_families)) {
     stop("'family' must be one of ", paste(ok_families, collapse= ", "),
       call. = FALSE
