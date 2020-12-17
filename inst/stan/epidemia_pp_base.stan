@@ -22,8 +22,8 @@ parameters {
   vector<lower=0>[num_oaux+2] oaux;
   vector[N+2] eta;
   vector[N_obs+2] oeta;
-  vector[latent ? N - M * N0 + 2 : 0] inf_noise;
-  vector<lower=0>[latent ? 2 : 0] inf_aux;
+  vector[latent ? N - M * N0 + 2 : 2] inf_noise;
+  vector<lower=0>[latent ? 3 : 2] inf_aux;
 }
 
 generated quantities {
