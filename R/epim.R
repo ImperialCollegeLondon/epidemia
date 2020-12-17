@@ -200,7 +200,9 @@ epim <- function(rt,
     "tau2",
     if (length(sdat$ac_nterms)) "ac_scale",
     if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
-    if (sdat$num_oaux > 0) "oaux"
+    if (sdat$num_oaux > 0) "oaux",
+    if (sdat$latent) "infections",
+    if (sdat$latent) "inf_aux"
   )
 
   args <- c(
@@ -278,6 +280,12 @@ epim <- function(rt,
     if (sdat$num_oaux > 0) {
       make_oaux_nms(obs)
     },
+    if (sdat$latent) {
+      make_inf_nms(sdat$begin, sdat$N2, sdat$groups)
+    },
+    if (sdat$latent) {
+      "inf|dispersion"
+    },
     "log-posterior"
   )
 
@@ -292,6 +300,7 @@ epim <- function(rt,
     call,
     stanfit = fit,
     rt,
+    inf,
     obs,
     data,
     seed_days,
@@ -452,4 +461,13 @@ make_obeta_nms <- function(obs, sdat) {
     value = T
   )
   return(paste0(repnms, "|", obs_beta_nms))
+}
+
+# @param begin First simulation date
+# @param N2 Total simulation periods
+# @param groups Character vector giving all simulated groups
+make_inf_nms <- function(begin, N2, groups) {
+  temp <- expand.grid(begin + seq_len(N2) - 1, groups)
+  nms <- paste0("inf[", temp[,1], ", ", temp[,2],"]")
+  return(nms)
 }

@@ -180,6 +180,7 @@ subsamp <- function(object, mat, draws=NULL) {
 #
 # @param object An \code{epimodel} object
 # @param rt An epirt_ object
+# @param inf An epiinf object
 # @param obs A list of epiobs_ objects
 # @param data The checked data (either original or newdata)
 pp_standata <- function(object, rt, obs, data) {
@@ -198,6 +199,10 @@ pp_standata <- function(object, rt, obs, data) {
   sdat_rt <- standata_rt(rt)
   out$link <- sdat_rt$link
   out$r0 <- sdat_rt$r0
+
+  sdat_inf <- standata_inf(object$inf)
+  out$latent <- sdat_inf$latent
+  out$inf_family <- sdat_inf$inf_family
 
   # add remaining data
   out <- c(out, list(

@@ -22,12 +22,13 @@ for (m in 1:M){
     for (i in (n1+1):n2) {
         int start = max(n0, i - si_len);
         load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(si_rev, i - start));
-        mean_inf[i,m] = Rt_unadj[i,m] * load[i,m];
+        infections[i,m] = Rt_unadj[i,m] * load[i,m];
 
-        if (latent) 
-            infections[i,m] = mean_inf[i,m] + sqrt(mean_inf[i,m] * inf_aux[1]) * inf_noise[i,m];
-        else 
-            infections[i,m] = mean_inf[i,m];
+        if (latent) { // treat as log-normal (could extend)
+            real loginf = log(infections[i,m]);
+            real loginfd = log(infections[i,m] + inf_aux[1]);
+            infections[i,m] = exp( (3 * loginf - loginfd) / 2 + sqrt(loginfd - loginf) * inf_noise[i,m]);
+        }
         
         if (pop_adjust) 
             infections[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(- infections[i,m] / pop[m]));

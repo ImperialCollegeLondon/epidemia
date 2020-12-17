@@ -66,6 +66,7 @@ epimodel <- function(object) {
 
   out <- loo::nlist(
     rt = object$rt_orig,
+    inf = object$inf,
     obs = object$obs_orig,
     data = object$data,
     groups = levels(object$data$group),
