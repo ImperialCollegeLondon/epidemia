@@ -201,7 +201,7 @@ epim <- function(rt,
     if (length(sdat$ac_nterms)) "ac_scale",
     if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
     if (sdat$num_oaux > 0) "oaux",
-    if (sdat$latent) "infections",
+    if (sdat$latent) "inf_noise",
     if (sdat$latent) "inf_aux"
   )
 
@@ -281,7 +281,7 @@ epim <- function(rt,
       make_oaux_nms(obs)
     },
     if (sdat$latent) {
-      make_inf_nms(sdat$begin, sdat$N2, sdat$groups)
+      make_inf_nms(sdat$begin, sdat$starts, sdat$N0, sdat$NC, sdat$groups)
     },
     if (sdat$latent) {
       "inf|dispersion"
@@ -464,10 +464,13 @@ make_obeta_nms <- function(obs, sdat) {
 }
 
 # @param begin First simulation date
+# @param starts Start index for each group
+# @param N0 Seed days
 # @param N2 Total simulation periods
 # @param groups Character vector giving all simulated groups
-make_inf_nms <- function(begin, N2, groups) {
-  temp <- expand.grid(begin + seq_len(N2) - 1, groups)
-  nms <- paste0("inf[", temp[,1], ", ", temp[,2],"]")
+make_inf_nms <- function(begin, starts, N0, NC, groups) {
+  nms <- c()
+  for (m in 1:length(groups)) 
+    nms <- paste0("inf_noise[", begin -1 + seq(starts + N0, NC[m]), ", ", groups[m],"]")
   return(nms)
 }

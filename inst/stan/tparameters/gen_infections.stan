@@ -1,5 +1,6 @@
 { // predict cases over time
 int idx=1;
+int idx2=1;
 for (m in 1:M){
     // time indices for group m: start date, final seed date, final date
     int n0 = starts[m];
@@ -27,13 +28,14 @@ for (m in 1:M){
         if (latent) { // treat as log-normal (could extend)
             real loginf = log(infections[i,m]);
             real loginfd = log(infections[i,m] + inf_aux[1]);
-            infections[i,m] = exp( (3 * loginf - loginfd) / 2 + sqrt(loginfd - loginf) * inf_noise[i,m]);
+            infections[i,m] = exp( (3 * loginf - loginfd) / 2 + sqrt(loginfd - loginf) * inf_noise[idx2]);
         }
         
         if (pop_adjust) 
             infections[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(- infections[i,m] / pop[m]));
         
         cumm_sum[i,m] = cumm_sum[i-1,m] + infections[i,m];
+        idx2 += 1;
     }
 }
 }

@@ -1,1 +1,2 @@
-matrix[latent ? N2 : 0, latent ? M : 0] inf_noise; // latent noise terms 
+
+real inf_noise[latent ? N - M * N0 : 0]; // latent noise terms 
