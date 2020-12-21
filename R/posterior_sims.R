@@ -62,15 +62,17 @@ posterior_sims <- function(object,
     stanmat <- cbind(stanmat, as.matrix(oeta))
   }
 
-  # compute infection noise for unseen periods
-  stanmat <- new_inf_stanmat(
-    stanmat, 
-    standata$begin, 
-    standata$starts,
-    standata$N0,
-    standata$NC,
-    standata$groups
-  )
+  if(sdat$latent) {
+    # compute infection noise for unseen periods
+    stanmat <- new_inf_stanmat(
+      stanmat, 
+      standata$begin, 
+      standata$starts,
+      standata$N0,
+      standata$NC,
+      standata$groups
+    )
+  }
 
   # stanmatrix may require relabeling
   stanmat <- pp_stanmat(

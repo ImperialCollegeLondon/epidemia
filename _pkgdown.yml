@@ -1,0 +1,30 @@
+url: https://imperialcollegelondon.github.io/epidemia/
+title: x
+template:
+  params:
+    bootswatch: flatly
+    docsearch:
+      api_key: API_KEY
+      index_name: INDEX_NAME
+
+navbar:
+  structure:
+    left:  [install, model, articles, reference, news]
+    right: [github]
+  components:
+    home: ~
+    install: 
+      text: Install
+      href: articles/install.html
+    model:
+      text: Model
+      href: articles/model.html
+    articles:
+      text: Tutorials
+      menu:
+      - text: A Basic Example
+        href: articles/flu.html
+    news:
+      text: News
+      href: news/index.html
+

@@ -3,16 +3,19 @@ font-size: 16px;
 }
 
 .navbar-default {
-    background-color: #003E74;
+    background-color: #094D80; 
+    height: 70px;
 }
 
 .navbar-default .navbar-text {
-  color: #003E74;
+  color: #094D80;
+  height: 70px
 }
 
 .navbar-default .navbar-brand {
   color: #f8f8ff;
 }
+
 
 .navbar-default .navbar-brand:hover,
 .navbar-default .navbar-brand:focus {
@@ -20,26 +23,52 @@ font-size: 16px;
 }
 
 .navbar-default .navbar-nav > li > a {
+  display: table-cell;
+  float: none;
+  vertical-align: middle;
   color: #f8f8ff;
+  height: 70px;
 }
 
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-  color: #C0C0C0;
+  color: #f8f8ff;
 } 
 
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
-  color: #C0C0C0;
-  background-color: #003E74;
+  color: #f8f8ff;
+  background-color: #094D80;
+}
+
+.navbar-default .version {
+  display: none;
 }
 
 .navbar-default .navbar-link {
-  color: #f8f8ff;
+  font-size: 40px;
+  color: transparent;
+  background: url(logo.png) no-repeat;
+  background-size: 35px auto;
+  background-position: 0 center;
+  padding-right: 20px;
+  position: relative;
+  top: -4px;
 }
+
 .navbar-default .navbar-link:hover {
-  color: #ffd4d4;
+  color: transparent;
+}
+.navbar-form .form-control {
+  width: auto;
+  position: relative;
+  top: 12.5px;
+  height: 30px;
+  border-radius: 0px;
+  border: 0px;
 }
 
-
+#pkgdown-sidebar {
+  font-size: 10pt;
+}
