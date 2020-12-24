@@ -44,29 +44,30 @@ epiinf <- function(
 
   # check seeds are scalar, integer, positive
   check_integer(seed_days)
-  if (!(is.scalar(seed_days))
-    stop("'seeds' should be a scalar", call. = FALSE)
-  if (seed_days < 1)
-    stop("'seeds' must be positive", call. = FALSE)
-
-  # check gen is simplex vector
+  check_scalar(seed_days)
+  check_positive(seed_days)
   gen <- check_sv(gen, "gen")
-
-  
-  if (!is.logical(latent) || !is.atomic(latent)) {
-    stop("'latent' should be either TRUE or FALSE.",
-      call. = FALSE)
-  }
-
-  ok_families <- c("log-normal")
-  if ((latent == TRUE) && !(family %in% ok_families)) {
-    stop("'family' must be one of ", paste(ok_families, collapse= ", "),
-      call. = FALSE
-    )
-  }
-
+  check_scalar(latent)
+  check_logical(latent)
+  check_scalar(pop_adjust)
+  check_logical(pop_adjust)
   check_prior(prior_tau, "exponential")
-  check_prior(prior_aux, c("normal", "t", "cauchy", "exponential"))
+
+  # check correct offspring and aux distribution
+  if (latent == TRUE) {
+    ok_families <- c("log-normal")
+    if (!(family %in% ok_families)) {
+      stop("'family' must be one of ", paste0(ok_families), collape=", "),
+        call. = FALSE)
+    }
+    check_prior(prior_aux, c("normal", "t", "cauchy", "exponential"))
+  }
+
+  # check susceptibles is character
+  if (pop_adjust) {
+    check_character(susceptibles)
+    check_scalar(susceptibles)
+  }
 
   out <- loo::nlist(
     call,
