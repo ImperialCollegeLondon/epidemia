@@ -1,0 +1,194 @@
+---
+title: "Implementation"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    number_sections: true
+link-citations: yes
+bibliography: ../inst/REFERENCES.bib
+pkgdown:
+    as_is: true
+---
+
+
+<style>
+.col-md-9 {
+    width: 80% !important;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 2;
+    text-align: justify;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#  Overview {#sec:overview}
+
+Here we give a high-level overview of the workflow required for defining and fitting a model with 
+epidemia. The primary model fitting function is `epim()`. This takes a model description and 
+additional arguments relating to the fitting algorithm, and proceeds to fit the model using a 
+precompiled Stan program. This allows model fitting to begin immediately as opposed to requiring compilation each time 
+`epim()` is called. 
+
+This is similar to the workflow for fitting Bayesian regression models 
+with rstanarm. A key difference, however, is that the models fit by epidemia are much more 
+complex, and are therefore inherently more difficult to specify. epidemia aims to simplify this process 
+by modularising the model definition into three distinct parts: transmission, 
+infections and observations. These components of the model are defined with the functions `epirt()`, `epiinf()` and 
+`epiobs()` respectively.
+
+We begin by describing `epim()` in more detail, and then proceed to discuss the three modeling functions. 
+epidemia contains an example dataset `EuropeCovid` which contains, among other things, data 
+on daily death counts from Covid19 in 11 European Countries from Feb through March? This is 
+used as a running example throughout this article.
+
+```{r load-packages, message=FALSE}
+library(epidemia)
+library(rstanarm)
+data("EuropeCovid")
+```
+
+# Model Fitting
+
+`epim()` is the only model fitting function in epidemia. It has arguments `rt`, `inf`, and `obs` which 
+expect a description of the transmission model, infection model and all observational models respectively. 
+Together, these fully define the joint distribution of data and parameters. 
+
+```{r epim-args, echo=FALSE}
+arguments <- c(
+    "`rt`",
+    "`inf`",
+    "`obs`",
+    "`data`",
+    "`algorithm`",
+    "`sampling_args`",
+    "`prior_PD`"
+)
+
+description <- c(
+    paste0("An object of class `\"epirt\"`, resulting from a call to `epirt()`. This defines the model for ",
+    "reproduction numbers $R$."),
+    paste0("An object of class `\"epiinf\"`, resulting from a call to `epiinf()`. This entirely defines ",
+    "the model for infections $i_t$.)"),
+    paste0("A list of objects of class `epiobs`. Each element of the list defines a model for a given ",
+    "observation vector in `data`. )"),
+    paste0("A dataframe with all data required for fitting the model. This includes all observation ",
+    "columns and predictors specified in the models for the reproduction number and ascertainment rates."),
+    paste0("One of `\"sampling\"`, `\"meanfield\"` or `\"fullrank\"`. This determines the rstan sampling ",
+    "function to use for fitting the model. `\"sampling\"` corresponds to an adaptive HMC sampler, while ",
+    "`\"meanfield\"` and `\"fullrank\"` are both Variational Bayes algorithms."),
+    paste0("An (optional) named list of parameters to pass to the rstan sampling function, ",
+    "for example `rstan::sampling`."),
+    paste0("Same as in `rstan::stan_glm`. If `TRUE`, samples parameters from their priors. This is ",
+    "useful for prior predictive checks. Defaults to `FALSE`.")
+)
+df <- data.frame(Argument = arguments, Description = description)
+knitr::kable(df, caption = "Formal arguments for `epim()`", booktabs=TRUE)
+```
+
+# Transmission
+
+```{r epirt-args, echo=FALSE}
+arguments <- c(
+    "`formula`", 
+    "`link`", 
+    "`center`", 
+    "`prior`", 
+    "`prior_intercept`", 
+    "`prior_covariance`")
+
+description <- c(
+    paste0(
+    "An object of class `\"formula\"` which determines the linear predictor $\\eta$ for $R$. ", 
+    "The left hand side must take the form `R(group_col, date_col)`, where `group_col` and `date_col` are ",
+    "column names in the data frame passed as the `data` argument to `epirt()`. `group_col` must be ",
+    "a factor vector indicating group membership (i.e. country, state, age cohort), and `date_col` must ",
+    "be a vector of class `\"Date\"`. This is syntactic sugar for the reproduction number in the given group at the give date."),
+    "The link function $g$. Can be `\"log\"`, `\"identity\"` or a call to `scaled_logit()`. Defaults to `log`.",
+    paste0("If `TRUE`, covariates in `formula` are centered to have mean zero. All priors should then be ",
+    "interpreted as priors on the centered covariates."),
+    paste0("Same as in `rstanarm::stan_glm`.  Defines the prior on $\\beta$. ",
+    "`rstanarm` provided [rstanarm priors](http://mc-stan.org/rstanarm/reference/priors.html), a `shifted_gamma` can be used. **Note** ",
+"if `autoscale=TRUE` in the call to the prior function, then automatic rescaling takes place."),
+    "Same as in `rstanarm::stan_glm`. Prior for the regression intercept $\\beta_0$ (if it exists).",
+    paste0("Same as in `rstanarm::stan_glmer`. Defines the prior on the covariance matrix ",
+    "$\\Sigma$. Only use if the `formula` has one or more terms  of the form `(x | y)`, ",
+    "in which case there are parameters to partially pool, i.e. $b$ has positive length.")
+)
+
+df <- data.frame(Argument = arguments, Description = description)
+knitr::kable(df, caption = "Formal arguments for `epirt()`", booktabs=TRUE)
+```
+
+# Infections
+
+```{r epiinf-args, echo=FALSE}
+arguments <- c(
+    "`seed_days`",
+    "`gen`",
+    "`prior_tau`",
+    "`latent`",
+    "`family`",
+    "`prior_aux`",
+    "`pop_adjust`",
+    "`susceptibles`"
+)
+
+description <- c(
+    "An integer giving the number of seed days $v + 1$. Defaults to 6L.",
+    paste0("A numeric vector giving the probability mass function $g_k$ of the generation distribution. ",
+    "Must be a simplex vector, i.e. nonnegative and summing to 1."),
+    paste0("Prior distribution for the hyperparameter $\\tau$, which is the mean of the prior ",
+    "distribution for infection seeding. Defaults to `rstanarm::exponential(0.03)`."),
+    "If `TRUE`, treat infections as latent parameters using the extensions described in Section XXX. ",
+    "Specifies the family for $p(i'_t, d)$. Only used if `latent = TRUE`, and currently restricted to `log-normal`.",
+    "Prior on the coefficient of variation $d$.",
+    "If `TRUE`, applies a population adjustment to the infection process $i_t$. Defaults to `FALSE`.",
+    paste0("A character vector giving the name of the column in the dataframe passed as the `data` argument of `epim`, that ",
+    "corresponds to the susceptible population over time. Only used if `pop_adjust=TRUE`.")
+)
+
+df <- data.frame(Argument = arguments, Description = description)
+knitr::kable(df, caption = "Formal arguments for `epiinf()`", booktabs=TRUE)
+```
+
+# Observations
+
+```{r epiobs-args, echo = FALSE}
+arguments <- c(
+    "`formula`",
+    "`i2o`",
+    "`family`",
+    "`link`",
+    "`center`, `prior`, `prior_intercept`",
+    "`prior_aux`",
+    "`...`"
+)
+
+description <- c(
+    paste0("An object of class `\"formula\"` which determines the linear predictor for the ",
+    "ascertainment rate for a particular observation vector. The left hand side must take ",
+    "the form `obs_col(group_col, date_col)`, which is syntactic sugar for the observation ",
+    "in a given country on a given date. `obs_col` refers to the column of observations in ",
+    "the dataframe passed as the `data` argument to `epim()` which is to be modeled. `group_col` ",
+    "and `date_col` must be the same as those used in the call to `epirt()`."),
+    paste0("A numeric (simplex) vector defining the probability mass function $\\pi_k$ of the ",
+    "time distribution from infection to observation."),
+    paste0("A string representing the family of the sampling distribution $p(y_t,\\phi)$. Can be ",
+    "one of `\"poisson\"`, `\"neg_binom\"`, `\"quasi_poisson\"`, `\"normal\"` or `\"log_normal\"`."),
+    paste0("A string representing the link function used to transform the linear predictor. Can be ",
+    "one of `\"logit\"`, `\"probit\"`, `\"cauchit\"`, `\"cloglog\"`, `\"identity\"`. Defaults to `\"logit\"`."),
+    "same as in `epirt()`, described above.",
+    paste0("The prior distribution for the auxiliary parameter $\\phi$, if it exists. ",
+    "Only used if family is `\"neg_binom\"` (reciprocal dispersion), `\"quasi_poisson\"` (dispersion), ",
+    "`\"normal\"` (standard deviation) or `\"log_normal\"` (sigma parameter)."),
+    "Additional arguments for `model.frame`."
+)
+df <- data.frame(Argument = arguments, Description = description)
+knitr::kable(df, caption = "Formal arguments for `epiobs()`", booktabs=TRUE)
+```
+

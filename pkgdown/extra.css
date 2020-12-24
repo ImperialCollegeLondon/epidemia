@@ -1,74 +1,93 @@
 body{
-font-size: 16px;
+font-size: 16px !important;
 }
 
 .navbar-default {
-    background-color: #094D80; 
-    height: 70px;
+    background-color: #094D80 !important; 
+    height: 70px !important;
 }
 
 .navbar-default .navbar-text {
-  color: #094D80;
-  height: 70px
+  color: #094D80 !important;
+  height: 70px !important;
 }
 
 .navbar-default .navbar-brand {
+  color: #f8f8ff !important;
+}
+
+.navbar-default .dropdown-menu>li>a {
+  color: #094D80;
+}
+
+.navbar-default .dropdown-menu>li>a:hover,
+.navbar-default .dropdown-menu>li>a:focus {
   color: #f8f8ff;
+  background-color: #094D80;
 }
 
 
 .navbar-default .navbar-brand:hover,
 .navbar-default .navbar-brand:focus {
-  color: #f8f8ff;
+  color: #f8f8ff !important;
 }
 
 .navbar-default .navbar-nav > li > a {
-  display: table-cell;
-  float: none;
-  vertical-align: middle;
-  color: #f8f8ff;
-  height: 70px;
+  display: table-cell !important;
+  float: none !important;
+  vertical-align: middle !important;
+  color: #f8f8ff !important;
+  height: 70px !important;
 }
 
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-  color: #f8f8ff;
+  color: lightskyblue !important;
 } 
 
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
-  color: #f8f8ff;
-  background-color: #094D80;
+  color:lightskyblue !important;
+  background-color: #094D80 !important;
 }
 
 .navbar-default .version {
-  display: none;
+  display: none !important;
 }
 
 .navbar-default .navbar-link {
-  font-size: 40px;
-  color: transparent;
-  background: url(logo.png) no-repeat;
-  background-size: 35px auto;
-  background-position: 0 center;
-  padding-right: 20px;
-  position: relative;
-  top: -4px;
+  font-size: 40px !important;
+  color: transparent !important;
+  background: url(logo.png) no-repeat !important;
+  background-size: 35px auto !important;
+  background-position: 0 center !important;
+  padding-right: 20px !important;
+  position: relative !important;
+  top: -4px !important;
 }
 
 .navbar-default .navbar-link:hover {
-  color: transparent;
+  color: transparent !important;
 }
 .navbar-form .form-control {
-  width: auto;
-  position: relative;
-  top: 12.5px;
-  height: 30px;
-  border-radius: 0px;
-  border: 0px;
+  width: auto !important;
+  position: relative !important;
+  top: 12.5px !important;
+  height: 30px !important;
+  border-radius: 0px !important;
+  border: 0px !important;
 }
 
 #pkgdown-sidebar {
-  font-size: 10pt;
+  font-size: 10pt !important;
+  display: none !important;
+}
+
+.col-md-9 {
+  width: 100% !important;
+}
+
+.contents .page-header {
+  display: none;
 }

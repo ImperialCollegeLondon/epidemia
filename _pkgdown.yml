@@ -2,6 +2,7 @@ url: https://imperialcollegelondon.github.io/epidemia/
 title: x
 template:
   params:
+    mathjax: "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML.js"
     bootswatch: flatly
     docsearch:
       api_key: API_KEY
@@ -18,7 +19,11 @@ navbar:
       href: articles/install.html
     model:
       text: Model
-      href: articles/model.html
+      menu: 
+      - text: Description
+        href: articles/model-description.html
+      - text: Implementation
+        href: articles/model-implementation.html
     articles:
       text: Tutorials
       menu:

@@ -1,8 +1,8 @@
 
-<img src="man/figures/logo_big.png" align = "left" style = "display:block;max-height:50px;float:none;margin-top:40px;margin-bottom:-15px;"/>
-<hr>
+<img src="man/figures/logo_big.png" style = "display:block;width:30%;float:none;margin-top:60px;margin-left:auto;margin-right:auto;margin-bottom:20px;"/>
 
 
+<div style = "width:70%;margin:auto;text-align:justify;margin-bottom:40px;">
 Flexibly specify and fit Bayesian statistical models for epidemics.
 epidemia leverages R’s formula interface to paramaterize the time-varying
 reproduction rate as a function of covariates. Multiple regions can
@@ -11,7 +11,11 @@ package has been inspired by, and has borrowed from,
 [rstanarm](https://mc-stan.org/rstanarm/) (Goodrich et al. 2020).
 epidemia uses [rstan](https://mc-stan.org/rstan/) (Stan Development Team
 2020) as the backend for fitting models.
+</div>
 
+<div style = "width:80%;margin:auto;text-align:justify;">
+<h4> Getting Started </h4>
+<hr>
 The best way to get started is to read the
 [vignettes](https://imperialcollegelondon.github.io/epidemia/articles/index.html).
 
@@ -34,4 +38,7 @@ The best way to get started is to read the
   - [Forecast evaluation](https://imperialcollegelondon.github.io/epidemia/articles/foreacst_evaluation.html) shows how to evaluate a
     model's forecast using its prediction error and the mean coverage of the credible
     intervals.
+</div>
+
+
 
