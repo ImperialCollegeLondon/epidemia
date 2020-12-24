@@ -74,7 +74,7 @@ description <- c(
     "reproduction numbers $R$."),
     paste0("An object of class `\"epiinf\"`, resulting from a call to `epiinf()`. This entirely defines ",
     "the model for infections $i_t$.)"),
-    paste0("A list of objects of class `epiobs`. Each element of the list defines a model for a given ",
+    paste0("A list of objects of class `\"epiobs\"`. Each element of the list defines a model for a given ",
     "observation vector in `data`. )"),
     paste0("A dataframe with all data required for fitting the model. This includes all observation ",
     "columns and predictors specified in the models for the reproduction number and ascertainment rates."),

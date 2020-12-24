@@ -23,22 +23,12 @@
 #'  element defines a model for the specified observation vector.
 #' @param data A dataframe containing all data required to fit the model.
 #'  See [lm].
-#' @param pops  A two column dataframe giving the total population of each
-#'  group. First column represents the group, with the second giving the
-#'  corresponding population.
-#' @param si A vector representing the serial interval of the disease (a
-#'  probability vector).
-#' @param seed_days Number of days for which to seed infections.
 #' @param algorithm One of \code{"sampling"}, \code{"meanfield"} or
 #'  \code{"fullrank"}. This specifies which \pkg{rstan} function to use for
 #'  fitting the model.
 #' @param group_subset An optional vector specifying a subset of groups to
 #'  model. Elements should correspond to the group levels specified through the
 #'  \code{data} argument.
-#' @param prior_tau The prior for \eqn{\tau}.This parameter is described in the
-#'  introductory vignette, and controls the variability in the number of
-#'  seeded infections at  the beginning of the epidemic. Must be a call to
-#'  \code{\link[rstanarm]{exponential}}.
 #' @param prior_PD Same as in \code{\link[rstanarm]{stan_glm}}. If \code{TRUE},
 #'  samples parameters from the prior disribution.
 #' Defaults to \code{FALSE}.
@@ -52,9 +42,6 @@
 #'  provided, this is the equivalent to \code{sampling_args} but for the
 #'  initial run. The seed used is that specified in \code{init_run}, or that
 #'  specified in \code{sampling_args}, or no seed, in that order.
-#' @param pop_adjust The population adjustment is a major contributor to algorithm 
-#'  runtime. Although it should be implemented for a final model run, it may be 
-#'  quicker to develop models without the adjustment. Defaults to TRUE.
 #' @param ... Not used.
 #' @examples
 #' \dontrun{
@@ -77,19 +64,14 @@
 #' \insertAllCited{}
 #' @export
 epim <- function(rt,
-                 inf = epiinf(),
-                 obs = list(),
+                 inf,
+                 obs,
                  data,
-                 pops,
-                 si,
-                 seed_days = 6,
                  algorithm = c("sampling", "meanfield", "fullrank"),
                  group_subset = NULL,
-                 prior_tau = rstanarm::exponential(rate = 0.03),
                  prior_PD = FALSE,
                  sampling_args = list(),
                  init_run = FALSE,
-                 pop_adjust = TRUE,
                  ...) {
 
   call    <- match.call(expand.dots = TRUE)
@@ -98,15 +80,10 @@ epim <- function(rt,
   obs_orig <- check_obs(rt, obs)
   groups  <- levels(data$group)
   pops    <- check_pops(pops, groups)
-  si      <- check_sv(si, "si")
   algorithm <- match.arg(algorithm)
   op <- options("warn")
   on.exit(options(op))
   options(warn=1)
-
-  if (seed_days < 1) {
-    stop("'seed_days' must be greater than zero", call. = FALSE)
-  }
 
   # generates model matrices for each regression
   rt <- epirt_(rt_orig, data)
