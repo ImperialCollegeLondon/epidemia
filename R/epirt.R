@@ -32,6 +32,7 @@ epirt <- function(formula,
                   ...) {
   call <- match.call(expand.dots = TRUE)
 
+  check_formula(formula)
   check_rt_formula(formula)
   check_scalar(center)
   check_logical(center)
@@ -48,6 +49,7 @@ epirt <- function(formula,
      stop(msg, .call=FALSE)
   }
 
+  class(formula) <- c("epiformula", "formula")
   out <- loo::nlist(
     call,
     formula,

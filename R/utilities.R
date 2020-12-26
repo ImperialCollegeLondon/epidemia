@@ -72,25 +72,23 @@ is_autocor <- function(formula) {
 # check correct form for left hand side
 check_rt_formula <- function(form) {
   lhs.form <- as.character.formula(lhs(form))
-  grepl("^R\\((\\w)+, (\\w)+\\)$", lhs.form)
-}
-
-
-check_rt_formula <- function(formula) {
-  if(!inherits(formula,"formula"))
-    stop("'formula' must have class formula.", call. = FALSE)
-  
-  # check left hand side for correct form
-  match <- grepl(
-    pattern = "^R\\((\\w)+, (\\w)+\\)$",
-    x = deparse(lhs(formula))
-  )
-  if (!match) {
+  match <- grepl("^R\\((\\w)+, (\\w)+\\)$", lhs.form)
+  if (!match)
     stop("left hand side 'formula' does not have required form.")
-  }  
-  class(formula) <- c("epiformula", "formula")
-  return(formula)
 }
+
+# convert a formula to a character vector
+as.character.formula <- function(x) {
+  form <- paste(deparse(x), collapse=" ")
+  form <- gsub( "\\s+", " ", form, perl=FALSE)
+  return(form)
+}
+
+check_formula <- function(formula) {
+  if (!inherits(formula, "formula"))
+  stop("'formula' must have class formula.", call. = FALSE)
+}
+
 
 # Get name of observation column from formula
 # @param x A formula
