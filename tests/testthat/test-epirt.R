@@ -13,6 +13,7 @@ expect_error(rt <- epirt(formula = R(x,y) + a ~ 1 + cov), regexp = "left hand si
 expect_error(rt <- epirt(formula = a + R(x,y) ~ 1 + cov), regexp = "left hand side")
 expect_error(rt <- epirt(formula = r(x,y) ~ 1 + cov), regexp = "left hand side")
 expect_error(rt <- epirt(formula = Rt(x,y) ~ 1 + cov), regexp = "left hand side")
+expect_error(rt <- epirt(formula = R(1,y) ~ 1 + cov), regexp = "left hand side")
 })
 
 testthat("Wrong class for formula is caught", {

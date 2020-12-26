@@ -34,6 +34,13 @@ check_sum_to_one <- function(x, tol = .Machine$double.eps) {
   
 }
 
+warn_sum_to_one <- function(x, tol = .Machine$double.eps) {
+  s <- as.character.expr(substitute(x))
+  if(abs(sum(x) - 1) > tol) 
+    warning(paste0(s, " does not sum to one. Please ensure this is intentional."), call. = FALSE)
+  
+}
+
 check_scalar <- function(x) {
   s <- as.character.expr(substitute(x))
   if (!is.scalar(x))
@@ -94,8 +101,11 @@ is_autocor <- function(formula) {
 # check correct form for left hand side
 check_rt_formula <- function(form) {
   s <- as.character.expr(substitute(form))
+  lhs.form <- as.character.expr(lhs(form))
   match <- grepl("^R\\((\\w)+, (\\w)+\\)$", lhs.form)
-  if (!match)
+  trms <- all.vars(lhs(form), functions=TRUE)
+
+  if (!match | (length(trms) != 3))
     stop(paste0("left hand side of ", s, " does not have required form of R(x,y)."), call.=FALSE)
 }
 
@@ -108,7 +118,7 @@ as.character.expr <- function(x) {
 check_formula <- function(formula) {
   s <- as.character.expr(substitute(formula))
   if (!inherits(formula, "formula"))
-  stop(paste0(s, " must have class formula.", call. = FALSE))
+  stop(paste0(s, " must have class formula."), call. = FALSE)
 }
 
 
@@ -147,30 +157,19 @@ rhs <- function(x) {
 # the object
 #
 # @param formula
-check_obs_formula <- function(formula) {
-  if (!inherits(formula, "formula")) {
-    stop("'formula' must have class formula.", call. = FALSE)
-  }
+check_obs_formula <- function(form) {
+  s <- as.character.expr(substitute(form))
+  lhs.form <- as.character.expr(lhs(form))
+  match <- grepl("^(\\w)+\\((\\w)+, (\\w)+\\)$", lhs.form)
+  trms <- all.vars(lhs(form), functions=TRUE)
 
-  if (is.mixed(formula)) {
-    stop("random effects terms found in 'formula', but are not currently
-      supported", call. = FALSE)
-  }
+  if (!match | (length(trms) != 3))
+    stop(paste0("left hand side of ", s, " does not have required form of z(x,y)."), call.=FALSE)
 
-  # if (is_autocor(formula)) {
-  #   stop("autocorrelation terms found in 'formula', but are not currently
-  #   supported", call. = FALSE)
-  # }
-
-  # check left hand side for correct form
-  match <- grepl(
-    pattern = "^(\\w)+\\((\\w)+, (\\w)+\\)$",
-    x = deparse(lhs(formula))
-  )
-  if (!match) {
-    stop("left hand side 'formula' does not have required form.")
+  if (is.mixed(form)) {
+    stop(paste0("random effects terms found in ", form, " but are not currently
+      supported", call. = FALSE))
   }
-  return(formula)
 }
 
 # The formula in the epirt object defines the group and date columns.
@@ -506,4 +505,20 @@ ok_aux_dists <- loo::nlist(
 ok_cov_dists <- loo::nlist(
  "decov", 
  "lkj"
+)
+
+ok_families <- c(
+  "poisson", 
+  "neg_binom", 
+  "quasi_poisson", 
+  "normal", 
+  "log_normal"
+)
+
+ok_links <- c(
+  "logit", 
+  "probit", 
+  "cauchit", 
+  "cloglog", 
+  "identity"
 )

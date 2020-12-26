@@ -35,86 +35,68 @@
 
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-epiobs <- function(formula,
-                   family = "neg_binom",
-                   link = "logit",
-                   i2o,
-                   center = FALSE,
-                   prior = rstanarm::normal(scale = .1),
-                   prior_intercept = rstanarm::normal(scale = .1),
-                   prior_aux = rstanarm::exponential(autoscale = TRUE),
-                   ...) {
+epiobs <- function(
+  formula,
+  i2o,
+  family = "neg_binom",
+  link = "logit",
+  center = FALSE,
+  prior = rstanarm::normal(scale = 0.2),
+  prior_intercept = rstanarm::normal(scale = 0.2),
+  prior_aux = rstanarm::normal(location=10, scale=5),
+  ...) {
+
   call <- match.call(expand.dots = TRUE)
-  formula <- check_obs_formula(formula)
 
-  ok_families <- c("poisson", "neg_binom", "quasi_poisson", "normal", "log_normal")
-  if (!(family %in% ok_families)) {
-    stop("'family' must be one of ", paste(ok_families, collapse= ", "),
-      call. = FALSE
-    )
-  }
+  # formula must meet special requirements
+  check_formula(formula)
+  check_obs_formula(formula)
 
-  ok_links <- c("logit", "probit", "cauchit", "cloglog", "identity")
-  if (!(link %in% ok_links)) {
-    stop("'link' must be one of ", paste(ok_links, collapse=", "),
-      call. = FALSE
-    )
-  }
+  # check i2o is non-negative vector
+  check_numeric(i2o)
+  check_non_negative(i2o)
+  warn_sum_to_one(i2o)
 
-  # i2o <- check_sv(i2o, name = "i2o") no longer required to be simplex
-  i2o <- check_v(i2o, name = "i2o")
-  if (sum(i2o) != 1) {
-    warning("'i2o' does not sum to 1
-     - check that this is intentional")
-  }
+  # check family is character scalar in given set
+  check_character(family)
+  check_scalar(family)
+  check_in_set(family, ok_families)
 
-  # only supported prior family is normal. (will change in future)
-  ok_dists <- c("normal")
-  if (!(prior$dist %in% ok_dists)) {
-    stop("'prior' must be a call to rstanarm::normal",
-      call. = FALSE
-    )
-  }
+  # check link is character scalar in given set
+  check_character(link)
+  check_scalar(link)
+  check_in_set(link, ok_links)
 
-  if (attr(terms(formula), "intercept")) {
-    if (!(prior_intercept$dist %in% ok_dists)) {
-      stop("'prior_intercept' must be a call to rstanarm::normal",
-        call. = FALSE
-      )
-    }
-  } else {
-    prior_intercept <- NULL
-  }
+  # center must be logical scalar
+  check_scalar(center)
+  check_logical(center)
 
-  if (family != "poisson") {
-    ok_aux_dists <- c("normal", "t", "cauchy", "exponential")
-    if (!(prior_aux$dist %in% ok_aux_dists)) {
-      stop("'prior_aux' must be one of ", paste(ok_aux_dists, collapse=", "),
-        call. = FALSE
-      )
-    }
-  } else {
-    prior_aux <- NULL
-  }
+  # check priors
+  check_prior(prior)
+  check_prior(prior_intercept)
+  check_prior(prior_aux)
 
+  # and that they are in allowed set 
+  # (restricting to normal todo: implement in full)
+  check_in_set(prior$dist, "normal")
+  check_in_set(prior_intercept$dist, "normal")
+  check_in_set(prior_aux$dist, ok_aux_dists)
 
   out <- loo::nlist(
     call,
     formula,
+    i2o,
     family,
     link,
-    i2o,
-    i2otype = "density",
     center,
     prior,
     prior_intercept,
-    prior_aux,
+    prior_aux = if (family != "poisson") prior_aux else NULL,
     mfargs <- list(...)
   )
   class(out) <- "epiobs"
   return(out)
 }
-
 
 # This is a constructor for an internal class which is essentially the same
 # as epiobs, however it constructs and stores the model matrix associated with
