@@ -456,3 +456,33 @@ is.mixed.epimodel <- function(object) {
 is.mixed.formula <- function(object) {
   !is.null(lme4::findbars(norws(object)))
 }
+
+ok_dists <- loo::nlist(
+  "gamma", 
+  "normal", 
+  student_t = "t", 
+  "cauchy", 
+  "hs", 
+  "hs_plus", 
+  "laplace", 
+  "lasso", 
+  "product_normal"
+)
+
+ok_int_dists <- loo::nlist(
+  "normal", 
+  student_t = "t", 
+  "cauchy"
+)
+
+ok_aux_dists <- loo::nlist(
+  "normal", 
+  student_t = "t", 
+  "cauchy", 
+  "exponential"
+)
+
+ok_cov_dists <- loo::nlist(
+ "decov", 
+ "lkj"
+)

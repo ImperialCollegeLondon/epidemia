@@ -31,7 +31,13 @@ epirt <- function(formula,
                   prior_covariance = rstanarm::decov(scale = .5),
                   ...) {
   call <- match.call(expand.dots = TRUE)
-  formula <- check_rt_formula(formula)
+
+  check_rt_formula(formula)
+  check_scalar(center)
+  check_logical(center)
+  check_prior(prior, ok_dists)
+  check_prior(prior_intercept, ok_int_dists)
+  check_prior(prior_covariance, ok_cov_dists)
 
   msg <- "'link' must be either 'log', 'identity', or a call to scaled_logit"
   if (is.character(link)) {
@@ -52,7 +58,6 @@ epirt <- function(formula,
     prior_covariance,
     mfargs <- list(...)
   )
-
   class(out) <- "epirt"
   return(out)
 }

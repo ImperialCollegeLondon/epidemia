@@ -57,7 +57,7 @@ epiinf <- function(
   if (latent == TRUE) {
     ok_families <- c("log-normal")
     if (!(family %in% ok_families)) {
-      stop("'family' must be one of ", paste0(ok_families), collape=", "),
+      stop("'family' must be one of ", paste0(ok_families, collape=", "),
         call. = FALSE)
     }
     check_prior(prior_aux, c("normal", "t", "cauchy", "exponential"))
