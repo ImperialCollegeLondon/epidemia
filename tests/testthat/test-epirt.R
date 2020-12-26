@@ -1,8 +1,5 @@
 context("Test error handling of epirt")
 
-library(epidemia)
-library(testthat)
-
 testthat("Wrong LHS formula specifications are caught", {
 expect_error(rt <- epirt(formula = R(x, y) ~ 1 + cov), NA)
 expect_error(rt <- epirt(formula = R() ~ 1 + cov), regexp = "left hand side")

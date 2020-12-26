@@ -36,9 +36,16 @@ epirt <- function(formula,
   check_rt_formula(formula)
   check_scalar(center)
   check_logical(center)
+
+  # check priors are returns from rstanarm prior functions
   check_prior(prior, ok_dists)
   check_prior(prior_intercept, ok_int_dists)
   check_prior(prior_covariance, ok_cov_dists)
+
+  # ensure they are in allowed set
+  check_in_set(prior$dist, ok_dists)
+  check_in_set(prior_intercept$dist, ok_int_dists)
+  check_in_set(prior_covariance$dist, ok_cov_dists)
 
   msg <- "'link' must be either 'log', 'identity', or a call to scaled_logit"
   if (is.character(link)) {

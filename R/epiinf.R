@@ -29,45 +29,52 @@
 #' passed as the data argument of epim, that corresponds to the susceptible population over time. 
 #' Only used if pop_adjust=TRUE.
 #' @export
+
 epiinf <- function(
-  seed_days = 6L,
   gen,
-  prior_tau = rstanarm::exponential(0.03),
+  seed_days = 6L,
   latent = FALSE,
   family = "log-normal",
-  prior_aux = rstanarm::normal(10, 5),
+  prior_aux = rstanarm::normal(10,5),
+  prior_tau = rstanarm::exponential(0.03),
   pop_adjust = FALSE,
-  susceptibles = ""
-  ) {
+  susceptibles = NULL) {
 
   call <- match.call(expand.dots = TRUE)
 
-  # check seeds are scalar, integer, positive
+  # check gen satisfied conditions for a simplex vector
+  check_numeric(gen)
+  check_non_negative(gen)
+  check_sum_to_one(gen)
+
+  # seed_days must be positive scalar integer
+  check_numeric(seed_days)
   check_integer(seed_days)
   check_scalar(seed_days)
   check_positive(seed_days)
-  gen <- check_sv(gen, "gen")
+
+  # latent, pop_adjust, must be logical scalarss
   check_scalar(latent)
   check_logical(latent)
   check_scalar(pop_adjust)
   check_logical(pop_adjust)
-  check_prior(prior_tau, "exponential")
 
-  # check correct offspring and aux distribution
-  if (latent == TRUE) {
-    ok_families <- c("log-normal")
-    if (!(family %in% ok_families)) {
-      stop("'family' must be one of ", paste0(ok_families, collape=", "),
-        call. = FALSE)
-    }
-    check_prior(prior_aux, c("normal", "t", "cauchy", "exponential"))
-  }
+  # family should be scalar character in the set
+  check_character(family)
+  check_scalar(family)
+  check_in_set(family, "log-normal")
 
-  # check susceptibles is character
-  if (pop_adjust) {
-    check_character(susceptibles)
-    check_scalar(susceptibles)
-  }
+  # priors have restricted families
+  check_prior(prior_tau)
+  check_prior(prior_aux)
+  check_in_set(prior_tau$dist, "exponential")
+  check_in_set(prior_aux$dist, ok_aux_dists)
+
+  s <- substitute(susceptibles)
+  check_character(s)
+  if (!is.character(s)) 
+    s <- as.character.expr(s)
+  check_scalar(s)
 
   out <- loo::nlist(
     call,
@@ -75,11 +82,68 @@ epiinf <- function(
     gen,
     prior_tau,
     latent,
-    family = if(latent) family else NULL,
-    prior_aux = if(latent) prior_aux else NULL,
+    family = if (latent) family else NULL,
+    prior_aux = if (latent) prior_aux else NULL,
     pop_adjust,
-    susceptibles = if (pop_adjust) susceptibles else NULL
+    susceptibles = if (pop_adjust) s else NULL
   )
   class(out) <- "epiinf"
   return(out)
 }
+
+
+
+# epiinf <- function(
+#   seed_days = 6L,
+#   gen,
+#   prior_tau = rstanarm::exponential(0.03),
+#   latent = FALSE,
+#   family = "log-normal",
+#   prior_aux = rstanarm::normal(10, 5),
+#   pop_adjust = FALSE,
+#   susceptibles = ""
+#   ) {
+
+#   call <- match.call(expand.dots = TRUE)
+
+#   # check seeds are scalar, integer, positive
+#   check_integer(seed_days)
+#   check_scalar(seed_days)
+#   check_positive(seed_days)
+#   gen <- check_sv(gen, "gen")
+#   check_scalar(latent)
+#   check_logical(latent)
+#   check_scalar(pop_adjust)
+#   check_logical(pop_adjust)
+#   check_prior(prior_tau, "exponential")
+
+#   # check correct offspring and aux distribution
+#   if (latent == TRUE) {
+#     ok_families <- c("log-normal")
+#     if (!(family %in% ok_families)) {
+#       stop("'family' must be one of ", paste0(ok_families, collape=", "),
+#         call. = FALSE)
+#     }
+#     check_prior(prior_aux, c("normal", "t", "cauchy", "exponential"))
+#   }
+
+#   # check susceptibles is character
+#   if (pop_adjust) {
+#     check_character(susceptibles)
+#     check_scalar(susceptibles)
+#   }
+
+#   out <- loo::nlist(
+#     call,
+#     seed_days,
+#     gen,
+#     prior_tau,
+#     latent,
+#     family = if(latent) family else NULL,
+#     prior_aux = if(latent) prior_aux else NULL,
+#     pop_adjust,
+#     susceptibles = if (pop_adjust) susceptibles else NULL
+#   )
+#   class(out) <- "epiinf"
+#   return(out)
+# }

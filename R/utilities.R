@@ -1,53 +1,73 @@
 
 
-check_integer <- function(x, tol = .Machine$double.eps, allow_na = FALSE) {
-  s <- substitute(x)
-  x <- as.numeric(x)
-  if ((!allow_na) && (anyNA(x))) {
-    stop(paste0(s, " should be coercible to numeric."))
+check_numeric <- function(x, allow_na = FALSE) {
+  s <- as.character.expr(substitute(x))
+  x <- suppressWarnings(as.numeric(x))
+  if ((!allow_na) && anyNA(x)) {
+    stop(paste0(s, " should be coercible to numeric."), call.=FALSE)
   }
+}
+
+check_integer <- function(x, tol = .Machine$double.eps, allow_na = FALSE) {
+  s <- as.character.expr(substitute(x))
   if (any(abs(x - round(x)) > tol, na.rm = TRUE)) {
-    stop(paste0(s, " is not an integer vector."))
+    stop(paste0(s, " is not an integer vector."), call. = FALSE)
   }
 }
 
 check_positive <- function(x) {
-  s <- substitute(x)
+  s <- as.character.expr(substitute(x))
   if (!all(x > 0))
     stop(paste(s, "must be positive"), call. = FALSE)
 }
 
+check_non_negative <- function(x) {
+  s <- as.character.expr(substitute(x))
+  if (!all(x >= 0))
+    stop(paste(s, "must be non-negative"), call. = FALSE)
+}
+
+check_sum_to_one <- function(x, tol = .Machine$double.eps) {
+  s <- as.character.expr(substitute(x))
+  if(abs(sum(x) - 1) > tol) 
+    stop(paste0(s, " does not sum to one."), call. = FALSE)
+  
+}
+
 check_scalar <- function(x) {
-  s <- substitute(x) 
+  s <- as.character.expr(substitute(x))
   if (!is.scalar(x))
     stop(paste(s, "must be a scalar"), call. = FALSE)
 }
 
 check_logical <- function(x) {
-  s <- substitute(x)
+  s <- as.character.expr(substitute(x))
   if (!is.logical(x)) {
     stop(paste(s, "must be logical"), call. = FALSE)
   }
 }
 
+check_in_set <- function(val, set) {
+  s <- as.character.expr(substitute(val))
+  if (!(val %in% set))
+    stop(paste(s, "must be one of:", paste(set, collapse = ", ")), call. = FALSE)
+}
+
 check_prior <- function(prior, ok_dists) {
-  s <- substitute(prior)
+  s <- as.character.expr(substitute(prior))
   msg <- paste(s, "must be a named list returned from an rstanarm prior function")
   if (!is.list(prior)) 
     stop(msg, call. = FALSE)
   if (is.null(prior$dist))
     stop(msg, call. = FALSE)
-  if (!(prior$dist %in% ok_dists)) 
-    stop(paste(s, "must be one of:", paste(ok_dists, collapse=", ")),
-         call. = FALSE)
 }
 
 is.scalar <- function(x) is.atomic(x) && length(x) == 1L
 
 check_character <- function(x) {
-  s <- substitute(x)
+  s <- as.character.expr(substitute(x))
   if (anyNA(as.character(x)))
-    stop(paste0(s, " should be coercible to integer."))
+    stop(paste0(s, " should be coercible to character."), call. = FALSE)
 }
 
 check_offset <- function(offset, y) {
@@ -73,22 +93,20 @@ is_autocor <- function(formula) {
 # @param formula
 # check correct form for left hand side
 check_rt_formula <- function(form) {
-  s <- substitute(form)
-  lhs.form <- as.character.formula(lhs(form))
+  s <- as.character.expr(substitute(form))
   match <- grepl("^R\\((\\w)+, (\\w)+\\)$", lhs.form)
   if (!match)
     stop(paste0("left hand side of ", s, " does not have required form of R(x,y)."), call.=FALSE)
 }
 
-# convert a formula to a character vector
-as.character.formula <- function(x) {
-  form <- paste(deparse(x), collapse=" ")
-  form <- gsub( "\\s+", " ", form, perl=FALSE)
-  return(form)
+as.character.expr <- function(x) {
+  s <- paste(deparse(x), collapse=" ")
+  s <- gsub( "\\s+", " ", s, perl=FALSE)
+  return(s)
 }
 
 check_formula <- function(formula) {
-  s <- substitute(formula)
+  s <- as.character.expr(substitute(formula))
   if (!inherits(formula, "formula"))
   stop(paste0(s, " must have class formula.", call. = FALSE))
 }
