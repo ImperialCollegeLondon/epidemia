@@ -66,10 +66,16 @@ is_autocor <- function(formula) {
   return(length(terms_rw(formula)) > 0)
 }
 
-# Check 'formula' passed to epirt meets requirements for constructing
-# the object
+# check correct form for left hand side
 #
 # @param formula
+# check correct form for left hand side
+check_rt_formula <- function(form) {
+  lhs.form <- as.character.formula(lhs(form))
+  grepl("^R\\((\\w)+, (\\w)+\\)$", lhs.form)
+}
+
+
 check_rt_formula <- function(formula) {
   if(!inherits(formula,"formula"))
     stop("'formula' must have class formula.", call. = FALSE)
@@ -88,26 +94,21 @@ check_rt_formula <- function(formula) {
 
 # Get name of observation column from formula
 # @param x A formula
-.get_obs <- function(x) {
-  out <- deparse(lhs(x))
-  out <- sub("\\(.*", "", out)
-  return(out)
+.get_obs <- function(form) {
+  vars <- all.vars(lhs(form), functions=TRUE)
+  return(vars[1])
 }
 
 # Get name of group column from formula
 # @param x A formula
-.get_group <- function(x) {
-  out <- deparse(lhs(x))
-  out <- sub(".*\\(", "", out)
-  out <- sub(",.*", "", out)
-  return(out)
+.get_group <- function(form) {
+  vars <- all.vars(lhs(form), functions=TRUE)
+  return(vars[2])
 }
 
-.get_time <- function(x) {
-  out <- deparse(lhs(x))
-  out <- sub("\\).*", "", out)
-  out <- sub(".*, ", "", out)
-  return(out)
+.get_time <- function(form) {
+  vars <- all.vars(lhs(form), functions=TRUE)
+  return(vars[3])
 }
 
 # Get left hand side of a formula
