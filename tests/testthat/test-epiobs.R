@@ -3,23 +3,23 @@ context("Test error handling of epiobs")
 form <- dummy(x,y) ~ 1 + cov
 
 testthat("Wrong LHS formula specifications are caught", {
-  expect_error(obs <- epiobs(formula = form, i2o = rep(0.2,5)), NA)
-  expect_error(obs <- epiobs(formula =  dummy() ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(x) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(x,) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(,y) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(x+y,z) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(x,y,z) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(x/y,z) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(x,y) + a ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  a + dummy(x) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dum my(x) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  1(x,y) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
-  expect_error(obs <- epiobs(formula =  dummy(1,y) ~ 1 + cov, i2o = rep(0.2,5)), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula = form, i2o = 1), NA)
+  expect_error(obs <- epiobs(formula =  dummy() ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(x) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(x,) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(,y) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(x+y,z) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(x,y,z) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(x/y,z) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(x,y) + a ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  a + dummy(x) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dum my(x) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  1(x,y) ~ 1 + cov, i2o = 1), regexp = "left hand side")
+  expect_error(obs <- epiobs(formula =  dummy(1,y) ~ 1 + cov, i2o = 1), regexp = "left hand side")
 })
 
 testthat("Wrong class for formula is caught", {
-  expect_error(obs <- epiobs(formula = "dummy", i2o = rep(0.2,5)), regexp = "must have class")
+  expect_error(obs <- epiobs(formula = "dummy", i2o = 1), regexp = "must have class")
 })
 
 testthat("i2o is a non-negative numeric vector", {

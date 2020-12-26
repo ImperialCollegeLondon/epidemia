@@ -72,9 +72,11 @@ check_prior <- function(prior, ok_dists) {
 is.scalar <- function(x) is.atomic(x) && length(x) == 1L
 
 check_character <- function(x) {
-  s <- as.character.expr(substitute(x))
-  if (anyNA(as.character(x)))
-    stop(paste0(s, " should be coercible to character."), call. = FALSE)
+  s <- epidemia:::as.character.expr(substitute(x))
+  msg <- paste0(s, " should be coercible to character.")
+  tryCatch(x <- as.character(x), error = function(cond) stop(msg, call. = FALSE))
+  if (anyNA(x))
+    stop(msg, call. = FALSE)
 }
 
 check_offset <- function(offset, y) {
