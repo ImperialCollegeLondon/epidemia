@@ -25,7 +25,6 @@ rw <- function(time=NA, gr=NA, prior_scale=0.2) {
   label <- deparse(match.call())
   time <- deparse(substitute(time))
   gr <- deparse(substitute(gr))
-  prior_scale <- deparse(substitute(prior_scale))
   out <- loo::nlist(time, gr, label, prior_scale)
   class(out) <- c("rw_term")
   return(out)

@@ -63,6 +63,22 @@
 #' @references
 #' \insertAllCited{}
 #' @export
+epim <- function(
+  rt,
+  inf,
+  obs,
+  data,
+  algorithm = "sampling",
+  sampling_args = list(),
+  init_run = FALSE,
+  group_subset = NULL,
+  prior_PD = FALSE,
+  ...) {
+
+  call <- match.call(expand.dots = TRUE)
+}
+
+
 epim <- function(rt,
                  inf,
                  obs,
