@@ -194,7 +194,7 @@ check_obs_formula <- function(form) {
 check_all_vars_data <- function(object, data) {
   if (class(object) == "epirt") {
     vars <- all_vars(formula(object))
-    not_found <- !(vars %in% colnames(df))
+    not_found <- !(vars %in% colnames(data))
     if (any(not_found)) {
       stop(paste0("variable(s) ", paste(vars[not_found], collapse = ", "), 
                   ", were found in the formula for R (in epirt object),", 
@@ -203,10 +203,10 @@ check_all_vars_data <- function(object, data) {
     }
   } else {
     vars <- all_vars(formula(object), obs = TRUE)
-    not_found <- !(vars %in% colnames(df))
+    not_found <- !(vars %in% colnames(data))
     if (any(not_found)) {
       stop(paste0("variable(s) ", paste(vars[not_found], collapse = ", "), 
-                  ", were found in the formula for ", .get_obs(formula(obs)), 
+                  ", were found in the formula for ", .get_obs(formula(object)), 
                   " (in epiobs object),", 
                   " but not in data. Please add to the dataframe."), 
            call. = FALSE)
@@ -230,8 +230,8 @@ check_name_conflicts_data <- function(object, data) {
 }
 
 check_group_as_factor <- function(object, data) {
-  group <- get_group(formula(object))
-  x <- df[, group]
+  group <- .get_group(formula(object))
+  x <- data[, group]
   msg <- paste0("column ", group, " in data should be coercible to class `factor` and have no NAs.")
   tryCatch(x <- as.factor(x), error = function(cond) stop(msg, call. = FALSE))
   if (anyNA(x))
@@ -244,7 +244,7 @@ check_group_as_factor <- function(object, data) {
 # @param data The dataframe to check
 check_time_as_date <- function(object, data) {
   time <- .get_time(formula(object))
-  x <- df[, time]
+  x <- data[, time]
   msg <- paste0("column ", time, " in data should be coercible to class `Date` and have no NAs.")
   tryCatch(x <- as.Date(x, optional=TRUE), error = function(cond) stop(msg, call. = FALSE))
   if (anyNA(x))
@@ -331,107 +331,40 @@ check_consecutive_dates <- function(object, data) {
 # @param data
 
 check_groups_data <- function(object, group_subset, data) {
-  if (is.null(group_subset))
-    return()
-  
-  groups <- .get_group(formula(object))
-  x <- as.factor(data[, groups])
-  v <- !(group_subset %in% levels(x))
-  if (any(v)) {
-    stop(paste0("groups ", paste(group_subset[v], collapse = ", "), 
-                " specified in `group_subset` but not found in column ",
-                groups, " of data."), call. = FALSE)
-  }
-}
-
-# The formula in the epirt object defines the group and date columns.
-# This function performs a series of checks on the data argument of 
-# 'epim', ensuring the dataframe meets common requirements.
-#
-# @param formula The formula from rt argument
-# @param data The data to be checked
-# @param group_subset Same as in 'epim'
-check_data <- function(formula, data, group_subset) {
-  stopifnot(is.data.frame(data))
-
-  data <- data.frame(data) # in case tibble
-  if (nrow(data) == 0)
-    stop("data has zero rows", call.=FALSE)
-
-  # check for group and date columns
-  group <- .get_group(formula)
-  date <- .get_time(formula)
-  vars <- c(group, date)
-  not_in_df <- !(vars %in% colnames(data))
-  if (any(not_in_df)) {
-    stop(paste(c("Could not find column(s) ", 
-      vars[not_in_df], " in 'data'"),
-      collapse = " "
-    ), call. = FALSE)
-  }
-
-  # ensure there are no naming conflicts
-  nms <- colnames(data)
-  if (group != "group" && "group" %in% nms)
-    stop("Column 'group' has a special meaning in data.
-     Please rename.")
-  if (date != "date" && "date" %in% nms)
-    stop("Column 'date' has a special meaning in data.
-     Please rename.")
-
-  data[,c("group", "date")] <- data[, vars]
-
-  data <- tryCatch(
-    {
-      data$group <- droplevels(as.factor(data$group))
-      data[, group] <- droplevels(as.factor(data[, group]))
-      data$date <- as.Date(data$date)
-      data[, date] <- as.Date(data[, date])
-      data
-    },
-    error = function(cond) {
-      stop(paste0(group, " and/or ", time, " are not coercible
-       to Factor and Date Respectively. Original message: ", cond))
-    }
-  )
-
-  if(anyNA(data$group))
-    stop(paste0("NAs exist in data$", group, " after
-     coercion to factor"), call. = FALSE)
-
-  if(anyNA(data$date))
-    stop(paste0("NAs exist in data$", time, " after
-     coercion to factor"), call. = FALSE)
-
-  groups <- levels(data$group)
-
   if (!is.null(group_subset)) {
-    if (!is.character(group_subset))
-      stop("group_subset must be a character vector.")
-    if(!all(group_subset %in% groups))
-      stop("Not all groups in group_subset were found in
-       'data'", call.=FALSE)
-    groups <- group_subset
+    groups <- .get_group(formula(object))
+    x <- as.factor(data[, groups])
+    v <- !(group_subset %in% levels(x))
+    if (any(v)) {
+      stop(paste0("groups ", paste(group_subset[v], collapse = ", "), 
+                  " specified in `group_subset` but not found in column ",
+                  groups, " of data."), call. = FALSE)
+    }
   }
-
-  # remove unmodelled groups
-  w <- data$group %in% groups
-  data <- data[w,]
-  data$group <- droplevels(as.factor(data$group))
-
-  # sort by group, then by date
-  data <- data[with(data, order(group, date)),]
-
-  # check for consecutive dates
-  f <- function(x) return(all(diff(x$date) == 1))
-  v <- !unlist(Map(f, split(data, data$group)))
-  if(any(v))
-    stop(paste(c("Dates corresponding to groups ",
-    names(v[v]), " are not consecutive"), collapse=" "), call.=FALSE)
-
-  return(data)
 }
 
+
+# performs a series of tests to ensure data argument of epim is 
+# compatible with the specified model. Designed to give informative
+# error messages.
+#
+# @param The dataframe to check
+# @param rt An epirt object
+# @param inf An epiinf object
+# @param obs A list of epiobs objects
+# @param group_subset A character vector of groups to model (or NULL)
+check_data <- function(data, rt, inf, obs, group_subset) {
+  check_data.frame(data)
+  check_has_rows(data)
+  dummy <- sapply(c(list(rt), obs), check_all_vars_data, data)
+  check_name_conflicts_data(rt, data) 
+  check_group_as_factor(rt, data)
+  check_time_as_date(rt, data)
+  check_susceptibles(inf, data)
+  dummy <- sapply(obs, check_obs_data, data)
+  check_consecutive_dates(rt, data)
+  check_groups_data(rt, group_subset, data)
+}
 
 
 # Simple check on rt argument
@@ -525,57 +458,102 @@ all_vars <- function(form, obs=FALSE) {
   return(out)
 }
 
-# Check the data$pops argument of genStanData
+
+
+# parses data argument to epim into a format easily used by epidemia
 #
-# @param pops See [genStanData]
-check_pops <- function(pops, levels) {
-  pops <- check_df(pops, "pops", 2)
-  oldnames <- names(pops)
-  names(pops) <- c("group", "pop")
-  
-  # check if columns are coercible
-  pops <- tryCatch(
-    {
-      pops$group <- droplevels(as.factor(pops$group))
-      pops$pop <- as.integer(pops$pop)
-      pops
-    },
-    error = function(cond) {
-      stop(paste0("Columns of 'pops' are not coercible to
-       required classes [factor, integer]. Original message: ", cond))
-    }
-  )
-  if(any(is.na(pops$group)))
-    stop(paste0("NAs exist in column ", oldnames[[1]], " of
-     'pops' after coercion to factor"), call. = FALSE)
-  if(any(is.na(pops$pop)))
-    stop(paste0("NAs exist in column", oldnames[[2]], " of
-     'pops' after coercion to integer"), call. = FALSE)
-  
-  # removing rows not represented in response groups
-  pops <- pops[pops$group %in% levels,]
-
-  # requiring all levels have an associated population
-  missing.levels <- !(levels %in% pops$group)
-  if (any(missing.levels)) {
-    missing.levels <- levels[missing.levels]
-    stop(paste0("Levels in 'formula' response missing in
-     'pops': ", paste0(missing.levels, collapse=", ")), call. = FALSE)
+# @param data The data argument to epim
+# @param rt An epirt object
+# @param obs A list of epiobs objects
+# @param inf An epiinf object
+# @param group_subset A character vector of subgroups (or NULL)
+parse_data <- function(data, rt, obs, inf, group_subset) {
+  data <- tibble(data)
+  data <- subset_data(data, rt, group_subset)
+  data <- group_date_col_data(data, rt)
+  data <- select_cols_data(data, rt, inf, obs)
+  data <- susceptibles_to_int(data, inf)
+  for (i in seq_along(obs)) {
+    data <- obs_to_int(data, obs[[i]])
   }
-
-  if(any(duplicated(pops$group)))
-    stop("Populations for a given group must be unique.
-     Please check 'pops'.", call. = FALSE)
-
-  if(any(pops$pop < 0))
-    stop("Populations must take nonnegative.
-     Plase check 'pops'", call. = FALSE)
-
-  # sort by group
-  pops <- pops[order(pops$group),]
-
-  return(pops)
+  return(data)
 }
+
+
+# subsets the data for only groups implied by group_subset
+#
+# @param data The dataframe to subset
+# @param object An epirt object
+# @param group_subset Character vector giving subset of groups
+subset_data <- function(data, object, group_subset) {
+  group <- .get_group(formula(object))
+  if (!is.null(group_subset)) {
+    # filter for selected groups
+    data <- filter(data, .data[[group]] %in% group_subset)
+  }
+  return(data)
+}
+
+
+# format group and date col appropriately
+#
+# @param data The dataframe to format
+# @param object An epirt object
+group_date_col_data <- function(data, object) {
+  group <- .get_group(formula(object))
+  time <- .get_time(formula(object))
+  data <- mutate(data,
+    group = droplevels(as.factor(.data[[group]])),
+    date = as.Date(.data[[time]])
+  )
+  return(data)
+}
+
+# removes columns from data which are not required
+#
+# @param data The data argument to epim
+# @param rt An epirt object
+# @param inf An epiinf object
+# @param obs A list of epiobs object
+select_cols_data <- function(data, rt, inf, obs) {
+  # get all variables needed for data
+  vars <- c(
+    "group",
+    "date",
+    all_vars(rhs(formula(rt))),
+    unlist(lapply(obs, function(x) all_vars(rhs(formula(x))))),
+    unlist(lapply(obs, function(x) .get_obs(formula(x)))),
+    if(inf$pop_adjust) inf$susceptibles 
+  )
+  # keep only required variables
+  data <- select(data, all_of(unique(vars)))
+  return(data)
+}
+
+# converts observation vector to integer if appropriate
+# @param data The data argument to epim
+# @param obs An epiobs object
+obs_to_int <- function(data, obs) {
+  col <- .get_obs(formula(obs))
+  discrete_fams <- c("neg_binom", "poisson", "quasi_poisson")
+  if (obs$family %in% discrete_fams) {
+    data <- mutate(data, across(col, as.integer))
+  }
+  return(data)
+}
+
+# converts column of susceptibles to integer
+#
+# @param data The data argument to epim
+# @param inf An epiinf object
+susceptibles_to_int <- function(data, inf) {
+  if (inf$pop_adjust) {
+    col <- inf$susceptibles
+    data <- mutate(data, across(col, as.integer))
+  }
+  return(data)
+}
+
 
 # Simple check of a vector
 #
