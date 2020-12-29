@@ -126,14 +126,14 @@ epiobs_ <- function(object, data) {
   x <- out$y
   if (any(x < 0, na.rm=TRUE)) {
     if (max(abs(x[x<0] + 1)) > tol) {
-      stop("column ", nme, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)
+      stop("observation vector ", nme, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)
     }
   }
   
   discrete_fams <- c("poisson", "quasi_poisson", "neg_binom")
   if (object$family %in% discrete_fams) {
     if (any(abs(x - round(x)) > tol, na.rm = TRUE)) 
-      warning(paste0("column ", nme, " in data is not an integer vector, and will be coerced to one."), call. = FALSE)
+      warning(paste0("observation vector ", nme, " is not an integer vector, and will be coerced to one."), call. = FALSE)
   }
   
   class(out) <- "epiobs_"

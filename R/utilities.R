@@ -15,6 +15,12 @@ check_integer <- function(x, tol = .Machine$double.eps, allow_na = FALSE) {
   }
 }
 
+check_list <- function(x) {
+  s <- substitute(x)
+  if (!is.list(x))
+    stop(paste0(s, " must be a list."), call. = FALSE)
+}
+
 check_data.frame <- function(x) {
   s <- substitute(x)
   if (!is.data.frame(x))
@@ -139,7 +145,7 @@ check_formula <- function(formula) {
 # Get name of observation column from formula
 # @param x A formula
 .get_obs <- function(form) {
-  return(lhs(form))
+  return(as.character(lhs(form)))
 }
 
 # Get name of group column from formula
@@ -176,6 +182,9 @@ check_obs_formula <- function(form) {
   if (is.mixed(form)) {
     stop(paste0("random effects terms found in ", s, " but are not currently
       supported", call. = FALSE))
+  }
+  if (length(form) < 3) {
+    stop(paste0(s, " must have a response."), call. = FALSE)
   }
 }
 
@@ -333,55 +342,69 @@ check_data <- function(data, rt, inf, obs, group_subset) {
 
 # Simple check on rt argument
 #
-# @param 'rt' argument to epim
-check_rt <- function(rt) {
-  if (!inherits(rt, "epirt"))
-    stop("'rt' must have class 'epirt'.", call. = FALSE)
-  return(rt)
+# @param x An epirt object
+check_rt <- function(x) {
+  s <- substitute(x)
+  if (!inherits(x, "epirt"))
+    stop(paste(s, "must have class 'epirt'."), call. = FALSE)
 }
 
-# Simple checks on the obs list
+# Simple check on inf argument
 #
-# @param rt The 'rt' argument to epim
-# @param obs The 'obs' argumento to epim
-check_obs <- function(rt, obs) {
-  if(!is.list(obs))
-    stop(" Argument 'obs' must be a list.", 
-    call.=FALSE)
+# @param x An epiinf object
+check_inf <- function(x) {
+  s <- substitute(x)
+  if (!inherits(x, "epiinf"))
+    stop(paste(s, "must have class 'epiinf'."), call. = FALSE)
+}
 
-  # check all objects are 'epiobs'
-  is_epiobs <- sapply(obs, inherits, "epiobs")
-  w <- which(!is_epiobs)
-  if (length(w) > 0)
-    stop(paste0("Elements ", w, " of 'obs' do
-     not inherit from 'epiobs'"))
+# Checks the `obs` argument to epim
+#
+# @param x Either an 'epiobs' object or a list of 'epiobs' objects.
+check_obs <- function(obs) {
+  s <- substitute(obs)
+  if(!inherits(obs, "epiobs")) {
+    check_list(obs)
+    is_epiobs <- sapply(obs, inherits, "epiobs")
+    w <- which(!is_epiobs)
+    if (length(w) > 0)
+      stop(paste0("Element(s) ", paste(w, collapse=", "), " of ", s, 
+      " do not inherit from 'epiobs'. Ensure that ", s, 
+      " is a list of observational models (each created using epiobs())."), call. = FALSE)
 
-  # check uniqueness of names
-  forms <- lapply(obs, formula)
-  nms <- sapply(forms, .get_obs)
-  
-  if (length(unique(nms)) < length(nms))
-    stop ("Each observation vector can only have one model.
-     Please check 'obs' argument",
-     call.=FALSE)
+      form <- lapply(obs, formula)
+      nms <- sapply(form, .get_obs)
+      tbl <- table(nms)
+      not_unique <- names(tbl[tbl > 1])
 
-  # check for common group variables
-  rtgroup <- .get_group(formula(rt))
-  groups <- sapply(forms, .get_group)
-  w <- which(groups != rtgroup)
-  if (length(w) > 0)
-    stop(paste0("Elements ", w, " of 'obs' do
-     not have group vector implied by 'rt'"))
+    if (length(not_unique) > 0) {
+      stop(paste0("Multiple models found for observation(s) ", paste(not_unique, collapse=", "),
+      ". Please check ", s, " argument."), call. = FALSE)
+    }
+  }
+}
 
-  # check for common date variables (removed in future)
-  rttime <- .get_time(formula(rt))
-  times <- sapply(forms, .get_time)
-  w <- which(times != rttime)
-  if (length(w) > 0)
-    stop(paste0("Elements ", w, " of 'obs' do
-     not have time vector implied by 'rt'"))
+# Checks the `group_subset` argument to epim
+# 
+# Must be either NULL or a character vector of positive length
+#
+# @para group_subset The `group_subset` argument to epim.
+check_group_subset <- function(group_subset) {
+  s <- substitute(group_subset)
+  if (!is.null(group_subset)) {
+    check_character(group_subset)
+    if (length(group_subset) < 1) {
+      stop(paste0(s, " must be a character vector with length at least 1."), call. = FALSE)
+    }
+  }
+}
 
-  return(obs)
+check_init_run <- function(init_run) {
+  if (is.logical(init_run)) {
+    check_scalar(init_run)
+  } else {
+    check_list(init_run)
+  }
 }
 
 # Generic checking of a dataframe
