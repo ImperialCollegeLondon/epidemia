@@ -21,8 +21,8 @@ for (m in 1:M){
     cumm_sum[n0:n1,m] = cumulative_sum(infections[n0:n1,m]);
 
     for (i in (n1+1):n2) {
-        int start = max(n0, i - si_len);
-        load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(si_rev, i - start));
+        int start = max(n0, i - gen_len);
+        load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
         infections[i,m] = Rt_unadj[i,m] * load[i,m];
 
         if (latent) { // treat as log-normal (could extend)
@@ -32,7 +32,7 @@ for (m in 1:M){
         }
         
         if (pop_adjust) 
-            infections[i,m] = (pop[m] - cumm_sum[i-1,m]) * (1 - exp(- infections[i,m] / pop[m]));
+            infections[i,m] = (susc[start,m] - cumm_sum[i-1,m]) * (1 - exp(-(susc[i,m] / susc[start,m]) * (infections[i,m] / susc[start,m])));
         
         cumm_sum[i,m] = cumm_sum[i-1,m] + infections[i,m];
         idx2 += 1;
