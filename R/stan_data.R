@@ -3,39 +3,59 @@
 #
 # @inheritParams epim
 # @param group, x Objects returned by parse_mm
-# @param link Not yet used.
 standata_all <- function(rt,
-                         inf,
-                         obs,
-                         data,
-                         pops,
-                         si,
-                         seed_days,
-                         group_subset,
-                         prior_tau,
-                         prior_PD) {
-
-  # standata for general model params
-  out <- standata_data(data)
+                        inf,
+                        obs,
+                        data,
+                        prior_PD) {
+  out <- standata_data(data, inf)
   out <- c(
     out,
-    list(
-      si_len = length(si),
-      si = pad(si, out$NS, 0, TRUE),
-      N0 = seed_days,
-      prior_PD = prior_PD,
-      pop = as.array(pops$pop)
-    ),
-    standata_model_priors(prior_tau),
+    standata_rt(rt),
     standata_inf(inf),
     standata_obs(
       obs = obs,
       groups = out$groups,
       nsim = out$NS,
       begin = out$begin
-    ),
-    standata_rt(rt)
+    )
   )
+  out$prior_PD <- prior_PD
+  return(out)
+}
+
+standata_inf <- function(inf) {
+
+  out <- list(
+      gen_len = length(inf$gen),
+      gen = inf$gen,
+      N0 = inf$seed_days,
+      latent = 1 * inf$latent,
+      family = 1 * inf$latent,
+      pop_adjust = 1 * inf$pop_adjust
+  )
+
+  # add data for prior on tau
+  prior_tau_stuff <- handle_glm_prior(
+    prior = inf$prior_tau,
+    nvars = 1,
+    default_scale = 1 / 0.03,
+    link = "dummy",
+    ok_dists = loo::nlist("exponential")
+  )
+
+  out$prior_scale_for_tau <- prior_tau_stuff$prior_scale
+
+  # add data for prior on auxiliary param
+  p_aux <- handle_glm_prior(
+    inf$prior_aux,
+    1 * inf$latent,
+    link = NULL,
+    default_scale = 0.25,
+    ok_dists = ok_aux_dists
+  )
+  names(p_aux) <- paste0(names(p_aux), "_for_inf_aux")
+  out <- c(out, p_aux)
 
   return(out)
 }
@@ -68,45 +88,7 @@ standata_autocor <- function(autocor) {
   return(out)
 }
 
-# Generate standata for autocorrelation terms
-#
-# @inheritParams epim
-# # @param formula, data Same as in epim
-# standata_autocor <- function(object) {
-#   out <- list()
-
-#   if (!inherits(object, "epirt_"))
-#     stop("Bug found. 'object' must have class 'epirt_'.")
-
-#   formula <- formula(object)
-
-#   if (is_autocor(formula)) {
-#     autocor <- object$autocor
-#     out$ac_nterms <- length(autocor$nproc)
-#     out$ac_ntime <- as.array(autocor$ntime)
-#     out$ac_q <- sum(autocor$ntime)
-#     out$ac_nproc <- sum(autocor$nproc)
-#     # todo: implement this as an option
-#     out$ac_prior_scales <- as.array(autocor$prior_scale)
-
-#     # add sparse matrix representation
-#     parts <- rstan::extract_sparse_parts(autocor$Z)
-#     out$ac_v <- parts$v - 1L
-    
-#     # NA terms put to index negative 1
-#     out$ac_v[out$ac_v >= out$ac_q] <- -1L
-#     out$ac_nnz <- length(out$ac_v)
-#   } else {
-#     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0
-#     out$ac_prior_scales <- out$ac_v <- out$ac_ntime <- numeric()
-#   }
-#   return(out)
-# }
-
-# Generate relevant standata from data. Used internally in epim.
-#
-# @param data The result of checkData
-standata_data <- function(data) {
+standata_data <- function(data, inf) {
   groups <- sort(levels(data$group))
   M <- length(groups)
   NC <- as.numeric(table(data$group))
@@ -116,16 +98,29 @@ standata_data <- function(data) {
   begin <- min(starts)
   # integer index of start (1 being 'begin')
   starts <- as.numeric(starts - begin + 1)
+  N2 = max(starts + NC - 1)
+
+  # get susceptibles data
+  susc <- matrix(1, nrow = N2, ncol = M)
+  if (inf$pop_adjust) {
+    col <- inf$susceptibles
+    df <- split(data[, col], data$group)
+    for (m in 1:M)
+      susc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]
+  }
+
   return(list(
     groups = groups,
     M = M,
     NC = as.array(NC),
     NS = max_sim,
-    N2 = max(starts + NC - 1),
+    N2 = N2,
     starts = as.array(starts),
-    begin = begin
+    begin = begin,
+    susc = susc
   ))
 }
+
 
 # Parses rt argument into data ready for stan
 #
@@ -154,28 +149,6 @@ standata_rt <- function(rt) {
   out$rt_prior_info = out$prior_info
   return(out)
 }
-
-
-# Parses inf argument into data ready for stan
-#
-# @param inf An object of class "epiinf"
-standata_inf <- function(inf) {
-  out <- list(
-    latent =  ifelse(inf$latent, 1, 0),
-    inf_family =  ifelse(inf$latent, 1, 0) # gamma is only option at the moment
-  )
-  p_aux <- handle_glm_prior(
-    inf$prior_aux,
-    1 * inf$latent,
-    link = NULL,
-    default_scale = 0.25,
-    ok_dists = loo::nlist("normal", student_t = "t", "cauchy", "exponential")
-  )
-  names(p_aux) <- paste0(names(p_aux), "_for_inf_aux")
-  out <- c(out, p_aux)
-  return(out)
-}
-
 
 # Parses obs argument into data ready for stan
 #
