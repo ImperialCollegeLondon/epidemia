@@ -139,8 +139,7 @@ check_formula <- function(formula) {
 # Get name of observation column from formula
 # @param x A formula
 .get_obs <- function(form) {
-  vars <- all.vars(lhs(form), functions=TRUE)
-  return(vars[1])
+  return(lhs(form))
 }
 
 # Get name of group column from formula
@@ -167,50 +166,39 @@ rhs <- function(x) {
   return(formula(delete.response(terms(x))))
 }
 
+
 # Check 'formula' passed to epiobs meets requirements for constructing
-# the object
+# the object.
 #
 # @param formula
 check_obs_formula <- function(form) {
   s <- as.character.expr(substitute(form))
-  lhs.form <- as.character.expr(lhs(form))
-  match <- grepl("^(\\w)+\\((\\w)+, (\\w)+\\)$", lhs.form)
-  trms <- all.vars(lhs(form), functions=TRUE)
-
-  if (!match | (length(trms) != 3))
-    stop(paste0("left hand side of ", s, " does not have required form of z(x,y)."), call.=FALSE)
-
   if (is.mixed(form)) {
-    stop(paste0("random effects terms found in ", form, " but are not currently
+    stop(paste0("random effects terms found in ", s, " but are not currently
       supported", call. = FALSE))
   }
 }
-
 
 # checks if all variables in formula of epirt or epiobs are in data frame
 #
 # @param object An object of class "epirt" or "epiobs"
 # @param data The data argument to epim
 check_all_vars_data <- function(object, data) {
-  if (class(object) == "epirt") {
-    vars <- all_vars(formula(object))
-    not_found <- !(vars %in% colnames(data))
-    if (any(not_found)) {
-      stop(paste0("variable(s) ", paste(vars[not_found], collapse = ", "), 
+  vars <- all_vars(formula(object))
+  not_found <- !(vars %in% colnames(data))
+  if (any(not_found)) {
+    if (class(object) == "epirt") {
+      msg <- paste0("variable(s) ", paste(vars[not_found], collapse = ", "), 
                   ", were found in the formula for R (in epirt object),", 
-                  " but not in data. Please add to the dataframe."), 
-           call. = FALSE)
+                  " but not in data. Please add to the dataframe.")
     }
-  } else {
-    vars <- all_vars(formula(object), obs = TRUE)
-    not_found <- !(vars %in% colnames(data))
-    if (any(not_found)) {
-      stop(paste0("variable(s) ", paste(vars[not_found], collapse = ", "), 
+    else {
+      msg <- paste0("variable(s) ", paste(vars[not_found], collapse = ", "), 
                   ", were found in the formula for ", .get_obs(formula(object)), 
                   " (in epiobs object),", 
-                  " but not in data. Please add to the dataframe."), 
-           call. = FALSE)
+                  " but not in data. Please add to the dataframe.")
     }
+    stop(msg, call. = FALSE)
   }
 }
 
@@ -276,29 +264,6 @@ check_susceptibles <- function(inf, data, tol = .Machine$double.eps) {
   }
 }
 
-# checks observation columns satisfy required criteria
-#
-# @param object An epiobs object
-# @param data The dataframe to check
-# @param tol Tolerance for checking integer
-check_obs_data <- function(object, data, tol = .Machine$double.eps) {
-  col <- .get_obs(formula(object))
-  x <- data[, col]
-  x <- suppressWarnings(as.numeric(x))
-  
-  # check if negative and not -1
-  if (any(x < 0, na.rm = TRUE)) {
-    if (max(abs(x[x<0] + 1)) > tol) {
-      stop("column ", col, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)
-    }
-  }
-  
-  discrete_fams <- c("poisson", "quasi_poisson", "neg_binom")
-  if (object$family %in% discrete_fams) {
-    if (any(abs(x - round(x)) > tol, na.rm = TRUE)) 
-      warning(paste0("column ", col, " in data is not an integer vector, and will be coerced to one."), call. = FALSE)
-  }
-}
 
 # checks for consecutive dates in each group
 #
@@ -361,7 +326,6 @@ check_data <- function(data, rt, inf, obs, group_subset) {
   check_group_as_factor(rt, data)
   check_time_as_date(rt, data)
   check_susceptibles(inf, data)
-  dummy <- sapply(obs, check_obs_data, data)
   check_consecutive_dates(rt, data)
   check_groups_data(rt, group_subset, data)
 }
@@ -445,10 +409,9 @@ check_df <- function(df, name, nc) {
 # extends all.vars to handle autocorrelation terms in formulas
 #
 # @param form A formula which may have autocorrelation terms
-# @param obs Is the formula from epiobs?
-all_vars <- function(form, obs=FALSE) {
+all_vars <- function(form) {
   # start with left hand side
-  out <- all.vars(lhs(form), functions = obs)
+  out <- all.vars(lhs(form))
   # and right hand side exluding rw terms
   out <- c(out, all.vars(norws(rhs(form))))
   # add vars from rws
@@ -473,9 +436,6 @@ parse_data <- function(data, rt, obs, inf, group_subset) {
   data <- group_date_col_data(data, rt)
   data <- select_cols_data(data, rt, inf, obs)
   data <- susceptibles_to_int(data, inf)
-  for (i in seq_along(obs)) {
-    data <- obs_to_int(data, obs[[i]])
-  }
   return(data)
 }
 
@@ -509,6 +469,7 @@ group_date_col_data <- function(data, object) {
   return(data)
 }
 
+
 # removes columns from data which are not required
 #
 # @param data The data argument to epim
@@ -521,8 +482,7 @@ select_cols_data <- function(data, rt, inf, obs) {
     "group",
     "date",
     all_vars(rhs(formula(rt))),
-    unlist(lapply(obs, function(x) all_vars(rhs(formula(x))))),
-    unlist(lapply(obs, function(x) .get_obs(formula(x)))),
+    unlist(lapply(obs, function(x) all_vars(formula(x)))),
     if(inf$pop_adjust) inf$susceptibles 
   )
   # keep only required variables
@@ -614,18 +574,7 @@ mflevels <- function(x) {
   return(out)
 }
 
-# get all vars from formula for obs
-all_vars_obs <- function(formula) {
-  vars <- all.vars(formula)
-  vars <- c(vars, .get_obs(formula))
-  return(vars)
-}
-
 is.epimodel <- function(x) inherits(x, "epimodel")
-
-
-
-
 
 is.mixed <- function(object, ...) UseMethod("is.mixed")
 

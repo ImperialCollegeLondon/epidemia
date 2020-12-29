@@ -109,42 +109,35 @@ epiobs_ <- function(object, data) {
   if (!inherits(object, "epiobs")) {
     stop("Bug found. Argument 'object' should have class 'epiobs'")
   }
-
-  formula <- formula(object)
-  args <- object$mfargs
-
-  # deal with NAs before passing to parse_mm
-  na_action <- args[["na.action"]]
-  vars <- all_vars_obs(formula)
-  vars <- c(vars, "group")
-
-  data <- data[, vars]
-  data <-
-    if (is.null(na_action)) {
-      na.omit(data)
-    } else {
-      na_action(data)
-    }
-  args <- c(args, list(
-    formula = update(formula,
-      paste0(.get_obs(formula), "~.")),
-    data = data
-  ))
-  out <- c(object, do.call(parse_mm, args))
-
-  obs <- data[, .get_obs(formula)]
-  if (!is.numeric(obs)) {
-    stop(paste0("response ", .get_obs(formula), " not numeric"),
-    call. = FALSE)
-  }
-
+  args <- c(object$mfargs, list(formula = formula(object), data=data))
+  out <- do.call(parse_mm, args)
+  obs <- out$y
+  
+  # get group and time
+  w <- as.integer(names(out$y))
   out <- c(out, list(
-    obs = obs,
-    gr = droplevels(as.factor(data[, .get_group(formula)])),
-    time = data[, .get_time(formula)]
-  ))
-
+    obs = out$y,
+    gr =  droplevels(as.factor(data$group[w])),
+    time = data$date[w])
+  )
+  
+  # check observation vector
+  nme <- .get_obs(formula(object))
+  x <- out$y
+  if (any(x < 0, na.rm=TRUE)) {
+    if (max(abs(x[x<0] + 1)) > tol) {
+      stop("column ", nme, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)
+    }
+  }
+  
+  discrete_fams <- c("poisson", "quasi_poisson", "neg_binom")
+  if (object$family %in% discrete_fams) {
+    if (any(abs(x - round(x)) > tol, na.rm = TRUE)) 
+      warning(paste0("column ", nme, " in data is not an integer vector, and will be coerced to one."), call. = FALSE)
+  }
+  
   class(out) <- "epiobs_"
   return(out)
 }
+
 
