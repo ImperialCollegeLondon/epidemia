@@ -6,10 +6,10 @@
 #'
 #' @param time An optional name defining the random walk time periods for each 
 #'    date and group. This must be a column name found in the \code{data} argument to \code{epim}. 
-#'    Defaults to NA, in which case the dates column implied by the \code{formula} argument to \code{epim} 
+#'    If not specified, determined by the dates column implied by the \code{formula} argument to \code{epim} 
 #'    is used. 
 #' @param gr Same as for \code{time}, except this defines the grouping to use for the random walks. A separate walk is defined 
-#'  for each group. Defaults to NA, in which case a common random walk is used for all groups.
+#'  for each group. If not specified a common random walk is used for all groups.
 #' @param  prior_scale The steps of the walks are independent zero mean normal with an unknown scale hyperparameter. This scale is given 
 #'  a half-normal prior. \code{prior_scale} sets the scale parameter of this hyperprior.
 #' @return A list to be parsed internally.
@@ -21,10 +21,10 @@
 #' args$formula <- R(country, date) ~ 1 + rw(gr=country) + lockdown
 #' }
 #' @export
-rw <- function(time=NA, gr=NA, prior_scale=0.2) {
+rw <- function(time, gr, prior_scale = 0.2) {
   label <- deparse(match.call())
-  time <- deparse(substitute(time))
-  gr <- deparse(substitute(gr))
+  time <- if(missing(time)) NULL else deparse(substitute(time))
+  gr <- if(missing(gr)) NULL else deparse(substitute(gr))
   out <- loo::nlist(time, gr, label, prior_scale)
   class(out) <- c("rw_term")
   return(out)
@@ -75,7 +75,7 @@ parse_term <- function(trm, data) {
 }
 
 get_autocor_gr <- function(trm, data) {
-  if(trm$gr=="NA")
+  if(is.null(trm$gr=="NA"))
     group <-  "all" 
   else {
     group <- data[[trm$gr]]
@@ -91,7 +91,7 @@ get_autocor_gr <- function(trm, data) {
 }
 
 get_autocor_time <- function(trm, data) {
-  time <- if(trm$time=="NA") data$date else data[[trm$time]]
+  time <- if(is.null(trm$time)) data$date else data[[trm$time]]
 
   check_integer(time, allow_na = TRUE)
   df <- data.frame(group = data$group,

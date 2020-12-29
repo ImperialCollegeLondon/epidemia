@@ -79,12 +79,11 @@ epim <- function(
   op <- options("warn")
   on.exit(options(op))
   options(warn=1)
-
   check_rt(rt)
   check_inf(inf)
   check_obs(obs)
-  check_data(data)
   check_group_subset(group_subset)
+  check_data(data, rt, inf, obs, group_subset)
   check_list(sampling_args)
   check_logical(prior_PD)
   check_scalar(prior_PD)
