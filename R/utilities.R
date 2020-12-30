@@ -10,6 +10,7 @@ check_numeric <- function(x, allow_na = FALSE) {
 
 check_integer <- function(x, tol = .Machine$double.eps, allow_na = FALSE) {
   s <- as.character.expr(substitute(x))
+  x <- suppressWarnings(as.numeric(x))
   if (any(abs(x - round(x)) > tol, na.rm = TRUE)) {
     stop(paste0(s, " is not an integer vector."), call. = FALSE)
   }

@@ -137,7 +137,7 @@ epim <- function(
 
   # replace names for the simulation
   orig_names <- fit@sim$fnames_oi
-  fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit)
+  fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit, data)
 
 
   out <- loo::nlist(
@@ -214,7 +214,7 @@ make_Sigma_nms <- function(rt, sdat, fit) {
 # @param rt An epirt_ object
 # @param obs A list of epiobs_ objects
 # @param fit The stanfit
-new_names <- function(sdat, rt, obs, fit) {
+new_names <- function(sdat, rt, obs, fit, data) {
   out <- c(
       if (sdat$has_intercept) {
         "R|(Intercept)"
