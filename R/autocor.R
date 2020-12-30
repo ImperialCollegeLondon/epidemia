@@ -93,6 +93,7 @@ get_autocor_gr <- function(trm, data) {
 get_autocor_time <- function(trm, data) {
   time <- if(is.null(trm$time)) data$date else data[[trm$time]]
 
+  check_numeric(time, allow_na=TRUE)
   check_integer(time, allow_na = TRUE)
   df <- data.frame(group = data$group,
                    time =as.integer(time))
