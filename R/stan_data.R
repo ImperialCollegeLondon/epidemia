@@ -31,7 +31,7 @@ standata_inf <- function(inf) {
       gen = inf$gen,
       N0 = inf$seed_days,
       latent = 1 * inf$latent,
-      family = 1 * inf$latent,
+      inf_family = 1 * inf$latent,
       pop_adjust = 1 * inf$pop_adjust
   )
 
@@ -44,7 +44,7 @@ standata_inf <- function(inf) {
     ok_dists = loo::nlist("exponential")
   )
 
-  out$prior_scale_for_tau <- prior_tau_stuff$prior_scale
+  out$prior_scale_for_tau <- as.numeric(prior_tau_stuff$prior_scale)
 
   # add data for prior on auxiliary param
   p_aux <- handle_glm_prior(

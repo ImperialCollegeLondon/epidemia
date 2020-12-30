@@ -442,7 +442,7 @@ plot_infections.epimodel <-
   date_format="%Y-%m-%d",
   cumulative=FALSE, 
   by_100k = FALSE,
-  levels = c(20, 50, 95), 
+  levels = c(30, 60, 90), 
   log=FALSE,
   plotly = FALSE, 
   ...) {
@@ -517,7 +517,7 @@ plot_infectious.epimodel <-
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
   by_100k = FALSE,
-  levels = c(20, 50, 95), 
+  levels = c(30, 60, 90), 
   log=FALSE,
   plotly = FALSE, 
   ...) {

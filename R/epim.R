@@ -102,6 +102,10 @@ epim <- function(
   # collect arguments for standata function
   args <- loo::nlist(rt, inf, obs, data, prior_PD)
 
+  # compute standata
+  sdat <- do.call(standata_all, args)
+
+  # return standata if no chains are specified
   if (algorithm == "sampling") {
     chains <- sampling_args$chains
     if (!is.null(chains) && chains == 0) {
@@ -109,6 +113,10 @@ epim <- function(
       return(do.call(standata_all, args))
     }
   }
+
+  # better initial values
+  if (is.null(sampling_args$init_r))
+    sampling_args$init_r <- 1e-6
 
   args <- c(
     sampling_args,
@@ -119,18 +127,18 @@ epim <- function(
     )
   )
 
-  sampling <- (algorithm == "sampling")
-
   fit <-
-    if (sampling) {
+    if (algorithm == "sampling") {
       do.call(rstan::sampling, args)
     } else {
+      args$algorithm <- algorithm
       do.call(rstan::vb, args)
     }
 
   # replace names for the simulation
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit)
+
 
   out <- loo::nlist(
     rt_orig,
@@ -141,14 +149,11 @@ epim <- function(
     inf,
     obs,
     data,
-    seed_days,
-    si,
-    pops,
     algorithm,
     standata = sdat,
-    orig_names,
-    pop_adjust
+    orig_names
   )
+
   return(epimodel(out))
 }
 
@@ -235,7 +240,7 @@ new_names <- function(sdat, rt, obs, fit) {
       if (sdat$len_theta_L) {
         paste0("R|Sigma[", make_Sigma_nms(rt, sdat, fit), "]")
       },
-      c(paste0("seeds[", groups, "]")),
+      c(paste0("seeds[", sdat$groups, "]")),
       "tau",
       if (sdat$ac_nterms > 0) {
         make_rw_sigma_nms(rt, data)

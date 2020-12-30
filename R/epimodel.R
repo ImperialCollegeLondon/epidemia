@@ -70,9 +70,6 @@ epimodel <- function(object) {
     obs = object$obs_orig,
     data = object$data,
     groups = levels(object$data$group),
-    seed_days = object$seed_days,
-    pops = object$pops,
-    si = object$si,
     coefficients = coefs,
     ses,
     linear.predictors = eta,
@@ -88,8 +85,7 @@ epimodel <- function(object) {
     sdat = object$standata,
     orig_names = object$orig_names,
     rt_prior_info = object$standata$rt_prior_info,
-    obs_prior_info = object$standata$obs_prior_info,
-    pop_adjust = object$pop_adjust
+    obs_prior_info = object$standata$obs_prior_info
   )
 
   class(out) <- "epimodel"

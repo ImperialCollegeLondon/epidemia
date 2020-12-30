@@ -41,12 +41,20 @@ posterior_sims <- function(object,
     draws
   )
 
-  standata <- pp_standata(
-    object = object,
-    rt = rt,
-    obs = obs,
-    data = data
+  standata <- standata_all(
+    rt, 
+    object$inf, 
+    obs, 
+    data, 
+    FALSE
   )
+  
+  # standata <- pp_standata(
+  #   object = object,
+  #   rt = rt,
+  #   obs = obs,
+  #   data = data
+  # )
  
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)
@@ -187,6 +195,11 @@ subsamp <- function(object, mat, draws=NULL) {
 
   return(mat)
 }
+
+
+
+
+
 
 # standata passed into rstan::gqs
 #
