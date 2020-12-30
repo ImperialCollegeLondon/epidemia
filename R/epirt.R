@@ -93,8 +93,8 @@ epirt_ <- function(object, data) {
 
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
-    gr = droplevels(as.factor(data[, .get_group(formula), drop = TRUE])),
-    time = data[, .get_time(formula), drop = TRUE]
+    gr = droplevels(as.factor(data$group)),
+    time = data$date
   ))
 
   class(out) <- "epirt_"

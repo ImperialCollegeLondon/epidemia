@@ -60,15 +60,3 @@ cumulate.epiobs_ <- function(object, ...) {
   object$i2otype <- "distribution"
   return(object)
 }
-
-# Get i2o padded out to a certain length
-pad_i2o <- function(object, ...) UseMethod("pad_i2o")
-
-pad_i2o.epiobs_ <- function(object, len, ...) {
-  i2o <- get_i2o(object)
-  is_density <- object$i2otype == "density"
-  if (is_density)
-    return(pad(i2o, len, 0, FALSE))
-  else
-    return(pad(i2o, len, tail(i2o, 1)))
-}

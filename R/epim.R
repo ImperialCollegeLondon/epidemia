@@ -82,6 +82,7 @@ epim <- function(
   check_rt(rt)
   check_inf(inf)
   check_obs(obs)
+  if (inherits(obs, "epiobs")) obs <- list(obs)
   check_group_subset(group_subset)
   check_data(data, rt, inf, obs, group_subset)
   check_list(sampling_args)
@@ -90,9 +91,8 @@ epim <- function(
   check_init_run(init_run)
 
   algorithm <- match.arg(algorithm)
-  data <- parse_data(data)
-  if (inherits(obs, "epiobs")) obs <- list(obs)
-  
+  data <- parse_data(data, rt, inf, obs, group_subset)
+
   # generate model matrices for Rt and obs
   rt_orig <- rt
   obs_orig <- obs
@@ -109,9 +109,300 @@ epim <- function(
       return(do.call(standata_all, args))
     }
   }
+
+  args <- c(
+    sampling_args,
+    list(
+      object = stanmodels$epidemia_base,
+      pars = pars(sdat),
+      data = sdat
+    )
+  )
+
+  sampling <- (algorithm == "sampling")
+
+  fit <-
+    if (sampling) {
+      do.call(rstan::sampling, args)
+    } else {
+      do.call(rstan::vb, args)
+    }
+
+  # replace names for the simulation
+  orig_names <- fit@sim$fnames_oi
+  fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit)
+
+  out <- loo::nlist(
+    rt_orig,
+    obs_orig,
+    call,
+    stanfit = fit,
+    rt,
+    inf,
+    obs,
+    data,
+    seed_days,
+    si,
+    pops,
+    algorithm,
+    standata = sdat,
+    orig_names,
+    pop_adjust
+  )
+  return(epimodel(out))
 }
 
 
+# Decides which parameters stan should track
+#
+# @param sdat Standata resulting from standata_all
+pars <- function(sdat) {
+  out <- c(
+      if (sdat$has_intercept) "alpha",
+      if (sdat$K > 0) "beta",
+      if (sdat$q > 0) "b",
+      if (length(sdat$ac_nterms)) "ac_noise",
+      if (sdat$num_ointercepts > 0) "ogamma",
+      if (sdat$K_all > 0) "obeta",
+      if (length(sdat$obs_ac_nterms)) "obs_ac_noise",
+      if (sdat$len_theta_L) "theta_L",
+      "y",
+      "tau2",
+      if (length(sdat$ac_nterms)) "ac_scale",
+      if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
+      if (sdat$num_oaux > 0) "oaux",
+      if (sdat$latent) "inf_noise",
+      if (sdat$latent) "inf_aux"
+    )
+  return(out)
+}
+
+# make names for the coefficient covariance matrix
+#
+# @param rt An epirt_ object
+# @param sdat Standata
+# @param A stanfit
+make_Sigma_nms <- function(rt, sdat, fit) {
+  if (sdat$len_theta_L) {
+    cnms <- rt$group$cnms
+    fit <- transformTheta_L(fit, cnms)
+
+    # names
+    Sigma_nms <- lapply(cnms, FUN = function(grp) {
+      nm <- outer(grp, grp, FUN = paste, sep = ",")
+      nm[lower.tri(nm, diag = TRUE)]
+    })
+
+    nms <- names(cnms)
+    for (j in seq_along(Sigma_nms)) {
+      Sigma_nms[[j]] <- paste0(nms[j], ":", Sigma_nms[[j]])
+    }
+
+    Sigma_nms <- unlist(Sigma_nms)
+    return(Sigma_nms)
+  }
+}
+
+# make new names for all stan parameters
+#
+# @param sdat The standata
+# @param rt An epirt_ object
+# @param obs A list of epiobs_ objects
+# @param fit The stanfit
+new_names <- function(sdat, rt, obs, fit) {
+  out <- c(
+      if (sdat$has_intercept) {
+        "R|(Intercept)"
+      },
+      if (sdat$K > 0) {
+        paste0("R|", colnames(sdat$X))
+      },
+      if (length(rt$group) && length(rt$group$flist)) {
+        c(paste0("R|", colnames(rt$group$Z)))
+      },
+      if (sdat$ac_nterms > 0) {
+        paste0("R|",  grep("NA", colnames(rt$autocor$Z), invert=TRUE, value=TRUE))
+      },
+      if (sdat$num_ointercepts > 0) {
+        make_ointercept_nms(obs, sdat)
+      },
+      if (sdat$K_all > 0) {
+        make_obeta_nms(obs, sdat)
+      },
+      if (sdat$obs_ac_nterms > 0) {
+        make_obs_ac_nms(obs)
+      },
+      if (sdat$len_theta_L) {
+        paste0("R|Sigma[", make_Sigma_nms(rt, sdat, fit), "]")
+      },
+      c(paste0("seeds[", groups, "]")),
+      "tau",
+      if (sdat$ac_nterms > 0) {
+        make_rw_sigma_nms(rt, data)
+      },
+      if (sdat$obs_ac_nterms > 0) {
+        sapply(obs, function(x) make_rw_sigma_nms(x, data))
+      },
+      if (sdat$num_oaux > 0) {
+        make_oaux_nms(obs)
+      },
+      if (sdat$latent) {
+        make_inf_nms(sdat$begin, sdat$starts, sdat$N0, sdat$NC, sdat$groups)
+      },
+      if (sdat$latent) {
+        "inf|dispersion"
+      },
+      "log-posterior"
+    )
+    return(out)
+}
+
+transformTheta_L <- function(stanfit, cnms) {
+  thetas <- rstan::extract(stanfit,
+    pars = "theta_L", inc_warmup = TRUE,
+    permuted = FALSE
+  )
+
+  nc <- sapply(cnms, FUN = length)
+  nms <- names(cnms)
+  Sigma <- apply(thetas, 1:2, FUN = function(theta) {
+    Sigma <- lme4::mkVarCorr(sc = 1, cnms, nc, theta, nms)
+    unlist(sapply(Sigma,
+      simplify = FALSE,
+      FUN = function(x) x[lower.tri(x, TRUE)]
+    ))
+  })
+  l <- length(dim(Sigma))
+  end <- tail(dim(Sigma), 1L)
+  shift <- grep("^theta_L", names(stanfit@sim$samples[[1]]))[1] - 1L
+  if (l == 3) {
+    for (chain in 1:end) {
+      for (param in 1:nrow(Sigma)) {
+        stanfit@sim$samples[[chain]][[shift + param]] <- Sigma[param, , chain]
+      }
+    }
+  } else {
+    for (chain in 1:end) {
+      stanfit@sim$samples[[chain]][[shift + 1]] <- Sigma[, chain]
+    }
+  }
+
+  return(stanfit)
+}
+
+make_obs_ac_nms <- function(obs) {
+  nms <- c()
+  for (o in obs) {
+    x <- grep("NA", colnames(o$autocor$Z), invert=T, value=T)
+    if (length(x) > 0) {
+      x <- paste0(.get_obs(o$formula), "|", x)
+      nms <- c(nms, x)
+    }
+  }
+  return(nms)
+}
+
+make_rw_nms <- function(formula, data) {
+  trms <- terms_rw(formula)
+  nms <- character()
+  for (trm in trms) {
+    trm <- eval(parse(text = trm))
+    # retrieve the time and group vectors
+    time <- if (is.null(trm$time)) data$date else data[[trm$time]]
+    group <- if (is.null(trm$gr)) "all" else droplevels(data[[trm$gr]])
+    f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
+    nms <- c(nms, f)
+  }
+
+  return(c(
+    grep("NA", nms, invert=TRUE, value=TRUE),
+    grep("NA", nms, value=TRUE) # NA values go to the end
+  ))
+}
+
+make_rw_sigma_nms <- function(obj, data) {
+  trms <- terms_rw(formula(obj))
+  nme <- ifelse(class(obj) == "epirt_", "R", .get_obs(formula(obj)))
+  nms <- character()
+  for (trm in trms) {
+    trm <- eval(parse(text = trm))
+    group <- if (is.null(trm$gr)) "all" else droplevels(data[[trm$gr]])
+    nms <- c(nms, unique(paste0(nme, "|sigma:", trm$label, "[", group, "]")))
+  }
+  return(nms)
+}
+
+make_oaux_nms <- function(obs) {
+  nms <- list()
+  for (o in obs) {
+    if (!is.null(o$prior_aux)) {
+      if (o$family == "neg_binom") {
+        x <- "|reciprocal dispersion"
+      } 
+      else if (o$family == "quasi_poisson") {
+        x <- "| dispersion"
+      }
+      else if (o$family == "normal"){
+        x <- "|standard deviation"
+      } else {
+        x <- "|sigma"
+      }
+      nms <- c(nms,
+      paste0(.get_obs(formula(o)), x))
+    }
+  }
+  return(unlist(nms))
+}
+
+
+make_ointercept_nms <- function(obs, sdat) {
+  nms <- character()
+  for (i in 1:length(obs)) {
+    if (sdat$has_ointercept[i]) {
+      nms <- c(nms,
+        paste0(.get_obs(formula(obs[[i]])), "|(Intercept)"))
+    }
+  }
+  return(nms)
+}
+
+make_obeta_nms <- function(obs, sdat) {
+  if (sdat$K_all == 0) {
+    return(character(0))
+  }
+  obs_nms <- sapply(
+    obs,
+    function(x) .get_obs(formula(x))
+  )
+  repnms <- unlist(Map(
+    rep,
+    obs_nms,
+    utils::head(sdat$oK, length(obs_nms))
+  ))
+  obs_beta_nms <- unlist(lapply(
+    obs,
+    function(a) colnames(get_x(a))
+  ))
+  obs_beta_nms <- grep(
+    pattern = "(Intercept)",
+    x = obs_beta_nms,
+    invert = T,
+    value = T
+  )
+  return(paste0(repnms, "|", obs_beta_nms))
+}
+
+# @param begin First simulation date
+# @param starts Start index for each group
+# @param N0 Seed days
+# @param N2 Total simulation periods
+# @param groups Character vector giving all simulated groups
+make_inf_nms <- function(begin, starts, N0, NC, groups) {
+  nms <- c()
+  for (m in 1:length(groups)) 
+    nms <- paste0("inf_noise[", begin -1 + seq(starts[m] + N0, NC[m]), ", ", groups[m],"]")
+  return(nms)
+}
 
 
 # epim <- function(rt,
@@ -341,164 +632,3 @@ epim <- function(
 #   )
 #   return(epimodel(out))
 # }
-
-transformTheta_L <- function(stanfit, cnms) {
-  thetas <- rstan::extract(stanfit,
-    pars = "theta_L", inc_warmup = TRUE,
-    permuted = FALSE
-  )
-
-  nc <- sapply(cnms, FUN = length)
-  nms <- names(cnms)
-  Sigma <- apply(thetas, 1:2, FUN = function(theta) {
-    Sigma <- lme4::mkVarCorr(sc = 1, cnms, nc, theta, nms)
-    unlist(sapply(Sigma,
-      simplify = FALSE,
-      FUN = function(x) x[lower.tri(x, TRUE)]
-    ))
-  })
-  l <- length(dim(Sigma))
-  end <- tail(dim(Sigma), 1L)
-  shift <- grep("^theta_L", names(stanfit@sim$samples[[1]]))[1] - 1L
-  if (l == 3) {
-    for (chain in 1:end) {
-      for (param in 1:nrow(Sigma)) {
-        stanfit@sim$samples[[chain]][[shift + param]] <- Sigma[param, , chain]
-      }
-    }
-  } else {
-    for (chain in 1:end) {
-      stanfit@sim$samples[[chain]][[shift + 1]] <- Sigma[, chain]
-    }
-  }
-
-  return(stanfit)
-}
-
-
-
-make_obs_ac_nms <- function(obs) {
-  nms <- c()
-  for (o in obs) {
-    x <- grep("NA", colnames(o$autocor$Z), invert=T, value=T)
-    if (length(x) > 0) {
-      x <- paste0(.get_obs(o$formula), "|", x)
-      nms <- c(nms, x)
-    }
-  }
-  return(nms)
-}
-
-
-make_rw_nms <- function(formula, data) {
-  trms <- terms_rw(formula)
-  nms <- character()
-  for (trm in trms) {
-    trm <- eval(parse(text = trm))
-    # retrieve the time and group vectors
-    time <- if (trm$time == "NA") data$date else data[[trm$time]]
-    group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-    f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
-    nms <- c(nms, f)
-  }
-
-  return(c(
-    grep("NA", nms, invert=TRUE, value=TRUE),
-    grep("NA", nms, value=TRUE) # NA values go to the end
-  ))
-}
-
-make_rw_sigma_nms <- function(obj, data) {
-  trms <- terms_rw(formula(obj))
-  nme <- ifelse(class(obj) == "epirt_", "R", .get_obs(formula(obj)))
-  nms <- character()
-  for (trm in trms) {
-    trm <- eval(parse(text = trm))
-    group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-    nms <- c(nms, unique(paste0(nme, "|sigma:", trm$label, "[", group, "]")))
-  }
-  return(nms)
-}
-
-# make_rw_sigma_nms <- function(formula, data) {
-#   trms <- terms_rw(formula)
-#   nms <- character()
-#   for (trm in trms) {
-#     trm <- eval(parse(text = trm))
-#     group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-#     nms <- c(nms, unique(paste0("sigma:", trm$label, "[", group, "]")))
-#   }
-#   return(nms)
-# }
-
-make_oaux_nms <- function(obs) {
-  nms <- list()
-  for (o in obs) {
-    if (!is.null(o$prior_aux)) {
-      if (o$family == "neg_binom") {
-        x <- "|reciprocal dispersion"
-      } 
-      else if (o$family == "quasi_poisson") {
-        x <- "| dispersion"
-      }
-      else if (o$family == "normal"){
-        x <- "|standard deviation"
-      } else {
-        x <- "|sigma"
-      }
-      nms <- c(nms,
-      paste0(.get_obs(formula(o)), x))
-    }
-  }
-  return(unlist(nms))
-}
-
-
-make_ointercept_nms <- function(obs, sdat) {
-  nms <- character()
-  for (i in 1:length(obs)) {
-    if (sdat$has_ointercept[i]) {
-      nms <- c(nms,
-        paste0(.get_obs(formula(obs[[i]])), "|(Intercept)"))
-    }
-  }
-  return(nms)
-}
-
-make_obeta_nms <- function(obs, sdat) {
-  if (sdat$K_all == 0) {
-    return(character(0))
-  }
-  obs_nms <- sapply(
-    obs,
-    function(x) .get_obs(formula(x))
-  )
-  repnms <- unlist(Map(
-    rep,
-    obs_nms,
-    utils::head(sdat$oK, length(obs_nms))
-  ))
-  obs_beta_nms <- unlist(lapply(
-    obs,
-    function(a) colnames(get_x(a))
-  ))
-  obs_beta_nms <- grep(
-    pattern = "(Intercept)",
-    x = obs_beta_nms,
-    invert = T,
-    value = T
-  )
-  return(paste0(repnms, "|", obs_beta_nms))
-}
-
-# @param begin First simulation date
-# @param starts Start index for each group
-# @param N0 Seed days
-# @param N2 Total simulation periods
-# @param groups Character vector giving all simulated groups
-make_inf_nms <- function(begin, starts, N0, NC, groups) {
-  nms <- c()
-  for (m in 1:length(groups)) 
-    nms <- paste0("inf_noise[", begin -1 + seq(starts[m] + N0, NC[m]), ", ", groups[m],"]")
-  return(nms)
-}

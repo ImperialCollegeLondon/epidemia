@@ -110,7 +110,7 @@ epiobs_ <- function(object, data) {
     stop("Bug found. Argument 'object' should have class 'epiobs'")
   }
   args <- c(object$mfargs, list(formula = formula(object), data=data))
-  out <- do.call(parse_mm, args)
+  out <- c(object, do.call(parse_mm, args))
   obs <- out$y
   
   # get group and time
@@ -124,6 +124,7 @@ epiobs_ <- function(object, data) {
   # check observation vector
   nme <- .get_obs(formula(object))
   x <- out$y
+  tol <- .Machine$double.eps
   if (any(x < 0, na.rm=TRUE)) {
     if (max(abs(x[x<0] + 1)) > tol) {
       stop("observation vector ", nme, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)

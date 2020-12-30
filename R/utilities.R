@@ -329,9 +329,11 @@ check_groups_data <- function(object, group_subset, data) {
 # @param group_subset A character vector of groups to model (or NULL)
 check_data <- function(data, rt, inf, obs, group_subset) {
   check_data.frame(data)
+  data <- as.data.frame(data)
   check_has_rows(data)
   dummy <- sapply(c(list(rt), obs), check_all_vars_data, data)
   check_name_conflicts_data(rt, data) 
+
   check_group_as_factor(rt, data)
   check_time_as_date(rt, data)
   check_susceptibles(inf, data)
@@ -453,7 +455,7 @@ all_vars <- function(form) {
 # @param obs A list of epiobs objects
 # @param inf An epiinf object
 # @param group_subset A character vector of subgroups (or NULL)
-parse_data <- function(data, rt, obs, inf, group_subset) {
+parse_data <- function(data, rt, inf, obs, group_subset) {
   data <- tibble(data)
   data <- subset_data(data, rt, group_subset)
   data <- group_date_col_data(data, rt)
@@ -472,7 +474,7 @@ subset_data <- function(data, object, group_subset) {
   group <- .get_group(formula(object))
   if (!is.null(group_subset)) {
     # filter for selected groups
-    data <- filter(data, .data[[group]] %in% group_subset)
+    data <- dplyr::filter(data, .data[[group]] %in% group_subset)
   }
   return(data)
 }
@@ -485,7 +487,7 @@ subset_data <- function(data, object, group_subset) {
 group_date_col_data <- function(data, object) {
   group <- .get_group(formula(object))
   time <- .get_time(formula(object))
-  data <- mutate(data,
+  data <- dplyr::mutate(data,
     group = droplevels(as.factor(.data[[group]])),
     date = as.Date(.data[[time]])
   )
@@ -520,7 +522,7 @@ obs_to_int <- function(data, obs) {
   col <- .get_obs(formula(obs))
   discrete_fams <- c("neg_binom", "poisson", "quasi_poisson")
   if (obs$family %in% discrete_fams) {
-    data <- mutate(data, across(col, as.integer))
+    data <- dplyr::mutate(data, across(col, as.integer))
   }
   return(data)
 }
@@ -532,7 +534,7 @@ obs_to_int <- function(data, obs) {
 susceptibles_to_int <- function(data, inf) {
   if (inf$pop_adjust) {
     col <- inf$susceptibles
-    data <- mutate(data, across(col, as.integer))
+    data <- dplyr::mutate(data, across(col, as.integer))
   }
   return(data)
 }

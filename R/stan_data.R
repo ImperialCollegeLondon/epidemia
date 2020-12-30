@@ -104,7 +104,7 @@ standata_data <- function(data, inf) {
   susc <- matrix(1, nrow = N2, ncol = M)
   if (inf$pop_adjust) {
     col <- inf$susceptibles
-    df <- split(data[, col], data$group)
+    df <- split(pull(data, col), data$group)
     for (m in 1:M)
       susc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]
   }
@@ -174,7 +174,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
       function(x) length(x$i2o)))
 
     pvecs <- as.array(lapply(obs,
-      function(x) pad_i2o(x, len = nsim)))
+      function(x) pad(x$i2o, nsim, 0, FALSE)))
 
     dat <- array(unlist(
       lapply(

@@ -12,6 +12,7 @@ parse_mm <- function(formula, data, ...) {
 
   # formula with no autocorrelation terms
   form <- norws(formula)
+  data <- as.data.frame(data)
   rownames(data) <- seq_len(nrow(data))
   mf$formula <- form
   mf$data <- data
@@ -41,6 +42,7 @@ parse_mm <- function(formula, data, ...) {
     x <- model.matrix(object = mt, data = mf)
     glmod <- group <- NULL
   }
+
   y <- model.response(mf)
   offset <- check_offset(model.offset(mf), y)
 
@@ -71,7 +73,7 @@ parse_mm <- function(formula, data, ...) {
   if (length(autocor$Z)) {
     colnames(autocor$Z) <- make_rw_nms(formula, data)
   }
-  
+
   # overall model matrix includes FE, RE and autocor
   fe <- x
   x <- cbind(x, group$Z, autocor$Z)

@@ -75,7 +75,7 @@ parse_term <- function(trm, data) {
 }
 
 get_autocor_gr <- function(trm, data) {
-  if(is.null(trm$gr=="NA"))
+  if(is.null(trm$gr))
     group <-  "all" 
   else {
     group <- data[[trm$gr]]
