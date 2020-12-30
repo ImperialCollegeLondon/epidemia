@@ -1,8 +1,9 @@
 context("Test plotting")
 
 # load data
-example.fit <- readRDS("../data/plot_test_fit.rds")
-fm <- example.fit
+load("../data/plot_test_fit.RData")
+example.fit <- plot_fit
+
 
 test_that("wrong group throws error", {
   expect_error(plot_rt(example.fit, groups = c("Germany", "FakeCountry")), regexp = "group\\(s\\) FakeCountry not found.")
@@ -22,7 +23,7 @@ test_that("levels out of [0,100] throws error", {
   expect_error(plot_rt(example.fit, levels = c(50, 95, 101)), regexp = "all levels must be between")
   expect_error(plot_obs(example.fit, type = "deaths", levels = c(50, 95, 101)), regexp = "all levels must be between ")
   expect_error(plot_infections(example.fit, levels = c(50, 95, 101)), regexp = "all levels must be between")
-  
+
   expect_error(plot_rt(example.fit, levels = c(-1, 50, 95)), regexp = "all levels must be between")
   expect_error(plot_obs(example.fit, type = "deaths", levels = c(-1, 50, 95)), regexp = "all levels must be between")
   expect_error(plot_infections(example.fit, levels = c(-1, 50, 95)), regexp = "all levels must be between ")
@@ -48,7 +49,7 @@ test_that("date subsetting",{
 
   expect_error(plot_rt(example.fit,  dates=c("2020-05-04", "2020-05-14"), date_format="asdf"),
                  regexp = "conversion of 'dates' to ")
-  
+
 })
 
 test_that(".check_dates works as expected", {
@@ -73,7 +74,6 @@ test_that("plot_rt runs through with various arguments", {
   fun <- plot_rt
   expect_true(inherits(fun(fm), "ggplot"))
   expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
-  expect_true(inherits(fun(fm, plotly=T), "plotly"))
   expect_true(inherits(fun(fm, smooth=7), "ggplot"))
 })
 
@@ -81,7 +81,6 @@ test_that("plot_obs runs through with varioud arguments", {
 fun <- function(x, ...) plot_obs(x, type="deaths", ...)
 expect_true(inherits(fun(fm), "ggplot"))
 expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
-expect_true(inherits(fun(fm, plotly=T), "plotly"))
 expect_true(inherits(fun(fm, cumulative=T), "ggplot"))
 })
 
@@ -89,7 +88,6 @@ test_that("plot_infections runs through with varioud arguments", {
 fun <- plot_infections
 expect_true(inherits(fun(fm), "ggplot"))
 expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
-expect_true(inherits(fun(fm, plotly=T), "plotly"))
 expect_true(inherits(fun(fm, cumulative=T), "ggplot"))
 })
 
@@ -97,7 +95,12 @@ test_that("plot_infectious runs through with varioud arguments", {
 fun <- plot_infectious
 expect_true(inherits(fun(fm), "ggplot"))
 expect_true(inherits(fun(fm, log=TRUE), "ggplot"))
-expect_true(inherits(fun(fm, plotly=T), "plotly"))
 expect_true(inherits(fun(fm, cumulative=T), "ggplot"))
 })
+
+
+
+
+
+
 

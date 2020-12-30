@@ -18,11 +18,8 @@ posterior_sims <- function(object,
 
   all <- c(list(R = object$rt), object$obs)
   if (!is.null(newdata)) {
-    newdata <- check_data(
-      formula = formula(object$rt),
-      data = newdata,
-      group_subset = object$groups
-    )
+    check_data(newdata, object$rt, object$inf, object$obs, object$groups)
+    newdata <- parse_data(newdata, object$rt, object$inf, object$obs, object$groups)
     all <- Map( # enforce original factor levels
       add_xlev,
       all,

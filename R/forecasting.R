@@ -54,11 +54,8 @@ evaluate_forecast <-
       data <- object$data
       data <- data[data$group %in% groups, ]
     } else {
-      data <- check_data(
-        formula = formula(object$rt),
-        data = newdata,
-        group_subset = groups
-      )
+      check_data(newdata, object$rt, object$inf, object$obs, object$groups)
+      data <- parse_data(newdata, object$rt, object$inf, object$obs, object$groups)
     }    
 
     # get observed outcomes

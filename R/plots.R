@@ -256,11 +256,8 @@ plot_obs.epimodel <-
     if (is.null(newdata)) {
       data <- data_orig
     } else {
-      data <- check_data(
-        formula = formula(object$rt),
-        data = newdata,
-        group_subset = groups
-      )
+      check_data(newdata, object$rt, object$inf, object$obs, groups)
+      data <- parse_data(newdata, object$rt, object$inf, object$obs, groups)
     }
 
     # get observed outcomes
