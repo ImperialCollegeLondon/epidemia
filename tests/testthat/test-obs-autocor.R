@@ -1,11 +1,10 @@
 context("Test models with autocorrelation terms")
 
-library(dplyr)
 data("EuropeCovid")
 
 args <- list()
 args$data <- EuropeCovid$data %>%
-  filter(country == "United_Kingdom") %>%
+  dplyr::filter(country == "United_Kingdom") %>%
   mutate(
     week = lubridate::week(date),
     cases = deaths,
@@ -16,23 +15,24 @@ args$rt <- epirt(R(country, date) ~ rw(time=week))
 args$inf <- epiinf(gen = EuropeCovid$si)
 args$sampling_args <- list(iter=500, chains=0)
 
-deaths <- epiobs(
+expect_warning(deaths <- epiobs(
   formula = deaths ~ rw(time=week),
   i2o = EuropeCovid$inf2death * 0.02,
   na.action = na.pass
-)
+))
 
-dummy <- epiobs(
+expect_warning(dummy <- epiobs(
   formula = dummy ~ 1,
   i2o = EuropeCovid$inf2death * 0.02,
   na.action = na.pass
-)
+))
 
+expect_warning(
 cases <- epiobs(
   formula = cases ~ rw(time=week),
   i2o = EuropeCovid$inf2death * 0.02,
   na.action = na.pass
-)
+))
 
 test_that("No rw terms leads to correct default stan data", {
   # no rw terms

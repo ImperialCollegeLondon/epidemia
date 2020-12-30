@@ -3,7 +3,7 @@ context("Test plotting")
 # load data
 load("../data/plot_test_fit.RData")
 example.fit <- plot_fit
-
+fm <- example.fit
 
 test_that("wrong group throws error", {
   expect_error(plot_rt(example.fit, groups = c("Germany", "FakeCountry")), regexp = "group\\(s\\) FakeCountry not found.")

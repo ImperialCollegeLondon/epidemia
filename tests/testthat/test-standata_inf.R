@@ -1,8 +1,5 @@
 context("Test that inf is parsed into standata correctly")
 
-
-devtools::load_all("~/Documents/covid/epidemia/")
-
 test_that("generation distribution", {
   vec <- c(0.2,0.8)
   inf <- epiinf(gen = vec)
@@ -22,12 +19,12 @@ test_that("latent, pop_adjust", {
   inf <- epiinf(gen=1, latent = FALSE)
   sdat <- standata_inf(inf)
   expect_equal(sdat$latent, 0)
-  expect_equal(sdat$family, 0)
+  expect_equal(sdat$inf_family, 0)
 
   inf <- epiinf(gen=1, latent = TRUE)
   sdat <- standata_inf(inf)
   expect_equal(sdat$latent, 1)
-  expect_equal(sdat$family, 1)
+  expect_equal(sdat$inf_family, 1)
 
   inf <- epiinf(gen=1, pop_adjust=FALSE)
   sdat <- standata_inf(inf)

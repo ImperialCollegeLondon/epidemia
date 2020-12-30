@@ -24,11 +24,10 @@ test_that("missing variables in data are picked up ", {
   expect_error(check_all_vars_data(rt, df), regexp = "A")
   rt <- epirt(R(X1, X2) ~ 1 + rw(X3,A))
   expect_error(check_all_vars_data(rt, df), regexp = "A")
-  A <- 0.2
   rt <- epirt(R(X1, X2) ~ 1 + rw(X3,X4,A))
   expect_error(check_all_vars_data(rt, df), NA)
 
-  obs <- epiobs(X1(X2,X3) ~ X4, i2o = 1)
+  obs <- epiobs(X1 ~ X4, i2o = 1)
   expect_error(check_all_vars_data(obs, df), NA)
 })
 
@@ -95,22 +94,6 @@ test_that("susceptibles has correct format", {
   expect_error(check_susceptibles(inf, df), regexp = "non-negative")
 })
 
-
-test_that("observation vectors have correct format", {
-  df$A <- 10
-  obs <- epiobs(formula = A(X1,X2) ~ 1, i2o = 1)
-  expect_error(check_obs_data(obs, df), NA)
-  df$A[2] <- -1
-  expect_error(check_obs_data(obs, df), NA)
-  df$A[2] <- NA
-  expect_error(check_obs_data(obs, df), NA)
-  df$A[2] <- -0.5
-  expect_error(check_obs_data(obs, df), regexp = "negative")
-  df$A <- 10.5
-  expect_warning(check_obs_data(obs, df), regexp = "integer")
-  obs <- epiobs(formula = A(X1,X2) ~ 1, i2o = 1, family = "normal")
-  expect_warning(check_obs_data(obs, df), NA)
-})
 
 
 test_that("checking for consecutive dates works", {

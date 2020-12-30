@@ -4,7 +4,11 @@ library(epidemia)
 
 load(file = "../data/NYWA.RData")
 args <- NYWA
-# No sampling, just return stan data
+
+args <- list()
+args$data <- NYWA$data
+args$inf <- epiinf(gen = NYWA$si)
+expect_warning(args$obs <- epiobs(deaths ~ 1, i2o = NYWA$inf2death * 0.02))
 args$sampling_args <- list(chains=0)
 
 test_that("has_intercept takes correct values", {
@@ -13,7 +17,7 @@ test_that("has_intercept takes correct values", {
   args$rt <- epirt(
     formula = R(code, date) ~ av_mobility,
   )
-  
+
   sdat <- do.call("epim", args=args)
   expect_true(sdat$has_intercept)
 
@@ -31,7 +35,7 @@ test_that("Correct number of predictors K", {
   args$rt <- epirt(
     formula = R(code, date) ~ 1
   )
-  
+
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$K, 0)
 
@@ -39,7 +43,7 @@ test_that("Correct number of predictors K", {
   args$rt <- epirt(
     R(code, date) ~ 1 + av_mobility + residential
   )
-  
+
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$K, 2)
 

@@ -4,12 +4,13 @@ context("Testing that data argument to epim is parsed correctly")
 levels <- 3
 dates <- 5
 start <- as.Date("2020-05-01")
+tol <- .Machine$double.eps
 df <- data.frame(A = gl(levels, dates), B = rep(start + seq(0, dates-1)), C = 1, D = 1)
 
 rt <- epirt(formula = R(A,B) ~ 1)
 obs <- list(
-  epiobs(formula = C(A,B) ~ 1, i2o=1),
-  epiobs(formula = D(A,B) ~ 1, i2o=1)
+  epiobs(formula = C ~ 1, i2o=1),
+  epiobs(formula = D ~ 1, i2o=1)
 )
 
 data <- df
@@ -29,11 +30,11 @@ test_that("susceptible_to_int", {
 
 test_that("obs_to_int", {
   data$E <- 1 + runif(1, min=0, max=0.1)
-  obj <- epiobs(formula = E(A, B) ~ 1, i2o=1)
+  obj <- epiobs(formula = E ~ 1, i2o=1)
   dat <- obs_to_int(data, obj)
   tol = .Machine$double.eps
   expect_true(max(abs(dat$E - 1)) < tol)
-  obj <- epiobs(formula = E(A, B) ~ 1, i2o=1, family = "normal")
+  obj <- epiobs(formula = E ~ 1, i2o=1, family = "normal")
   dat <- obs_to_int(data, obj)
   expect_true(max(abs(dat$E - data$E)) < tol)
 })
@@ -61,6 +62,7 @@ test_that("group_date_col_data", {
 test_that("select_cols_data", {
   inf <- epiinf(gen=1, pop_adjust=TRUE, susceptibles=E)
   dat <- group_date_col_data(data, rt)
+  dat$E <- 1
   res <- select_cols_data(dat, rt, inf, obs)
   expect_true(all(colnames(res) == c("group", "date", "C", "D", "E")))
   inf <- epiinf(gen=1)

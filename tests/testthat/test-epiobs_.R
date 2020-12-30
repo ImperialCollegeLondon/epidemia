@@ -18,7 +18,6 @@ test_that("observation vector stored correctly", {
 })
 
 test_that("transformed predictor", {
-  g <- function(x) x + 2
   obs <- epiobs(formula = C ~ g(E), i2o = 1)
   out <- epiobs_(obs, df)
   expect_true(max(abs(out$mf$`g(E)` - df$E - 2)) < tol)
@@ -92,9 +91,7 @@ test_that("NAs handling", {
   expect_error(out <- epiobs_(obs, df), regexp="missing values")
 
   # error if NA means rw doesn't increment by 1
-  obs <- epiobs(formula = C ~ E + rw(time=time), i2o=1)
-  expect_error(out <- epiobs_(obs, df1), "increment")
+  obs <- epiobs(formula = C ~ E + rw(time=date), i2o=1)
+  expect_error(out <- epiobs_(obs, df), "increment")
 })
-
-
 

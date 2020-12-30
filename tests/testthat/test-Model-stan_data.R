@@ -1,8 +1,15 @@
 context("Check Model data passed to stan")
 
-load("../data/NYWA2.RData")
-args <- NYWA2
+load("../data/NYWA.RData")
+
+args <- list()
+args$data <- NYWA$data
+expect_warning(args$obs <- list(
+  deaths = epiobs(deaths ~ 1, i2o = NYWA$inf2death * 0.02 ),
+  cases = epiobs(cases ~ 1, i2o = NYWA$inf2case * 0.02)
+))
 args$sampling_args <- list(chains=0)
+args$inf <- epiinf(gen = NYWA$si)
 
 args$rt <- epirt(
   formula = R(code, date) ~ 0 + av_mobility
@@ -22,11 +29,5 @@ test_that("Expected stan data for various lengths of 'obs' arguments", {
   sdat <- do.call("epim", args=args)
   expect_equal(sdat$R, 1)
   expect_equal(as.numeric(sapply(sdat$pvecs, length)), rep(n,1))
-
-  # with no observations
-  args$obs$deaths <- NULL
-  sdat <- do.call("epim", args=args)
-  expect_equal(sdat$R, 0)
-  expect_equal(as.numeric(sapply(sdat$pvecs, length)), rep(n,0))
 })
 

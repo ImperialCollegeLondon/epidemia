@@ -13,7 +13,7 @@ test_that("make_rw_nms", {
 test_that("make_rw_sigma_nms", {
   formula <- R(country, date) ~ 1 + rw() + rw(gr=country)
   nms <- c(
-    "R|sigma:rw()[all]", 
+    "R|sigma:rw()[all]",
     paste0("R|sigma:rw(gr = country)[", unique(data$country), "]")
   )
   expect_equal(make_rw_sigma_nms(formula, data), nms)
@@ -21,17 +21,17 @@ test_that("make_rw_sigma_nms", {
 
 test_that("make_oaux_nms", {
   deaths <- epiobs(
-    formula = deaths(country,date) ~ 1,
+    formula = deaths~ 1,
     family = "poisson",
     i2o = rep(1/7,7)
   )
-  
+
   cases <- epiobs(
-    formula = cases(country, date) ~ 1,
+    formula = cases~ 1,
     family = "neg_binom",
     i2o = rep(1/7,7)
   )
-  
+
   obs <- list(deaths=deaths, cases=cases)
   expect_equal(make_oaux_nms(obs), "cases|reciprocal dispersion")
 })

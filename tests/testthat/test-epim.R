@@ -5,7 +5,7 @@ args <- list()
 args$data = EuropeCovid$data
 args$inf <- epiinf(gen = EuropeCovid$si)
 args$rt <- epirt(R(country, date) ~ 1 + lockdown)
-args$obs <- epiobs(deaths~1, i2o = EuropeCovid$inf2death * 0.02)
+expect_warning(args$obs <- epiobs(deaths~1, i2o = EuropeCovid$inf2death * 0.02))
 args$group_subset <- c("Germany", "Italy")
 args$sampling_args <- list(iter=10,chains=1, seed=12345)
 

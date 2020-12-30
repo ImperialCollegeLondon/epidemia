@@ -1,7 +1,5 @@
 context("Test expected behaviour for different arguments to epim")
 
-devtools::load_all("~/Documents/covid/epidemia/")
-
 levels <- 3
 dates <- 5
 start <- as.Date("2020-05-01")

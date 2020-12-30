@@ -1,13 +1,13 @@
 context("Test models with autocorrelation terms")
 
 data("EuropeCovid")
-args <- list(
+expect_warning(args <- list(
     data = EuropeCovid$data,
     obs = epiobs(deaths ~ 1, i2o = EuropeCovid$inf2death * 0.02),
     group_subset  = c("Germany", "United_Kingdom"),
     inf = epiinf(gen = EuropeCovid$si),
     sampling_args = list(chains=0)
-)
+))
 
 
 test_that("Invalid arguments relating to random walks throw errors", {
