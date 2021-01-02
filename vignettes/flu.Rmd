@@ -2,13 +2,21 @@
 title: Flu Pandemic
 output:
   bookdown::html_document2:
-    mathjax: "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML.js"
     theme: flatly
 pkgdown:
   as_is: true
 ---
 
-# 1918 H1N1 Pandemic <img src='../man/figures/logo.png' align="right" height="139"/>
+<style>
+.contents .page-header {
+    display: none;
+  } 
+</style>
+
+<div class = "article_container">
+
+
+# 1918 H1N1 Pandemic <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
 <hr>
 
 ```{r setup, include=FALSE}
@@ -17,15 +25,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-Here we demonstrate basic usage of epidemia; in particular we infer time-varying
+Here we demonstrate basic usage of **epidemia**; in particular we infer time-varying
 reproduction numbers during the 1918 H1N1 Influenza pandemic in Baltimore using 
 only daily case data and a discrete serial interval. $R_t$ is modeled as 
-following a weekly random walk. Of course epidemia is capable of much more 
+following a weekly random walk. Of course **epidemia** is capable of much more 
 complex modeling, and such cases are considered in future sections.
 
 
 ```{r core-packages, message=FALSE}
-library(gridExtra)
 library(epidemia)
 library(lubridate)
 library(rstanarm)
@@ -62,7 +69,7 @@ data <- data.frame(
 We need to specify models for $R_t$ and the case data. $R_t$ is modeled through 
 a call to `epirt()`. The parameterisation of $R_t$ is defined by the 
 `formula` argument. A random walk can be specified using the `rw()` 
-function. This has an optional `time` argument which tells epidemia which 
+function. This has an optional `time` argument which tells **epidemia** which 
 column in `data` to use to define the random walk increments. If unspecified it 
 occurs at the same frequency as $R_t$, i.e. a daily random walk is used. The random 
 walk error is modeled as half-normal with a scale hyperparameter. The value of 
@@ -83,13 +90,11 @@ then collected into a list and passed to `epim()` as the `obs`
 argument. In this case only case data is used and so their is only one call 
 to `epiobs()` in the list.
 ```{r flu1918-obs}
-obs <- list(
-  cases = epiobs(
-    formula = cases(city, date) ~ 1,
+obs <-  epiobs(
+    formula = cases ~ 1,
     prior_intercept = rstanarm::normal(location=1, scale=0.01),
     link = "identity",
     i2o = rep(.25,4)
-  )
 )
 ```
 For the purposes of this exercise we have assumed that roughly all infections 
@@ -101,28 +106,26 @@ Finally, we collect all remaining arguments required for `epim()`.
 ```{r flu1918-args}
 args <- list(
   rt = rt,
+  inf = epiinf(gen = Flu1918$si_distr),
   obs = obs,
   data = data,
-  pops = data.frame(country="Baltimore", pop=1e6),
-  si = Flu1918$si_distr,
-  algorithm = "sampling",
-  sampling_args = list(iter=1e3, seed=12345, init_r = 1e-6),
-  pop_adjust=FALSE
+  iter = 1e3,
+  seed = 12345
 )
 ```
 
 The argument `si` takes a discrete generation distribution. Here we have 
 used the serial interval provided by EpiEstim. `algorithm = "sampling"` 
-ensures that the model is fit using Stan's adaptive HMC sampler. The parameters 
-for model fitting, including the number of iterations and seeds, are set using 
-`sampling_args`.
+ensures that the model is fit using Stan's adaptive HMC sampler. `iter` and 
+`seed` set the number of MCMC iterations and seeds respectively, and are passed
+directly on to `rstan::sampling`. 
 
 ```{r flu1918-fm1, cache=TRUE}
 fm1 <- do.call(epim, args)
 ```
 
 ```{r flu1918-fm2, cache=TRUE, message=FALSE, warning = FALSE}
-args$inf <- epiinf(latent=TRUE, prior_aux = normal(10,2))
+args$inf <- epiinf(gen = Flu1918$si_distr, latent=TRUE, prior_aux = normal(10,2))
 fm2 <- do.call(epim, args)
 ```
 
@@ -161,3 +164,5 @@ grid.arrange(
   heights = c(2,10,2,10,2,10)
 )
 ```
+
+</div>

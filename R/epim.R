@@ -32,17 +32,16 @@
 #' @param prior_PD Same as in \code{\link[rstanarm]{stan_glm}}. If \code{TRUE},
 #'  samples parameters from the prior disribution.
 #' Defaults to \code{FALSE}.
-#' @param sampling_args An (optional) named list of parameters to pass to the
-#'  \pkg{rstan} function used for model fitting, for example
-#'  \code{rstan::sampling}.
 #' @param init_run For certain datasets the sampler can find itself trapped in a
 #'  local mode where herd immunity is achieved. If TRUE, an MCMC run where 
 #'  the population adjustment is disabled is used to initialise the parameters for 
 #'  the main sampling. If TRUE, this is done with default parameters. If instead a list is
-#'  provided, this is the equivalent to \code{sampling_args} but for the
+#'  provided, these parameters are passed on to the rstan sampling function for the initial run.
 #'  initial run. The seed used is that specified in \code{init_run}, or that
 #'  specified in \code{sampling_args}, or no seed, in that order.
-#' @param ... Not used.
+#' @param ... An (optional) named list of parameters to pass to the
+#'  \pkg{rstan} function used for model fitting, for example
+#'  \code{rstan::sampling}.
 #' @examples
 #' \dontrun{
 #' data("EuropeCovid")
@@ -71,7 +70,6 @@ epim <- function(
   algorithm = c("sampling", "meanfield", "fullrank"),
   group_subset = NULL,
   prior_PD = FALSE,
-  sampling_args = list(),
   init_run = FALSE,
   ...
 ) {
@@ -85,12 +83,12 @@ epim <- function(
   if (inherits(obs, "epiobs")) obs <- list(obs)
   check_group_subset(group_subset)
   check_data(data, rt, inf, obs, group_subset)
-  check_list(sampling_args)
   check_logical(prior_PD)
   check_scalar(prior_PD)
   check_init_run(init_run)
 
   algorithm <- match.arg(algorithm)
+  sampling_args <- list(...)
   data <- parse_data(data, rt, inf, obs, group_subset)
 
   # generate model matrices for Rt and obs
@@ -156,7 +154,6 @@ epim <- function(
 
   return(epimodel(out))
 }
-
 
 # Decides which parameters stan should track
 #

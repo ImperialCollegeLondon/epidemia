@@ -4,10 +4,18 @@ output:
   bookdown::html_document2:
     theme: flatly
 pkgdown:
-    as_is: true
+  as_is: true
 ---
 
-# Installation <img src='../man/figures/logo.png' align="right" height="139"/>
+<style>
+.contents .page-header {
+    display: none;
+  } 
+</style>
+
+<div class = "article_container">
+
+# Installation <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
 <hr>
 
 epidemia requires R v3.5.0 or above. The latest version of R can be downloaded 
@@ -29,3 +37,5 @@ If using windows, you can alternatively install the [binary](https://github.com/
 
 Vignettes are not currently included in the package because they are
 computationally demanding, and are best viewed online.
+
+</div>

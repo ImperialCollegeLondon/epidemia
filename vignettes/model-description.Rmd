@@ -7,24 +7,23 @@ output:
 link-citations: yes
 bibliography: ../inst/REFERENCES.bib
 pkgdown:
-    as_is: true
+  as_is: true
 ---
 
 
 <style>
-.col-md-9 {
-    width: 80% !important;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 2;
-    text-align: justify;
+.contents .page-header {
+    display: none;
 }
 </style>
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<div class = "article_container">
 
 # Basic Model {#sec:overview}
 
@@ -46,7 +45,7 @@ where $\mathbf{R} = (R_1, \ldots, R_n)$ and $\mathbf{\alpha} = (\alpha_1, \ldots
 \begin{equation}
     p(i_{v:0}, R, \phi, \alpha \mid Y) \propto p(i_{v:0})p(R)p(\phi)p(\alpha) \prod_{t} p(Y_t \mid y_t, \phi).
 \end{equation}
-epidemia represents this posterior distribution in Stan, and uses its adaptive Hamiltonian Monte Carlo sampler to approximately draw samples from this posterior distribution. These samples allow for inference on the parameters, in addition to simulating data from the posterior predictive distribution.
+**epidemia** represents this posterior distribution in Stan, and uses its adaptive Hamiltonian Monte Carlo sampler to approximately draw samples from this posterior distribution. These samples allow for inference on the parameters, in addition to simulating data from the posterior predictive distribution.
 
 Transmission rates $R$ and ascertainments $\alpha$ can be modeled flexibly using Bayesian regression models, and through sharing of parameters, are the means through which we tie together multiple regions or groups using multilevel modeling. One can, for example, model transmission rates as depending on a binary covariate for an NPI, say full lockdown. The coefficient for this can be *partially pooled* between these groups. The effect is to share information between groups, while still permitting between group variation.
 
@@ -62,7 +61,7 @@ $\alpha_t$ represents an *ascertainment rate*.
 For case or death data this would be the infection ascertainment rate (IAR) or the infection fatality rate (IFR) respectively. 
 $\alpha$ plays a similar role for observations as $R$ does for infections; 
 tempering expected observations for time-specific considerations. 
-As such, epidemia models $\alpha$ in a similar manner to $R$; parameterising it as a transformed linear predictor.
+As such, **epidemia** models $\alpha$ in a similar manner to $R$; parameterising it as a transformed linear predictor.
 This is discussed in detail in Section \@ref(sec:transmission), and is not repeated here.
 
 The sampling distribution $p(y_t, \phi)$ (Equation \@ref(eq:ysampling)) should generally be informed by 
@@ -72,7 +71,7 @@ and negative-binomial families.
 Poisson has no auxiliary parameter $\phi$, while for the latter two families this represents a non-negative
 *dispersion parameter* which is assigned a prior.
 
-epidemia allows for multiple observation vectors, in which case we can simply 
+**epidemia** allows for multiple observation vectors, in which case we can simply 
 superscript $Y_t^{(l)}$, $\alpha_{t}^{(l)}$ and $\pi^{(l)}$, and assign independent sampling distributions for each type. 
 Separate models are then specified $\alpha_{t}^{(l)}$.
 Multiple observation types can often enchance a model.
@@ -91,7 +90,7 @@ The theoretical motivation for this lies in counting processes and is explained 
 such as the SEIR model [@champredon_2018].
 
 Equation \@ref(eq:renewal) implies that $i_t$, $t > 0$ are deterministic given $R$ and seeded infections $i_{v:0}$. 
-epidemia sets a prior on $i_{v:0}$ by first assuming that daily seeds constant over the seeding period. 
+**epidemia** sets a prior on $i_{v:0}$ by first assuming that daily seeds constant over the seeding period. 
 Formally, $i_{k} = i$ for each $k \in \{v,\ldots 0\}$. 
 The parameter $i$ is modeled hierarchically as
 \begin{align}
@@ -100,7 +99,7 @@ The parameter $i$ is modeled hierarchically as
 \end{align}
 where $\lambda_0 > 0$ is a rate hyperparameter. 
 This prior is uninformative, allowing seeds to be largely determined by initial transmission rates and the chosen start date of the epidemic.
-Several extensions to this infection process are possible in epidemia, including extending \@ref(eq:renewal) to better capture 
+Several extensions to this infection process are possible in **epidemia**, including extending \@ref(eq:renewal) to better capture 
 dynamics such as super-spreading events, and also adjusting the process for the size of the remaining susceptible population. These 
 extensions are discussed in Section \@ref(sec:latent) and \@ref(sec:popadjust) respectively.
 
@@ -128,12 +127,12 @@ These parameters are particularly useful when multiple regions are being modeled
 In this case, they allow information on transmission rates to be shared between groups. 
 
 $Q$ is a binary matrix specifying which of the autocorrelation terms in $\gamma$ to include for each period $t$. 
-Currently, epidemia supports only random walk processes. However multiple such processes can be included, and 
+Currently, **epidemia** supports only random walk processes. However multiple such processes can be included, and 
 can have increments that occur at a different time scale to $R$; for example weekly increments can be used.
 
 ## Link Functions {#sec:links}
 
-Choosing an appropriate link function $g$ is difficult. $R_t$ is non-negative, but is clearly not able to grow exponentially: regardless of the value of the linear predictor $\eta_t$, one expects $R_t$ to be bounded by some maximum value $K$. In other words, $R_t$ has some *carrying capacity*. One of the simplest options for $g$ is the log-link. This satisfies non-negativity, and also allows for easily interpretable effect sizes; a one unit change in a predictor scales $R_t$ by a constant factor. Nonetheless, it does not respect the carry capacity $K$, often placing too much prior mass on large values of $R_t$. With this in mind, epidemia offers an alternative link function satisfying
+Choosing an appropriate link function $g$ is difficult. $R_t$ is non-negative, but is clearly not able to grow exponentially: regardless of the value of the linear predictor $\eta_t$, one expects $R_t$ to be bounded by some maximum value $K$. In other words, $R_t$ has some *carrying capacity*. One of the simplest options for $g$ is the log-link. This satisfies non-negativity, and also allows for easily interpretable effect sizes; a one unit change in a predictor scales $R_t$ by a constant factor. Nonetheless, it does not respect the carry capacity $K$, often placing too much prior mass on large values of $R_t$. With this in mind, **epidemia** offers an alternative link function satisfying
 \begin{equation}
     g^{-1}(x) = \frac{K}{1 + e^{-x}}.
 \end{equation}
@@ -170,7 +169,7 @@ These parameters can be partially pooled by letting
 \end{equation}
 for each $m$, and assigning a hyperprior to the covariance matrix $\tilde{\Sigma}$. 
 
-In epidemia, seeded infections within each group are modeled hierarchically, with Equations \@ref(eq:seeds) and \@ref(eq:tau) being replaced by
+In **epidemia**, seeded infections within each group are modeled hierarchically, with Equations \@ref(eq:seeds) and \@ref(eq:tau) being replaced by
 \begin{align}
     i^{(m)} &\sim \text{Exp}(\tau^{-1}), \\\\
     \tau & \sim \text{Exp}(\lambda_0),
@@ -205,7 +204,7 @@ past infections to reasonable values. Nonetheless, forecasting in the basic mode
 projected infections grow too large. As the susceptible population diminishes, the transmission rate is also 
 expected to reduce. 
 
-epidemia can apply a transformation to infections to ensure cumulative infections remain bounded by $S_0$. 
+**epidemia** can apply a transformation to infections to ensure cumulative infections remain bounded by $S_0$. 
 Let $i'_t$ denote the unadjusted infections from the model: this is given by \@ref(eq:renewal) in the basic model 
 or by \@ref(eq:infextended) if the extension of Section \@ref(sec:latent) is applied. Then we let
 \begin{equation}
@@ -222,3 +221,4 @@ provided in @bhatt2020.
 
 # References
 
+</div>

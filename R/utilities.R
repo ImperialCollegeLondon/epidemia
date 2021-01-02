@@ -318,7 +318,6 @@ check_groups_data <- function(object, group_subset, data) {
   }
 }
 
-
 # performs a series of tests to ensure data argument of epim is 
 # compatible with the specified model. Designed to give informative
 # error messages.
@@ -341,7 +340,6 @@ check_data <- function(data, rt, inf, obs, group_subset) {
   check_consecutive_dates(rt, data)
   check_groups_data(rt, group_subset, data)
 }
-
 
 # Simple check on rt argument
 #
@@ -447,8 +445,6 @@ all_vars <- function(form) {
   return(out)
 }
 
-
-
 # parses data argument to epim into a format easily used by epidemia
 #
 # @param data The data argument to epim
@@ -457,7 +453,7 @@ all_vars <- function(form) {
 # @param inf An epiinf object
 # @param group_subset A character vector of subgroups (or NULL)
 parse_data <- function(data, rt, inf, obs, group_subset) {
-  data <- tibble(data)
+  data <- dplyr::tibble(data)
   data <- subset_data(data, rt, group_subset)
   data <- group_date_col_data(data, rt)
   data <- select_cols_data(data, rt, inf, obs)
@@ -495,7 +491,6 @@ group_date_col_data <- function(data, object) {
   return(data)
 }
 
-
 # removes columns from data which are not required
 #
 # @param data The data argument to epim
@@ -512,7 +507,7 @@ select_cols_data <- function(data, rt, inf, obs) {
     if(inf$pop_adjust) inf$susceptibles 
   )
   # keep only required variables
-  data <- select(data, all_of(unique(vars)))
+  data <- dplyr::select(data, all_of(unique(vars)))
   return(data)
 }
 
@@ -538,49 +533,6 @@ susceptibles_to_int <- function(data, inf) {
     data <- dplyr::mutate(data, across(col, as.integer))
   }
   return(data)
-}
-
-
-# Simple check of a vector
-#
-# @param vec A numeric vector
-# @param name The name of the vector (for error message printing)
-check_v <- function(vec, name) {
-
-  if(any(is.na(vec)))
-    stop(paste0("NAs exist in ", name), call. = FALSE)
-  
-  # do the coercion then check for NAs
-  out <- tryCatch(as.numeric(vec),
-    error = function(cond) {
-      stop(paste0(name, " could not be coerced to a
-       numeric vector. Original message: ", cond), call. = FALSE)
-    })
-  if(any(is.na(out)))
-    stop(paste0("NAs exist in ", name, " after
-     coercion to numeric"), call. = FALSE)
-  
-  if(any(vec < 0))
-    stop(paste0("Negative values found in ", name), call. = FALSE)
-  if(all(vec < 1e-14))
-    stop(paste0("No positive values found in ", name), call. = FALSE)
-
-  return(vec)
-}
-
-# Simple check of a simplex vector
-#
-# @param vec A numeric vector
-# @param name The name of the vector (for error message printing)
-check_sv <- function(vec, name) {
-
-  vec <- check_v(vec, name)
-
-  if(abs(sum(vec) - 1) > 1e-14)
-    warning(paste0(name, " did not sum to 1. Have rescaled to
-     form a probability vector."), call. = FALSE)
-  
-  return(vec/sum(vec))
 }
 
 # add xlevs to epirt or epiobs object

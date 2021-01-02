@@ -1,0 +1,47 @@
+---
+title: "Priors in epidemia"
+output:
+  bookdown::html_document2:
+    theme: flatly
+link-citations: yes
+bibliography: ../inst/REFERENCES.bib
+pkgdown:
+  as_is: true
+---
+
+<style>
+.contents .page-header {
+    display: none;
+} 
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<div class="article_container">
+
+# Priors on Model Parameters
+
+## Priors on Intercepts
+
+## Priors on Fixed Effects
+
+## Priors on Covariance Matrices
+
+## Priors on Auxiliary Parameters
+
+## Priors on Random Walks
+
+# Quirks
+
+## Covariate Centering
+
+## Autoscaling
+
+## Observational Models
+
+
+
+
+</div>

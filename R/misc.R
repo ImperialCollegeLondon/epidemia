@@ -86,10 +86,10 @@ check_reTrms <- function(reTrms) {
     dupe <- reTrms$cnms[[i]]
     overlap <- dupe %in% original
     if (any(overlap))
-      stop("rstanarm does not permit formulas with duplicate group-specific terms.\n", 
+      stop("epidemia does not permit formulas with duplicate group-specific terms.\n", 
            "In this case ", nms[i], " is used as a grouping factor multiple times and\n",
            dupe[overlap], " is included multiple times.\n", 
-           "Consider using || or -1 in your formulas to prevent this from happening.")
+           "Consider using || or -1 in your formulas to prevent this from happening.", call.=FALSE)
   }
   return(invisible(NULL))
 }
