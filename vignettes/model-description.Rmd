@@ -1,15 +1,13 @@
 ---
-title: "Description"
+title: "Model Description"
 output:
   bookdown::html_document2:
     theme: flatly
-    number_sections: true
 link-citations: yes
 bibliography: ../inst/REFERENCES.bib
 pkgdown:
   as_is: true
 ---
-
 
 <style>
 .contents .page-header {
@@ -17,15 +15,10 @@ pkgdown:
 }
 </style>
 
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 <div class = "article_container">
 
 # Basic Model {#sec:overview}
+<hr>
 
 We now formulate the basic version of the model for one homogeneous population. The same model can be used for multiple regions or groups jointly. Suppose we observe a time series of data $\mathbf{Y} = (Y_1, \ldots Y_n)$ in a single region. This could for example be daily death or case incidence data. $Y_t$ is modeled as deriving from past new infections $i_s$, $s < t$, and some parameter $\alpha_t$ representing the instantaneous *ascertainment rate*. The general model can be expressed as 
 \begin{align}
@@ -51,6 +44,7 @@ Transmission rates $R$ and ascertainments $\alpha$ can be modeled flexibly using
 
 
 # Observations {#sec:observations}
+<hr>
 
 $Y_t$ is typically the \textit{count of events} occurring at time $t$.
 Such events are precipated by past infections. 
@@ -80,6 +74,7 @@ Case data gradually increased in reliability over time, and has the advantage of
 changes in transmission dynamics much quicker than death data. 
 
 # Infections {#sec:infections}
+<hr>
 
 Infections $i_t$ propagate over time through the discrete renewal process \@ref(eq:renewal). 
 This is *self-exciting*: past infections give rise to new infections. 
@@ -104,6 +99,7 @@ dynamics such as super-spreading events, and also adjusting the process for the 
 extensions are discussed in Section \@ref(sec:latent) and \@ref(sec:popadjust) respectively.
 
 # Transmission {#sec:transmission}
+<hr>
 
 Reproduction numbers are modeled flexibly. One can form a linear predictor consisting of fixed effects, random effects and autocorrelation terms, which is then transformed via a suitable link function. Formally
 \begin{equation}
@@ -134,13 +130,14 @@ can have increments that occur at a different time scale to $R$; for example wee
 
 Choosing an appropriate link function $g$ is difficult. $R_t$ is non-negative, but is clearly not able to grow exponentially: regardless of the value of the linear predictor $\eta_t$, one expects $R_t$ to be bounded by some maximum value $K$. In other words, $R_t$ has some *carrying capacity*. One of the simplest options for $g$ is the log-link. This satisfies non-negativity, and also allows for easily interpretable effect sizes; a one unit change in a predictor scales $R_t$ by a constant factor. Nonetheless, it does not respect the carry capacity $K$, often placing too much prior mass on large values of $R_t$. With this in mind, **epidemia** offers an alternative link function satisfying
 \begin{equation}
-    g^{-1}(x) = \frac{K}{1 + e^{-x}}.
+    g^{-1}(x) = \frac{K}{1 + e^{-x}} (\#eq:scaledlogit).
 \end{equation}
 This is a generalisation of the logit-link, and we refer to it as the *scaled-logit*.
 That is to say we expect $R$ to have some *carry capacity*. These considerations should inform the choice of link function.
 
 
 # Extensions
+<hr>
 
 ## Joint Modelling of Multiple Regions
 
@@ -212,12 +209,6 @@ or by \@ref(eq:infextended) if the extension of Section \@ref(sec:latent) is app
 \end{equation}
 where $I_t = \sum_{s< t} i_s$ are cumulative infections by $t-1$. The motivation for this adjustment is 
 provided in @bhatt2020.
-
-## Different Types of Observations {#sec:obsextended}
-
-
-# Prior Distributions
-
 
 # References
 

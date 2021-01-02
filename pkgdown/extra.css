@@ -159,6 +159,12 @@ font-size: 16px !important;
   color: #f8f8ff;
 }
 
+.table{
+  width:75%;
+  font-size:13px;
+  margin:auto;
+}
+
 @media only screen and (max-width: 768px) {
   .getting_started {
     width:100%;

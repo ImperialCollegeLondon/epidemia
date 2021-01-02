@@ -19,6 +19,7 @@ pkgdown:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
 ```
 
 
@@ -26,6 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 <div class = "article_container">
 
 #  Overview {#sec:overview}
+<hr> 
 
 Here we give a high-level overview of the workflow required for defining and fitting a model with 
 **epidemia**. The primary model fitting function is `epim()`. This takes a model description and 
@@ -53,15 +55,40 @@ data("EuropeCovid")
 ```
 
 # Model Fitting
+<hr>
 
 `epim()` is the only model fitting function in **epidemia**. It has arguments `rt`, `inf`, and `obs` which 
 expect a description of the transmission model, infection model and all observational models respectively. 
 Together, these fully define the joint distribution of data and parameters. Each of these model components are 
 described in terms of variables that are expected to live in a single dataframe, `data`. This dataframe 
-must be compatible with the model components, in the sense that it includes all variables defined in these 
-models. The `data` argument is described in more detail in Section \@ref(sec:data). All arguments for 
-`epim()` are described in Table \@ref(tab:epim-args).
+must be compatible with the model components, in the sense that *it holds all variables defined in these 
+models*. For our example, these variables are the following. 
+```{r data-vars}
+data <- EuropeCovid$data
+colnames(data)
+```
+The `data` argument is described in more detail in Section \@ref(sec:data).
 
+In addition to taking a model description and a dataframe, 
+`epim()` has various additional arguments which specify how the model should be
+fit. If `algorithm = "sampling"` then the model 
+will be fit using *Stan*'s adaptive Hamiltonian Monte Carlo sampler. This 
+is done internally by calling `rstan::sampling`. If `algorithm = "meanfield"` or 
+`algorithm = "fullrank"`, then *Stan*'s variational Bayes algorithms are used 
+instead, by calling `rstan::vb`. Any unnamed 
+arguments in the call to `epim()` are passed directly onto the **rstan** 
+sampling function. `epim()` returns a fitted model object of class 
+`"epimodel"`, which contains posterior samples from the model along with other 
+useful objects.
+
+In general, the adaptive Hamiltonian Monte Carlo sampler 
+should be used for final inference. Nonetheless, fitting these models 
+using HMC is often computationally demanding, and variational Bayes can often be 
+fruitful for quickly iterating models. All arguments for  `epim()` are described in Table 
+\@ref(tab:epim-args).
+
+
+<div class="table">
 ```{r epim-args, echo=FALSE}
 arguments <- c(
     "`rt`",
@@ -85,56 +112,62 @@ description <- c(
     "variables and covariates specified in the models for the reproduction number and ascertainment rates."),
     paste0("One of `\"sampling\"`, `\"meanfield\"` or `\"fullrank\"`. This determines the rstan sampling ",
     "function to use for fitting the model. `\"sampling\"` corresponds to an adaptive HMC sampler, while ",
-    "`\"meanfield\"` and `\"fullrank\"` are both Variational Bayes algorithms."),
+    "`\"meanfield\"` and `\"fullrank\"` are both variational Bayes algorithms."),
     "If specified, a character vector naming a subset of regions to include in the model.",
     paste0("Same as in `rstan::stan_glm`. If `TRUE`, samples all parameters from their prior distributions. This is ",
     "useful for prior predictive checks. Defaults to `FALSE`."),
     paste0("Additional arguments to pass to the `rstan` function used to fit the model. If ", 
-           "`algorithm = \"sampling\"`, then this function is `rstan::sampling`. Otherwise `rstan::vb is used`.", 
+           "`algorithm = \"sampling\"`, then this function is `rstan::sampling`. Otherwise `rstan::vb` is used.", 
            "Please see the documentation for these functions.")
 )
 df <- data.frame(Argument = arguments, Description = description)
-knitr::kable(df, caption = "Formal arguments for `epim()`", booktabs=TRUE)
+knitr::kable(df, caption = "Formal arguments for `epim()`", booktabs=TRUE) %>%
+  kable_paper("hover") %>%
+  column_spec(1, bold = T)
 ```
+</div>
 
-In general, the adaptive Hamiltonian Monte Carlo sampler provided by `rstan` should be used for final 
-inference. This can be used by specifying `algorithm = "sampling`. Nonetheless, fitting these models 
-using HMC is often computationally demanding, and variational Bayes can be used for quickly iterating 
-models. This can be done, for example, by setting `algorithm = "fullrank"`.
+We now describe the three modeling functions in more detail, starting with `epirt()`.
 
 # Transmission
+<hr>
 
-`epirt()` defines the model for reproduction numbers over time, as described in 
-Section X. The `formula` can include fixed effects, random effects and autocorrelation 
-terms. The left hand side takes the form `R(group, date)`, where `group` and 
-`date` refer to variables representing the region and date respectively. This 
-is syntactic sugar to make explicit that we are modeling the time-varying reproduction 
-numbers. The right-hand-side consists of a series of terms separated by the 
-`+` operator. Variables that are partially pooled can be distinguished by the `|` operator.
+`epirt()` defines the model for time-varying reproduction numbers, which 
+was described in Section 4 of the [model description article](model-description.html).
+It has a `formula` argument which defines the linear predictor $\eta$, an 
+argument `link` defining the link function `g`, and additional arguments to 
+specify priors on parameters making up $\eta$.
 
-A viable model for our example is the following.
+A general R formula gives a symbolic description of a model. It takes the form 
+`y ~ model`, where `y` is the response and `model` is a collection of terms 
+separated by the `+` operator. `model` fully defines a linear predictor used to 
+predict `y`. In this case, the "response" being modeled are reproduction numbers which are
+unobserved. `epirt` therefore requires that 
+the left hand side of the formula takes the form `R(group, date)`, where `group` 
+and `date` refer to variables representing the region and date respectively. 
+The right hand side can consist of fixed effects, random effects, and 
+autocorrelation terms. For our example, a viable call to `epirt()` is the 
+following.
 ```{r epirt-example}
 rt <- epirt(
-  R(country, date) ~ (1 + lockdown | country) + schools_universities + public_events,
+  R(country, date) ~ 1 + lockdown + public_events,
   link = scaled_logit(7)
 )
 ```
-The first term on the right hand side of the formula is the syntax expected for 
-partially pooled terms. Here, this is interpreted as giving each country its 
-own $R_0$ and effect of `lockdown`, and these parameters share a common prior. 
-The effect size for `schools_universities` and `public_events` are fully pooled; 
-i.e. the effect of these NPIs is assumed the same across all countries.
+In the above example, two fixed effects are included which represent the 
+effects of lockdown and public events. These effects are assumed constant across 
+countries. They could alternatively be partially 
+pooled by using the term `(lockdown + public_events | country)`. 
+For information on how to interpret such terms, please read the [partial-pooling 
+article](partial-pooling.html). Using `link = scaled_logit(7)` lets the link function be the 
+scaled logit link described in the model description article (Equation 4.2), 
+where $K = 7$ is maximum possible value for reproduction numbers.
+For simplicity, we have omitted any prior arguments, however these 
+should generally be specified explicitly. Please see 
+[here](priors.html) for detailed information on how to use priors. All arguments 
+for `epirt()` are listed in Table \@ref(tab:epirt-args).
 
-The interpretation of partially pooled terms is the same in `**epidemia**` as they 
-are in `**rstanarm**`. We recommed reading the `**rstanarm**` vignette [Hierarchical Partial Pooling for Repeated Binary Trials
-](https://mc-stan.org/rstanarm/articles/pooling.html) and the `**lme4**` vignette 
-[Fitting Linear Mixed-Effects Models using **lme4**](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf) to 
-gain greater intuition over partial pooling/random effects in R formulas.
-
-Here, we have not explicitly set the prior distributions for terms in the formula,
-but this can be doen using the `prior`, `prior_intercept` and `prior_covariance` arguments.
-
-
+<div class="table">
 ```{r epirt-args, echo=FALSE}
 arguments <- c(
     "`formula`", 
@@ -164,13 +197,53 @@ description <- c(
 )
 
 df <- data.frame(Argument = arguments, Description = description)
-knitr::kable(df, caption = "Formal arguments for `epirt()`", booktabs=TRUE)
+knitr::kable(df, caption = "Formal arguments for `epirt()`", booktabs=TRUE) %>%
+  kable_paper("hover") %>%
+  column_spec(1, bold = T)
 ```
-
+</div>
 # Infections
+<hr>
 
-The infection process is defined by `epiinf()`. This gives the generation distribution
+The model for infections is represented by `epiinf()`. For the 
+basic version of the model, this defines the generation distribution
+of the disease, the number of days for which to seed infections, and the 
+prior distribution on the parameter $\tau$ (Equation 3.2). Recall that $\tau$ is 
+the prior mean on daily seeded infections. These three parameters are 
+controlled by the arguments `gen`, `seed_days` and `prior_tau` respectively. 
+For our example, a possible model is the following.
+```{r epiinf-example}
+inf <- epiinf(
+  gen = EuropeCovid$inf2death,
+  seed_days = 6L,
+  prior_tau = rstanarm::exponential(0.02)
+)
+```
+`EuropeCovid$si` is a numeric vector representing the probability mass 
+function for the serial interval of Covid-19. Here, we are implicitly assuming 
+that the generation distribution can be approximated well by the serial interval. 
+In this example, $\tau$
+is given an exponential prior with a mean of 50. These seeds 
+occur over a period of 6 days.
 
+`epiinf()` has additional arguments which allow the user to extend the basic 
+model. Using `latent=TRUE` replaces the renewal process (Equation 1.3) with 
+Equation 5.1. Daily infections are then treated as latent parameters that are 
+sampled along with other parameters. The `family` argument then gives 
+the distribution for $p(i'_t, d)$, while `prior_aux` defines the prior on the 
+coefficient of dispersion $d$.
+
+Recall that one can adjust the infection process to explicitly
+model changes in infection rates as the remaining susceptible population is 
+depleted. In particular, the adjustment ensures that cumulative infections 
+never breaches the initial susceprible population. The adjustment was described
+in Section 5.3 of the model description article. It can be employed by 
+setting `pop_adjust = TRUE` and using the 
+`susceptibles` argument to point towards a variable in the dataframe which gives 
+the susceptible population at each point in time. All argument to `epiinf()` are 
+described in Table \@ref(tab:epiinf-args).
+
+<div class="table">
 ```{r epiinf-args, echo=FALSE}
 arguments <- c(
     "`seed_days`",
@@ -198,11 +271,46 @@ description <- c(
 )
 
 df <- data.frame(Argument = arguments, Description = description)
-knitr::kable(df, caption = "Formal arguments for `epiinf()`", booktabs=TRUE)
+knitr::kable(df, caption = "Formal arguments for `epiinf()`", booktabs=TRUE) %>%
+  kable_paper("hover") %>%
+  column_spec(1, bold = T)
 ```
-
+</div>
 # Observations
+<hr>
 
+Each observational model is given by a call to `epiobs()`. In particular, 
+this must define the model for ascertainment rates $\alpha$ and the time distribution 
+from infection to observation $\pi$. `epiobs()` has a formula argument. The left hand 
+side must define the observation vector $Y$ which is to be modeled, while the 
+right hand side defines a linear predictor for the ascertainment rate $\alpha$.
+The argument `i2o` plays a similar role to the `gen` argument in `epiinf()`, 
+however it instead defines the vector $\pi$ in Equation (1.2). 
+
+Suppose we wish to model daily `deaths`, which as we saw is a variable in `data`. 
+One could use the following. 
+```{r epiobs-example}
+deaths <- epiobs(
+  deaths ~ 1, 
+  i2o = EuropeCovid$inf2death,
+  link = scaled_logit(0.02)
+)
+
+```
+The above models the infection fatality rate, $\alpha$, as an intercept transformed by the scaled logit 
+link. This implies that it is constant over time, can achieve a maximum value of 
+2\%, and a minimum value of 0\%. If `prior_intercept` is chosen to be symmetric 
+around zero, then the prior mean of $\alpha$ is 1\%. $EuropeCovid$inf2death$ is 
+a numeric simplex vector that gives the same delay distribuion as used in 
+@Flaxman2020. 
+
+Additional arguments include `family`, which specifies the sampling distribution 
+$p(y_t, \phi)$. There are additional arguments which allow the user to control 
+prior distributions for paramters describing $\alpha$, and the prior on the 
+auxiliary variable $\phi$. All arguments to `epiobs()` are shown in Table 
+\@ref(tab:epiobs-args).
+
+<div class="table">
 ```{r epiobs-args, echo = FALSE}
 arguments <- c(
     "`formula`",
@@ -234,11 +342,14 @@ description <- c(
     "Additional arguments for `model.frame`."
 )
 df <- data.frame(Argument = arguments, Description = description)
-knitr::kable(df, caption = "Formal arguments for `epiobs()`", booktabs=TRUE)
+knitr::kable(df, caption = "Formal arguments for `epiobs()`", booktabs=TRUE) %>%
+  kable_paper("hover") %>%
+  column_spec(1, bold = T)
 ```
-
+</div>
 
 # Data {#sec:data}
+<hr>
 
 Recall that the `data` argument to `epim()` must contain all variables used in the transmission, infection and 
 observational models. For our example, 
