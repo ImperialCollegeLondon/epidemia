@@ -11,7 +11,7 @@ for (m in 1:M){
     if (link == 1) { // log-link
         Rt_unadj[n0:n2,m] = exp(eta[idx:(idx+NC[m]-1)]);
     } else if (link == 2) { // scaled_logit
-        Rt_unadj[n0:n2,m] = r0 * 2 * inv_logit(eta[idx:(idx+NC[m]-1)]);
+        Rt_unadj[n0:n2,m] = carry * inv_logit(eta[idx:(idx+NC[m]-1)]);
     } else { // identity
         Rt_unadj[n0:n2,m] = eta[idx:(idx+NC[m]-1)];
     }

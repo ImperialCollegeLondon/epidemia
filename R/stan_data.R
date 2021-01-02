@@ -132,15 +132,15 @@ standata_rt <- function(rt) {
   link <- rt$link
   if (link == "log") {
     out$link <- 1
-    out$r0 <- 1 # dummy
+    out$carry <- 1 # dummy
   }
   else if (class(link) == "scaled_logit") {
     out$link <- 2
-    out$r0 <- link$r
+    out$carry <- link$K
   }
   else if(link == "identity") {
     out$link <- 3 
-    out$r0 <- 1 # dummy
+    out$carry <- 1 # dummy
   }
   out <- c(
     out,

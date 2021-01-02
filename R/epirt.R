@@ -105,26 +105,22 @@ epirt_ <- function(object, data) {
 #'
 #' The link function is parameterised by a value \eqn{r>0}, and takes 
 #' the form
-#' \eqn{log(x/(2*r - x))}.
+#' \eqn{log(x/(K - x))}.
 #' The inverse link is then 
-#' \eqn{2r * inv_logit(x)}.
+#' \eqn{K* inv_logit(x)}.
 #' This is similar to the logit link, although x can range between 
-#' \eqn{[0, 2r]} rather than \eqn{[0,1]}. The parameter r can be chosen. 
+#' \eqn{[0, K]} rather than \eqn{[0,1]}. The parameter K can be chosen. 
 #'
-#' @param r parameterises the link function. The inverse of which then
-#'  takes values between 0 and 2r. 
+#' @param K parameterises the link function. The inverse of which then
+#'  takes values between 0 and K. 
 #' @return A list with class "scaled_logit"
 #' @export
-scaled_logit <- function(r = 3) {
-  if (!is.scalar(r)) {
-    stop("'r' must be a scalar", call. = FALSE)
-  }
-  if (r <= 0) {
-    stop("'r' must positive", call. = FALSE)
-  }
+scaled_logit <- function(K = 6) {
+  check_scalar(K)
+  check_positive(K)
 
   return(structure(
-    list(r=r), 
+    list(K=K), 
     class = "scaled_logit")
   )
 }

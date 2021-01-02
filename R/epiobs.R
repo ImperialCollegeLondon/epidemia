@@ -35,6 +35,16 @@
 
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
+#' 
+ msg <- "'link' must be either 'log', 'identity', or a call to scaled_logit"
+  if (is.character(link)) {
+    if (!(link %in% c("log", "identity"))) {
+      stop(msg, call.=FALSE)
+    }
+  } else if (class(link) != "scaled_logit") {
+     stop(msg, call.=FALSE)
+  }
+
 epiobs <- function(
   formula,
   i2o,
@@ -63,9 +73,19 @@ epiobs <- function(
   check_in_set(family, ok_families)
 
   # check link is character scalar in given set
-  check_character(link)
-  check_scalar(link)
-  check_in_set(link, ok_links)
+  msg <- paste0("'link' must be one of : ", paste(ok_links, collapse=", "), "or a call to scaled_logit")
+  if (is.character(link)) {
+    check_scalar(link)
+    if (!(link %in% ok_links)) {
+      stop(msg, call.=FALSE)
+    }
+  } else if (class(link) != "scaled_logit") {
+     stop(msg, call.=FALSE)
+  }
+
+  if (class(link) == "scaled_logit") {
+    i2o <- i2o * link$K
+  }
 
   # center must be logical scalar
   check_scalar(center)
