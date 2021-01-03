@@ -1,4 +1,4 @@
-#' Helper for constructing an object of class 'epirt'
+#' Model Reproduction Numbers
 #'
 #' Defines a model for the latent time varying reproduction number. For more
 #' details on the model assumptions please refer to the online vignettes.
@@ -23,6 +23,56 @@
 #'  used if the \code{formula} argument specifies random effects.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
+#' @examples 
+#' library(epidemia)
+#' data("EuropeCovid")
+#' options(mc.cores = parallel::detectCores())
+#'
+#' data <- EuropeCovid$data
+#' data$week <- lubridate::week(data$date)
+#'
+#' # collect arguments for epim
+#' args <- list(
+#'   inf = epiinf(gen = EuropeCovid$si),
+#'   obs = epiobs(deaths ~ 1, i2o = EuropeCovid$inf2death, link = scaled_logit(0.02)),
+#'   data = data, 
+#'   algorithm = "fullrank", # For speed - should generally use "sampling"
+#'   iter = 2e4,
+#'   group_subset = "France",
+#'   seed = 12345,
+#'   refresh = 0
+#' )
+#'
+#' # a simple random walk model for R
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ rw(time = week),
+#'   link = scaled_logit(7)
+#' )
+#'
+#' fm1 <- do.call(epim, args)
+#' plot_rt(fm1)
+#'
+#' # Modeling effects of NPIs
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ 1 + lockdown + public_events,
+#'   link = scaled_logit(7)
+#' )
+#'
+#' fm2 <- do.call(epim, args)
+#' plot_rt(fm2)
+#'
+#'
+#' # shifted gamma prior for NPI effects
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ 1 + lockdown + public_events,
+#'   link = scaled_logit(7),
+#'   prior = shifted_gamma(shape = 1/2, scale = 1, shift = log(1.05)/2)
+#' )
+#'
+#' # How does the implied prior look?
+#' args$prior_PD <- TRUE
+#' fm3 <- do.call(epim, args)
+#' plot_rt(fm3)
 epirt <- function(formula,
                   link = "log",
                   center = FALSE,

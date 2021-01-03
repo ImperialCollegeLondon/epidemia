@@ -518,7 +518,7 @@ obs_to_int <- function(data, obs) {
   col <- .get_obs(formula(obs))
   discrete_fams <- c("neg_binom", "poisson", "quasi_poisson")
   if (obs$family %in% discrete_fams) {
-    data <- dplyr::mutate(data, across(col, as.integer))
+    data <- dplyr::mutate(data, dplyr::across(col, as.integer))
   }
   return(data)
 }
@@ -530,7 +530,7 @@ obs_to_int <- function(data, obs) {
 susceptibles_to_int <- function(data, inf) {
   if (inf$pop_adjust) {
     col <- inf$susceptibles
-    data <- dplyr::mutate(data, across(col, as.integer))
+    data <- dplyr::mutate(data, dplyr::across(col, as.integer))
   }
   return(data)
 }

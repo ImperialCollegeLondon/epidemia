@@ -5,7 +5,7 @@ load("../data/NYWA.RData")
 
 args <- list()
 args$inf <- epiinf(gen = NYWA$si)
-args$sampling_args <- list(chains=0)
+args$chains <- 0
 expect_warning(args$obs <- epiobs(formula = deaths ~ 1, i2o = NYWA$inf2death * 0.02))
 args$data <- NYWA$data
 

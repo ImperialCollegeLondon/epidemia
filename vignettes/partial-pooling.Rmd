@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <div class="article_container">
 
-# Partial Pooling in epidemia
+# Partial Pooling in epidemia <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
 
 Here we describe how to partially pool parameters underlying the reproduction 
 numbers in **epidemia**. This is done using a special operator in the formula passed to 

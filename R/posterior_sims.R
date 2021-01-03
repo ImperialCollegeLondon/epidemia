@@ -193,11 +193,6 @@ subsamp <- function(object, mat, draws=NULL) {
   return(mat)
 }
 
-
-
-
-
-
 # standata passed into rstan::gqs
 #
 # @param object An \code{epimodel} object
@@ -220,7 +215,7 @@ pp_standata <- function(object, rt, obs, data) {
 
   sdat_rt <- standata_rt(rt)
   out$link <- sdat_rt$link
-  out$r0 <- sdat_rt$r0
+  out$carry <- sdat_rt$carry
 
   sdat_inf <- standata_inf(object$inf)
   out$latent <- sdat_inf$latent

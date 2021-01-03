@@ -5,7 +5,7 @@ data("EuropeCovid")
 args <- list()
 args$data <- EuropeCovid$data %>%
   dplyr::filter(country == "United_Kingdom") %>%
-  mutate(
+  dplyr::mutate(
     week = lubridate::week(date),
     cases = deaths,
     dummy = cases
@@ -13,7 +13,7 @@ args$data <- EuropeCovid$data %>%
 
 args$rt <- epirt(R(country, date) ~ rw(time=week))
 args$inf <- epiinf(gen = EuropeCovid$si)
-args$sampling_args <- list(iter=500, chains=0)
+args$chains <- 0
 
 expect_warning(deaths <- epiobs(
   formula = deaths ~ rw(time=week),

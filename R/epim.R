@@ -38,7 +38,7 @@
 #'  the main sampling. If TRUE, this is done with default parameters. If instead a list is
 #'  provided, these parameters are passed on to the rstan sampling function for the initial run.
 #'  initial run. The seed used is that specified in \code{init_run}, or that
-#'  specified in \code{sampling_args}, or no seed, in that order.
+#'  specified in ..., or no seed, in that order.
 #' @param ... An (optional) named list of parameters to pass to the
 #'  \pkg{rstan} function used for model fitting, for example
 #'  \code{rstan::sampling}.

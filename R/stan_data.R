@@ -104,7 +104,7 @@ standata_data <- function(data, inf) {
   susc <- matrix(1, nrow = N2, ncol = M)
   if (inf$pop_adjust) {
     col <- inf$susceptibles
-    df <- split(pull(data, col), data$group)
+    df <- split(dplyr::pull(data, col), data$group)
     for (m in 1:M)
       susc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]
   }

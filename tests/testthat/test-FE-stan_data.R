@@ -9,7 +9,7 @@ args <- list()
 args$data <- NYWA$data
 args$inf <- epiinf(gen = NYWA$si)
 expect_warning(args$obs <- epiobs(deaths ~ 1, i2o = NYWA$inf2death * 0.02))
-args$sampling_args <- list(chains=0)
+args$chains <- 0
 
 test_that("has_intercept takes correct values", {
 

@@ -18,7 +18,7 @@ inf <- epiinf(gen=1)
 group_subset <- NULL
 
 # tibble the data
-data <- tibble(data)
+data <- dplyr::tibble(data)
 
 test_that("susceptible_to_int", {
   data$E <- 1 + runif(1, min=0, max=0.1)

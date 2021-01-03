@@ -8,7 +8,7 @@ expect_warning(args$obs <- list(
   deaths = epiobs(deaths ~ 1, i2o = NYWA$inf2death * 0.02 ),
   cases = epiobs(cases ~ 1, i2o = NYWA$inf2case * 0.02)
 ))
-args$sampling_args <- list(chains=0)
+args$chains <- 0
 args$inf <- epiinf(gen = NYWA$si)
 
 args$rt <- epirt(

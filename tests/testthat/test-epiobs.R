@@ -22,7 +22,7 @@ test_that("family and link are scalar characters in required set", {
   expect_error(obs <- epiobs(formula = form, family = "dummy", i2o = 1), regexp = "neg_binom")
 
   expect_error(obs <- epiobs(formula = form, link = "identity", i2o = 1), NA)
-  expect_error(obs <- epiobs(formula = form, link = na.action, i2o = 1), regexp = "character")
+  expect_error(obs <- epiobs(formula = form, link = na.action, i2o = 1), regexp = "link")
   expect_error(obs <- epiobs(formula = form, link = c("identity", "identity"), i2o = 1), regexp = "scalar")
   expect_error(obs <- epiobs(formula = form, link = "dummy", i2o = 1), regexp = "logit")
 })

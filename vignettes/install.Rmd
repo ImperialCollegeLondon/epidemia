@@ -18,7 +18,7 @@ pkgdown:
 # Installation <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
 <hr>
 
-epidemia requires R v3.5.0 or above. The latest version of R can be downloaded 
+**epidemia** requires R v3.5.0 or above. The latest version of R can be downloaded 
 [here](https://cloud.r-project.org/bin/).
 
 The package can be installed directly from 
