@@ -1,5 +1,17 @@
 
+
+
 ## epidemia 0.7.0
+* Changes to general interface - new epiinf() function for representing infection model
+* Improved package website, with better description of the model and examples in the vignettes.
+* Ability to model latent infections explicitly - replacing renewal equation
+* Removed 'pop' and replaced with column of susceptibles in dataframe. 
+This allows susceptible population to reduce over time due to vaccinations.
+* Improved error checking in epim(), with more informative messages
+* scaled_logit for epiobs
+* Full integration with Bayesplot package, and a plot.epimodel method which 
+easily allows the user to choose different components of the model.
+* Fixed bug which meant "fullrank" was actually using "meanfield"
 * Ability to use random walks in the epiobs models
 * Choose between identity, scaled logit, and log link for epirt
 * Plot the (potentially transformed) linear predictors for both epiobs and epirt

@@ -35,6 +35,13 @@ last_dimnames <- function(x) {
   dimnames(x)[[ndim]]
 }
 
+used.sampling <- function(x) {
+  x$algorithm == "sampling"
+}
+used.variational <- function(x) {
+  x$algorithm %in% c("meanfield", "fullrank")
+}
+
 # Maybe broadcast 
 #
 # @param x A vector or scalar.

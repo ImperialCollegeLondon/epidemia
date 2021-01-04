@@ -79,6 +79,12 @@ check_in_set <- function(val, set) {
     stop(paste(s, "must be one of:", paste(set, collapse = ", ")), call. = FALSE)
 }
 
+check_all_in_set <- function(vec, set) {
+  s <- as.character.expr(substitute(vec))
+  if (!all(vec %in% set))
+    stop(paste(s, "must be a subset of:", paste(set, collapse = ", ")), call. = FALSE)
+}
+
 check_prior <- function(prior, ok_dists) {
   s <- as.character.expr(substitute(prior))
   msg <- paste(s, "must be a named list returned from an rstanarm prior function")

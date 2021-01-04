@@ -311,7 +311,7 @@ make_rw_nms <- function(formula, data) {
     trm <- eval(parse(text = trm))
     # retrieve the time and group vectors
     time <- if (is.null(trm$time)) data$date else data[[trm$time]]
-    group <- if (is.null(trm$gr)) "all" else droplevels(data[[trm$gr]])
+    group <- if (is.null(trm$gr)) "all" else droplevels(as.factor(data[[trm$gr]]))
     f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
     nms <- c(nms, f)
   }
@@ -328,7 +328,7 @@ make_rw_sigma_nms <- function(obj, data) {
   nms <- character()
   for (trm in trms) {
     trm <- eval(parse(text = trm))
-    group <- if (is.null(trm$gr)) "all" else droplevels(data[[trm$gr]])
+    group <- if (is.null(trm$gr)) "all" else droplevels(as.factor(data[[trm$gr]]))
     nms <- c(nms, unique(paste0(nme, "|sigma:", trm$label, "[", group, "]")))
   }
   return(nms)
@@ -342,7 +342,7 @@ make_oaux_nms <- function(obs) {
         x <- "|reciprocal dispersion"
       } 
       else if (o$family == "quasi_poisson") {
-        x <- "| dispersion"
+        x <- "|dispersion"
       }
       else if (o$family == "normal"){
         x <- "|standard deviation"
@@ -402,7 +402,7 @@ make_obeta_nms <- function(obs, sdat) {
 make_inf_nms <- function(begin, starts, N0, NC, groups) {
   nms <- c()
   for (m in 1:length(groups)) 
-    nms <- paste0("inf_noise[", begin -1 + seq(starts[m] + N0, NC[m]), ", ", groups[m],"]")
+    nms <- paste0("inf_noise[", begin -1 + seq(starts[m] + N0, NC[m]), ",", groups[m],"]")
   return(nms)
 }
 
