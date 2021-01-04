@@ -1,973 +1,396 @@
-#' Plotting the time-varying reproduction rates
+#' Plot method for epimodel objects
 #'
-#' Plots credible intervals for the time-varying reproduction rate.
-#' The user can control the levels of the intervals and the plotted group(s).
-#' This is a generic function.
-#' 
-#' @templateVar epimodelArg object
-#' @template args-epimodel-object
-#' @param groups \code{NULL}, string or character vector specifying which groups
-#' to plot. Default is \code{NULL}, which plots all possible groups.
-#' @param dates a vector of (start date, end date) defining the date range
-#'  to be plotted. Must be coercible to date if not NA. If NA, this means
-#'  use the lower/upper limit as appropriate. See examples.
-#' @param date_breaks string giving the distance between date tick labels.
-#'  Default is "2 weeks".
-#' Passed as \code{date_breaks} argument to \code{ggplot::scale_x_date} -
-#'  see \url{https://ggplot2.tidyverse.org/reference/scale_date.html}
-#' @param date_format the date format for coercing \code{dates}.
-#'  Default is "%Y-%m-%d"
-#' @param levels numeric vector giving the levels of the plotted
-#'  credible intervals
-#' @param log whether to plot the reproduction number on a log10-scale.
-#' Logical, default is \code{FALSE}.
-#' @param smooth integer specifying the window used to smooth the Rt values.
-#'  Default is 1 (no smoothing).
-#' @param plotly If TRUE, wraps the ggplot object into a plotly object, for
-#'  interactive graphing.
-#' @param ... Additional arguments for \code{\link[epidemia]{posterior_rt}}.
-#'  Examples include \code{newdata}, which allows predictions or
-#'  counterfactuals. \code{adjusted=FALSE} prevents application of
-#'  the population adjustment to the reproduction number.
-#' @return A ggplot object which can be further modified.
-#' @examples
-#' \dontrun{
-#' ## load required data
-#' library(epidemia)
-#' data("EuropeCovid")
-#' ## setup sampling
-#' args <- EuropeCovid
-#' args$algorithm <- "sampling"
-#' args$sampling_args <- list(iter=1e3,seed=12345)
-#' args$group_subset <- c("Italy", "Austria", "Germany")
-#' args$rt <- epirt(
-#'   formula = R(country, date) ~ 1 + lockdown,
-#'   prior = rstanarm::normal(location=0, scale=.5),
-#'   prior_intercept = rstanarm::normal(location=0, scale=2) 
-#' )
+#' Provides an interface to the \link[bayesplot:MCMC-overview]{MCMC} module
+#' in the \pkg{\link{bayesplot}} package, and allows seamless plotting of
+#' MCMC diagnostics along with various diagnostics. This method relies heavily
+#' on the code base for the \code{\link[rstanarm]{plot.stanreg}} method
+#' in \pkg{\link{rstanarm}}.
 #'
-#' ## run sampling
-#' fit <- do.call("epim", args)
+#' @method plot epimodel
+#' @export
+#' @templateVar epimodelArg x
+#' @param plotfun Same as in \code{\link[rstanarm]{plot.stanreg}}.
+#' A character string giving the name of the \pkg{bayesplot}
+#' \link[bayesplot:MCMC-overview]{MCMC} function to use. These can be
+#' listed using \code{\link[bayesplot]{available_mcmc}}. Defaults to "interval"
+#' @param pars A character vector giving parameter names.
+#' @param regex_pars A character vector of regular expressions to select paramters.
+#' If pars is also used, regex_pars is used in conjunction with pars.
+#' @param par_models A character vector that restricts parameters to a subset of
+#' model components. For example, "R" only uses parameters in the transmission model,
+#' "inf" uses parameters in infection model. Strings giving the name of the
+#' response in an observation model (i.e. LHS of the \code{formula} in \code{epiobs})
+#' can also be used. If NULL (the default), all components are used.
+#' @param par_types A character vector that restricts parameters based on their
+#' type. The vector can include any of "fixed", "autocor", "random", "aux", "latent",
+#' or "seeds". The default is c("fixed", "aux", "seeds"), to avoid printing a
+#' very large number of parameters. If NULL, all types are used.
+#' @param par_groups A character vector restricting parameters to those
+#' used for a subset of regions in which the epidemic is modeled. Defaults to
+#' NULL in which case all regions are used.
+#' @param ... Arguments passed on to the \pkg{bayesplot} function specified by
+#' \code{plotfun}.
 #'
-#' ## make plots
-#' plot_rt(fit) # default, plots all groups and dates
-#' plot_rt(fit, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-#' plot_rt(fit, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_rt(fit, dates=c("2020-03-20", "2020-04-20"))
-#' plot_rt(fit,
-#'         dates=c("2020-03-20", "2020-04-20"),
-#'         date_breaks="1 day") # ticks every day
-#' plot_rt(fit,
-#'         dates=c("2020-03-20", "2020-04-20"),
-#'         date_breaks="1 week") # ticks every week
-#' plot_rt(fit,
-#'         dates=c("2020-20-03", "2020-20-04"),
-#'         date_format="%Y-%d-%m") # (different date format)
+#' @return Either a ggplot object that can be further customized using the
+#'   \pkg{ggplot2} package, or an object created from multiple ggplot objects
+#'   (e.g. a gtable object created by \code{\link[gridExtra]{arrangeGrob}}).
+#'
+#' @seealso
+#' \itemize{
+#'  \item \code{\link[rstanarm]{plot.stanreg}}.
+#'  \item \pkg{bayesplot} vignettes for examples.
+#'   \item \code{\link[bayesplot]{MCMC-overview}} (\pkg{bayesplot}) for plotting
+#'   function documentation.
+#'   \item \code{\link[bayesplot:bayesplot-colors]{color_scheme_set}} (\pkg{bayesplot}) to set
+#'   plotting color scheme.
 #' }
-#' @export
-plot_rt <- function(object, ...) UseMethod("plot_rt", object)
+#'
+#' @importFrom ggplot2 ggplot aes_string xlab %+replace% theme
+plot.epimodel <- function(x, plotfun = "intervals", pars = NULL,
+                          regex_pars = NULL, par_models = NULL,
+                          par_types = c("fixed", "aux", "seeds"),
+                          par_groups = NULL, ...) {
 
-#' @rdname plot_rt
-#' @export
-plot_rt.epimodel <-
-  function(object,
-           groups = NULL,
-           dates = NULL,
-           date_breaks = "2 weeks",
-           date_format = "%Y-%m-%d",
-           levels = c(30, 60, 90),
-           log = FALSE,
-           smooth = 1,
-           plotly = FALSE,
-           ...) {
-    levels <- check_levels(levels)
+  if (plotfun %in% c("pairs", "mcmc_pairs"))
+    return(pairs.epimodel(x, pars = pars, regex_pars = regex_pars,
+                          par_models = par_models, par_types = par_types,
+                          par_groups = par_groups, ...))
 
-    rt <- posterior_rt(
-      object = object,
-      ...
-    )
+  pars <- restrict_pars(x, pars = pars, par_models = par_models,
+                        par_types = par_types, par_groups = par_groups)
 
-    # transform data
-    rt <- gr_subset(rt, groups)
-    rt <- smooth_obs(rt, smooth)
-
-    qtl <- get_quantiles(
-      rt,
-      levels,
-      dates,
-      date_format
-    )
-    p <- base_plot(qtl, log, date_breaks, TRUE)
-
-    df <- data.frame(
-      date = rt$time, 
-      median = apply(rt$draws, 2, function(x) quantile(x, 0.5)),
-      group = rt$group
-    )
-    # only want to plot dates/groups that appear in qtl as it has been
-    # subsetted
-    df <- df %>%
-      dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
-                          dplyr::distinct(),
-                       by=c("date", "group"))
-
-    p <- p + ggplot2::geom_line(
-      mapping = ggplot2::aes(x = date, y = median), 
-      data = df, 
-      color = "seagreen"
-    )
-
-    p <- p + ggplot2::scale_fill_manual(
-      name = "R_t", 
-      values = ggplot2::alpha("seagreen", levels * 0.7/100)
-    )
-
-    p <- p + ggplot2::geom_hline(
-      yintercept = 1,
-      color = "black",
-      size = 0.7
-    )
-
-    if (plotly) {
-      p <- p + ggplot2::ylab(plotly::TeX("$R_t$"))
-      p <- plotly::ggplotly(p) %>% plotly::config(mathjax = "cdn")
-    } else {
-      p <- p + ggplot2::ylab(expression(R[t]))
-    }
-    return(p)
+  fun <- set_plotting_fun(plotfun)
+  args <- set_plotting_args(x, pars, regex_pars, ..., plotfun = plotfun)
+  do.call(fun, args)
 }
 
 
-#' Plotting the posterior predictive distribution
+#' Pairs method for epimodel objects
 #'
-#' Plots credible intervals for the observed data under the posterior
-#' predictive distribution, and for a specific observation type. 
-#' The user can control the levels of the intervals and the plotted group(s).
-#' This is a generic function.
-#' 
-#' @inherit plot_rt params return
-#' @param type the name of the observations to plot. This should match one
-#'  of the names of the \code{obs} argument to \code{epim}.
-#' @param posterior_mean If true, the credible intervals are plotted for the
-#'  posterior mean. Defaults to FALSE, 
-#'  in which case the posterior predictive is plotted.
-#' @param cumulative If TRUE, plots the cumulative observations. 
-#' @param by_100k If TRUE, plots data per 100k of the population.
-#' @param bar If TRUE, observations are plotted as a bar plot. Otherwise, 
-#' a scatterplot is used.
-#' @param log If TRUE, plots the observations on a pseudo-linear scale.
-#' @param ... Additional arguments for
-#'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
-#'  \code{newdata}, which allows 
-#'  predictions or counterfactuals.
-#' @examples
-#' \dontrun{
-#' ## load required data
-#' library(epidemia)
-#' data("EuropeCovid")
-#' ## setup sampling
-#' args <- EuropeCovid
-#' args$algorithm <- "sampling"
-#' args$sampling_args <- list(iter=1e3,seed=12345)
-#' args$group_subset <- c("Italy", "Austria", "Germany")
-#' args$rt <- epirt(
-#'   formula = R(country, date) ~ 1 + lockdown,
-#'   prior = rstanarm::normal(location=0, scale=.5),
-#'   prior_intercept = rstanarm::normal(location=0, scale=2) 
-#' )
+#' Interface to \pkg{bayesplot}'s
+#' \code{\link[bayesplot:MCMC-scatterplots]{mcmc_pairs}} function. Closely
+#' mirrors the functionality of \code{\link[rstanarm]{pairs.stanreg}}. Remember
+#' not to specify too many paramaters. They will render slowly, and be difficult
+#' to interpret.
 #'
-#' ## run sampling
-#' fit <- do.call("epim", args)
-#' 
-#' ## make plots
-#' plot_obs(fit, type="deaths")
-#' plot_obs(fit, type="deaths",
-#'               dates=c("2020-03-21", NA))
-#' plot_obs(fit,
-#'          type="deaths",
-#'          dates=c(NA, "2020-03-20"))
-#' plot_obs(fit,
-#'          type="deaths",
-#'          dates=c("2020-03-20", "2020-04-20"))
-#' plot_obs(fit,
-#'          type="deaths",
-#'          dates=c("2020-03-20", "2020-04-20"),
-#'          date_breaks="1 day")
-#' plot_obs(fit,
-#'          type="deaths",
-#'          dates=c("2020-03-20", "2020-04-20"),
-#'          date_breaks="1 week")
-#' plot_obs(fit,
-#'          type="deaths",
-#'          dates=c("2020-20-03", "2020-20-04"),
-#'          date_format="%Y-%d-%m")
-#' }
+#' @inheritParams plot.epimodel
+#' @param condition Same as \code{\link[bayesplot:MCMC-scatterplots]{mcmc_pairs}},
+#' except that the default is \code{accept_stat__}, as in \code{\link[rstanar]{pairs.stanreg}}.
+#' Please see the documentation for \code{\link[rstanar]{pairs.stanreg}} for more
+#' details on this default.
+#' @param ... Arguments passed to \code{\link[bayesplot:MCMC-scatterplots]{mcmc_pairs}}.
+#' The arguments \code{np}, \code{lp}, and \code{max_treedepth} are automatically
+#' handled, and therefore do not need to be specified.
+#' @method pairs epimodel
 #' @export
-plot_obs <- function(object, ...) UseMethod("plot_obs", object)
+#' @importFrom bayesplot pairs_style_np pairs_condition
+pairs.epimodel <- function(x, pars = NULL, regex_pars = NULL, par_models = NULL,
+                           par_types = NULL, par_groups = NULL,
+                           condition = pairs_condition(nuts = "accept_stat__"),
+                           ...) {
 
-
-#' @rdname plot_obs
-#' @export
-plot_obs.epimodel <-
-  function(object,
-           type,
-           posterior_mean = FALSE,
-           groups = NULL,
-           dates = NULL,
-           date_breaks = "2 weeks",
-           date_format = "%Y-%m-%d",
-           cumulative = FALSE,
-           by_100k = FALSE,
-           bar = TRUE,
-           levels = c(30, 60, 90),
-           log = FALSE,
-           plotly = FALSE,
-           ...) {
-    levels <- check_levels(levels)
-
-    if (is.null(type)) {
-      stop("must specify an observation type")
-    }
-
-    alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
-    w <- which(type == alltypes)
-    if (length(w) == 0) {
-      stop(paste0("obs does not contain any observations
-    for type '", type, "'"), call. = FALSE)
-    }
-
-    groups <- groups %ORifNULL% object$groups
-
-    obs <- posterior_predict(
-      object = object,
-      types = type,
-      posterior_mean = posterior_mean,
-      ...
+  pars <- restrict_pars(x, pars = pars, par_models = par_models,
+                        par_types = par_types, par_groups = par_groups)
+  dots <- list(...)
+  ignored_args <- c("np", "lp", "max_treedepth")
+  specified <- ignored_args %in% names(dots)
+  if (any(specified)) {
+    warning(
+      "The following arguments were ignored because they are ",
+      "specified automatically by epidemia: ",
+      paste(sQuote(ignored_args[specified]), collapse = ", ")
     )
-
-    # transform data
-    obs <- gr_subset(obs, groups)
-
-    data_orig <- object$data
-    data_orig <- data_orig[data_orig$group %in% groups, ]
-
-    newdata <- list(...)$newdata
-    if (is.null(newdata)) {
-      data <- data_orig
-    } else {
-      check_data(newdata, object$rt, object$inf, object$obs, groups)
-      data <- parse_data(newdata, object$rt, object$inf, object$obs, groups)
-    }
-
-    # get observed outcomes
-    obj <- epiobs_(object$obs[[w]], data)
-    df <- data.frame(
-      group = get_gr(obj),
-      date = get_time(obj),
-      obs = get_obs(obj)
-    )
-    
-    # remove negative values
-    df <- df[df$obs >= 0, ]
-
-    # classify data as prediction or not a prediction
-    data_orig <- data_orig[, c("group", "date", type)]
-    df <- dplyr::left_join(df, data_orig, , by = c("group", "date"))
-    names(df)[4] <- c("new")
-    w <- is.na(df$new)
-
-    all_in_sample <- ifelse(any(w), FALSE, TRUE)
-    empty <- nrow(df) == 0
-    if (!empty) {
-      if (all_in_sample){
-        df$new <- "Observed"
-      } else {
-        df$new[w] <- "Out-of-sample"
-        df$new[!w] <- "In-sample"
-      }
-    }
-
-    if (cumulative) {
-      obs <- cumul(obs)
-      df <- df %>%
-        dplyr::group_by(.data$group) %>%
-        dplyr::mutate(obs = cumsum(obs))
-      df <- as.data.frame(df)
-    }
-
-    pops <- object$pops
-    if (by_100k) {
-      obs <- norm_obs(pops, obs)
-      df <- norm_df(pops, df)
-    }
-
-    qtl <- get_quantiles(
-      obs,
-      levels,
-      dates,
-      date_format
-    )
-    # only want to plot dates/groups that appear in qtl as it has been
-    # subsetted
-    df <- df %>%
-      dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
-                          dplyr::distinct(),
-                        by=c("date", "group"))
-
-    names(df)[3] <- type
-    p <- base_plot(qtl, log, date_breaks)
-
-    if (bar) {
-      p <- p + ggplot2::geom_bar(
-        mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
-        data = df,
-        stat = "identity",
-        alpha = 0.7
-      )
-    } else {
-      p <- p + ggplot2::geom_point(
-        mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
-        data = df,
-        stat = "identity"
-      )
-    }
-
-    df1 <- data.frame(
-      date = obs$time, 
-      median = apply(obs$draws, 2, function(x) quantile(x, 0.5)),
-      group = obs$group
-    )
-    # only want to plot dates/groups that appear in qtl as it has been
-    # subsetted
-    df1 <- df1 %>%
-      dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
-                          dplyr::distinct(),
-                        by=c("date", "group"))
-
-    p <- p + ggplot2::geom_line(
-      mapping = ggplot2::aes(x = date, y = median), 
-      data = df1, 
-      color = "deepskyblue4"
-    )
-
-    cols <- c(
-      "deepskyblue4",
-      ggplot2::alpha("deepskyblue4", rev(levels) * 0.7 / 100),
-      "coral4",
-      "darkslategray3"
-    )
-
-    if (all_in_sample) {
-      names(cols) <- c("median", paste0(levels, "% CI"), "Observed", "dummy")
-    } else {
-      names(cols) <- c("median", paste0(levels, "% CI"), "In-sample", "Out-of-sample")
-    }
-
-    nme <- type
-    if (by_100k) {
-      nme <- paste0(nme, " per 100k")
-    }
-    cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
-
-    p <- p + cols
-
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
-    return(p)
   }
 
-#' Plotting the underlying number of infections over time
-#'
-#' Plots credible intervals for the underlying number of infections.
-#' The user can control the levels of the intervals and the plotted group(s).
-#' This is a generic function.
-#' 
-#' @inherit plot_obs params return
-#' @param ... Additional arguments for \code{\link[epidemia]{posterior_infections}}. Examples include \code{newdata}, which allows 
-#'  predictions or counterfactuals.
-#' @examples
-#' \dontrun{
-#' ## load required data
-#' library(epidemia)
-#' data("EuropeCovid")
-#' ## setup sampling
-#' args <- EuropeCovid
-#' args$algorithm <- "sampling"
-#' args$sampling_args <- list(iter=1e3,seed=12345)
-#' args$group_subset <- c("Italy", "Austria", "Germany")
-#' args$rt <- epirt(
-#'   formula = R(country, date) ~ 1 + lockdown,
-#'   prior = rstanarm::normal(location=0, scale=.5),
-#'   prior_intercept = rstanarm::normal(location=0, scale=2) 
-#' )
-#'
-#' ## run sampling
-#' fit <- do.call("epim", args)
-#' 
-#' ## make plots
-#' plot_infections(fit) # default, plots all groups and dates
-#' plot_infections(fit, 
-#'                 dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-#' plot_infections(fit, 
-#'                 dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_infections(fit, 
-#'                 dates=c("2020-03-20", "2020-04-20")) # plot 20 March-20 April 2020
-#' plot_infections(fit, 
-#'                 dates=c("2020-03-20", "2020-04-20"), 
-#'                 date_breaks="1 day") # plot 21 March-20 April 2020 with ticks every day
-#' plot_infections(fit, 
-#'                 dates=c("2020-03-20", "2020-04-20"),
-#'                 date_breaks="1 week") # plot 21 March-20 April 2020 with ticks every week
-#' plot_infections(fit, 
-#'                 dates=c("2020-20-03", "2020-20-04"), 
-#'                 date_format="%Y-%d-%m") # plot 21 March-20 April 2020 (different date format)
-#' }
-#' @export
-plot_infections <- function(object, ...) UseMethod("plot_infections", object)
+  posterior <- as.array.epimodel(x, pars = pars, regex_pars = regex_pars)
 
-#' @rdname plot_infections
-#' @export
-plot_infections.epimodel <- 
-  function(object, 
-  groups = NULL,
-  dates=NULL, 
-  date_breaks="2 weeks", 
-  date_format="%Y-%m-%d",
-  cumulative=FALSE, 
-  by_100k = FALSE,
-  levels = c(30, 60, 90), 
-  log=FALSE,
-  plotly = FALSE, 
-  ...) {
-    levels <- check_levels(levels)
-
-    inf <- posterior_infections(
-      object = object,
-      ...
-    )
-
-    # transform data
-    inf <- gr_subset(inf, groups)
-
-    if (cumulative) {
-      inf <- cumul(inf)
-    }
-
-    pops <- object$pops
-    if (by_100k) {
-      inf <- norm_obs(pops, inf)
-    }
-
-    qtl <- get_quantiles(
-      inf,
-      levels,
-      dates,
-      date_format
-    )
-
-    p <- base_plot(qtl, log, date_breaks)
-
-    nme <- "Infections"
-    if (by_100k) {
-      nme <- paste0(nme, " per 100k")
-    }
-
-    p <- p + ggplot2::scale_fill_manual(
-      name = nme,
-      values = ggplot2::alpha("deepskyblue4", levels/100)
-    )
-
-    p <- p + ggplot2::ylab("Infections")
-
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
-    return(p)
+  if (is.null(pars) && is.null(regex_pars)) {
+    # include log-posterior by default
+    lp_arr <- as.array.epimodel(x, pars = "log-posterior")
+    dd <- dim(posterior)
+    dn <- dimnames(posterior)
+    dd[3] <- dd[3] + 1
+    dn$parameters <- c(dn$parameters, "log-posterior")
+    tmp <- array(NA, dim = dd, dimnames = dn)
+    tmp[,, 1:(dd[3] - 1)] <- posterior
+    tmp[,, dd[3]] <- lp_arr
+    posterior <- tmp
   }
+  posterior <- round(posterior, digits = 12)
 
-
-  #' Plotting the underlying total infectiousness over time
-#'
-#' Plots credible intervals for the total infectiousness over time. This is 
-#' defined as the sum of each infected person, weighted by how infectious each 
-#' individual is, given how long they have been infected for.The user can 
-#' control the levels of the intervals and the plotted group(s).
-#' This is a generic function.
-#' 
-#' @inherit plot_obs params return
-#' @param ... Additional arguments for 
-#' \code{\link[epidemia]{posterior_infectious}}. Examples include 
-#' \code{newdata}, which allows predictions or counterfactuals.
-#' @export
-plot_infectious <- function(object, ...) UseMethod("plot_infectious", object)
-
-#' @rdname plot_infectious
-#' @export
-plot_infectious.epimodel <- 
-  function(object, 
-  groups = NULL,
-  dates=NULL, 
-  date_breaks="2 weeks", 
-  date_format="%Y-%m-%d",
-  by_100k = FALSE,
-  levels = c(30, 60, 90), 
-  log=FALSE,
-  plotly = FALSE, 
-  ...) {
-    levels <- check_levels(levels)
-
-    inf <- posterior_infectious(
-      object = object,
-      ...
-    )
-
-    # transform data
-    inf <- gr_subset(inf, groups)
-
-    pops <- object$pops
-    if (by_100k) {
-      inf <- norm_obs(pops, inf)
-    }
-
-    qtl <- get_quantiles(
-      inf,
-      levels,
-      dates,
-      date_format
-    )
-
-
-    p <- base_plot(qtl, log, date_breaks)
-
-    nme <- "Infectious"
-    if (by_100k) {
-      nme <- paste0(nme, " per 100k")
-    }
-
-    p <- p + ggplot2::scale_fill_manual(
-      name = nme, 
-      values = ggplot2::alpha("deepskyblue4", levels/100)
-    )
-
-    p <- p + ggplot2::ylab("Infectious")
-
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
-    return(p)
-  }
-
-
-# ---- internal -----
-
-# transform into cumulatives
-# @param object Result of posterior_ function
-cumul <- function(object) {
-  dfs <- split(
-    as.data.frame(t(object$draws)),
-    object$group
+  bayesplot::mcmc_pairs(
+    x = posterior,
+    np = nuts_params.epimodel(x),
+    lp = log_posterior.epimodel(x),
+    max_treedepth = .max_treedepth(x),
+    condition = condition,
+    ...
   )
-  dfs <- lapply(
-    dfs,
-    function(x) t(apply(x, 2, cumsum))
-  )
-  object$draws <- do.call(cbind, dfs)
-  return(object)
 }
 
-
-# Compute quantiles for all levels
+# This function uses the par_models, par_types and par_groups
+# arguments to restrict the set of possible parameters used
+# in bayesplot plotting functions
 #
-# @param object Result of a posterior_ function
-# @param levels A numeric vector defining levels
-get_quantiles <- function(object, levels, dates=NULL, date_format=NULL) {
-  levels <- levels[order(levels)]
-  f <- function(level) {
-    res <- apply(
-      object$draws,
-      2,
-      function(x) quantile(x, 0.5 + level * c(-1, 1) / 200)
-    )
-    return(
-      data.frame(
-        date = object$time,
-        lower = res[1, ],
-        upper = res[2, ],
-        group = object$group,
-        tag = paste0(level, "% CI"),
-        level = level
-      )
-    )
-  }
-  out <- lapply(levels, f)
-  out <- do.call(rbind, out)
-  out$tag <- factor(out$tag, ordered = T, levels = rev(levels(factor(out$tag))))
-  if (!is.null(dates)){
-    out <- subset_for_dates(
-      out,
-      dates,
-      date_format
-    )
-  }
-  return(out)
-}
+# @param object An 'epimodel' object
+# @param par_models User supplied in plot.epimodel
+# @param par_types User supplied in plot.epimodel
+# @param par_groups User supplied in plot.epimodel
+# @value A character vector with set of parameters to consider, or NULL if
+# all parameters are to be used.
+restrict_pars <- function(object, pars = NULL, par_models = NULL,
+                          par_types = NULL, par_groups = NULL) {
 
-subset_for_dates <- function(qtl, dates, date_format) {
-  dates <- check_dates(
-    dates,
-    date_format,
-    min(qtl$date),
-    max(qtl$date)
-  )
-  if (!is.null(dates)) {
-    date_range <- seq(dates[1], dates[2], by = "day")
-    qtl <- qtl[qtl$date %in% date_range, ]
-    if (nrow(qtl) == 0) {
-      stop("date subsetting removed all data")
+  if(is.null(par_models) && is.null(par_types) && is.null(par_groups))
+    return(pars)
+
+  if (is.null(pars)) {
+    pars <- names(object$stanfit)
+  }
+
+  # partition all parameter names by their type
+  random <- grep(pars, pattern = "(\\|b\\[)|(\\|Sigma\\[)", value=T)
+  autocor <- grep(pars, pattern = "\\|rw\\(", value = T)
+  seeds <- grep(pars, pattern = "^seeds\\[", value = T)
+  latent <- grep(pars, pattern = "^inf_noise\\[", value=T)
+  inf_aux <- grep(pars, pattern = "(^inf\\|)|(^tau$)", value = T)
+  obs_aux <- setdiff(grep(pars, pattern = aux_regex, value=T), inf_aux)
+  fixed <- setdiff( # should be anything not yet captured
+    grep(pars, pattern = "\\|", value=T),
+    Reduce(union, list(random, autocor, seeds, tau, latent, inf_aux, obs_aux)))
+
+  if (!is.null(par_models)) {
+    ok_obs <- sapply(object$obs, function(x) .get_obs(formula(x)))
+    ok_par_models <- c("R", "inf", ok_obs)
+    check_character(par_models)
+    check_all_in_set(par_models, ok_par_models)
+
+    if (!("R" %in% par_models))
+      pars <- setdiff(pars, grep(pars, pattern = "^R\\|", value=T))
+
+    if (!("inf" %in% par_models))
+      pars <- setdiff(pars, Reduce(union, list(latent, inf_aux, seeds)))
+
+    obs_rm <- setdiff(ok_obs, par_models)
+    for(nme in obs_rm)
+      pars <- setdiff(pars, grep(pars, pattern = paste0("^",nme, "\\|"), value=T))
+
+    pars <- setdiff(pars, "log-posterior")
+  }
+
+  if (!is.null(par_types)) {
+    check_character(par_types)
+    check_all_in_set(par_types, ok_par_types)
+
+    if (!("fixed" %in% par_types))
+      pars <- setdiff(pars, fixed)
+    if (!("random" %in% par_types))
+      pars <- setdiff(pars, random)
+    if (!("autocor" %in% par_types))
+      pars <- setdiff(pars, autocor)
+    if (!("aux" %in% par_types))
+      pars <- setdiff(pars, union(inf_aux, obs_aux))
+    if (!("latent" %in% par_types))
+      pars <- setdiff(pars, latent)
+    if (!("seeds" %in% par_types))
+      pars <- setdiff(pars, seeds)
+    pars <- setdiff(pars, "log-posterior")
+  }
+
+  if (!is.null(par_groups)) {
+    check_character(par_groups)
+    check_all_in_set(par_groups, object$groups)
+    group_rm <- setdiff(object$groups, par_groups)
+    for (nme in group_rm) {
+      pars <- setdiff(pars, grep(pars, pattern = paste0(":", nme), value=T))
+      pars <- setdiff(pars, grep(pars, pattern = paste0("\\[", nme, "\\]$"), value=T))
+      pars <- setdiff(pars, grep(pars, pattern = paste0(",", nme, "\\]$"), value=T))
+      pars <- setdiff(pars, grep(pars, pattern = paste0(", ", nme, "\\]$"), value=T))
+      pars <- setdiff(pars, grep(pars, pattern = "_NEW_", value=T))
     }
+    pars <- setdiff(pars, "log-posterior")
   }
-  return(qtl)
+
+  return(pars)
 }
 
-# smooths observations across dates
+ok_par_types <- c("fixed", "autocor", "random", "aux", "latent", "seeds")
+
+aux_regex <- paste(
+  c("(\\|reciprocal dispersion$)", "(\\|dispersion$)",
+    "(\\|standard deviation$)","(\\|sigma$)"),
+  collapse = "|")
+
+# Helpers from rstanarm with minor adjustments  --------------------------------
+
+# Prepare argument list to pass to plotting function
 #
-# @param object Result of a posterior_ function
-# @param smooth Periods to smooth for
-smooth_obs <- function(object, smooth) {
-  smooth <- check_smooth(object, smooth)
-  if (smooth == 1) {
-    return(object)
+# @param x epimodel object
+# @param pars, regex_pars user specified pars and regex_pars arguments (can be
+#   missing)
+# @param ...  additional arguments to pass to the plotting function
+# @param plotfun User's 'plotfun' argument
+set_plotting_args <- function(x, pars = NULL, regex_pars = NULL, ...,
+                              plotfun = character()) {
+
+  plotfun <- mcmc_function_name(plotfun)
+  if (!used.sampling(x))
+    validate_plotfun_for_opt_or_vb(plotfun)
+
+  .plotfun_is_type <- function(patt) {
+    grepl(pattern = paste0("_", patt), x = plotfun, fixed = TRUE)
   }
 
-  df <- as.data.frame(t(object$draws))
-  dfs <- split(df, object$group)
-  dfs <- lapply(
-    dfs,
-    function(x) {
-      apply(
-        x,
-        2,
-        function(x) {
-          zoo::rollmean(
-            x,
-            smooth,
-            fill = NA
-          )
-        }
-      )
-    }
-  )
-  df <- do.call(rbind, dfs)
-  w <- complete.cases(df)
-  object$draws <- t(df)
-  return(sub_(object, w))
-}
-
-norm_obs <- function(pops, obs) {
-  p <- pops$pop[match(obs$group, pops$group)]
-  obs$draws <- sweep(obs$draws,MARGIN=2,FUN="/",STATS=p) * 1e5
-  return(obs)
-}
-
-norm_df <- function(pops, df) {
-  df$pops <- pops$pop[match(df$group, pops$group)]
-  df$obs <- (df$obs / df$pops) * 1e5
-  return(df)
-}
-
-# subsets observations for a given
-# a logical vector
-#
-# @param object Result of posterior_ function
-# @param w A logical vector
-sub_ <- function(object, w) {
-  if (!is.logical(w)) {
-    stop("bug found. 'w' should be logical")
+  if (.plotfun_is_type("nuts")) {
+    nuts_stuff <- list(x = nuts_params.epimodel(x), ...)
+    if (!.plotfun_is_type("energy"))
+      nuts_stuff[["lp"]] <- log_posterior.epimodel(x)
+    return(nuts_stuff)
   }
-  object$draws <- object$draws[, w]
-  object$time <- object$time[w]
-  object$group <- object$group[w]
-  return(object)
+  if (.plotfun_is_type("rhat")) {
+    rhat <- rhat.epimodel(x, pars = pars, regex_pars = regex_pars)
+    return(list(rhat = rhat, ...))
+  }
+  if (.plotfun_is_type("neff")) {
+    ratio <- neff_ratio.epimodel(x, pars = pars, regex_pars = regex_pars)
+    return(list(ratio = ratio, ...))
+  }
+  if (!is.null(pars) || !is.null(regex_pars)) {
+    pars <- collect_pars(x, pars, regex_pars)
+  }
+
+  if (!used.sampling(x)) {
+    if (!length(pars))
+      pars <- NULL
+    return(list(x = as.matrix(x, pars = pars), ...))
+  }
+
+  list(x = as.array(x, pars = pars, regex_pars = regex_pars), ...)
 }
 
-# subsets posterior data for a given
-# set of groups
-#
-# @param object output from posterior_rt or
-# posterior_predict
-# @param groups A character vector specifying
-# groups to plot
-gr_subset <- function(object, groups) {
-  if (is.null(groups)) {
-    return(object)
-  }
-  w <- !(groups %in% object$group)
-  if (any(w)) {
-    stop(paste0(
-      "group(s) ", groups[w],
-      " not found."
-    ), call. = FALSE)
-  }
-  w <- object$group %in% groups
-  return(sub_(object, w))
-}
-
-# makes sure all levels are between 0 and 100 (inclusive)
-check_levels <- function(levels) {
-  if (length(levels) == 0) {
-    warning("no levels provided, will use 
-    default credible intervals (50% and 95%)", call. = FALSE)
-    return(c(50, 95))
-  }
-  if (any(!dplyr::between(levels, 0, 100))) {
-    stop("all levels must be between 0
-     and 100 (inclusive)", call. = FALSE)
-  }
-  return(sort(levels))
-}
-
-# Checks viability of smoothing parameter
-#
-# @param object output from posterior_rt or
-# posterior_predict 
-# @param smooth 'smooth' argument to plotting 
-# function
-check_smooth <- function(object, smooth) {
-  min_date <- min(table(object$group))
-  if (smooth >= min_date) {
-    warning(paste0("smooth=", smooth, " is too large 
-      (one group has ", min_date, " unique dates)
-       - no smoothing will be performed"),
-            call. = FALSE
+mcmc_function_name <- function(fun) {
+  # to keep backwards compatibility convert old function names
+  if (fun == "scat") {
+    fun <- "scatter"
+  } else if (fun == "ess") {
+    fun <- "neff"
+  } else if (fun == "ac") {
+    fun <- "acf"
+  } else if (fun %in% c("diag", "stan_diag")) {
+    stop(
+      "For NUTS diagnostics, instead of 'stan_diag', ",
+      "please specify the name of one of the functions listed at ",
+      "help('NUTS', 'bayesplot')",
+      call. = FALSE
     )
-    smooth <- 1
-  } else if (smooth <= 0 | smooth %% 1 != 0) {
-    warning("smooth must be a positive integer -
-       no smoothing will be performed", call. = FALSE)
-    smooth <- 1
   }
-  return(smooth)
+
+  if (identical(substr(fun, 1, 4), "ppc_"))
+    stop(
+      "'ppc_' functions not permitted",
+      call. = FALSE
+    )
+
+  if (!identical(substr(fun, 1, 5), "mcmc_"))
+    fun <- paste0("mcmc_", fun)
+
+  if (!fun %in% bayesplot::available_mcmc())
+    stop(
+      fun, " is not a valid MCMC function name.",
+      " Use bayesplot::available_mcmc() for a list of available MCMC functions."
+    )
+
+  return(fun)
+}
+
+# check if a plotting function requires multiple chains
+needs_chains <- function(x) {
+  nms <- c(
+    "trace",
+    "trace_highlight",
+    "rank",
+    "rank_overlay",
+    "acf",
+    "acf_bar",
+    "hist_by_chain",
+    "dens_overlay",
+    "violin",
+    "combo"
+  )
+  mcmc_function_name(x) %in% paste0("mcmc_", nms)
+}
+
+# Select the correct plotting function
+# @param plotfun user specified plotfun argument (can be missing)
+set_plotting_fun <- function(plotfun = NULL) {
+  if (is.null(plotfun))
+    return("mcmc_intervals")
+  if (!is.character(plotfun))
+    stop("'plotfun' should be a string.", call. = FALSE)
+
+  plotfun <- mcmc_function_name(plotfun)
+  fun <- try(get(plotfun, pos = asNamespace("bayesplot"), mode = "function"),
+             silent = TRUE)
+  if (!inherits(fun, "try-error"))
+    return(fun)
+
+  stop(
+    "Plotting function ",  plotfun, " not found. ",
+    "A valid plotting function is any function from the ",
+    "'bayesplot' package beginning with the prefix 'mcmc_'.",
+    call. = FALSE
+  )
+}
+
+# check if plotfun is ok to use with vb or optimization
+validate_plotfun_for_opt_or_vb <- function(plotfun) {
+  plotfun <- mcmc_function_name(plotfun)
+  if (needs_chains(plotfun) ||
+      grepl("_rhat|_neff|_nuts_", plotfun))
+    STOP_sampling_only(plotfun)
 }
 
 
-check_dates <- function(dates, date_format, min_date, max_date) {
-  if (is.null(dates)) {
-    return(NULL)
-  }
-  if (length(dates) != 2) {
-    stop("'dates' must be a vector of length 2.", call. = FALSE)
-  }
-
-  # replace NAs
-  if (is.na(dates[1])) {
-    dates[1] <- as.character(min_date)
-  }
-  if (is.na(dates[2])) {
-    dates[2] <- as.character(max_date)
-  }
-
-  # convert to date
-  dates <- as.Date(dates, format = date_format)
-
-  if (anyNA(dates)) {
-    stop("conversion of 'dates' to 'Date' introduced NAs. 
-      Please check date format specified.")
-  }
-
-  if (dates[1] >= dates[2]) {
-    stop("end date must be after start date")
-  }
-
-  return(dates)
-}
-
-# Basic ggplot. Plotting functions add to this
-#
-# @param qtl dataframe giving quantiles
-# @param date_breaks Determines breaks uses on x-axis
-base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
-
-  p <- ggplot2::ggplot(qtl) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes_string(
-        x = "date",
-        ymin = "lower",
-        ymax = "upper",
-        group = "tag",
-        fill = "tag"
-    )) +
-    ggplot2::xlab("") +
-    ggplot2::scale_x_date(
-      date_breaks = date_breaks,
-      labels = scales::date_format("%e %b")
-    ) +
-    ggplot2::scale_y_continuous(
-      labels = fancy_scientific,
-      expand = ggplot2::expansion(mult = c(0, 0.1)),
-      trans = ifelse(log, "pseudo_log", "identity"),
-      limits = c(ifelse(log, NA, 0), NA)
-    ) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      axis.text.x = ggplot2::element_text(
-        angle = 45,
-        hjust = 1
-      ),
-      axis.text = ggplot2::element_text(size = 12),
-      axis.title = ggplot2::element_text(size = 12)
-    ) +
-    ggplot2::theme(legend.position = "right") 
-  
-  if (length(unique(qtl$group)) > 1) {
-    if (rt) {
-      p <- p + ggplot2::facet_wrap(~group)
-    } else {
-      p <- p + ggplot2::facet_wrap(~group, scale = "free_y")
-    }
-  }
-  return(p)
-}
-
-#' @importFrom magrittr %>%
-#' @export
-magrittr::`%>%`
-
-
-# function to format y axis labels
-# bigger numbers are shown as scientific
-fancy_scientific <- function(l) {
-  if (all(l[!is.na(l)] <= 1e4)) {
-    l <- format(l)
+.max_treedepth <- function(x) {
+  control <- x$stanfit@stan_args[[1]]$control
+  if (is.null(control)) {
+    max_td <- 10
   } else {
-    # turn in to character string in scientific notation
-    l <- format(l, scientific = TRUE)
-    # quote the part before the exponent to keep all the digits
-    l <- gsub("^(.*)e", "'\\1'e", l)
-    # turn the 'e+' into plotmath format
-    l <- gsub("e", "%*%10^", l)
+    max_td <- control$max_treedepth
+    if (is.null(max_td))
+      max_td <- 10
   }
-  # return this as an expression
-  parse(text=l)
+  return(max_td)
 }
 
-#' Plotting the posterior linear predictor for either the R or observation regressions
-#'
-#' Plots credible intervals for the observed data under the posterior
-#' predictive distribution, and for a specific observation type. 
-#' The user can control the levels of the intervals and the plotted group(s).
-#' This is a generic function.
-#' 
-#' @inherit plot_rt params return
-#' @param type the name of the observations to plot. This should match one
-#'  of the names of the \code{obs} argument to \code{epim}.
-#' @param posterior_mean If true, the credible intervals are plotted for the
-#'  posterior mean. Defaults to FALSE, 
-#'  in which case the posterior predictive is plotted.
-#' @param cumulative If TRUE, plots the cumulative observations. 
-#' @param by_100k If TRUE, plots data per 100k of the population.
-#' @param log If TRUE, plots the observations on a pseudo-linear scale.
-#' @param ... Additional arguments for
-#'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
-#'  \code{newdata}, which allows 
-#'  predictions or counterfactuals.
-#' 
-#' @export
-plot_linpred <- function(object, ...) UseMethod("plot_linpred", object)
+nuts_params.epimodel <- function (object, pars = NULL, inc_warmup = FALSE, ...) {
+  bayesplot::nuts_params(object$stanfit, pars = pars, inc_warmup = inc_warmup,
+                      ...)
+}
 
-
-#' @rdname plot_obs
-#' @export
-plot_linpred.epimodel <-
-  function(object,
-           type = NULL,
-           groups = NULL,
-           dates = NULL,
-           date_breaks = "2 weeks",
-           date_format = "%Y-%m-%d",
-           levels = c(30, 60, 90),
-           plotly = FALSE,
-           ...) {
-    levels <- check_levels(levels)
-
-    groups <- groups %ORifNULL% object$groups
-
-    pred <- posterior_linpred(
-      object = object,
-      type = type,
-      ...
-    )
-
-    # transform data
-    pred <- gr_subset(pred, groups)
-
-    qtl <- get_quantiles(
-      pred,
-      levels,
-      dates,
-      date_format
-    )
-
-    p <- ggplot2::ggplot(qtl) +
-      ggplot2::geom_ribbon(
-        ggplot2::aes_string(
-          x = "date",
-          ymin = "lower",
-          ymax = "upper",
-          group = "tag",
-          fill = "tag"
-      )) +
-      ggplot2::xlab("") +
-      ggplot2::scale_x_date(
-        date_breaks = date_breaks,
-        labels = scales::date_format("%e %b")
-      ) +
-      ggplot2::theme_bw() +
-      ggplot2::theme(
-        axis.text.x = ggplot2::element_text(
-          angle = 45,
-          hjust = 1
-        ),
-        axis.text = ggplot2::element_text(size = 12),
-        axis.title = ggplot2::element_text(size = 12)
-      ) +
-      ggplot2::theme(legend.position = "right") + 
-      ggplot2::facet_wrap(~group, scale="free_y")
-
-    df1 <- data.frame(
-      date = pred$time, 
-      median = apply(pred$draws, 2, function(x) quantile(x, 0.5)),
-      group = pred$group
-    )
-    # only want to plot dates/groups that appear in qtl as it has been
-    # subsetted
-    df1 <- df1 %>%
-      dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
-                          dplyr::distinct(),
-                        by=c("date", "group"))
-
-    p <- p + ggplot2::geom_line(
-      mapping = ggplot2::aes(x = date, y = median), 
-      data = df1, 
-      color = "deepskyblue4"
-    )
-
-    cols <- c(
-      ggplot2::alpha("deepskyblue4", levels * 0.7 / 100),
-      "darkslategray3"
-    )
-
-    nme <- type %ORifNULL% "R_t"
-    cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
-
-    p <- p + cols
-
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
-    return(p)
+rhat.epimodel <- function (object, pars = NULL, regex_pars = NULL, ...) {
+  r <- summary(object, pars = NULL, regex_pars = NULL, ...)[, "Rhat"]
+  r <- validate_rhat(r)
+  if (!is.null(pars) || !is.null(regex_pars)) {
+    return(r)
   }
+  r[!names(r) %in% c("mean_PPD", "log-posterior")]
+}
+
+log_posterior.epimodel <- function (object, inc_warmup = FALSE, ...) {
+  bayesplot::log_posterior.stanfit(object$stanfit, inc_warmup = inc_warmup,
+                        ...)
+}
+
+neff_ratio.epimodel <- function (object, pars = NULL, regex_pars = NULL, ...) {
+  s <- summary(object, pars = pars, regex_pars = regex_pars,
+               ...)
+  ess <- s[, "n_eff"]
+  tss <- attr(s, "posterior_sample_size")
+  ratio <- ess/tss
+  ratio <- validate_neff_ratio(ratio)
+  if (!is.null(pars) || !is.null(regex_pars)) {
+    return(ratio)
+  }
+  ratio[!names(ratio) %in% "log-posterior"]
+}

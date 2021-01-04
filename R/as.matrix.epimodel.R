@@ -88,8 +88,6 @@ exclude_lp_and_ppd <- function(pars) {
 collect_pars <- function(x, pars = NULL, regex_pars = NULL) {
   if (is.null(pars) && is.null(regex_pars)) 
     return(NULL)
-  if (!is.null(pars)) 
-    pars[pars == "varying"] <- "b"
   if (!is.null(regex_pars)) 
     pars <- c(pars, grep_for_pars(x, regex_pars))
   unique(pars)

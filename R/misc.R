@@ -101,6 +101,35 @@ check_reTrms <- function(reTrms) {
   return(invisible(NULL))
 }
 
+
+validate_rhat <- function(x) {
+  stopifnot(is.numeric(x), !is.list(x), !is.array(x))
+  if (any(x < 0, na.rm = TRUE)) {
+    abort("All 'rhat' values must be positive.")
+  }
+  x
+}
+
+
+validate_neff_ratio <- function(x) {
+  stopifnot(is.numeric(x), !is.list(x), !is.array(x))
+  if (any(x < 0, na.rm = TRUE)) {
+    abort("All neff ratios must be positive.")
+  }
+  x
+}
+
+# Consistent error message to use when something is only available for 
+# models fit using MCMC
+#
+# @param what An optional message to prepend to the default message.
+STOP_sampling_only <- function(what) {
+  msg <- "only available for models fit using MCMC (algorithm='sampling')."
+  if (!missing(what)) 
+    msg <- paste(what, msg)
+  stop(msg, call. = FALSE)
+}
+
 make_glmerControl <- function(..., ignore_lhs = FALSE, ignore_x_scale = FALSE) {
   lme4::glmerControl(check.nlev.gtreq.5 = "ignore",
                      check.nlev.gtr.1 = "stop",
