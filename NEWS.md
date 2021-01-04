@@ -16,6 +16,7 @@ easily allows the user to choose different components of the model.
 * Choose between identity, scaled logit, and log link for epirt
 * Plot the (potentially transformed) linear predictors for both epiobs and epirt
 * Additional families for epiobs - normal and lognormal
+* Add summary method and printing for epimodel objects
 
 ## epidemia 0.6.0
 * Substantial changes to interface: Added epirt and epiobs objects

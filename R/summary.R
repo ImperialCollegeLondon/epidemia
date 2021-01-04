@@ -7,15 +7,14 @@
 #' @export
 #' @method summary epimodel
 #' 
-#' @templateVar stanregArg object
-#' @template args-stanreg-object
-#' @template args-regex-pars
 #' 
+#' @templateVar epimodelArg x
 #' @param pars A character vector giving a subset of parameters to include. 
 #' Default is NULL, in which case all parameters are included. 
 #' @param probs A numeric vector of probabilities for computing quantiles of 
 #' parameter estimates.
 #' @param digits Number of digits to use for formatting numbers when printing. 
+#' @param ... Not used.
 #'   
 #' @return An object of class \code{"summary.epimodel"}.
 #' 
@@ -37,7 +36,8 @@ summary.epimodel <- function(object,
     out <- out[rownames(out) %in% pars, , drop = FALSE]
   
   out <- out[!grepl(":_NEW_", rownames(out), fixed = TRUE), , drop = FALSE]
-  
+  stats <- colnames(out)
+
   if ("n_eff" %in% stats) 
     out[, "n_eff"] <- round(out[, "n_eff"])
   
@@ -56,4 +56,54 @@ summary.epimodel <- function(object,
   )
 }
 
-
+#' @rdname summary.epimodel
+#' @export
+#' @method print summary.epimodel
+#'
+#' @param x An object of class \code{"summary.epimodel"}.
+print.summary.epimodel <-
+  function(x, digits = max(1, attr(x, "print.digits")),
+           ...) {
+    atts <- attributes(x)
+    
+    cat("\n\nEstimates:\n")
+    if (used.variational(atts)) {
+      hat <- "khat"
+      str_diag <- "Monte Carlo diagnostics"
+      str1 <- "and khat is the Pareto k diagnostic for importance sampling"
+      str2 <- " (perfomance is usually good when khat < 0.7).\n"
+    } else {
+      hat <- "Rhat"
+      str_diag <- "MCMC diagnostics"
+      str1 <- "and Rhat is the potential scale reduction factor on split chains"
+      str2 <- " (at convergence Rhat=1).\n"
+    }
+    
+    sel <- which(colnames(x) %in% c("mcse", "n_eff", hat))
+    has_mc_diagnostic <- length(sel) > 0
+    if (has_mc_diagnostic) {
+      xtemp <- x[, -sel, drop = FALSE]
+      colnames(xtemp) <- paste(" ", colnames(xtemp))
+    } else {
+      xtemp <- x
+    }
+    
+    xtemp <- xtemp[!rownames(xtemp) %in% "log-posterior", , drop=FALSE]
+    
+    # print table of parameter stats
+    .printfr(xtemp, digits)
+    
+    if (has_mc_diagnostic) {
+      cat("\n", str_diag, "\n", sep = '')
+      mcse_hat <- format(round(x[, c("mcse", hat), drop = FALSE], digits), 
+                         nsmall = digits)
+      n_eff <- format(x[, "n_eff", drop = FALSE], drop0trailing = TRUE)
+      print(cbind(mcse_hat, n_eff), quote = FALSE)
+      cat("\nFor each parameter, mcse is Monte Carlo standard error, ", 
+          "n_eff is a crude measure of effective sample size, ", 
+          str1, 
+          str2, sep = '')
+    }
+    
+    invisible(x)
+  }
