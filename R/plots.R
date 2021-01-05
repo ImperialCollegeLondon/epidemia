@@ -51,16 +51,17 @@ plot.epimodel <- function(x, plotfun = "intervals", pars = NULL,
                           par_types = c("fixed", "aux", "seeds"),
                           par_groups = NULL, ...) {
 
-  if (plotfun %in% c("pairs", "mcmc_pairs"))
+  if (plotfun %in% c("pairs", "mcmc_pairs") && used.sampling(x))
     return(pairs.epimodel(x, pars = pars, regex_pars = regex_pars,
                           par_models = par_models, par_types = par_types,
                           par_groups = par_groups, ...))
 
-  pars <- restrict_pars(x, pars = pars, par_models = par_models,
-                        par_types = par_types, par_groups = par_groups)
 
   fun <- set_plotting_fun(plotfun)
-  args <- set_plotting_args(x, pars, regex_pars, ..., plotfun = plotfun)
+  args <- set_plotting_args(x, pars, regex_pars, ..., plotfun = plotfun,
+                            par_models = par_models, par_types = par_types,
+                            par_groups = par_groups)
+
   do.call(fun, args)
 }
 
@@ -89,8 +90,16 @@ pairs.epimodel <- function(x, pars = NULL, regex_pars = NULL, par_models = NULL,
                            condition = pairs_condition(nuts = "accept_stat__"),
                            ...) {
 
+  if (!used.sampling(x))
+      STOP_sampling_only("pairs")
+
+  if (!is.null(pars) || !is.null(regex_pars)) {
+    pars <- collect_pars(x, pars, regex_pars)
+  }                     
+
   pars <- restrict_pars(x, pars = pars, par_models = par_models,
                         par_types = par_types, par_groups = par_groups)
+
   dots <- list(...)
   ignored_args <- c("np", "lp", "max_treedepth")
   specified <- ignored_args %in% names(dots)
@@ -102,7 +111,7 @@ pairs.epimodel <- function(x, pars = NULL, regex_pars = NULL, par_models = NULL,
     )
   }
 
-  posterior <- as.array.epimodel(x, pars = pars, regex_pars = regex_pars)
+  posterior <- as.array.epimodel(x, pars = pars)
 
   if (is.null(pars) && is.null(regex_pars)) {
     # include log-posterior by default
@@ -157,7 +166,7 @@ restrict_pars <- function(object, pars = NULL, par_models = NULL,
   obs_aux <- setdiff(grep(pars, pattern = aux_regex, value=T), inf_aux)
   fixed <- setdiff( # should be anything not yet captured
     grep(pars, pattern = "\\|", value=T),
-    Reduce(union, list(random, autocor, seeds, tau, latent, inf_aux, obs_aux)))
+    Reduce(union, list(random, autocor, seeds, latent, inf_aux, obs_aux)))
 
   if (!is.null(par_models)) {
     ok_obs <- sapply(object$obs, function(x) .get_obs(formula(x)))
@@ -231,7 +240,8 @@ aux_regex <- paste(
 # @param ...  additional arguments to pass to the plotting function
 # @param plotfun User's 'plotfun' argument
 set_plotting_args <- function(x, pars = NULL, regex_pars = NULL, ...,
-                              plotfun = character()) {
+                              plotfun = character(), par_models = NULL,
+                              par_types = NULL, par_groups = NULL) {
 
   plotfun <- mcmc_function_name(plotfun)
   if (!used.sampling(x))
@@ -241,6 +251,13 @@ set_plotting_args <- function(x, pars = NULL, regex_pars = NULL, ...,
     grepl(pattern = paste0("_", patt), x = plotfun, fixed = TRUE)
   }
 
+  if (!is.null(pars) || !is.null(regex_pars)) {
+    pars <- collect_pars(x, pars, regex_pars)
+  }
+
+  pars <- restrict_pars(x, pars = pars, par_models = par_models,
+                        par_types = par_types, par_groups = par_groups)
+
   if (.plotfun_is_type("nuts")) {
     nuts_stuff <- list(x = nuts_params.epimodel(x), ...)
     if (!.plotfun_is_type("energy"))
@@ -248,15 +265,12 @@ set_plotting_args <- function(x, pars = NULL, regex_pars = NULL, ...,
     return(nuts_stuff)
   }
   if (.plotfun_is_type("rhat")) {
-    rhat <- rhat.epimodel(x, pars = pars, regex_pars = regex_pars)
+    rhat <- rhat.epimodel(x, pars = pars)
     return(list(rhat = rhat, ...))
   }
   if (.plotfun_is_type("neff")) {
-    ratio <- neff_ratio.epimodel(x, pars = pars, regex_pars = regex_pars)
+    ratio <- neff_ratio.epimodel(x, pars = pars)
     return(list(ratio = ratio, ...))
-  }
-  if (!is.null(pars) || !is.null(regex_pars)) {
-    pars <- collect_pars(x, pars, regex_pars)
   }
 
   if (!used.sampling(x)) {
@@ -265,7 +279,7 @@ set_plotting_args <- function(x, pars = NULL, regex_pars = NULL, ...,
     return(list(x = as.matrix(x, pars = pars), ...))
   }
 
-  list(x = as.array(x, pars = pars, regex_pars = regex_pars), ...)
+  list(x = as.array(x, pars = pars), ...)
 }
 
 mcmc_function_name <- function(fun) {
@@ -369,16 +383,16 @@ nuts_params.epimodel <- function (object, pars = NULL, inc_warmup = FALSE, ...) 
 }
 
 rhat.epimodel <- function (object, pars = NULL, regex_pars = NULL, ...) {
-  r <- summary(object, pars = NULL, regex_pars = NULL, ...)[, "Rhat"]
+  r <- summary(object, pars, regex_pars, ...)[, "Rhat"]
   r <- validate_rhat(r)
   if (!is.null(pars) || !is.null(regex_pars)) {
     return(r)
   }
-  r[!names(r) %in% c("mean_PPD", "log-posterior")]
+  r[!names(r) %in% "log-posterior"]
 }
 
 log_posterior.epimodel <- function (object, inc_warmup = FALSE, ...) {
-  bayesplot::log_posterior.stanfit(object$stanfit, inc_warmup = inc_warmup,
+  bayesplot::log_posterior(object$stanfit, inc_warmup = inc_warmup,
                         ...)
 }
 
