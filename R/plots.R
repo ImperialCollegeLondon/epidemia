@@ -157,6 +157,8 @@ restrict_pars <- function(object, pars = NULL, par_models = NULL,
     pars <- names(object$stanfit)
   }
 
+  
+
   # partition all parameter names by their type
   random <- grep(pars, pattern = "(\\|b\\[)|(\\|Sigma\\[)", value=T)
   autocor <- grep(pars, pattern = "\\|rw\\(", value = T)
@@ -215,8 +217,8 @@ restrict_pars <- function(object, pars = NULL, par_models = NULL,
       pars <- setdiff(pars, grep(pars, pattern = paste0("\\[", nme, "\\]$"), value=T))
       pars <- setdiff(pars, grep(pars, pattern = paste0(",", nme, "\\]$"), value=T))
       pars <- setdiff(pars, grep(pars, pattern = paste0(", ", nme, "\\]$"), value=T))
-      pars <- setdiff(pars, grep(pars, pattern = "_NEW_", value=T))
     }
+    pars <- setdiff(pars, grep(pars, pattern = "_NEW_", value=T))
     pars <- setdiff(pars, "log-posterior")
   }
 
