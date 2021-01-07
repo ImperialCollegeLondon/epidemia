@@ -3,6 +3,7 @@ title: Intallation
 output:
   bookdown::html_document2:
     theme: flatly
+    number_sections: false
 pkgdown:
   as_is: true
 ---

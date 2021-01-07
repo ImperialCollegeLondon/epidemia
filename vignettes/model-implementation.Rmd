@@ -26,7 +26,7 @@ library(kableExtra)
 
 <div class = "article_container">
 
-#  Overview {#sec:overview}
+#  Overview  <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
 <hr> 
 
 Here we give a high-level overview of the workflow required for defining and fitting a model with 

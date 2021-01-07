@@ -17,12 +17,6 @@ test_that("observation vector stored correctly", {
   expect_true(max(abs(out$y- 3)) < tol)
 })
 
-test_that("transformed predictor", {
-  obs <- epiobs(formula = C ~ g(E), i2o = 1)
-  out <- epiobs_(obs, df)
-  expect_true(max(abs(out$mf$`g(E)` - df$E - 2)) < tol)
-})
-
 test_that("offset is captured", {
   obs <- epiobs(formula = C ~ 1, i2o=1)
   out <- epiobs_(obs, df)

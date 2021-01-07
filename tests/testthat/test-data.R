@@ -24,8 +24,6 @@ test_that("missing variables in data are picked up ", {
   expect_error(check_all_vars_data(rt, df), regexp = "A")
   rt <- epirt(R(X1, X2) ~ 1 + rw(X3,A))
   expect_error(check_all_vars_data(rt, df), regexp = "A")
-  rt <- epirt(R(X1, X2) ~ 1 + rw(X3,X4,A))
-  expect_error(check_all_vars_data(rt, df), NA)
 
   obs <- epiobs(X1 ~ X4, i2o = 1)
   expect_error(check_all_vars_data(obs, df), NA)

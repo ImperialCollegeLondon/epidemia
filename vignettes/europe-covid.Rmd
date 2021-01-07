@@ -26,7 +26,7 @@ library(ggplot2)
 
 
 
-# Effects of Interventions on Covid-19 <img src='figures/logo.png' class = "small_logo" align="right"/>
+# Effects of Interventions on Covid-19 <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
 <hr>
 
 The Spanish flu [example](flu.html) considered inferring the instantaneous 
