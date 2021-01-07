@@ -16,7 +16,7 @@ pkgdown:
 
 <div class = "article_container">
 
-# Installation <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
+# Installation 
 <hr>
 
 **epidemia** requires R v3.5.0 or above. The latest version of R can be downloaded 

@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <div class="article_container">
 
-# Priors on Model Parameters <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
+# Priors on Model Parameters 
 <hr>
 
 **epidemia** aims to 

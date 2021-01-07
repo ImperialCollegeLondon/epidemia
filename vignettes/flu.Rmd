@@ -17,7 +17,7 @@ pkgdown:
 <div class = "article_container">
 
 
-# 1918 H1N1 Pandemic <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
+# 1918 H1N1 Pandemic 
 <hr>
 
 ```{r setup, include=FALSE}

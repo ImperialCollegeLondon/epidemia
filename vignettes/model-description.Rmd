@@ -17,7 +17,7 @@ pkgdown:
 
 <div class = "article_container">
 
-# Basic Model <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
+# Basic Model 
 <hr>
 
 We now formulate the basic version of the model for one homogeneous population. The same model can be used for multiple regions or groups jointly. Suppose we observe a time series of data $Y = (Y_1, \ldots Y_n)$ in a single region. This could for example be daily death or case incidence data. $Y_t$ is modeled as deriving from past new infections $i_s$, $s < t$, and some parameter $\alpha_t$ representing the instantaneous *ascertainment rate*. The general model can be expressed as 
