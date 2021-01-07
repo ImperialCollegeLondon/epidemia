@@ -1,4 +1,4 @@
-epidemia  <img src='man/figures/logo.png' class = "small_logo" align="right"/>
+epidemia  <img src='man/figures/logo.png' style = "height:120px;" align="right"/>
 ================
 
 The epidemia package allows researchers to flexibly specify and fit
