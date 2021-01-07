@@ -17,6 +17,7 @@ easily allows the user to choose different components of the model.
 * Plot the (potentially transformed) linear predictors for both epiobs and epirt
 * Additional families for epiobs - normal and lognormal
 * Add summary method and printing for epimodel objects
+* Plots improved, allowing step for plot_rt, and improved formatting
 
 ## epidemia 0.6.0
 * Substantial changes to interface: Added epirt and epiobs objects

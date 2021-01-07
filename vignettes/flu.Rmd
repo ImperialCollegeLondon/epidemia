@@ -2,8 +2,8 @@
 title: Flu Pandemic
 output:
   bookdown::html_document2:
-    theme: flatly
     number_sections: false
+    toc: true
 pkgdown:
   as_is: true
 ---
@@ -32,20 +32,22 @@ only daily case data and a discrete serial interval. $R_t$ is modeled as
 following a weekly random walk. Of course **epidemia** is capable of much more 
 complex modeling, and such cases are considered in future sections.
 
-
 ```{r core-packages, message=FALSE}
 library(epidemia)
 library(lubridate)
 library(rstanarm)
-options(mc.cores = parallel::detectCores())
 ```
 
 In addition to inferring reproduction numbers and seeded infections, we show 
-how to do posterior predictive checks and predict cases into the future. 
-Finally, we compare the basic model to a model which treats latent infections as 
+how to do posterior predictive checks and how to extend the  model to treats latent infections as 
 parameters.
 
-The data is provided by the R package EpiEstim.
+First use the following command.
+```{r parallel}
+options(mc.cores = parallel::detectCores())
+```
+This ensure that chains are run in parallel rather than sequentially. The data 
+for this example is provided by the R package EpiEstim.
 
 ```{r flu1918-load_packages, message = FALSE}
 library(EpiEstim)
@@ -66,6 +68,9 @@ data <- data.frame(
   week = week(date)
 )
 ```
+`date` is constructed so that the first observations are seen on the second 
+day of the epidemic rather than the first. This is so that the first obervation 
+can be explained by seeded infections on the previous day.
 
 We need to specify models for $R_t$ and the case data. $R_t$ is modeled through 
 a call to `epirt()`. The parameterisation of $R_t$ is defined by the 
@@ -115,7 +120,7 @@ args <- list(
 )
 ```
 
-The argument `si` takes a discrete generation distribution. Here we have 
+The argument `gen` takes a discrete generation distribution. Here we have 
 used the serial interval provided by EpiEstim. `algorithm = "sampling"` 
 ensures that the model is fit using Stan's adaptive HMC sampler. `iter` and 
 `seed` set the number of MCMC iterations and seeds respectively, and are passed
@@ -125,13 +130,31 @@ directly on to `rstan::sampling`.
 fm1 <- do.call(epim, args)
 ```
 
+The fitted model `fm1` does not treat infections as latent parameters, and 
+propagates infections using the renewal process. To extend 
+the model as described in Section 5.2 of the 
+[model description](model-description.html), we simply use `latent = TRUE` in 
+the call to `epiinf()`.
 ```{r flu1918-fm2, cache=TRUE, message=FALSE, warning = FALSE}
 args$inf <- epiinf(gen = Flu1918$si_distr, latent=TRUE, prior_aux = normal(10,2))
 fm2 <- do.call(epim, args)
 ```
 
+The results of both models are shown in \@ref(fig:flu1918-plots). The key difference 
+stems from the infection process. In the basic model, infections are deterministic 
+given the reproduction numbers and seeds. However when infection counts are low, we 
+generally expect high variance in the infection process. Since this 
+variance is  unaccounted for, the model appears to place too much confidence in 
+the reproduction numbers in this setting. The extended model on the other hand, 
+has much wider credible intervals for $R$ when infections are low. This is intuitive:
+ when counts are low, changes in infections could be explained by either the 
+ variance in the offspring distribution of those who are infected, or by changes 
+ in the $R$ value. This model captures this intuition.
+ 
+Posterior predictive checks are shown in the bottom panel of Figure \@ref(fig:flu1918-plots), 
+and show that both models are able to fit the data well.
 
-```{r flu1918-plots, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 9, fig.height = 12}
+```{r flu1918-plots, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 9, fig.height = 12, fig.cap = "Reproduction numbers, infections and posterior predictive for both fits. The basic model is shown in the left column, while the right column is for the extended version."}
 library(ggpubr)
 library(gridExtra)
 p1 <- plot_rt(fm1) + theme_pubr()

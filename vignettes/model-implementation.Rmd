@@ -109,7 +109,7 @@ description <- c(
     paste0("An object of class `\"epiinf\"`, resulting from a call to `epiinf()`. This entirely defines ",
     "the model for infections $i_t$.)"),
     paste0("Either an object of class `\"epiobs\"`, or a list of such objects. ",
-       "Each element of the list defined a model for an observed variable."),
+       "Each element of the list defines a model for an observed variable."),
     paste0("A dataframe with all data required for fitting the model. This includes all observation ",
     "variables and covariates specified in the models for the reproduction number and ascertainment rates."),
     paste0("One of `\"sampling\"`, `\"meanfield\"` or `\"fullrank\"`. This determines the rstan sampling ",
@@ -182,9 +182,8 @@ arguments <- c(
 description <- c(
     paste0(
     "An object of class `\"formula\"` which determines the linear predictor $\\eta$ for $R$. ", 
-    "The left hand side must take the form `R(group_col, date_col)`, where `group_col` and `date_col` are ",
-    "column names in the data frame passed as the `data` argument to `epirt()`. `group_col` must be ",
-    "a factor vector indicating group membership (i.e. country, state, age cohort), and `date_col` must ",
+    "The left hand side must take the form `R(group, date)`, where `group` and `date` variables. `group` must be ",
+    "a factor vector indicating group membership (i.e. country, state, age cohort), and `date` must ",
     "be a vector of class `\"Date\"`. This is syntactic sugar for the reproduction number in the given group at the give date."),
     "The link function $g$. Can be `\"log\"`, `\"identity\"` or a call to `scaled_logit()`. Defaults to `log`.",
     paste0("If `TRUE`, covariates in `formula` are centered to have mean zero. All priors should then be ",
@@ -216,7 +215,7 @@ controlled by the arguments `gen`, `seed_days` and `prior_tau` respectively.
 For our example, a possible model is the following.
 ```{r epiinf-example}
 inf <- epiinf(
-  gen = EuropeCovid$inf2death,
+  gen = EuropeCovid$si,
   seed_days = 6L,
   prior_tau = rstanarm::exponential(0.02)
 )
@@ -248,28 +247,27 @@ described in Table \@ref(tab:epiinf-args).
 <div class="table">
 ```{r epiinf-args, echo=FALSE}
 arguments <- c(
-    "`seed_days`",
     "`gen`",
-    "`prior_tau`",
+    "`seed_days`",
     "`latent`",
     "`family`",
     "`prior_aux`",
+    "`prior_tau`",
     "`pop_adjust`",
     "`susceptibles`"
 )
 
 description <- c(
-    "An integer giving the number of seed days $v + 1$. Defaults to 6L.",
     paste0("A numeric vector giving the probability mass function $g_k$ of the generation distribution. ",
     "Must be a simplex vector, i.e. nonnegative and summing to 1."),
-    paste0("Prior distribution for the hyperparameter $\\tau$, which is the mean of the prior ",
-    "distribution for infection seeding. Defaults to `**rstanarm**::exponential(0.03)`."),
-    "If `TRUE`, treat infections as latent parameters using the extensions described in Section XXX. ",
+    "An integer giving the number of seed days $v + 1$. Defaults to 6L.",
+    "If `TRUE`, treat infections as latent parameters using the extensions described in Section 5.2. ",
     "Specifies the family for $p(i'_t, d)$. Only used if `latent = TRUE`, and currently restricted to `log-normal`.",
     "Prior on the coefficient of variation $d$.",
+    paste0("Prior distribution for the hyperparameter $\\tau$, which is the mean of the prior ",
+    "distribution for infection seeding. Defaults to `rstanarm::exponential(0.03)`."),
     "If `TRUE`, applies a population adjustment to the infection process $i_t$. Defaults to `FALSE`.",
-    paste0("A character vector giving the name of the column in the dataframe passed as the `data` argument of `epim`, that ",
-    "corresponds to the susceptible population over time. Only used if `pop_adjust=TRUE`.")
+    paste0("A character vector giving the name of the variable corresponding to the susceptible population over time. Only used if `pop_adjust=TRUE`.")
 )
 
 df <- data.frame(Argument = arguments, Description = description)
@@ -326,11 +324,9 @@ arguments <- c(
 
 description <- c(
     paste0("An object of class `\"formula\"` which determines the linear predictor for the ",
-    "ascertainment rate for a particular observation vector. The left hand side must take ",
-    "the form `obs_col(group_col, date_col)`, which is syntactic sugar for the observation ",
-    "in a given country on a given date. `obs_col` refers to the column of observations in ",
-    "the dataframe passed as the `data` argument to `epim()` which is to be modeled. `group_col` ",
-    "and `date_col` must be the same as those used in the call to `epirt()`."),
+    "ascertainment rate for a particular observation vector. The left hand side must define the ",
+    "response that is being modeled (i.e. the actual observations, not the latent ascertainments)",
+    "in a given country on a given date. `obs` refers to the response variable to be modeled."),
     paste0("A numeric (simplex) vector defining the probability mass function $\\pi_k$ of the ",
     "time distribution from infection to observation."),
     paste0("A string representing the family of the sampling distribution $p(y_t,\\phi)$. Can be ",
@@ -367,7 +363,30 @@ the first and last dates for each group can be seen as follows.
 ```{r covid-data-dates}
 summarise(data, start = min(date), end = max(date))
 ```
-We chose the start date as 30 days prior to observing 10 cumulative deaths in each country.
+These start dates are 30 days prior to observing 10 cumulative deaths in each country.
+
+
+# A First Fit
+
+We are ready to fit out first model. This is done by returning to the model 
+fitting function `epim()`. Our call is as follows. Note that we use `refresh=0` 
+to suppress the algorithm printing output in this article - however this should be disabled 
+when you run models for yourself as this output is useful. 
+
+```{r fit-model}
+fm <- epim(
+  rt = rt,
+  inf = inf,
+  obs = deaths,
+  data = data,
+  group_subset = "France",
+  algorithm = "fullrank",
+  tol_rel_obj = 1e-3,
+  seed = 12345
+)
+plot_rt(fm)
+plot_obs(fm, type = "deaths")
+```
 
 # References
 

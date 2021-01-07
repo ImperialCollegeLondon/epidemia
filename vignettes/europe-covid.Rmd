@@ -12,7 +12,7 @@ pkgdown:
 <style>
 .contents .page-header {
     display: none;
-  } 
+} 
 </style>
 
 <div class = "article_container">
@@ -26,7 +26,7 @@ library(ggplot2)
 
 
 
-# Effects of Interventions on Covid-19 <img src='../man/figures/logo.png' class = "small_logo" align="right"/>
+# Effects of Interventions on Covid-19 <img src='figures/logo.png' class = "small_logo" align="right"/>
 <hr>
 
 The Spanish flu [example](flu.html) considered inferring the instantaneous 
@@ -47,11 +47,13 @@ In this article, we use a multilevel model to estimate the effect of non
 pharmaceutical interventions (NPIs) on the transmissibility of Covid-19. 
 We consider the same setup as @Flaxman2020: attempting to estimate the effect of 
 NPIs that were implemented in March 2020 in 11 European countries using daily death data, during the 
-first wave of Covid-19. The same set of NPIs and countries are used here.
+first wave of Covid-19. The same set of NPIs and countries are used here. @Flaxman2020MA 
+considered a version of this model that partial pooling for all the effects of NPIs. 
+Here, we consider a model that uses the same approach. 
 
-This example is not intended to be a fully rigourous statistical analysis. 
+This example is not intended to be a fully rigorous statistical analysis. 
 Rather, the intention is to demonstrate partial pooling of parameters in 
-**epidemia** and how to infer their effect sizes. The artical also shows how 
+**epidemia** and how to infer their effect sizes. We also shows how 
 to forecast observations into the future, and how to undertake counterfactual 
 analyses.
 
@@ -86,8 +88,8 @@ Load the dataset as follows.
 data("EuropeCovid2")
 data <- EuropeCovid2$data
 head(data)
-data <- data %>% ungroup() %>% group_by(id) %>% arrange(id) # remove later
 ```
+
 
 Recall that for each region, **epidemia** will use the earliest date in `data` 
 as the first date to begin seeding infections. Therefore, we must choose an 
@@ -101,6 +103,7 @@ This leaves the following assumed start dates.
 ```{r show-start-dates, message = FALSE}
 summarise(data, start = min(date), end = max(date))
 ```
+
 Although `data` contains observations up until the end of June, we use only 
 a subset of the data, so that we can hold out the rest to demonstrate forecasting.
 Following @Flaxman2020, we use data up until the 5^th^ May.
@@ -108,10 +111,19 @@ Following @Flaxman2020, we use data up until the 5^th^ May.
 data <- filter(data, date < as.Date("2020-05-05"))
 ```
 
-## Transmission
+## Model Components
+<hr>
 
-We start by considering the transmission model, and then move on to the model 
-for daily deaths in the next section. Let $I^{(m)}_{1}, \ldots, I^{(m)}_{5}$ be a set of binary vectors such 
+Recall that **epidemia** requires the user to specify three model components -
+transmission, infections, and observations. These are considered in turn.
+
+### Transmission
+
+We parametrise reproduction numbers $R^{(m)}_{t}$ in terms of the NPI 
+covariates. This will imply that $R^{(m)}_{t}$ is a step function - possibly 
+increasing or decreasing as policies come into play. 
+
+Let $I^{(m)}_{1}, \ldots, I^{(m)}_{5}$ be a set of binary vectors such 
 that $I^{(m)}_{i,t} = 1$ if the $i$^th^ NPI has been implemented in the $m$^th^ 
 country by time $t$, and be $0$ otherwise. We parameterise reproduction numbers 
 as 
@@ -125,25 +137,32 @@ transmissibility of Covid-19 in each population.
 $\beta_i$ is a fixed effect for the $i$^th^ NPI. This 
 models the average effect of an NPI across all countries considered.
 
-Fixed effects can be assigned parameters flexibly in **epidemia**. The NPIs 
+The NPIs 
 considered were implemented in quick succession across the countries 
 considered, often with some being enacted simultaneously. Therefore 
-they are *highly colinear* and may be difficult to infer with uninformative 
+they are *highly colinear* and so the effects $\beta_i$ may be difficult to infer with uninformative 
 priors. In particular, it is apriori unlikely that these NPIs served to increase
 transmission rates significantly, while they plausibly had a significant effect 
 on reducing transmission. A symmetric prior like the Gaussian does not capture 
 this intuition, and increases the difficulty in inferring effects, because they 
 are more able to offset each other. This motivated the prior used in @Flaxman2020, 
-which was a Gamma shifted to have support other than zero.
-
-We partially pool all country specific parameters by letting
+which was a Gamma shifted to have support other than zero. We use the same 
+prior here. Denoting the distribution of Gamma random variable with 
+shape $a$ and scale $b$ by $\Gamma(a, b)$, this prior is
+\begin{equation}
+\beta_i + \frac{\log(1.05)}{6} \sim \Gamma(1/6, 1),
+(\#eq:betaprior)
+\end{equation}
+whereby the shift allows the NPIs to increase transmission slightly.
+The country specific parameters are partially pooled by letting
 \begin{equation}
 b^{(m)}_i \sim N(0, \sigma_i),
 \end{equation}
-where the standard deviation $\sigma_i$ are given independent Gamma priors with 
-shape 1 and scale 0.25.
+where $\sigma_i$ are standard deviations, $\sigma_0 \sim \Gamma(2, 0.25)$ 
+and $\sigma_i \sim \Gamma(0.5, 0.25)$ 
+for all $i > 0$. This gives the intercept terms more variability under the prior.
 
-
+This model is expressed by the following call to `epirt()`.
 ```{r}
 rt <- epirt(
   formula = R(country, date) ~ 0 + (1 + public_events + schools_universities + self_isolating_if_ill + social_distancing_encouraged + lockdown || country) + public_events + schools_universities + self_isolating_if_ill + social_distancing_encouraged + lockdown,
@@ -153,7 +172,16 @@ rt <- epirt(
 )
 ```
 
-## Infections
+Note that the operator `||` is used rather than `|` for the random effects. This 
+operator ensures that all effects for a given country are independent, as in the 
+model described above. Using `|` would alternatively give a prior on the full 
+covariance matrix, rather than on the individual $\sigma_i$s. The argument 
+`prior` reflects Equation \@ref(eq:betaprior). Since country effects are 
+assumed independent, the `decov` prior reduces to assigning Gamma priors to 
+each $\sigma_i$. By using a vector rather than a scalar for the `shape` argument, 
+we are able to give the prior on the intercepts a larger shape parameter.
+
+### Infections
 
 We keep infections simple here by using the basic version of the model. 
 That is to say that infections are taken to be a deterministic function of 
@@ -169,12 +197,13 @@ inf <- epiinf(gen = EuropeCovid$si, seed_days = 6)
 @Flaxman2020. As in that work, we make no distinction between the generation 
 distribution and serial interval here.
 
-## Observations
-<hr>
+### Observations
 
-We are left to define the model for daily deaths. We use a simple intercept model, 
-just as we did for cases in the Flu example. Recall that this assumes that the 
-nfection fatality rate (IFR) is constant over time. Our model is as follows.
+Daily deaths are used in the model. In theory, additional types of data can be 
+included in the model, but such extension are not considered here. A simple 
+intercept model is used for the infection fatality rate (IFR). This makes the 
+assumption that the IFR is constant over time. The model can be written as 
+follows.
 ```{r deaths-model}
 deaths <- epiobs(
   formula = deaths ~ 1,
@@ -201,7 +230,6 @@ this example, we have also run full MCMC, and the inferences reported here are
 not substantially different. 
 
 ### Prior Check
-<hr>
 
 It is useful to check the implied prior distribution on reproduction numbers 
 before fitting a full model. This can catch obvious mistakes that can occur 
@@ -230,10 +258,10 @@ fm_prior <- do.call(epim, pr_args)
 
 Below we plot approximate samples of $R_{t,m}$ from the prior distribution. 
 
-```{r prior-check, echo = FALSE, out.width = "60%"}
+```{r prior-check, echo = FALSE, out.width = "50%"}
 p <- plot_rt(fm_prior, step=T, groups ="United_Kingdom")
-ggsave("../man/figures/multilevel-prior-plot.png", width=5, height=5)
-knitr::include_graphics("../man/figures/multilevel-prior-plot.png")
+ggsave("figures/multilevel-prior-plot.png", width=5, height=5)
+knitr::include_graphics("figures/multilevel-prior-plot.png")
 ```
 
 
@@ -262,8 +290,8 @@ object, the plot is shown in Figure \@ref(fig:obs-plots).
 
 ```{r obs-plots, fig.cap = "Posterior predictive checks. Observed data is plotted with credible intervals derived from the approximated posterior.", out.width="100%", echo = FALSE, message=FALSE}
 p <- plot_obs(fm, type = "deaths", levels = c(50, 95))
-ggsave("../man/figures/multilevel-obs-plot.png", width=10, height=5)
-knitr::include_graphics("../man/figures/multilevel-obs-plot.png")
+ggsave("figures/multilevel-obs-plot.png", width=10, height=6)
+knitr::include_graphics("figures/multilevel-obs-plot.png")
 ```
 
 Figure \@ref(fig:obs-plots) suggest that the epidemic was bought under control 
@@ -273,12 +301,13 @@ in each region. \@ref(fig:rt-plots) confirms this.
 
 ```{r rt-plots, fig.cap = "Credible intervals for reproduction numbers. These are step functions because $R_t$ is parameterised only in terms of NPIs.", out.width = "100%", echo = FALSE, message=FALSE}
 p <- plot_rt(fm, step = T, levels = c(50,95))
-ggsave("../man/figures/multilevel-rt-plot.png", width=10, height=6)
-knitr::include_graphics("../man/figures/multilevel-rt-plot.png")
+ggsave("figures/multilevel-rt-plot.png", width=10, height=6)
+knitr::include_graphics("figures/multilevel-rt-plot.png")
 ```
 
 
 ## Effect Sizes
+<hr>
 
 In **epidemia**, estimated effect sizes can be visualised using the `plot.epimodel` 
 method. This serves a similar purpose to `plot.stanreg` in **rstanarm**, 
@@ -296,8 +325,11 @@ coefficients $\beta_i$ using the command
 
 ```{r effect-plots, fig.cap = "Effect sizes for global coefficients.", out.width = "70%", echo = FALSE}
 p <- plot(fm, par_models = "R", par_types = "fixed")
-ggsave("../man/figures/multilevel-effect-plots.png", width=5, height=3)
-knitr::include_graphics("../man/figures/multilevel-effect-plots.png")
+labels <- c("Intercept", "public events", "schools", "self isolating", "social distancing", "lockdown")
+p <- p + ggplot2::scale_y_discrete(labels=labels)
+
+ggsave("figures/multilevel-effect-plots.png", width=5, height=3)
+knitr::include_graphics("figures/multilevel-effect-plots.png")
 ```
 
 Figure \@ref(fig:effect-plots) shows a large negative coefficient for lockdown, 
@@ -312,16 +344,15 @@ for Italy.
 beta <- as.matrix(fm, par_models = "R", par_types = "fixed")
 b <- as.matrix(fm, regex_pars = "^R\\|b", par_groups = "Italy")
 mat <- cbind(b[,1], beta + b[,2:6])
-colnames(mat) <- c("Intercept", "public_events", "schools_universities", 
-                  "self_isolating_if_ill", "social_distancing_encouraged", "lockdown")
+colnames(mat) <- labels
 ```
 
 Calling `bayesplot::mcmc_intervals(mat)` gives 
 Figure  \@ref(fig:total-effects).
 ```{r total-effects, fig.cap = "Total effect Sizes", out.width = "70%", echo = FALSE}
 p <- bayesplot::mcmc_intervals(mat) + ggplot2::ggtitle("Italy")
-ggsave("../man/figures/multilevel-total-effect-plots.png", width=5, height=3)
-knitr::include_graphics("../man/figures/multilevel-total-effect-plots.png")
+ggsave("figures/multilevel-total-effect-plots.png", width=5, height=3)
+knitr::include_graphics("figures/multilevel-total-effect-plots.png")
 ```
 
 Figure \@ref(fig:total-effects) has relatively narrow intervals for many of the 
@@ -341,7 +372,12 @@ becomes less sensitive to initial conditions when the rate of growth is lower.
 Figure \@ref(fig:interval-plots) shows that the model estimates a large negative 
 coefficient for public events in Sweden. This is 
 significantly larger then the effects for other policies - which are not reported 
-here.
+here. However, the idiosyncrasies relating to Sweden must be explained in this 
+model by at least one of the covariates, and the large effect for public policy 
+in Sweden is quite possible an artefact of this. Nonetheless, the use of 
+partial pooling is essential for explaining difference between countries. If 
+full pooling were used, effect sizes would be overly influenced by outliers like 
+Sweden. This argument is made in more detail in @Flaxman2020MA.
 
 ```{r interval-plots, fig.cap = "Seeds, intercepts and public polic effects for each country", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
 p_seeds <- plot(fm, "areas", regex_pars = "seeds")
@@ -355,26 +391,47 @@ p_seeds <- p_seeds + ggtitle("Seeds") + ggplot2::scale_y_discrete(labels=labels)
 p_int <- p_int + ggtitle("Intercepts") + theme(axis.text.y = element_blank()) + ggplot2::scale_y_discrete(labels=labels)
 p_pub <- p_pub + ggtitle("Public Events") + theme(axis.text.y = element_blank()) + ggplot2::scale_y_discrete(labels=labels)
 p <- gridExtra::arrangeGrob(p_seeds, p_int, p_pub, nrow=1, padding=unit(0), widths = c(1.5,1,1))
-ggsave("../man/figures/multilevel-interval-plots.png", plot=p, width=10, height=5)
-knitr::include_graphics("../man/figures/multilevel-interval-plots.png")
+ggsave("figures/multilevel-interval-plots.png", plot=p, width=10, height=5)
+knitr::include_graphics("figures/multilevel-interval-plots.png")
 ```
 
 ## Forecasting
+<hr>
 
+Forecasting within **epidemia** is straightforward, and consists of constructing 
+a new dataframe which is used in place of the original dataframe. This could, 
+for example, change the values of covariates, or alternatively include new 
+observations in order to check the out-of-sample performance of the fitted 
+model. 
 
-```{r forecasting, out.width = "100%"}
+Recall that `EuropeCovid2` holds daily death data up until the end of 
+June 2020, however we only fitted the model up until the $5$^th^ May. The 
+following constructs a dataframe `newdata` which contains the additional 
+observations. Note that we are careful to select the same start dates as in 
+`data`.
+```{r forecasting-newdata}
 newdata <- EuropeCovid2$data
 newdata <- filter(newdata, date > date[which(cumsum(deaths) > 10)[1] - 30])
-plot_obs(fm, type = "deaths", newdata = newdata, groups = c("United_Kingdom", "Italy"))
+```
+This dataframe can be passed to plotting functions `plot_rt()`, `plot_obs()`, 
+`plot_infections()` and `plot_infectious()`. If the raw samples are desired, we 
+can also pass as an argument to `posterior_rt()`, `posterior_obs()` etc. 
+Figure \@ref(fig:forecasting) is the result of using the command
+`plot_obs(fm, type = "deaths", newdata = newdata, groups = "Italy")`. This 
+plots the out of sample observations with credible intervals from the forecast. 
+
+```{r forecasting, fig.cap = "Forecasted and observed daily deaths in Italy up until the end of June 2020", out.width = "100%", echo = FALSE}
+p <- plot_obs(fm, type = "deaths", newdata = newdata, groups = "Italy")
+ggsave("figures/multilevel-forecasting.png", plot=p, width = 10, height = 5)
+knitr::include_graphics("figures/multilevel-forecasting.png")
 ```
 
 
 ## Counterfactuals
+<hr>
 
-
-Counterfactuals are also easy. One simply has to modify the dataframe used. For 
-example, values of covariates can be adjusted. In this case we shift all NPIs 
-back three days.
+Counterfactuals are also easy. Again, one simply has to modify the dataframe used.
+In this case we shift all NPIs back three days.
 ```{r counterfactuals-newdata}
 shift_earlier <- function(x, k) c(x[-(1:k)], rep(1,k))
 days <- 3
@@ -398,8 +455,8 @@ while the right plot adds the `cumulative = TRUE` argument.
 p1 <- plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")
 p2 <-plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom", cumulative=T)
 p <- gridExtra::arrangeGrob(p1, p2, nrow = 1)
-ggsave("../man/figures/multilevel-counterfactual.png", plot=p, width = 10, height = 6)
-knitr::include_graphics("../man/figures/multilevel-counterfactual.png")
+ggsave("figures/multilevel-counterfactual.png", plot=p, width = 10, height = 5)
+knitr::include_graphics("figures/multilevel-counterfactual.png")
 ```
 
 

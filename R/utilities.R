@@ -516,7 +516,7 @@ select_cols_data <- function(data, rt, inf, obs) {
     if(inf$pop_adjust) inf$susceptibles 
   )
   # keep only required variables
-  data <- dplyr::select(data, all_of(unique(vars)))
+  data <- dplyr::select(data, tidyselect::all_of(unique(vars)))
   return(data)
 }
 

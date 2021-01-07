@@ -7,8 +7,9 @@
 #' @export
 #' @method summary epimodel
 #' 
-#' 
-#' @templateVar epimodelArg x
+#' @inheritParams plot.epimodel
+#' @templateVar epimodelArg object
+#' @template args-epimodel-object
 #' @param pars A character vector giving a subset of parameters to include. 
 #' Default is NULL, in which case all parameters are included. 
 #' @param probs A numeric vector of probabilities for computing quantiles of 

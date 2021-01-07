@@ -193,47 +193,6 @@ subsamp <- function(object, mat, draws=NULL) {
   return(mat)
 }
 
-# standata passed into rstan::gqs
-#
-# @param object An \code{epimodel} object
-# @param rt An epirt_ object
-# @param inf An epiinf object
-# @param obs A list of epiobs_ objects
-# @param data The checked data (either original or newdata)
-pp_standata <- function(object, rt, obs, data) {
-  out <- standata_data(data)
-  pops <- check_pops( # reduce to only modeled pops
-    object$pops,
-    out$groups
-  )
-  out <- c(out, standata_obs(
-    obs = obs,
-    groups = out$groups,
-    nsim = out$NS,
-    begin = out$begin
-  ))
-
-  sdat_rt <- standata_rt(rt)
-  out$link <- sdat_rt$link
-  out$carry <- sdat_rt$carry
-
-  sdat_inf <- standata_inf(object$inf)
-  out$latent <- sdat_inf$latent
-  out$inf_family <- sdat_inf$inf_family
-
-  # add remaining data
-  out <- c(out, list(
-    si_len = length(object$si),
-    pop_adjust = object$pop_adjust,
-    si = pad(object$si, out$NS, 0, TRUE),
-    N0 = object$seed_days,
-    pop = as.array(pops$pop),
-    N = nrow(data)
-  ))
-
-  return(out)
-}
-
 # Renames stanmat for passing into rstan::gqs. This is because the
 # modeled groups may differ from the original.
 #

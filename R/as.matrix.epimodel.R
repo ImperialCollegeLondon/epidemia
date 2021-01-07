@@ -9,6 +9,7 @@
 #' other parameters in the model. These methods closely resemble those 
 #' for \code{stanreg} objects in \pkg{rstanarm}. Please see \code{\link[rstanarm]{as.matrix.stanreg}} 
 #' for a general explanation of these methods.
+#' @inheritParams plot.epimodel
 #' @templateVar epimodelArg x
 #' @template args-epimodel-object
 #' @param ... Not used.

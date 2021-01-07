@@ -105,7 +105,7 @@ check_reTrms <- function(reTrms) {
 validate_rhat <- function(x) {
   stopifnot(is.numeric(x), !is.list(x), !is.array(x))
   if (any(x < 0, na.rm = TRUE)) {
-    abort("All 'rhat' values must be positive.")
+    stop("All 'rhat' values must be positive.", .call = FALSE)
   }
   x
 }
@@ -114,7 +114,7 @@ validate_rhat <- function(x) {
 validate_neff_ratio <- function(x) {
   stopifnot(is.numeric(x), !is.list(x), !is.array(x))
   if (any(x < 0, na.rm = TRUE)) {
-    abort("All neff ratios must be positive.")
+    stop("All neff ratios must be positive.", .call = FALSE)
   }
   x
 }

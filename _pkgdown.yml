@@ -3,9 +3,6 @@ title: epidemia
 template:
   params:
     bootswatch: flatly
-    docsearch:
-      api_key: API_KEY
-      index_name: INDEX_NAME
 
 navbar:
   structure:

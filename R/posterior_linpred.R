@@ -9,7 +9,7 @@
 #' @param fixed Include fixed effects. Defaults to TRUE.
 #' @param random Include random effects. Defaults to TRUE.
 #' @param autocor Include autocorrelation terms. Defaults to TRUE.
-#' @param autocor Include offsets. Defaults to TRUE.
+#' @param offset Include offsets. Defaults to TRUE.
 #' @param ... Not used.
 #' @export 
 posterior_linpred <- function(object,

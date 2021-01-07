@@ -184,4 +184,14 @@ font-size: 16px !important;
   }
 }
 
+body, td {
+   font-size: 14px;
+}
 
+code.r{
+  font-size: 12px;
+}
+
+pre {
+  font-size: 13px
+}

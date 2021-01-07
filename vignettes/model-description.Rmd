@@ -20,7 +20,7 @@ pkgdown:
 # Basic Model {#sec:overview}
 <hr>
 
-We now formulate the basic version of the model for one homogeneous population. The same model can be used for multiple regions or groups jointly. Suppose we observe a time series of data $\mathbf{Y} = (Y_1, \ldots Y_n)$ in a single region. This could for example be daily death or case incidence data. $Y_t$ is modeled as deriving from past new infections $i_s$, $s < t$, and some parameter $\alpha_t$ representing the instantaneous *ascertainment rate*. The general model can be expressed as 
+We now formulate the basic version of the model for one homogeneous population. The same model can be used for multiple regions or groups jointly. Suppose we observe a time series of data $Y = (Y_1, \ldots Y_n)$ in a single region. This could for example be daily death or case incidence data. $Y_t$ is modeled as deriving from past new infections $i_s$, $s < t$, and some parameter $\alpha_t$ representing the instantaneous *ascertainment rate*. The general model can be expressed as 
 \begin{align}
     Y_t & \sim p(y_t , \phi), (\#eq:ysampling) \\\\
     y_t & = \alpha_t \sum_{s < t} i_s \pi_{t-s} (\#eq:obsmean),
@@ -34,7 +34,7 @@ where $g$ is a probability mass function for the time between infections. The re
 \begin{equation}
     i_{v:0}, R, \phi, \alpha \sim p(\cdot),
 \end{equation}
-where $\mathbf{R} = (R_1, \ldots, R_n)$ and $\mathbf{\alpha} = (\alpha_1, \ldots, \alpha_n)$. The posterior distribution is then proportional to prior and likelihood, i.e.
+where $R = (R_1, \ldots, R_n)$ and $\alpha = (\alpha_1, \ldots, \alpha_n)$. The posterior distribution is then proportional to prior and likelihood, i.e.
 \begin{equation}
     p(i_{v:0}, R, \phi, \alpha \mid Y) \propto p(i_{v:0})p(R)p(\phi)p(\alpha) \prod_{t} p(Y_t \mid y_t, \phi).
 \end{equation}
@@ -49,8 +49,6 @@ Transmission rates $R$ and ascertainments $\alpha$ can be modeled flexibly using
 $Y_t$ is typically the \textit{count of events} occurring at time $t$.
 Such events are precipated by past infections. 
 Prototypical examples include daily case or death counts. 
-Nonetheless the form of Equation \@ref(eq:obsmean) is flexible enough to model other types of data: 
-this discussed further in Section \@ref(sec:obsextended). 
 $\alpha_t$ represents an *ascertainment rate*. 
 For case or death data this would be the infection ascertainment rate (IAR) or the infection fatality rate (IFR) respectively. 
 $\alpha$ plays a similar role for observations as $R$ does for infections; 
@@ -118,7 +116,7 @@ The parameters $b$ are modeled hierarchically as
     b \sim N(0, \Sigma),
 \end{equation}
 where $\Sigma$ is a covariance matrix that is itself assigned a prior. 
-The particular form for $\Sigma$, as well as its prior is discussed in more detail in Section XXX. 
+The particular form for $\Sigma$, as well as its prior is discussed in more detail [here](partial-pooling.html). 
 These parameters are particularly useful when multiple regions are being modeled simultaneously. 
 In this case, they allow information on transmission rates to be shared between groups. 
 
@@ -201,11 +199,15 @@ past infections to reasonable values. Nonetheless, forecasting in the basic mode
 projected infections grow too large. As the susceptible population diminishes, the transmission rate is also 
 expected to reduce. 
 
-**epidemia** can apply a transformation to infections to ensure cumulative infections remain bounded by $S_0$. 
+**epidemia** can apply a transformation to infections to ensure cumulative infections remain bounded by $S_0$, and 
+that transmission rates are adjusted for changes in the sucseptible population. We define the susceptible population $S_t$
+at time $t$ as the number of individuals who are susceptible at time $0$ and have not been removed by vaccination. Note 
+that this excludes those who may have been previously infected by time $t$. 
+
 Let $i'_t$ denote the unadjusted infections from the model: this is given by \@ref(eq:renewal) in the basic model 
 or by \@ref(eq:infextended) if the extension of Section \@ref(sec:latent) is applied. Then we let
 \begin{equation}
-    i_t = (s_0 - I_{t-1}) \left(1 - \exp \left(-\frac{i'_t}{S_0}\right)\right),
+    i_t = (S_0 - I_{t-1}) \left(1 - \exp \left(-\frac{S_t}{S_0}\frac{i'_t}{S_0}\right)\right),
 \end{equation}
 where $I_t = \sum_{s< t} i_s$ are cumulative infections by $t-1$. The motivation for this adjustment is 
 provided in @bhatt2020.

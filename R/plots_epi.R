@@ -110,20 +110,20 @@ plot_rt.epimodel <-
     # subsetted
     df <- df %>%
       dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
+                          dplyr::select(.data$date, .data$group) %>%
                           dplyr::distinct(),
                        by=c("date", "group"))
 
 
     if (step) {
       p <- p + ggplot2::geom_step(
-        mapping = ggplot2::aes(x = date, y = median), 
+        mapping = ggplot2::aes(x = .data$date, y = median), 
         data = df, 
         color = "seagreen"
       )
     } else {
       p <- p + ggplot2::geom_line(
-        mapping = ggplot2::aes(x = date, y = median), 
+        mapping = ggplot2::aes(x = .data$date, y = median), 
         data = df, 
         color = "seagreen"
       )
@@ -314,7 +314,7 @@ plot_obs.epimodel <-
     # subsetted
     df <- df %>%
       dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
+                          dplyr::select(.data$date, .data$group) %>%
                           dplyr::distinct(),
                         by=c("date", "group"))
 
@@ -345,12 +345,12 @@ plot_obs.epimodel <-
     # subsetted
     df1 <- df1 %>%
       dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
+                          dplyr::select(.data$date, .data$group) %>%
                           dplyr::distinct(),
                         by=c("date", "group"))
 
     p <- p + ggplot2::geom_line(
-      mapping = ggplot2::aes(x = date, y = median), 
+      mapping = ggplot2::aes(x = .data$date, y = median), 
       data = df1, 
       color = "deepskyblue4"
     )
@@ -807,7 +807,7 @@ base_plot <- function(qtl, log, date_breaks, step=FALSE) {
           axis.text.y = ggplot2::element_text(size=8),
           panel.spacing = ggplot2::unit(0.1, "lines")
         ) +
-        geom_hline(yintercept=0, size=1)
+        ggplot2::geom_hline(yintercept=0, size=1)
   }
   return(p)
 }
@@ -834,7 +834,7 @@ fancy_scientific <- function(l) {
   parse(text=l)
 }
 
-#' Plotting the posterior linear predictor for either the R or observation regressions
+#' Plotting the posterior linear predictor for R or ascertainments
 #'
 #' Plots credible intervals for the observed data under the posterior
 #' predictive distribution, and for a specific observation type. 
@@ -844,21 +844,15 @@ fancy_scientific <- function(l) {
 #' @inherit plot_rt params return
 #' @param type the name of the observations to plot. This should match one
 #'  of the names of the \code{obs} argument to \code{epim}.
-#' @param posterior_mean If true, the credible intervals are plotted for the
-#'  posterior mean. Defaults to FALSE, 
-#'  in which case the posterior predictive is plotted.
-#' @param cumulative If TRUE, plots the cumulative observations. 
-#' @param log If TRUE, plots the observations on a pseudo-linear scale.
 #' @param ... Additional arguments for
 #'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
 #'  \code{newdata}, which allows 
 #'  predictions or counterfactuals.
-#' 
 #' @export
 plot_linpred <- function(object, ...) UseMethod("plot_linpred", object)
 
 
-#' @rdname plot_obs
+#' @rdname plot_linpred
 #' @export
 plot_linpred.epimodel <-
   function(object,
@@ -891,7 +885,7 @@ plot_linpred.epimodel <-
     )
 
     p <- ggplot2::ggplot(qtl) +
-      geom_ribbon(
+      ggplot2::geom_ribbon(
         ggplot2::aes_string(
           x = "date",
           ymin = "lower",
@@ -925,7 +919,7 @@ plot_linpred.epimodel <-
     # subsetted
     df1 <- df1 %>%
       dplyr::right_join(qtl %>%
-                          dplyr::select(date, group) %>%
+                          dplyr::select(.data$date, .data$group) %>%
                           dplyr::distinct(),
                         by=c("date", "group"))
 

@@ -8,6 +8,7 @@ args$rt <- epirt(R(country, date) ~ 1 + lockdown)
 expect_warning(args$obs <- epiobs(deaths~1, i2o = EuropeCovid$inf2death * 0.02))
 args$group_subset <- c("Germany", "Italy")
 args <- c(args, list(iter=10,chains=1, seed=12345))
+args$refresh <- 0
 
 test_that("epim runs through with various rt formula", {
   run_args <- args
