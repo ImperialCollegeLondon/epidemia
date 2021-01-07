@@ -11,6 +11,7 @@
 #' @param dates a vector of (start date, end date) defining the date range
 #'  to be plotted. Must be coercible to date if not NA. If NA, this means
 #'  use the lower/upper limit as appropriate. See examples.
+#' @param step If true, draw median and CIs as a step function.
 #' @param date_breaks string giving the distance between date tick labels.
 #'  Default is "2 weeks".
 #' Passed as \code{date_breaks} argument to \code{ggplot::scale_x_date} -
@@ -72,6 +73,7 @@ plot_rt <- function(object, ...) UseMethod("plot_rt", object)
 plot_rt.epimodel <-
   function(object,
            groups = NULL,
+           step = FALSE,
            dates = NULL,
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
@@ -97,8 +99,8 @@ plot_rt.epimodel <-
       dates,
       date_format
     )
-    p <- base_plot(qtl, log, date_breaks, TRUE)
 
+    p <- base_plot(qtl, log, date_breaks, step)
     df <- data.frame(
       date = rt$time, 
       median = apply(rt$draws, 2, function(x) quantile(x, 0.5)),
@@ -112,21 +114,29 @@ plot_rt.epimodel <-
                           dplyr::distinct(),
                        by=c("date", "group"))
 
-    p <- p + ggplot2::geom_line(
-      mapping = ggplot2::aes(x = date, y = median), 
-      data = df, 
-      color = "seagreen"
-    )
+
+    if (step) {
+      p <- p + ggplot2::geom_step(
+        mapping = ggplot2::aes(x = date, y = median), 
+        data = df, 
+        color = "seagreen"
+      )
+    } else {
+      p <- p + ggplot2::geom_line(
+        mapping = ggplot2::aes(x = date, y = median), 
+        data = df, 
+        color = "seagreen"
+      )
+    }
 
     p <- p + ggplot2::scale_fill_manual(
-      name = "R_t", 
+      name = expression(R[t]), 
       values = ggplot2::alpha("seagreen", levels * 0.7/100)
     )
 
     p <- p + ggplot2::geom_hline(
       yintercept = 1,
-      color = "black",
-      size = 0.7
+      linetype = "dotted"
     )
 
     if (plotly) {
@@ -153,7 +163,6 @@ plot_rt.epimodel <-
 #'  posterior mean. Defaults to FALSE, 
 #'  in which case the posterior predictive is plotted.
 #' @param cumulative If TRUE, plots the cumulative observations. 
-#' @param by_100k If TRUE, plots data per 100k of the population.
 #' @param bar If TRUE, observations are plotted as a bar plot. Otherwise, 
 #' a scatterplot is used.
 #' @param log If TRUE, plots the observations on a pseudo-linear scale.
@@ -218,7 +227,6 @@ plot_obs.epimodel <-
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
            cumulative = FALSE,
-           by_100k = FALSE,
            bar = TRUE,
            levels = c(30, 60, 90),
            log = FALSE,
@@ -296,12 +304,6 @@ plot_obs.epimodel <-
       df <- as.data.frame(df)
     }
 
-    pops <- object$pops
-    if (by_100k) {
-      obs <- norm_obs(pops, obs)
-      df <- norm_df(pops, df)
-    }
-
     qtl <- get_quantiles(
       obs,
       levels,
@@ -367,9 +369,6 @@ plot_obs.epimodel <-
     }
 
     nme <- type
-    if (by_100k) {
-      nme <- paste0(nme, " per 100k")
-    }
     cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
 
     p <- p + cols
@@ -438,7 +437,6 @@ plot_infections.epimodel <-
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
   cumulative=FALSE, 
-  by_100k = FALSE,
   levels = c(30, 60, 90), 
   log=FALSE,
   plotly = FALSE, 
@@ -457,11 +455,6 @@ plot_infections.epimodel <-
       inf <- cumul(inf)
     }
 
-    pops <- object$pops
-    if (by_100k) {
-      inf <- norm_obs(pops, inf)
-    }
-
     qtl <- get_quantiles(
       inf,
       levels,
@@ -472,10 +465,6 @@ plot_infections.epimodel <-
     p <- base_plot(qtl, log, date_breaks)
 
     nme <- "Infections"
-    if (by_100k) {
-      nme <- paste0(nme, " per 100k")
-    }
-
     p <- p + ggplot2::scale_fill_manual(
       name = nme,
       values = ggplot2::alpha("deepskyblue4", levels/100)
@@ -513,7 +502,6 @@ plot_infectious.epimodel <-
   dates=NULL, 
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
-  by_100k = FALSE,
   levels = c(30, 60, 90), 
   log=FALSE,
   plotly = FALSE, 
@@ -528,11 +516,6 @@ plot_infectious.epimodel <-
     # transform data
     inf <- gr_subset(inf, groups)
 
-    pops <- object$pops
-    if (by_100k) {
-      inf <- norm_obs(pops, inf)
-    }
-
     qtl <- get_quantiles(
       inf,
       levels,
@@ -544,9 +527,6 @@ plot_infectious.epimodel <-
     p <- base_plot(qtl, log, date_breaks)
 
     nme <- "Infectious"
-    if (by_100k) {
-      nme <- paste0(nme, " per 100k")
-    }
 
     p <- p + ggplot2::scale_fill_manual(
       name = nme, 
@@ -667,18 +647,6 @@ smooth_obs <- function(object, smooth) {
   return(sub_(object, w))
 }
 
-norm_obs <- function(pops, obs) {
-  p <- pops$pop[match(obs$group, pops$group)]
-  obs$draws <- sweep(obs$draws,MARGIN=2,FUN="/",STATS=p) * 1e5
-  return(obs)
-}
-
-norm_df <- function(pops, df) {
-  df$pops <- pops$pop[match(df$group, pops$group)]
-  df$obs <- (df$obs / df$pops) * 1e5
-  return(df)
-}
-
 # subsets observations for a given
 # a logical vector
 #
@@ -690,7 +658,7 @@ sub_ <- function(object, w) {
   }
   object$draws <- object$draws[, w]
   object$time <- object$time[w]
-  object$group <- object$group[w]
+  object$group <- droplevels(object$group[w])
   return(object)
 }
 
@@ -789,29 +757,36 @@ check_dates <- function(dates, date_format, min_date, max_date) {
 #
 # @param qtl dataframe giving quantiles
 # @param date_breaks Determines breaks uses on x-axis
-base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
+base_plot <- function(qtl, log, date_breaks, step=FALSE) {
 
-  p <- ggplot2::ggplot(qtl) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes_string(
+
+   aes_str <- ggplot2::aes_string(
         x = "date",
         ymin = "lower",
         ymax = "upper",
         group = "tag",
-        fill = "tag"
-    )) +
+        fill = "tag")
+
+  p <- ggplot2::ggplot(qtl)
+  if (step) {
+    p <- p + geom_stepribbon(aes_str)
+  } else {
+    p <- p + ggplot2::geom_ribbon(aes_str)
+  }
+
+  p <- p + ggpubr::theme_pubr() +
     ggplot2::xlab("") +
     ggplot2::scale_x_date(
       date_breaks = date_breaks,
-      labels = scales::date_format("%e %b")
+      labels = scales::date_format("%e %b"),
+      expand = ggplot2::expansion(mult=0.02)
     ) +
     ggplot2::scale_y_continuous(
       labels = fancy_scientific,
-      expand = ggplot2::expansion(mult = c(0, 0.1)),
+      expand = ggplot2::expansion(mult = c(0,0.02)),
       trans = ifelse(log, "pseudo_log", "identity"),
       limits = c(ifelse(log, NA, 0), NA)
     ) +
-    ggplot2::theme_bw() +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(
         angle = 45,
@@ -819,15 +794,20 @@ base_plot <- function(qtl, log, date_breaks, rt=FALSE) {
       ),
       axis.text = ggplot2::element_text(size = 12),
       axis.title = ggplot2::element_text(size = 12)
-    ) +
-    ggplot2::theme(legend.position = "right") 
+    ) 
+    
+
   
   if (length(unique(qtl$group)) > 1) {
-    if (rt) {
-      p <- p + ggplot2::facet_wrap(~group)
-    } else {
-      p <- p + ggplot2::facet_wrap(~group, scale = "free_y")
-    }
+      p <- p + ggplot2::facet_wrap(~group, scale = "free_y") + 
+        ggplot2::theme(
+          strip.background = ggplot2::element_blank(), 
+          strip.text = ggplot2::element_text(face = "bold"),
+          axis.text.x = ggplot2::element_text(angle=45, hjust=1, size=8),
+          axis.text.y = ggplot2::element_text(size=8),
+          panel.spacing = ggplot2::unit(0.1, "lines")
+        ) +
+        geom_hline(yintercept=0, size=1)
   }
   return(p)
 }
@@ -868,7 +848,6 @@ fancy_scientific <- function(l) {
 #'  posterior mean. Defaults to FALSE, 
 #'  in which case the posterior predictive is plotted.
 #' @param cumulative If TRUE, plots the cumulative observations. 
-#' @param by_100k If TRUE, plots data per 100k of the population.
 #' @param log If TRUE, plots the observations on a pseudo-linear scale.
 #' @param ... Additional arguments for
 #'  \code{\link[epidemia]{posterior_predict.epimodel}}. Examples include
@@ -912,7 +891,7 @@ plot_linpred.epimodel <-
     )
 
     p <- ggplot2::ggplot(qtl) +
-      ggplot2::geom_ribbon(
+      geom_ribbon(
         ggplot2::aes_string(
           x = "date",
           ymin = "lower",
@@ -925,7 +904,7 @@ plot_linpred.epimodel <-
         date_breaks = date_breaks,
         labels = scales::date_format("%e %b")
       ) +
-      ggplot2::theme_bw() +
+      ggpubr::theme_pubr +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(
           angle = 45,

@@ -201,7 +201,7 @@ plot_coverage <-
         minor_breaks = seq(0, 1, 0.05),
         breaks = seq(0, 1, 0.1)
       ) +
-      ggplot2::theme_bw() +
+      ggpubr::theme_pubr() +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(angle = 50, vjust = 0.5)
       )
@@ -290,7 +290,7 @@ plot_metrics <-
         x = "Date",
         linetype = "Metric"
       ) +
-      ggplot2::theme_bw() +
+      ggpubr::theme_pubr() +
       ggplot2::theme(legend.position = "right")
     
     p <- p + ggplot2::scale_color_manual(

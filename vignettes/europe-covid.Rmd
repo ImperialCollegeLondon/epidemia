@@ -3,7 +3,6 @@ title: Multilevel Modeling
 output:
   bookdown::html_document2:
     theme: flatly
-    number_sections: false
 link-citations: yes
 bibliography: ../inst/REFERENCES.bib
 pkgdown:
@@ -22,6 +21,7 @@ pkgdown:
 knitr::opts_chunk$set(
   out.width = 6, fig.height = 6, out.width = "70%", fig.align = "center"
 )
+library(ggplot2)
 ```
 
 
@@ -108,7 +108,6 @@ data <- filter(data, date < as.Date("2020-05-05"))
 ```
 
 ## Transmission
-<hr>
 
 We start by considering the transmission model, and then move on to the model 
 for daily deaths in the next section. Let $I^{(m)}_{1}, \ldots, I^{(m)}_{5}$ be a set of binary vectors such 
@@ -148,13 +147,12 @@ shape 1 and scale 0.25.
 rt <- epirt(
   formula = R(country, date) ~ 0 + (1 + public_events + schools_universities + self_isolating_if_ill + social_distancing_encouraged + lockdown || country) + public_events + schools_universities + self_isolating_if_ill + social_distancing_encouraged + lockdown,
   prior = shifted_gamma(shape=1/6, scale = 1, shift = log(1.05)/6),
-  prior_covariance = decov(shape = c(1, rep(0.5, 5)),scale=0.25),
+  prior_covariance = decov(shape = c(2, rep(0.5, 5)),scale=0.25),
   link = scaled_logit(6.5)
 )
 ```
 
 ## Infections
-<hr>
 
 We keep infections simple here by using the basic version of the model. 
 That is to say that infections are taken to be a deterministic function of 
@@ -218,7 +216,7 @@ expensive to evaluate. In addition, we have defined Gamma priors on some
 coefficients, which are generally poorly approximated by VB.
 
 ```{r collect-args}
-args <- list(rt=rt, inf=inf, obs=deaths, data=data, seed=12345)
+args <- list(rt=rt, inf=inf, obs=deaths, data=data, seed=12345, refresh=0)
 ```
 
 
@@ -231,8 +229,10 @@ fm_prior <- do.call(epim, pr_args)
 
 Below we plot approximate samples of $R_{t,m}$ from the prior distribution. 
 
-```{r prior-check}
-plot_rt(fm_prior, groups = "United_Kingdom")
+```{r prior-check, echo = FALSE, out.width = "60%"}
+p <- plot_rt(fm_prior, step=T, groups ="United_Kingdom")
+ggsave("../man/figures/multilevel-prior-plot.png", width=5, height=5)
+knitr::include_graphics("../man/figures/multilevel-prior-plot.png")
 ```
 
 
@@ -259,8 +259,10 @@ daily deaths in each region. This can be done using the command
 `plot_obs(fm, type = "deaths")`. After some formatting to the resulting ggplot 
 object, the plot is shown in Figure \@ref(fig:obs-plots).
 
-```{r obs-plots, out.width ="100%", fig.height = 6}
-plot_obs(fm, type = "deaths")
+```{r obs-plots, fig.cap = "Posterior predictive checks. Observed data is plotted with credible intervals derived from the approximated posterior.", out.width="100%", echo = FALSE, message=FALSE}
+p <- plot_obs(fm, type = "deaths", levels = c(50, 95))
+ggsave("../man/figures/multilevel-obs-plot.png", width=10, height=5)
+knitr::include_graphics("../man/figures/multilevel-obs-plot.png")
 ```
 
 Figure \@ref(fig:obs-plots) suggest that the epidemic was bought under control 
@@ -268,16 +270,18 @@ in each group considered, with reproduction numbers falling below one everywhere
 Indeed, we would expect that the posterior reproduction numbers fall below one 
 in each region. \@ref(fig:rt-plots) confirms this.
 
-```{r rt-plots, out.width = "100%", fig.height = 6}
-plot_rt(fm)
+```{r rt-plots, fig.cap = "Credible intervals for reproduction numbers. These are step functions because $R_t$ is parameterised only in terms of NPIs.", out.width = "100%", echo = FALSE, message=FALSE}
+p <- plot_rt(fm, step = T, levels = c(50,95))
+ggsave("../man/figures/multilevel-rt-plot.png", width=10, height=6)
+knitr::include_graphics("../man/figures/multilevel-rt-plot.png")
 ```
 
 
 ## Effect Sizes
 
-In **epidemia**, estimated effect sizes can be plotted using the `plot.epimodel` 
+In **epidemia**, estimated effect sizes can be visualised using the `plot.epimodel` 
 method. This serves a similar purpose to `plot.stanreg` in **rstanarm**, 
-provideing an interface to the **bayesplot** package. The models in **epidemia** 
+providing an interface to the **bayesplot** package. The models in **epidemia** 
 often have many parameters, some of which pertain to a particular part of the model 
 (i.e. transmission), and some which pertain to particular 
 groups (i.e., country-specific terms). Therefore `plot.epimodel` has 
@@ -289,67 +293,95 @@ coefficients $\beta_i$ using the command
 `plot(fm, par_models = "R", par_types = "fixed")`. This leads to 
 \@ref(fig:effect-plots).
 
-```{r effect-plots, fig.height=4, echo = FALSE}
-plot(fm, par_models = "R", par_types = "fixed")
+```{r effect-plots, fig.cap = "Effect sizes for global coefficients.", out.width = "70%", echo = FALSE}
+p <- plot(fm, par_models = "R", par_types = "fixed")
+ggsave("../man/figures/multilevel-effect-plots.png", width=5, height=3)
+knitr::include_graphics("../man/figures/multilevel-effect-plots.png")
 ```
 
-Figure \@ref(fig:effect-plots) shows a large negative coefficient for the effect 
-of lockdown, suggesting that this is on average the most effective intervention. 
+Figure \@ref(fig:effect-plots) shows a large negative coefficient for lockdown, 
+suggesting that this is on average the most effective intervention. 
 The effect of banning public events is the next largest, while the other NPIs appear closer 
 to zero. Note that \@ref(fig:effect-plots) shows only global coefficients, and does 
 not show inferred effects in any given country. To assess the latter, one must 
 instead consider the quantities $\beta_i + b^{(m)}_i$. We do this by 
 extracting the underlying draws using `as.matrix.epimodel`, as is done below 
 for Italy.
-```{r plot-total-effects}
+```{r total-effects-parsing}
 beta <- as.matrix(fm, par_models = "R", par_types = "fixed")
 b <- as.matrix(fm, regex_pars = "^R\\|b", par_groups = "Italy")
 mat <- cbind(b[,1], beta + b[,2:6])
 colnames(mat) <- c("Intercept", "public_events", "schools_universities", 
                   "self_isolating_if_ill", "social_distancing_encouraged", "lockdown")
-bayesplot::mcmc_intervals(mat) + ggplot2::ggtitle("Italy")
 ```
-Figure \@ref(plot-total-effects) has relatively narrow intervals for many of the 
+
+Calling `bayesplot::mcmc_intervals(mat)` gives 
+Figure  \@ref(fig:total-effects).
+```{r total-effects, fig.cap = "Total effect Sizes", out.width = "70%", echo = FALSE}
+p <- bayesplot::mcmc_intervals(mat) + ggplot2::ggtitle("Italy")
+ggsave("../man/figures/multilevel-total-effect-plots.png", width=5, height=3)
+knitr::include_graphics("../man/figures/multilevel-total-effect-plots.png")
+```
+
+Figure \@ref(fig:total-effects) has relatively narrow intervals for many of the 
 effect sizes. This appears to be an artifact of using variational Bayes. In 
 particular, when repeating this analysis with full MCMC, we observe that the 
 intervals for all policies other than lockdown overlap with zero.
 
 Consider now the role of partial pooling in this analysis. Figure 
-\@ref(rt-plots) shows that Sweden did enough to reduce $R$ below one. However, 
+\@ref(fig:rt-plots) shows that Sweden did enough to reduce $R$ below one. However, 
 it did so without a full lockdown. Given the small effect sizes for other NPIs, 
-the model must explain Sweden using the country-specific terms. Figure \@ref(interval-plots)
-shows estimated seeds, intercepts and effects of the public policy NPI for each 
+the model must explain Sweden using the country-specific terms. Figure \@ref(fig:interval-plots)
+shows estimated seeds, intercepts and the effects of banning public events for each 
 country. Sweden has a lower intercept than other terms which in turn suggests a 
 lower $R_0$ - giving the effects less to do to explain Sweden. There 
 is greater variability in seeding, because the magnitude of future infections 
 becomes less sensitive to initial conditions when the rate of growth is lower. 
-Figure \@ref(interval-plots) shows that the model estimates a large negative 
-coefficient for the effect of banning public events in Sweden. This is 
+Figure \@ref(fig:interval-plots) shows that the model estimates a large negative 
+coefficient for public events in Sweden. This is 
 significantly larger then the effects for other policies - which are not reported 
 here.
 
-```{r interval-plots, echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%", fig.height = 4}
-library(gridExtra)
+```{r interval-plots, fig.cap = "Seeds, intercepts and public polic effects for each country", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
 p_seeds <- plot(fm, "areas", regex_pars = "seeds")
 p_int <- plot(fm, regex_pars = "R\\|b\\[\\(Int", par_types = "random", par_groups=fm$groups)
-
 mat <- as.matrix(fm, regex_pars = "(^R\\|pub)|(^R\\|b\\[public)", par_groups = fm$groups)
 mat <- sweep(mat[,-1], MARGIN=1, STATS = mat[,1], FUN = "+")
 p_pub <- bayesplot::mcmc_intervals(mat)
 
-library(ggplot2)
 labels = fm$groups
 p_seeds <- p_seeds + ggtitle("Seeds") + ggplot2::scale_y_discrete(labels=labels)
 p_int <- p_int + ggtitle("Intercepts") + theme(axis.text.y = element_blank()) + ggplot2::scale_y_discrete(labels=labels)
 p_pub <- p_pub + ggtitle("Public Events") + theme(axis.text.y = element_blank()) + ggplot2::scale_y_discrete(labels=labels)
-
-grid.arrange(p_seeds, p_int, p_pub, nrow=1, padding=unit(0), widths = c(1.5,1,1))
+p <- gridExtra::arrangeGrob(p_seeds, p_int, p_pub, nrow=1, padding=unit(0), widths = c(1.5,1,1))
+ggsave("../man/figures/multilevel-interval-plots.png", plot=p, width=10, height=5)
+knitr::include_graphics("../man/figures/multilevel-interval-plots.png")
 ```
 
 ## Forecasting
 
 
+```{r forecasting, out.width = "100%"}
+newdata <- EuropeCovid2$data
+newdata <- filter(newdata, date > date[which(cumsum(deaths) > 10)[1] - 30])
+plot_obs(fm, type = "deaths", newdata = newdata, groups = c("United_Kingdom", "Italy"))
+```
+
+
 ## Counterfactuals
+
+```{r counterfactuals, out.width = "100%"}
+shift_earlier <- function(x, k) c(x[-(1:k)], rep(1,k))
+newdata <- filter(newdata, date < as.Date("2020-05-05"))
+
+newdata <- mutate(newdata,
+  lockdown = public_events + social_distancing_encouraged + self_isolating_if_ill + schools_universities,
+  lockdown = 1 * (lockdown) > 0
+)
+
+plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")
+```
+
 
 # References
 
