@@ -86,6 +86,7 @@ Load the dataset as follows.
 data("EuropeCovid2")
 data <- EuropeCovid2$data
 head(data)
+data <- data %>% ungroup() %>% group_by(id) %>% arrange(id) # remove later
 ```
 
 Recall that for each region, **epidemia** will use the earliest date in `data` 
@@ -370,16 +371,35 @@ plot_obs(fm, type = "deaths", newdata = newdata, groups = c("United_Kingdom", "I
 
 ## Counterfactuals
 
-```{r counterfactuals, out.width = "100%"}
+
+Counterfactuals are also easy. One simply has to modify the dataframe used. For 
+example, values of covariates can be adjusted. In this case we shift all NPIs 
+back three days.
+```{r counterfactuals-newdata}
 shift_earlier <- function(x, k) c(x[-(1:k)], rep(1,k))
-newdata <- filter(newdata, date < as.Date("2020-05-05"))
+days <- 3
 
 newdata <- mutate(newdata,
-  lockdown = public_events + social_distancing_encouraged + self_isolating_if_ill + schools_universities,
-  lockdown = 1 * (lockdown) > 0
+  lockdown = shift_earlier(lockdown, days),
+  public_events = shift_earlier(public_events, days),
+  social_distancing_encouraged = shift_earlier(social_distancing_encouraged, days),
+  self_isolating_if_ill = shift_earlier(self_isolating_if_ill, days),
+  schools_universities = shift_earlier(schools_universities, days)
 )
+```
 
-plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")
+Figure \@ref(fig:counterfactuals) visualises the counterfactual scenario of all 
+policies being implemented in the UK three days earlier. Deaths are projected 
+over both the in-sample period, and the out of sample period. The left plot
+is obtained using `plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")`,
+while the right plot adds the `cumulative = TRUE` argument.
+
+```{r counterfactuals, out.width = "100%", fig.cap = "Counterfactual for UK where all NPIs implemented 3 days earlier. Left is daily deaths, right is cumulative.", echo=FALSE}
+p1 <- plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")
+p2 <-plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom", cumulative=T)
+p <- gridExtra::arrangeGrob(p1, p2, nrow = 1)
+ggsave("../man/figures/multilevel-counterfactual.png", plot=p, width = 10, height = 6)
+knitr::include_graphics("../man/figures/multilevel-counterfactual.png")
 ```
 
 

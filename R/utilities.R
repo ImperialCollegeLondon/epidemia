@@ -464,9 +464,12 @@ parse_data <- function(data, rt, inf, obs, group_subset) {
   data <- group_date_col_data(data, rt)
   data <- select_cols_data(data, rt, inf, obs)
   data <- susceptibles_to_int(data, inf)
+  data <- data %>% 
+    dplyr::ungroup() %>% 
+    dplyr::group_by(.data$group) %>%
+    dplyr::arrange(.data$group, .data$date)
   return(data)
 }
-
 
 # subsets the data for only groups implied by group_subset
 #

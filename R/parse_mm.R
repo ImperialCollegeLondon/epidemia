@@ -20,6 +20,7 @@ parse_mm <- function(formula, data, ...) {
   if (is.mixed(formula)) { # pass to glFormula
     mf[[1L]] <- quote(lme4::glFormula)
     mf$control <- make_glmerControl(ignore_lhs = TRUE, ignore_x_scale = FALSE)
+    mf$xlev <- NULL
     glmod <- eval(mf, parent.frame())
     mf <- glmod$fr
     x <- glmod$X
