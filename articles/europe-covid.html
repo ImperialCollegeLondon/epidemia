@@ -24,7 +24,13 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS_CHTML.js" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-186908163-1"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-186908163-1');
+</script>
 </head>
 <body data-spy="scroll" data-target="#toc">
     <div class="container template-article">
@@ -153,7 +159,7 @@ pharmaceutical interventions (NPIs) on the transmissibility of Covid-19.
 We consider the same setup as <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>: attempting to estimate the effect of
 NPIs that were implemented in March 2020 in 11 European countries using daily death data, during the
 first wave of Covid-19. The same set of NPIs and countries are used here. <span class="citation">Flaxman, Mishra, Scott, et al. (<a href="#ref-Flaxman2020MA" role="doc-biblioref">2020</a>)</span>
-considered a version of this model that partial pooling for all the effects of NPIs.
+considered a version of this model that used partial pooling for all NPI effects.
 Here, we consider a model that uses the same approach.</p>
 <p>This example is not intended to be a fully rigorous statistical analysis.
 Rather, the intention is to demonstrate partial pooling of parameters in
@@ -262,7 +268,7 @@ which was a Gamma shifted to have support other than zero. We use the same
 prior here. Denoting the distribution of Gamma random variable with
 shape <span class="math inline">\(a\)</span> and scale <span class="math inline">\(b\)</span> by <span class="math inline">\(\Gamma(a, b)\)</span>, this prior is
 <span class="math display" id="eq:betaprior">\[\begin{equation}
-\beta_i + \frac{\log(1.05)}{6} \sim \Gamma(1/6, 1),
+-\beta_i - \frac{\log(1.05)}{6} \sim \Gamma(1/6, 1),
 \tag{1.1}
 \end{equation}\]</span>
 whereby the shift allows the NPIs to increase transmission slightly.
@@ -382,8 +388,7 @@ its default, and increase the number of iterations to aid convergence.</p>
 <p>A first step in evaluating the model fit is to perform posterior predictive
 checks. This is to confirm that the model adequately explains the observed
 daily deaths in each region. This can be done using the command
-<code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths")</a></code>. After some formatting to the resulting ggplot
-object, the plot is shown in Figure <a href="#fig:obs-plots">1.1</a>.</p>
+<code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", levels = c(50, 95))</a></code>. The plot is shown in Figure <a href="#fig:obs-plots">1.1</a>.</p>
 <div class="figure" style="text-align: center">
 <span id="fig:obs-plots"></span>
 <img src="multilevel-obs-plot.png" alt="Posterior predictive checks. Observed data is plotted with credible intervals derived from the approximated posterior." width="100%"><p class="caption">
@@ -393,7 +398,7 @@ Figure 1.1: Posterior predictive checks. Observed data is plotted with credible 
 <p>Figure <a href="#fig:obs-plots">1.1</a> suggest that the epidemic was bought under control
 in each group considered, with reproduction numbers falling below one everywhere.
 Indeed, we would expect that the posterior reproduction numbers fall below one
-in each region. <a href="#fig:rt-plots">1.2</a> confirms this.</p>
+in each region. Figure <a href="#fig:rt-plots">1.2</a> is the result of <code><a href="../reference/plot_rt.html">plot_rt(fm, step = T, levels = c(50,95))</a></code>, and confirms this.</p>
 <div class="figure" style="text-align: center">
 <span id="fig:rt-plots"></span>
 <img src="multilevel-rt-plot.png" alt="Credible intervals for reproduction numbers. These are step functions because $R_t$ is parameterised only in terms of NPIs." width="100%"><p class="caption">
@@ -437,7 +442,7 @@ for Italy.</p>
 <div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="no">beta</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fm</span>, <span class="kw">par_models</span> <span class="kw">=</span> <span class="st">"R"</span>, <span class="kw">par_types</span> <span class="kw">=</span> <span class="st">"fixed"</span>)
 <span class="no">b</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fm</span>, <span class="kw">regex_pars</span> <span class="kw">=</span> <span class="st">"^R\\|b"</span>, <span class="kw">par_groups</span> <span class="kw">=</span> <span class="st">"Italy"</span>)
 <span class="no">mat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="no">b</span>[,<span class="fl">1</span>], <span class="no">beta</span> + <span class="no">b</span>[,<span class="fl">2</span>:<span class="fl">6</span>])
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">mat</span>) <span class="kw">&lt;-</span> <span class="no">labels</span></pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">mat</span>) <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Intercept"</span>, <span class="no">labels</span>)</pre></body></html></div>
 Calling <code><a href="https://mc-stan.org/bayesplot/reference/MCMC-intervals.html">bayesplot::mcmc_intervals(mat)</a></code> gives
 Figure <a href="#fig:total-effects">1.4</a>.
 <div class="figure" style="text-align: center">
@@ -464,7 +469,7 @@ coefficient for public events in Sweden. This is
 significantly larger then the effects for other policies - which are not reported
 here. However, the idiosyncrasies relating to Sweden must be explained in this
 model by at least one of the covariates, and the large effect for public policy
-in Sweden is quite possible an artefact of this. Nonetheless, the use of
+in Sweden is most probably an artifact of this. Nonetheless, the use of
 partial pooling is essential for explaining difference between countries. If
 full pooling were used, effect sizes would be overly influenced by outliers like
 Sweden. This argument is made in more detail in <span class="citation">Flaxman, Mishra, Scott, et al. (<a href="#ref-Flaxman2020MA" role="doc-biblioref">2020</a>)</span>.</p>
@@ -493,7 +498,7 @@ observations. Note that we are careful to select the same start dates as in
 <span class="no">newdata</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(<span class="no">newdata</span>, <span class="no">date</span> <span class="kw">&gt;</span> <span class="no">date</span>[<span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span>(<span class="no">deaths</span>) <span class="kw">&gt;</span> <span class="fl">10</span>)[<span class="fl">1</span>] - <span class="fl">30</span>])</pre></body></html></div>
 <p>This dataframe can be passed to plotting functions <code><a href="../reference/plot_rt.html">plot_rt()</a></code>, <code><a href="../reference/plot_obs.html">plot_obs()</a></code>,
 <code><a href="../reference/plot_infections.html">plot_infections()</a></code> and <code><a href="../reference/plot_infectious.html">plot_infectious()</a></code>. If the raw samples are desired, we
-can also pass as an argument to <code><a href="../reference/posterior_rt.html">posterior_rt()</a></code>, <code>posterior_obs()</code> etc.
+can also pass as an argument to <code><a href="../reference/posterior_rt.html">posterior_rt()</a></code>, <code><a href="https://mc-stan.org/rstantools/reference/posterior_predict.html">posterior_predict()</a></code> etc.
 Figure <a href="#fig:forecasting">1.6</a> is the result of using the command
 <code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", newdata = newdata, groups = "Italy")</a></code>. This
 plots the out of sample observations with credible intervals from the forecast.</p>
@@ -524,7 +529,8 @@ In this case we shift all NPIs back three days.</p>
 policies being implemented in the UK three days earlier. Deaths are projected
 over both the in-sample period, and the out of sample period. The left plot
 is obtained using <code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")</a></code>,
-while the right plot adds the <code>cumulative = TRUE</code> argument.</p>
+while the right plot adds the <code>cumulative = TRUE</code> argument. We reiterate that hese results are
+not intended to be statistically rigorous - simply to illustrate usage of epidemia.</p>
 <div class="figure" style="text-align: center">
 <span id="fig:counterfactuals"></span>
 <img src="multilevel-counterfactual.png" alt="Counterfactual for UK where all NPIs implemented 3 days earlier. Left is daily deaths, right is cumulative." width="100%"><p class="caption">
