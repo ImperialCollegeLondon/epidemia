@@ -37,7 +37,7 @@ jobs:
           remotes::install_deps(dependencies = TRUE, type="binary")
           install.packages("devtools", type="binary")
           install.packages("EpiEstim", type="binary")
-          install.packages("pkgdown", type="binary")
+          devtools::install_github("jscott6/pkgdown", ref = "v5")
         shell: Rscript {0}
 
       - name: Install tbb
