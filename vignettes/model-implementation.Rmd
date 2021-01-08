@@ -382,7 +382,8 @@ fm <- epim(
   group_subset = "France",
   algorithm = "fullrank",
   tol_rel_obj = 1e-3,
-  seed = 12345
+  seed = 12345,
+  refresh = 0
 )
 plot_rt(fm)
 plot_obs(fm, type = "deaths")

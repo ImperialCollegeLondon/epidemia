@@ -3,6 +3,7 @@ title: epidemia
 template:
   params:
     bootswatch: flatly
+    ganalytics: UA-186908163-1
 
 navbar:
   structure:

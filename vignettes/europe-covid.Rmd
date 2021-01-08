@@ -48,7 +48,7 @@ pharmaceutical interventions (NPIs) on the transmissibility of Covid-19.
 We consider the same setup as @Flaxman2020: attempting to estimate the effect of 
 NPIs that were implemented in March 2020 in 11 European countries using daily death data, during the 
 first wave of Covid-19. The same set of NPIs and countries are used here. @Flaxman2020MA 
-considered a version of this model that partial pooling for all the effects of NPIs. 
+considered a version of this model that used partial pooling for all NPI effects. 
 Here, we consider a model that uses the same approach. 
 
 This example is not intended to be a fully rigorous statistical analysis. 
@@ -150,7 +150,7 @@ which was a Gamma shifted to have support other than zero. We use the same
 prior here. Denoting the distribution of Gamma random variable with 
 shape $a$ and scale $b$ by $\Gamma(a, b)$, this prior is
 \begin{equation}
-\beta_i + \frac{\log(1.05)}{6} \sim \Gamma(1/6, 1),
+-\beta_i - \frac{\log(1.05)}{6} \sim \Gamma(1/6, 1),
 (\#eq:betaprior)
 \end{equation}
 whereby the shift allows the NPIs to increase transmission slightly.
@@ -285,8 +285,7 @@ fm <- do.call(epim, args)
 A first step in evaluating the model fit is to perform posterior predictive 
 checks. This is to confirm that the model adequately explains the observed 
 daily deaths in each region. This can be done using the command 
-`plot_obs(fm, type = "deaths")`. After some formatting to the resulting ggplot 
-object, the plot is shown in Figure \@ref(fig:obs-plots).
+`plot_obs(fm, type = "deaths", levels = c(50, 95))`. The plot is shown in Figure \@ref(fig:obs-plots).
 
 ```{r obs-plots, fig.cap = "Posterior predictive checks. Observed data is plotted with credible intervals derived from the approximated posterior.", out.width="100%", echo = FALSE, message=FALSE}
 p <- plot_obs(fm, type = "deaths", levels = c(50, 95))
@@ -297,7 +296,7 @@ knitr::include_graphics("multilevel-obs-plot.png")
 Figure \@ref(fig:obs-plots) suggest that the epidemic was bought under control 
 in each group considered, with reproduction numbers falling below one everywhere.
 Indeed, we would expect that the posterior reproduction numbers fall below one 
-in each region. \@ref(fig:rt-plots) confirms this.
+in each region. Figure \@ref(fig:rt-plots) is the result of `plot_rt(fm, step = T, levels = c(50,95))`, and confirms this.
 
 ```{r rt-plots, fig.cap = "Credible intervals for reproduction numbers. These are step functions because $R_t$ is parameterised only in terms of NPIs.", out.width = "100%", echo = FALSE, message=FALSE}
 p <- plot_rt(fm, step = T, levels = c(50,95))
@@ -325,7 +324,7 @@ coefficients $\beta_i$ using the command
 
 ```{r effect-plots, fig.cap = "Effect sizes for global coefficients.", out.width = "70%", echo = FALSE}
 p <- plot(fm, par_models = "R", par_types = "fixed")
-labels <- c("Intercept", "public events", "schools", "self isolating", "social distancing", "lockdown")
+labels <- c("public events", "schools", "self isolating", "social distancing", "lockdown")
 p <- p + ggplot2::scale_y_discrete(labels=labels)
 
 ggsave("multilevel-effect-plots.png", width=5, height=3)
@@ -344,7 +343,7 @@ for Italy.
 beta <- as.matrix(fm, par_models = "R", par_types = "fixed")
 b <- as.matrix(fm, regex_pars = "^R\\|b", par_groups = "Italy")
 mat <- cbind(b[,1], beta + b[,2:6])
-colnames(mat) <- labels
+colnames(mat) <- c("Intercept", labels)
 ```
 
 Calling `bayesplot::mcmc_intervals(mat)` gives 
@@ -374,7 +373,7 @@ coefficient for public events in Sweden. This is
 significantly larger then the effects for other policies - which are not reported 
 here. However, the idiosyncrasies relating to Sweden must be explained in this 
 model by at least one of the covariates, and the large effect for public policy 
-in Sweden is quite possible an artefact of this. Nonetheless, the use of 
+in Sweden is most probably an artifact of this. Nonetheless, the use of 
 partial pooling is essential for explaining difference between countries. If 
 full pooling were used, effect sizes would be overly influenced by outliers like 
 Sweden. This argument is made in more detail in @Flaxman2020MA.
@@ -415,7 +414,7 @@ newdata <- filter(newdata, date > date[which(cumsum(deaths) > 10)[1] - 30])
 ```
 This dataframe can be passed to plotting functions `plot_rt()`, `plot_obs()`, 
 `plot_infections()` and `plot_infectious()`. If the raw samples are desired, we 
-can also pass as an argument to `posterior_rt()`, `posterior_obs()` etc. 
+can also pass as an argument to `posterior_rt()`, `posterior_predict()` etc. 
 Figure \@ref(fig:forecasting) is the result of using the command
 `plot_obs(fm, type = "deaths", newdata = newdata, groups = "Italy")`. This 
 plots the out of sample observations with credible intervals from the forecast. 
@@ -449,7 +448,8 @@ Figure \@ref(fig:counterfactuals) visualises the counterfactual scenario of all
 policies being implemented in the UK three days earlier. Deaths are projected 
 over both the in-sample period, and the out of sample period. The left plot
 is obtained using `plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")`,
-while the right plot adds the `cumulative = TRUE` argument.
+while the right plot adds the `cumulative = TRUE` argument. We reiterate that hese results are 
+not intended to be statistically rigorous - simply to illustrate usage of epidemia.
 
 ```{r counterfactuals, out.width = "100%", fig.cap = "Counterfactual for UK where all NPIs implemented 3 days earlier. Left is daily deaths, right is cumulative.", echo=FALSE}
 p1 <- plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")
