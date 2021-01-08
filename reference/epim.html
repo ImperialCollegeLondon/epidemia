@@ -8,12 +8,19 @@
 
 <title>Fits an Epidemiological Model — epim • epidemia</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
@@ -44,14 +51,14 @@
 <meta property="og:title" content="Fits an Epidemiological Model — epim" />
 <meta property="og:description" content="Fits a Bayesian epidemiological model specified by the formula
 argument." />
+<meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png" />
 
 
 
 
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS_CHTML.js" crossorigin="anonymous"></script>
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -75,53 +82,62 @@ argument." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.7.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="../articles/install.html">Install</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
+    Model
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
+      <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
+      <a href="../articles/model-implementation.html">Implementation</a>
     </li>
     <li>
-      <a href="../articles/introduction.html">Flexible Epidemic Modeling with epidemia</a>
+      <a href="../articles/partial-pooling.html">Partial Pooling</a>
     </li>
     <li>
-      <a href="../articles/plotting.html">Plotting with epidemia</a>
+      <a href="../articles/priors.html">Priors</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Tutorials
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/flu.html">A Basic Example</a>
     </li>
     <li>
-      <a href="../articles/priors.html">Using Prior Distributions</a>
+      <a href="../articles/europe-covid.html">A Multilevel Model</a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="../news/index.html">Changelog</a>
+  <a href="../reference/index.html">Reference</a>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ImperialCollegeLondon/epidemia/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -150,16 +166,12 @@ argument.</p>
 
     <pre class="usage"><span class='fu'>epim</span>(
   <span class='no'>rt</span>,
-  <span class='kw'>obs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(),
+  <span class='no'>inf</span>,
+  <span class='no'>obs</span>,
   <span class='no'>data</span>,
-  <span class='no'>pops</span>,
-  <span class='no'>si</span>,
-  <span class='kw'>seed_days</span> <span class='kw'>=</span> <span class='fl'>6</span>,
   <span class='kw'>algorithm</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"sampling"</span>, <span class='st'>"meanfield"</span>, <span class='st'>"fullrank"</span>),
   <span class='kw'>group_subset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>prior_tau</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='kw'>rate</span> <span class='kw'>=</span> <span class='fl'>0.03</span>),
   <span class='kw'>prior_PD</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>sampling_args</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(),
   <span class='kw'>init_run</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='no'>...</span>
 )</pre>
@@ -173,6 +185,11 @@ argument.</p>
 the model for the time-varying reproduction number.</p></td>
     </tr>
     <tr>
+      <th>inf</th>
+      <td><p>An object of class <code><a href='epiinf.html'>epiinf</a></code>. This specifies
+the model for latent infections. Defaults to <code><a href='epiinf.html'>epiinf()</a></code>.</p></td>
+    </tr>
+    <tr>
       <th>obs</th>
       <td><p>A list of <code><a href='epiobs.html'>epiobs</a></code> objects. Each
 element defines a model for the specified observation vector.</p></td>
@@ -181,21 +198,6 @@ element defines a model for the specified observation vector.</p></td>
       <th>data</th>
       <td><p>A dataframe containing all data required to fit the model.
 See <a href='https://rdrr.io/r/stats/lm.html'>lm</a>.</p></td>
-    </tr>
-    <tr>
-      <th>pops</th>
-      <td><p>A two column dataframe giving the total population of each
-group. First column represents the group, with the second giving the
-corresponding population.</p></td>
-    </tr>
-    <tr>
-      <th>si</th>
-      <td><p>A vector representing the serial interval of the disease (a
-probability vector).</p></td>
-    </tr>
-    <tr>
-      <th>seed_days</th>
-      <td><p>Number of days for which to seed infections.</p></td>
     </tr>
     <tr>
       <th>algorithm</th>
@@ -210,34 +212,26 @@ model. Elements should correspond to the group levels specified through the
 <code>data</code> argument.</p></td>
     </tr>
     <tr>
-      <th>prior_tau</th>
-      <td><p>The prior for \(\tau\).This parameter is described in the
-introductory vignette, and controls the variability in the number of
-seeded infections at  the beginning of the epidemic. Must be a call to
-<code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>.</p></td>
-    </tr>
-    <tr>
       <th>prior_PD</th>
       <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. If <code>TRUE</code>,
 samples parameters from the prior disribution.
 Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
-      <th>sampling_args</th>
-      <td><p>An (optional) named list of parameters to pass to the
-<span class="pkg">rstan</span> function used for model fitting, for example
-<code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>rstan::sampling</a></code>.</p></td>
-    </tr>
-    <tr>
       <th>init_run</th>
       <td><p>For certain datasets the sampler can find itself trapped in a
-local mode where herd immunity is achieved. If TRUE, a short MCMC run
-fitting to cumulative data is used to initialize the parameters for the main
-sampler.</p></td>
+local mode where herd immunity is achieved. If TRUE, an MCMC run where
+the population adjustment is disabled is used to initialise the parameters for
+the main sampling. If TRUE, this is done with default parameters. If instead a list is
+provided, these parameters are passed on to the rstan sampling function for the initial run.
+initial run. The seed used is that specified in <code>init_run</code>, or that
+specified in ..., or no seed, in that order.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Not used.</p></td>
+      <td><p>An (optional) named list of parameters to pass to the
+<span class="pkg">rstan</span> function used for model fitting, for example
+<code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>rstan::sampling</a></code>.</p></td>
     </tr>
     </table>
 
@@ -260,8 +254,7 @@ through the arguments <code>prior</code>,
 <code>prior_intercept</code> and <code>prior_covariance</code>.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van
-Elsland SL, FitzJohn RG, Gaythorpe KAM, Geidelberg L, Grassly NC, Green WD, Hallett T, Hamlet A, Hinsley W, Jeffrey B, Knock E, Laydon DJ, Nedjati-Gilani G, Nouvellet P, Parag KV, Siveroni I, Thompson HA, Verity R, Volz E, Walters CE, Wang H, Wang Y, Watson OJ, Winskill P, Xi X, Walker PGT, Ghani AC, Donnelly CA, Riley SM, Vollmer MAC, Ferguson NM, Okell LC, Bhatt S, Team ICCR (2020).
+    <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van Elsland SL, FitzJohn RG, Gaythorpe KAM, Geidelberg L, Grassly NC, Green WD, Hallett T, Hamlet A, Hinsley W, Jeffrey B, Knock E, Laydon DJ, Nedjati-Gilani G, Nouvellet P, Parag KV, Siveroni I, Thompson HA, Verity R, Volz E, Walters CE, Wang H, Wang Y, Watson OJ, Winskill P, Xi X, Walker PGT, Ghani AC, Donnelly CA, Riley SM, Vollmer MAC, Ferguson NM, Okell LC, Bhatt S, Team ICCR (2020).
 &#8220;Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.&#8221;
 <em>Nature</em>.
 ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038/s41586-020-2405-7</a>

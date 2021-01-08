@@ -1,11 +1,16 @@
 pandoc: 2.7.3
 pkgdown: 1.5.1
-pkgdown_sha: ~
+pkgdown_sha: 44b0fa947f09d4333eb8b7ec9a5033462f6e9761
 articles:
-  IncidenceOnly: IncidenceOnly.html
-  ResolvingProblems: ResolvingProblems.html
-  introduction: introduction.html
-  plotting: plotting.html
+  europe-covid: europe-covid.html
+  flu: flu.html
+  install: install.html
+  model-description: model-description.html
+  model-implementation: model-implementation.html
+  partial-pooling: partial-pooling.html
   priors: priors.html
-last_built: 2020-09-10T21:34Z
+last_built: 2021-01-08T01:38Z
+urls:
+  reference: https://imperialcollegelondon.github.io/epidemia//reference
+  article: https://imperialcollegelondon.github.io/epidemia//articles
 

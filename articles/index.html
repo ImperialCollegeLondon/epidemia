@@ -8,12 +8,19 @@
 
 <title>Articles • epidemia</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
@@ -42,14 +49,14 @@
   
 
 <meta property="og:title" content="Articles" />
+<meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png" />
 
 
 
 
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS_CHTML.js" crossorigin="anonymous"></script>
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -73,53 +80,62 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">epidemia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.7.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="../articles/install.html">Install</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
+    Model
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/IncidenceOnly.html">Modelling of R with Case data only</a>
+      <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
-      <a href="../articles/ResolvingProblems.html">Resolving Convergence Problems</a>
+      <a href="../articles/model-implementation.html">Implementation</a>
     </li>
     <li>
-      <a href="../articles/introduction.html">Flexible Epidemic Modeling with epidemia</a>
+      <a href="../articles/partial-pooling.html">Partial Pooling</a>
     </li>
     <li>
-      <a href="../articles/plotting.html">Plotting with epidemia</a>
+      <a href="../articles/priors.html">Priors</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Tutorials
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/flu.html">A Basic Example</a>
     </li>
     <li>
-      <a href="../articles/priors.html">Using Prior Distributions</a>
+      <a href="../articles/europe-covid.html">A Multilevel Model</a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="../news/index.html">Changelog</a>
+  <a href="../reference/index.html">Reference</a>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ImperialCollegeLondon/epidemia/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -144,15 +160,19 @@
       <p class="section-desc"></p>
 
       <dl>
-        <dt><a href="IncidenceOnly.html">Modelling of R with Case data only</a></dt>
+        <dt><a href="europe-covid.html">Multilevel Modeling</a></dt>
         <dd></dt>
-        <dt><a href="ResolvingProblems.html">Resolving Convergence Problems</a></dt>
+        <dt><a href="flu.html">Flu Pandemic</a></dt>
         <dd></dt>
-        <dt><a href="introduction.html">Flexible Epidemic Modeling with epidemia</a></dt>
+        <dt><a href="install.html">Intallation</a></dt>
         <dd></dt>
-        <dt><a href="plotting.html">Plotting with epidemia</a></dt>
+        <dt><a href="model-description.html">Model Description</a></dt>
         <dd></dt>
-        <dt><a href="priors.html">Using Prior Distributions</a></dt>
+        <dt><a href="model-implementation.html">Implementation</a></dt>
+        <dd></dt>
+        <dt><a href="partial-pooling.html">Partial Pooling</a></dt>
+        <dd></dt>
+        <dt><a href="priors.html">Priors in epidemia</a></dt>
         <dd></dt>
       </dl>
     </div>
