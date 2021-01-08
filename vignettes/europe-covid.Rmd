@@ -260,8 +260,8 @@ Below we plot approximate samples of $R_{t,m}$ from the prior distribution.
 
 ```{r prior-check, echo = FALSE, out.width = "50%"}
 p <- plot_rt(fm_prior, step=T, groups ="United_Kingdom")
-ggsave("figures/multilevel-prior-plot.png", width=5, height=5)
-knitr::include_graphics("figures/multilevel-prior-plot.png")
+ggsave("multilevel-prior-plot.png", width=5, height=5)
+knitr::include_graphics("multilevel-prior-plot.png")
 ```
 
 
@@ -290,8 +290,8 @@ object, the plot is shown in Figure \@ref(fig:obs-plots).
 
 ```{r obs-plots, fig.cap = "Posterior predictive checks. Observed data is plotted with credible intervals derived from the approximated posterior.", out.width="100%", echo = FALSE, message=FALSE}
 p <- plot_obs(fm, type = "deaths", levels = c(50, 95))
-ggsave("figures/multilevel-obs-plot.png", width=10, height=6)
-knitr::include_graphics("figures/multilevel-obs-plot.png")
+ggsave("multilevel-obs-plot.png", width=10, height=6)
+knitr::include_graphics("multilevel-obs-plot.png")
 ```
 
 Figure \@ref(fig:obs-plots) suggest that the epidemic was bought under control 
@@ -301,8 +301,8 @@ in each region. \@ref(fig:rt-plots) confirms this.
 
 ```{r rt-plots, fig.cap = "Credible intervals for reproduction numbers. These are step functions because $R_t$ is parameterised only in terms of NPIs.", out.width = "100%", echo = FALSE, message=FALSE}
 p <- plot_rt(fm, step = T, levels = c(50,95))
-ggsave("figures/multilevel-rt-plot.png", width=10, height=6)
-knitr::include_graphics("figures/multilevel-rt-plot.png")
+ggsave("multilevel-rt-plot.png", width=10, height=6)
+knitr::include_graphics("multilevel-rt-plot.png")
 ```
 
 
@@ -328,8 +328,8 @@ p <- plot(fm, par_models = "R", par_types = "fixed")
 labels <- c("Intercept", "public events", "schools", "self isolating", "social distancing", "lockdown")
 p <- p + ggplot2::scale_y_discrete(labels=labels)
 
-ggsave("figures/multilevel-effect-plots.png", width=5, height=3)
-knitr::include_graphics("figures/multilevel-effect-plots.png")
+ggsave("multilevel-effect-plots.png", width=5, height=3)
+knitr::include_graphics("multilevel-effect-plots.png")
 ```
 
 Figure \@ref(fig:effect-plots) shows a large negative coefficient for lockdown, 
@@ -351,8 +351,8 @@ Calling `bayesplot::mcmc_intervals(mat)` gives
 Figure  \@ref(fig:total-effects).
 ```{r total-effects, fig.cap = "Total effect Sizes", out.width = "70%", echo = FALSE}
 p <- bayesplot::mcmc_intervals(mat) + ggplot2::ggtitle("Italy")
-ggsave("figures/multilevel-total-effect-plots.png", width=5, height=3)
-knitr::include_graphics("figures/multilevel-total-effect-plots.png")
+ggsave("multilevel-total-effect-plots.png", width=5, height=3)
+knitr::include_graphics("multilevel-total-effect-plots.png")
 ```
 
 Figure \@ref(fig:total-effects) has relatively narrow intervals for many of the 
@@ -391,8 +391,8 @@ p_seeds <- p_seeds + ggtitle("Seeds") + ggplot2::scale_y_discrete(labels=labels)
 p_int <- p_int + ggtitle("Intercepts") + theme(axis.text.y = element_blank()) + ggplot2::scale_y_discrete(labels=labels)
 p_pub <- p_pub + ggtitle("Public Events") + theme(axis.text.y = element_blank()) + ggplot2::scale_y_discrete(labels=labels)
 p <- gridExtra::arrangeGrob(p_seeds, p_int, p_pub, nrow=1, padding=unit(0), widths = c(1.5,1,1))
-ggsave("figures/multilevel-interval-plots.png", plot=p, width=10, height=5)
-knitr::include_graphics("figures/multilevel-interval-plots.png")
+ggsave("multilevel-interval-plots.png", plot=p, width=10, height=5)
+knitr::include_graphics("multilevel-interval-plots.png")
 ```
 
 ## Forecasting
@@ -422,8 +422,8 @@ plots the out of sample observations with credible intervals from the forecast.
 
 ```{r forecasting, fig.cap = "Forecasted and observed daily deaths in Italy up until the end of June 2020", out.width = "100%", echo = FALSE}
 p <- plot_obs(fm, type = "deaths", newdata = newdata, groups = "Italy")
-ggsave("figures/multilevel-forecasting.png", plot=p, width = 10, height = 5)
-knitr::include_graphics("figures/multilevel-forecasting.png")
+ggsave("multilevel-forecasting.png", plot=p, width = 10, height = 5)
+knitr::include_graphics("multilevel-forecasting.png")
 ```
 
 
@@ -455,8 +455,8 @@ while the right plot adds the `cumulative = TRUE` argument.
 p1 <- plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")
 p2 <-plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom", cumulative=T)
 p <- gridExtra::arrangeGrob(p1, p2, nrow = 1)
-ggsave("figures/multilevel-counterfactual.png", plot=p, width = 10, height = 5)
-knitr::include_graphics("figures/multilevel-counterfactual.png")
+ggsave("multilevel-counterfactual.png", plot=p, width = 10, height = 5)
+knitr::include_graphics("multilevel-counterfactual.png")
 ```
 
 
