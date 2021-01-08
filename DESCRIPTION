@@ -96,6 +96,7 @@ Suggests:
     gridExtra,
     bookdown,
     EpiEstim,
-    lubridate
+    lubridate,
+    rstanarm
 RdMacros:
     Rdpack
