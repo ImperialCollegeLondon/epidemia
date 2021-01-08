@@ -9,6 +9,7 @@
 #' other parameters in the model. These methods closely resemble those 
 #' for \code{stanreg} objects in \pkg{rstanarm}. Please see \code{\link[rstanarm]{as.matrix.stanreg}} 
 #' for a general explanation of these methods.
+#' @inheritParams plot.epimodel
 #' @templateVar epimodelArg x
 #' @template args-epimodel-object
 #' @param ... Not used.
@@ -16,8 +17,13 @@
 #' @param regex_pars Character vector of regular expressions against which to match parameter names.Same as \link[rstanarm]{as.matrix.stanreg}
 #' @return A \code{matrix}, \code{array} or \code{data.frame} object.
 #' @export
-as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
+as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL, par_models = NULL,
+                        par_types = NULL, par_groups = NULL) {
+
   pars <- collect_pars(x, pars, regex_pars)
+  pars <- restrict_pars(x, pars = pars, par_models = par_models,
+                        par_types = par_types, par_groups = par_groups)
+
   user_pars <- !is.null(pars)
   
   mat <- as.matrix(x$stanfit)
@@ -35,8 +41,13 @@ as.matrix.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
 
 #' @rdname as.matrix.epimodel
 #' @export
-as.array.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
+as.array.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL, par_models = NULL,
+                        par_types = NULL, par_groups = NULL) {
+
   pars <- collect_pars(x, pars, regex_pars)
+  pars <- restrict_pars(x, pars = pars, par_models = par_models,
+                        par_types = par_types, par_groups = par_groups)
+
   arr <- as.array(x$stanfit)
   if (identical(arr, numeric(0)))
     STOP_no_draws()
@@ -57,7 +68,8 @@ as.array.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
 #' @rdname as.matrix.epimodel
 #' @method as.data.frame epimodel
 #' @export
-as.data.frame.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL) {
+as.data.frame.epimodel <- function(x, ..., pars = NULL, regex_pars = NULL, par_models = NULL,
+                        par_types = NULL, par_groups = NULL) {
   mat <- as.matrix.epimodel(x, pars = pars, regex_pars = regex_pars, ...)
   as.data.frame(mat)
 }
@@ -88,8 +100,6 @@ exclude_lp_and_ppd <- function(pars) {
 collect_pars <- function(x, pars = NULL, regex_pars = NULL) {
   if (is.null(pars) && is.null(regex_pars)) 
     return(NULL)
-  if (!is.null(pars)) 
-    pars[pars == "varying"] <- "b"
   if (!is.null(regex_pars)) 
     pars <- c(pars, grep_for_pars(x, regex_pars))
   unique(pars)

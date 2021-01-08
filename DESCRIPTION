@@ -1,6 +1,6 @@
 Package: epidemia
 Title: Modeling of Epidemics using Hierarchical Bayesian Models
-Version: 0.6.0
+Version: 0.7.0
 Authors@R: c(
     person(given = "James",
            family = "Scott",
@@ -43,6 +43,11 @@ Authors@R: c(
            role = c("ctb"),
            email = "jonathan.ish-horowicz17@imperial.ac.uk",
            comment = c(ORCID = "0000-0002-5386-6620")
+	   ),
+       person(given = "Leon",
+           family = "Wu",
+           role = c("ctb"),
+           email = "leon.wu16@imperial.ac.uk"
 	   )
 	   )  
 Description: Tools for a Bayesian hierarchial modelling approach for epidemics. Based on the methodology introduced in 
@@ -65,17 +70,19 @@ Imports:
     rstantools (>= 2.0.0),
     lme4,
     ggplot2,
+    ggpubr,
     Matrix,
     scales,
     Rdpack,
     stats,
     zoo,
     magrittr,
-    rstanarm,
     plotly,
     scoringRules,
     tidyr,
-    rlang
+    rlang,
+    tidyselect,
+    bayesplot
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
@@ -88,6 +95,7 @@ Suggests:
     knitr,
     gridExtra,
     bookdown,
-    EpiEstim
+    EpiEstim,
+    lubridate
 RdMacros:
     Rdpack

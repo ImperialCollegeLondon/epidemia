@@ -1,118 +1,224 @@
 ---
-title: "Using Prior Distributions"
+title: "Priors in epidemia"
 output:
   bookdown::html_document2:
-    theme: cerulean
+    theme: flatly
+    number_sections: true
 link-citations: yes
+bibliography: ../inst/REFERENCES.bib
 pkgdown:
   as_is: true
-fig_width: 9 
-fig_height: 6
-bibliography: ../inst/REFERENCES.bib
-vignette: |
-  %\VignetteIndexEntry{Using prior distributions} 
-  %\VignetteEngine{knitr::rmarkdown} 
-  \usepackage[utf8]{inputenc}
 ---
 
-*Please read the [introductory vignette](introduction.html) before this document.* 
+<style>
+.contents .page-header {
+    display: none;
+} 
+</style>
 
-# Overview
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-Prior distributions need to be set for all model parameters. This include in the `epirt` object and all 
-`epiobs` objects used by a call to the model fitting function `epim`. Here we focus only on `epirt`, because 
-this allows for the most complex models. Using priors in `epiobs` is similar to what is discussed here.
+<div class="article_container">
 
-*Please note that the current default priors may not be appropriate, 
-and should not be relied upon. In future versions of the package, 
-we hope to set reasonable default priors.*
+# Priors on Model Parameters 
+<hr>
+
+**epidemia** aims to 
+give the user a high degree of control over setting prior distributions. It does this 
+by leveraging the functionality provided by **rstanarm**, which defines functions 
+representing a number of different prior families. These include for example student-t, laplace, 
+and hierarchical shrinkage families. In this article, we provide 
+a brief introduction to the available families, and discuss some important quirks 
+to be aware of when defining priors. We use the same mathematical notation as in the 
+[model description article](model-description.html). 
+
+*Please do not rely on the default priors in epidemia. Although these have been 
+designed to be weakly informative, they are not guaranteed to be appropriate 
+for your particular model. Please adjust prior distributions as required.*
+
+Priors must be defined for all parameters in each of the three model components: 
+transmission, infection, and observations. In the transmission model, priors must 
+be set for all effects appearing in the linear predictor $\eta$. In the 
+infection model, a prior must be set on $\tau$, but also on the dispersion 
+parameter $d$ in the extended version of the model. In each observational 
+model, priors must be set for effects defining the ascertainment rates, but also 
+for the auxiliary parameter for the sampling distribution, $\phi$. 
+
+In general, primitive model parameters are either intercepts, 
+fixed effects, a covariance matrix, an auxiliary parameter, or the error term 
+in a random walk. We discuss each in turn, in particular highlighting where they 
+appear in the model, and what distributions are available for them.
 
 
-Recall the parameterisation of the time-varying basic reproduction number introduced in the introductory vignette. To recap, $\tilde{R}_t$ is expressable as
+## Priors on Intercepts
+
+Intercepts can appear in the linear predictor $\eta$ for the reproduction numbers 
+$R$ and in the linear predictors for ascertainment rates $\alpha$. The prior 
+distribution is specified using an argument `prior_intercept`. This appears in 
+both `epirt()` and `epiobs()`. `prior_intercept` must be a call to an 
+**rstanarm** function that represents a student-t family: i.e. one of 
+`rstanarm::normal`, `rstanarm::student_t` or `rstanarm::cauchy`. `prior_intercept` 
+is of course only used if the formula specifies an intercept. Please note that 
+the interpretation of `prior_intercept` depends on the `center` argument to 
+`epirt()` and `epiobs()`. Please see Section \@ref(sec:centering) for more details.
+
+## Priors on Regression Coefficients
+
+In addition to intercepts, the predictors for $R$ and $\alpha$ may also contain fixed effects.
+In the regression for $R$ this corresponds to the parameter vector $\beta$. The 
+prior distribution is set using the `prior` argument, which, similarly to 
+`prior_intercept`, appears in both `epirt()` and `epiobs()`. Note that 
+this *does not* set the prior for the group-specific effects $b$, which 
+are instead controlled by `prior_covariance`.
+
+`prior` can be a call to one of rstanarm's prior functions. These can be broadly 
+grouped into four families: student-t, hierarchical shrinkage, laplace and 
+the product normal family. Note that *all effects must follow the same 
+family*; for example, it is not possible for $\beta_1$ to have
+a normal prior while $\beta_2$ has a Cauchy prior. Nonetheless, different 
+hyperparameters can be set for each effect. 
+
+As an example, suppose the following formula is used to model $R$, where 
+`cov1` and `cov2` are some covariates.
+```{r eval = FALSE}
+R(group, date) ~ 1 + cov1 + cov2
+```
+Using `prior = rstanarm::normal(location=0,scale=1)` in the call to `epirt()` would 
+give a standard normal prior to both covariate effects.
+To give different prior locations and or scales for each covariate, 
+we simply pass numeric vectors instead of scalars. 
+For example, `prior = rstanarm::normal(location=c(0,1),scale=c(1,2))` would 
+set priors $\beta_1 \sim N(0,1)$ and $\beta_2 \sim N(1,2)$, where $\beta_1$ 
+and $\beta_2$ are the effects for `cov1` and `cov2` respectively.
+
+The interpretation of `prior` depends on whether covariates are being centered, 
+and whether automatic scale adjustments are occurring. Please see \@ref(sec:caveats) 
+for more details.
+
+### Additional Priors
+
+In addition to **rstanarm**'s prior functions, **epidemia** offers additional 
+priors for regression coefficients. Currently, there is just one, `shifted_gamma`. 
+This represents a gamma distributionthat can be shifted so that it has support 
+other than on $[0, \infty)$. Specifically,
 \begin{equation}
-\tilde{R}_t = 2R' \text{logit}^{-1}\left(\eta_t\right),
-(\#eq:rt)
+\beta_i \sim \text{Gamma}(\alpha_i, \theta_i) - a_i,
 \end{equation}
-where $R'$ is a constant and $\eta_t$ is a linear predictor. $\eta_t$ can be decomposed as
+where $\alpha_i$ and $\theta_i$ are shape and scale parameters, and $a_i$ is a 
+shift. This prior is used in @Flaxman2020 to model 
+the prior effect of non-pharmaceutical interventions (NPIs). Intuitively, it 
+is unlikely that an NPI designed to reduce transmission rates ends up increasing 
+transmission significantly. This implies that a symmetric prior may not be 
+appropriate for these effects: it makes sense to put low mass on large positive 
+effect sizes. In addition, this prior can help to improve identifiability when multiple 
+NPIs occur in quick succession - as is often the case during the early stages of 
+an epidemic.
+
+## Priors on Auxiliary Parameters
+
+Auxiliary parameters can appear in the sampling distributions for observations. 
+This corresponds to the parameter $\phi$ in the model-description vignette. The 
+interpretation of this parameter depends on the chosen distribution: Poisson 
+has no auxiliary parameter as it is fully defined by its mean. For the 
+negative binomial distribution (specified by using `family = "neg_binom"` in the 
+call to `epiobs()`), $\phi$ represents the reciprocal dispersion. An auxiliary parameter $d$
+also exists in the extended version of the infection model (when using `latent = TRUE` in 
+the call to `epiinf()`). This represents the *coefficient of variation* of the 
+offspring distribution. Auxiliary parameters are always non-negative in **epidemia**.
+
+Priors for auxiliary parameters are set using the `prior_aux` argument in the 
+`epiobs()` and `epiinf()` modeling functions. It is not used when 
+`family = "poisson` in the call to `epiobs()` or when `latent = FALSE` in the 
+call to `epiinf()`. `prior_aux` can be a call to one of `rstanarm::normal()`, 
+`rstanarm::student_t()`, `rstanarm::cauchy()` or `rstanarm::exponential()`.
+
+## Priors on Covariance Matrices
+
+Recall that partial pooling can be used in the regression for $R$. The 
+partially pooled parameters $b$ are characterised as zero mean multivariate 
+normal with an unknown covariance matrix, which must itself be assigned a prior.
+The precise model for these parameters is described in detail in the 
+[partial pooling article](partial-pooling.html). The prior on the covariance 
+matrix can be set using the `prior_covariance` argument in `epirt()`.
+
+Although the Inverse-Wishart prior is a popular prior for covariance matrices, 
+it does not cleanly separate shape and scale [@tokuda2011]. A general approach 
+is to decompose the prior on the covariance matrix into a prior on 
+the correlation matrix and a vector of variances. This is the approach taken 
+by **rstanarm**, which has functions `rstanarm::decov` and `rstanarm::lkj` which 
+represent priors for covariance matrices. These are also used by **epidemia** 
+for the same purpose.
+
+We briefly describe **rstanarm**'s decov prior, as it applies to partially 
+pooled parameters in the regression for $R$. For a comprehensive account, 
+please refer to this [article](http://mc-stan.org/rstanarm/articles/glmer.html).
+ 
+Before reading on, it helps to review the [partial pooling vignette](partial-pooling.html).
+Suppose the formula for $R$ contains a term of the form `(expr | factor)`, and 
+that `expr` evaluated to a model matrix with $p$ columns, and `factor` has $L$ 
+levels. Letting $\theta_l$ denote the $p$-vector of paramaters for the $l$^th^ 
+group, recall from the partial pooling vignette that this is modeled as 
 \begin{equation}
-\eta_t = X'_t\beta + Z'_t b + Q'_t\gamma_t.
-(\#eq:eta)
+  \theta_{l} \sim N(0, \Sigma),
 \end{equation}
-For more detailed information about this decomposition, please refer to the [introductory vignette](introduction.html).
+where $\Sigma$ is a $p \times p$ covariance matrix. The decov prior decomposes
+$\Sigma$ into a vector of variances $(\sigma^2_1, \ldots \sigma^2_p)$ and a 
+correlation matrix $\Omega$, which is given an LKJ prior. The variance 
+vector is decomposed into the product of a simplex vector $s$ and the trace of
+$\Omega$, which is just the sum of the individual variances. Specifically,
+\begin{equation}
+\sigma^2_i = s_i \text{tr}\left(\Sigma\right).
+\end{equation}
+The simplex vector is given a symmetric dirichlet prior, while the trace is 
+decomposed into $tr(\Sigma) = p \kappa^2$, where $p$ is the order of the matrix 
+(i.e. the number of correlated effects), and $\kappa$ is a parameter which is 
+assigned a scale invariant prior; specifically a Gamma with given shape and 
+scale hyperparameters. When $p = 1$, for example with `(1 | factor)`,
+the prior simplifies considerably. $\Sigma$ simply reduces to $\kappa^2$, which 
+has a Gamma prior. 
 
-The priors for $\beta$ are set using the `prior` and 
-`prior_intercept` arguments. These will only have an effect if the formula 
-specifies covariates and an intercept respectively. These function  similarly 
-to the same arguments in [`stan_lm`](https://mc-stan.org/rstanarm/reference/stan_lm.html). 
-To understand which families can be used please refer to 
-[rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html). 
+## Priors on Random Walks
 
-Suppose we are modeling a single group and \@ref(eq:rt) specifies an intercept. If `center=FALSE` in a call to `epirt`, then `prior_intercept` sets the prior on the raw intercept. If all other covariates are zero at the beginning of the epidemic then 
-this can be viewed as specifying a prior on the initial reproduction rate. We do not recommend 
-using `center=TRUE`, because `prior_intercept` then refers to 
-the prior on the intercept after all covariates have been centered. This is a difficult 
-quantity to intuit for these models.
+# Caveats {#sec:caveats}
 
-# Autoscaling `prior`
+There are several important caveats to be aware of when using prior distributions 
+in **epidemia**.
 
-The scale of the `prior` argument may be adjusted internally to attempt to make the prior 
-is weakly informative. This functionality mirrors that used in **rstanarm**. This rescaling can occur both when the default argument is used, and when 
-it is user-specified. This adjustment can easily be disabled by setting `autoscale=FALSE` in the 
-call to the prior functions. An example of such a call would be `rstanarm::normal(autoscale=FALSE)`.
+## Covariate Centering {#sec:centering}
 
-The automatic scaling rules used for the `prior` is the same as that in **rstanarm**. For clarity, 
-we repeat these rules here. Please also refer to [rstanarm's priors](https://mc-stan.org/rstanarm/reference/priors.html) for more information on this.
+By default, covariates in the regressions for $R$ and $\alpha$ are not centered
+automatically by **epidemia**. This can, however, be done by using `center = TRUE` 
+in the call to `epirt()` and `epiobs()` respectively. It is important to 
+note that if `center = TRUE`, the `prior_intercept` and `prior` set the priors 
+on the intercept and coefficients *after centering the covariates*.
+
+Covariates are not centered automatically because often the intercept has an 
+intuitive interpretation in the model. For example, if all covariates are 
+zero at the beginning of the epidemic, then the intercept can be seen as 
+specifying the $R_0$ of the disease. If `center = TRUE`, then the intercept 
+no longer has an easily intuited interpretation.
+
+### Autoscaling {#sec:autoscale}
+
+**rstanarm**'s prior functions have an arugment called `autoscale`. 
+If `autoscale = TRUE`, then **epidemia** automatically adjusts the prior scale to 
+account for the scale of the covariates. This only applies to priors on 
+fixed effects, and not to the intercepts. **epidemia** rescales according to the 
+following rules.
 
 * If a predictor has only one unique value, no rescaling occurs.
 * If it has two unique values, the original scale is divided by the range of the values.
 * For more than two unique values, the original scale is divided by the standard deviation of the predictor.
 
-If you are unsure whether rescaling has occurred, call `prior_summary` on a fitted model object.
-If an adjustment has been made, this will show both the originally specified prior and the scaled version An example is given below.
+If you are unsure whether rescaling has occurred, call `prior_summary` on a 
+fitted model object. This gives details on the original priors specified, and 
+the priors that were actually used after rescaling.
 
-```{r priorAS, message=FALSE, warning=FALSE}
-library(epidemia)
-options(mc.cores = parallel::detectCores())
-
-data("EuropeCovid")
-args <- EuropeCovid
-args$group_subset <- "France"
-args$algorithm <- "sampling"
-args$sampling_args <- list(iter = 10, seed=12345)
-args$rt <- epirt(
-  formula = R(country,date) ~ 1 + schools_universities + lockdown 
-)
-fm <- do.call(epim, args)
-# default prior scale not adjusted
-prior_summary(fm)
-```
-Notice that no rescaling occurs and the default priors are used.
-
-
-```{r priorAS2, message=FALSE, warning=FALSE}
-# rescale lockdown indicator
-args$data$lockdown <- 100 * args$data$lockdown
-fm2 <- do.call(epim, args)
-# notice the rescaled prior for lockdown
-prior_summary(fm2)
-
-```
-Rescaling the lockdown indicator has lead to an adjusted prior on the lockdown coefficient.
-
-# Additional Priors
-
-**epidemia** offers additional priors on top of those in **rstanarm**. Currently there is just one, `shifted_gamma`, which can only be used for the `prior` argument. The addition of this prior is motivated by the priors used in @Flaxman2020. This essentially allows for 
-\begin{equation}
-\beta_i \sim \text{Gamma}(\alpha,\theta) - \eta,
-\end{equation}
-where $\alpha$ and $\theta$ are shape and scale parameters, and $\eta$ is a shift to allow for priors with support below zero.
-
-## Priors on Covariance Matrices
-
-Consider a single 'random-effects' term in the formula. A good example would be `(1 + lockdown | country)`. For each group the intercepts and slopes are treated as zero-mean multivariate normal with unknown covariance matrix $\Sigma$. For our example term, fix one level implied by the factor `country`, say `"Italy"`. For this group, there are two coefficients - a random intercept for Italy, and a random slope. Therefore $\Sigma$ has dimension $2 \times 2$. Coefficients for different groups are treated as independent. 
-
-**epidemia** borrows from **rstanarm** and uses the [`decov`](rstanarm priors) prior for $\Sigma$. This decomposes $\Sigma$ into a variance vector and a correlation matrix. An LKJ prior is used on the correlation matrix, while the variance is decomposed into the product of a simplex vector and the trace of $\Sigma$. The simplex vector is given a symmetric Dirichlet prior, which the trace is once again decomposed as $tr(\Sigma) = J \kappa$, where $J$ is the order of $\Sigma$. Finally $\kappa$ is assigned a scale-invariant prior - specifically a Gamma distribution with give shape and scale hyperparameters. For more information on this, please see [rstanarm priors](http://mc-stan.org/rstanarm/reference/priors.html) and this [vignette](http://mc-stan.org/rstanarm/articles/glmer.html).
-
-When the left hand side of the formula has only one term (for example `(1 | country)`), this prior on the covariance simplifies considerably. $\Sigma$ simply reduces to $\kappa$, which has a gamma prior.
 
 # References
+
+
+
+</div>

@@ -25,7 +25,11 @@ pp_eta <- function(object, stanmat) {
 # @param object An epirt_ or epiobs_ object
 # @param A matrix of parameter draws
 pp_eta_fe <- function(object, stanmat) {
-  nme <- .get_obs(formula(object))
+  if (class(object) == "epirt_") {
+    nme <- "R"
+  } else {
+    nme <- .get_obs(formula(object))
+  }
   x <- object$fe
   par_nms <- NULL
   if (NCOL(x) > 0)
@@ -44,7 +48,11 @@ pp_eta_fe <- function(object, stanmat) {
 # @param object An epirt_ or epiobs_ object
 # @param A matrix of parameter draws
 pp_eta_re <- function(object, stanmat) {
-  nme <- .get_obs(formula(object))
+    if (class(object) == "epirt_") {
+    nme <- "R"
+  } else {
+    nme <- .get_obs(formula(object))
+  }
   z <- object$group$Z
   if (is.null(z)) {
     return(NULL)
@@ -62,7 +70,11 @@ pp_eta_re <- function(object, stanmat) {
 # @param object An epirt_ or epiobs_ object
 # @param A matrix of parameter draws
 pp_eta_ac <- function(object, stanmat) {
-  nme <- .get_obs(formula(object))
+  if (class(object) == "epirt_") {
+    nme <- "R"
+  } else {
+    nme <- .get_obs(formula(object))
+  }
   z <- object$autocor$Z
   if (is.null(z)) {
     return(NULL)
@@ -70,7 +82,11 @@ pp_eta_ac <- function(object, stanmat) {
   stanmat_orig <- stanmat
   #return(list(stanmat_orig=stanmat_orig,stanmat=stanmat, z=z, object=object))
   stanmat <- new_rw_stanmat(object, stanmat)
-  return(linear_predictor(stanmat, z))
+
+  return(linear_predictor(
+    stanmat, 
+    z[,grep("NA", colnames(z), invert=TRUE)] # remove NA part of this
+  ))
 } 
 
 # Creates a new stanmatrix for random walks
@@ -79,7 +95,11 @@ pp_eta_ac <- function(object, stanmat) {
 # @param object epirt_ or epiobs_ object
 # @param stanmat Matrix of parameter draws
 new_rw_stanmat <- function(object, stanmat) {
-  nme <- .get_obs(formula(object))
+    if (class(object) == "epirt_") {
+    nme <- "R"
+  } else {
+    nme <- .get_obs(formula(object))
+  }
 
   # newnms <- grep(
   #   pattern = paste0("^", nme, "\\|rw\\(.*\\)\\[.*,.*\\]$"),
@@ -88,6 +108,7 @@ new_rw_stanmat <- function(object, stanmat) {
   # )
 
   newnms <-  paste0(nme, "|", colnames(object$autocor$Z))
+  newnms <- grep("NA", newnms, invert=TRUE, value=TRUE)
 
   df <- parse_rw_labels(newnms)
   df$name <- newnms
@@ -144,6 +165,7 @@ pp_b_ord <- function(nms, stanmat) {
       colnames(stanmat),
       fixed = T
     )
+    len <- length(m)
     if (len == 1) {
       return(m)
     }

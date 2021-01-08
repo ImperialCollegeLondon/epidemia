@@ -1,0 +1,217 @@
+---
+title: "Model Description"
+output:
+  bookdown::html_document2:
+    theme: flatly
+link-citations: yes
+bibliography: ../inst/REFERENCES.bib
+pkgdown:
+  as_is: true
+---
+
+<style>
+.contents .page-header {
+    display: none;
+}
+</style>
+
+<div class = "article_container">
+
+# Basic Model 
+<hr>
+
+We now formulate the basic version of the model for one homogeneous population. The same model can be used for multiple regions or groups jointly. Suppose we observe a time series of data $Y = (Y_1, \ldots Y_n)$ in a single region. This could for example be daily death or case incidence data. $Y_t$ is modeled as deriving from past new infections $i_s$, $s < t$, and some parameter $\alpha_t$ representing the instantaneous *ascertainment rate*. The general model can be expressed as 
+\begin{align}
+    Y_t & \sim p(y_t , \phi), (\#eq:ysampling) \\\\
+    y_t & = \alpha_t \sum_{s < t} i_s \pi_{t-s} (\#eq:obsmean),
+\end{align}
+where $y_t$ is the expected value of the data distribution and $\phi$ is an auxiliary parameter. $\pi_{k}$ is typically the time distribution from an infection to an observation, which we refer to as the *infection to observation* distribution. New infections $i_t$ at times $t>0$ are modeled through a discrete renewal process, and are tempered by a non-negative parameter $R_t$ which represents the reproduction number at time $t$. Formally
+\begin{align} 
+i_t &= R_t \sum_{s < t} i_s g_{t-s},
+(\#eq:renewal)
+\end{align}
+where $g$ is a probability mass function for the time between infections. The recursion is initialised with *seeded* infections $i_{v:0}$, $v < 0$, which are treated as unknown parameters. All parameters are assigned priors, i.e.
+\begin{equation}
+    i_{v:0}, R, \phi, \alpha \sim p(\cdot),
+\end{equation}
+where $R = (R_1, \ldots, R_n)$ and $\alpha = (\alpha_1, \ldots, \alpha_n)$. The posterior distribution is then proportional to prior and likelihood, i.e.
+\begin{equation}
+    p(i_{v:0}, R, \phi, \alpha \mid Y) \propto p(i_{v:0})p(R)p(\phi)p(\alpha) \prod_{t} p(Y_t \mid y_t, \phi).
+\end{equation}
+**epidemia** represents this posterior distribution in Stan, and uses its adaptive Hamiltonian Monte Carlo sampler to approximately draw samples from this posterior distribution. These samples allow for inference on the parameters, in addition to simulating data from the posterior predictive distribution.
+
+Transmission rates $R$ and ascertainments $\alpha$ can be modeled flexibly using Bayesian regression models, and through sharing of parameters, are the means through which we tie together multiple regions or groups using multilevel modeling. One can, for example, model transmission rates as depending on a binary covariate for an NPI, say full lockdown. The coefficient for this can be *partially pooled* between these groups. The effect is to share information between groups, while still permitting between group variation.
+
+
+# Observations {#sec:observations}
+<hr>
+
+$Y_t$ is typically the \textit{count of events} occurring at time $t$.
+Such events are precipated by past infections. 
+Prototypical examples include daily case or death counts. 
+$\alpha_t$ represents an *ascertainment rate*. 
+For case or death data this would be the infection ascertainment rate (IAR) or the infection fatality rate (IFR) respectively. 
+$\alpha$ plays a similar role for observations as $R$ does for infections; 
+tempering expected observations for time-specific considerations. 
+As such, **epidemia** models $\alpha$ in a similar manner to $R$; parameterising it as a transformed linear predictor.
+This is discussed in detail in Section \@ref(sec:transmission), and is not repeated here.
+
+The sampling distribution $p(y_t, \phi)$ (Equation \@ref(eq:ysampling)) should generally be informed by 
+parts of the data generating mechanism not captured by the mean $y_t$: i.e. any mechanisms which 
+may induce additional variation around $y_t$. Options for $p(y_t, \phi)$ include the Poisson, quasi-Poisson 
+and negative-binomial families. 
+Poisson has no auxiliary parameter $\phi$, while for the latter two families this represents a non-negative
+*dispersion parameter* which is assigned a prior.
+
+**epidemia** allows for multiple observation vectors, in which case we can simply 
+superscript $Y_t^{(l)}$, $\alpha_{t}^{(l)}$ and $\pi^{(l)}$, and assign independent sampling distributions for each type. 
+Separate models are then specified $\alpha_{t}^{(l)}$.
+Multiple observation types can often enchance a model.
+High quality death data existed during the first wave of the Covid-19 pandemic in Europe.
+Case data gradually increased in reliability over time, and has the advantage of picking up 
+changes in transmission dynamics much quicker than death data. 
+
+# Infections {#sec:infections}
+<hr>
+
+Infections $i_t$ propagate over time through the discrete renewal process \@ref(eq:renewal). 
+This is *self-exciting*: past infections give rise to new infections. 
+The theoretical motivation for this lies in counting processes and is explained in more detail in 
+@bhatt2020. The equation is connected to Hawkes processes and the Bellman Harris branching process 
+[@bellman1948; @bellman1952;@mishra2020]. Such processes have been used in numerous previous studies 
+[@fraser_2007;@Cori2013;@nouvellet_2018;@cauchemez_2008], and are also connected to compartmental models 
+such as the SEIR model [@champredon_2018].
+
+Equation \@ref(eq:renewal) implies that $i_t$, $t > 0$ are deterministic given $R$ and seeded infections $i_{v:0}$. 
+**epidemia** sets a prior on $i_{v:0}$ by first assuming that daily seeds constant over the seeding period. 
+Formally, $i_{k} = i$ for each $k \in \{v,\ldots 0\}$. 
+The parameter $i$ is modeled hierarchically as
+\begin{align}
+    i &\sim \text{Exp}(\tau^{-1}), (\#eq:seeds)\\\\
+    \tau & \sim \text{Exp}(\lambda_0) (\#eq:tau),
+\end{align}
+where $\lambda_0 > 0$ is a rate hyperparameter. 
+This prior is uninformative, allowing seeds to be largely determined by initial transmission rates and the chosen start date of the epidemic.
+Several extensions to this infection process are possible in **epidemia**, including extending \@ref(eq:renewal) to better capture 
+dynamics such as super-spreading events, and also adjusting the process for the size of the remaining susceptible population. These 
+extensions are discussed in Section \@ref(sec:latent) and \@ref(sec:popadjust) respectively.
+
+# Transmission {#sec:transmission}
+<hr>
+
+Reproduction numbers are modeled flexibly. One can form a linear predictor consisting of fixed effects, random effects and autocorrelation terms, which is then transformed via a suitable link function. Formally
+\begin{equation}
+    R = g^{-1}(\eta),
+\end{equation}
+where $g$ is a link function and $\eta$ is a linear predictor. In full generality, $\eta$ can be expressed as 
+\begin{equation}
+    \eta = \beta_0 + X \beta + Z b + Q \gamma,
+    (\#eq:linpred)
+\end{equation}
+where $X$ is an $n \times p$ model matrix, $Z$ is an $n \times q$ model matrix for the $q$-vector of group-specific parameters $b$. $Q$ is an $n \times r$ model matrix for the $r$-vector of autocorrelation terms. 
+The columns of $X$ are predictors explaining changes in transmission. These could, for example, be binary vectors encoding non-pharmaceutical interventions, as in @Flaxman2020.
+A number of families can be used for the prior on $\beta$, including normal, cauchy, and hierarchical shrinkage familes. 
+The parameters $b$ are modeled hierarchically as
+\begin{equation}
+    b \sim N(0, \Sigma),
+\end{equation}
+where $\Sigma$ is a covariance matrix that is itself assigned a prior. 
+The particular form for $\Sigma$, as well as its prior is discussed in more detail [here](partial-pooling.html). 
+These parameters are particularly useful when multiple regions are being modeled simultaneously. 
+In this case, they allow information on transmission rates to be shared between groups. 
+
+$Q$ is a binary matrix specifying which of the autocorrelation terms in $\gamma$ to include for each period $t$. 
+Currently, **epidemia** supports only random walk processes. However multiple such processes can be included, and 
+can have increments that occur at a different time scale to $R$; for example weekly increments can be used.
+
+## Link Functions {#sec:links}
+
+Choosing an appropriate link function $g$ is difficult. $R_t$ is non-negative, but is clearly not able to grow exponentially: regardless of the value of the linear predictor $\eta_t$, one expects $R_t$ to be bounded by some maximum value $K$. In other words, $R_t$ has some *carrying capacity*. One of the simplest options for $g$ is the log-link. This satisfies non-negativity, and also allows for easily interpretable effect sizes; a one unit change in a predictor scales $R_t$ by a constant factor. Nonetheless, it does not respect the carry capacity $K$, often placing too much prior mass on large values of $R_t$. With this in mind, **epidemia** offers an alternative link function satisfying
+\begin{equation}
+    g^{-1}(x) = \frac{K}{1 + e^{-x}} (\#eq:scaledlogit).
+\end{equation}
+This is a generalisation of the logit-link, and we refer to it as the *scaled-logit*.
+That is to say we expect $R$ to have some *carry capacity*. These considerations should inform the choice of link function.
+
+
+# Extensions
+<hr>
+
+## Joint Modelling of Multiple Regions
+
+Consider modeling the evolution of an epidemic across multiple regions/groups. 
+Of course, one can always specify separate models for each group. 
+This approach is quick as each model can be fit in parallel.
+Nonetheless, often there is little high quality data for some groups, 
+particularly in the early stages of an epidemic. 
+A joint model can benefit from improved parameter estimation by 
+*sharing signal across groups*. This can be done by partially or fully 
+pooling parameters describing $R$ and/or $\alpha$.
+
+We give an example for concreteness. 
+Suppose the task is to infer the effect of a series of $p$ non-pharmaceutical interventions (NPIs) on transmission rates.
+Using the framework of Section \@ref(sec:transmission) and letting $R^{(m)}$ be the vector of 
+reproduction numbers for the $m$\textsuperscript{th} group, one could write
+\begin{equation}
+    R^{(m)} = g^{-1}\left( \beta_0 + b_0^{(m)} + X^{(m)} (\beta + b^{(m)}) \right),
+\end{equation}
+where $X^{(m)}$ is an $n \times p$ matrix whose rows are binary vectors indicating which of the $p$ NPIs have been 
+implemented in the $m$\textsuperscript{th} group at that point in time. The parameters $b_{0}^{(m)}$ give each region its own $R_0$, 
+while $b^{(m)}$ allow for region-specific NPI effects.
+These parameters can be partially pooled by letting 
+\begin{equation}
+    (b_0^{(m)}, b^{(m)}) \sim N(0, \tilde{\Sigma}),
+\end{equation}
+for each $m$, and assigning a hyperprior to the covariance matrix $\tilde{\Sigma}$. 
+
+In **epidemia**, seeded infections within each group are modeled hierarchically, with Equations \@ref(eq:seeds) and \@ref(eq:tau) being replaced by
+\begin{align}
+    i^{(m)} &\sim \text{Exp}(\tau^{-1}), \\\\
+    \tau & \sim \text{Exp}(\lambda_0),
+\end{align}
+where $i^{(m)}$ is the daily seeding for the $m$\textsuperscript{th} group.
+
+
+## Infections as Parameters {#sec:latent}
+
+Recall the renewal equation (Equation \@ref(eq:renewal)) which describes how infections propagate in the basic model.
+$i_t$ for $t > 0$ are a deterministic function of seeds $i_{v:0}$ and reproduction numbers $R$. 
+This model does not adequately capture important epidemiological dynamics including, for example, 
+the effects of super-spreading events.
+Although the *expected* number of offspring of any given infection is driven
+by $R$, in practice the actual number of offspring can exhibity considerable variation around this. 
+To capture this randomness, replace Equation \@ref(eq:renewal) with
+\begin{align}
+    i_t &\sim p(i_t', d), (\#eq:infextended)\\\\
+    i_{t}' &= R_t \sum_{s < t} i_s g_{t-s}.
+\end{align}
+This treats $i_t$ as latent parameters which must be sampled. Instead, the \textit{mean value} is described by 
+the renewal equation. $p(i_t', d)$ is parameterised by the mean and the coefficient of variation $d$, which 
+is assigned a prior. This extension can be motivated formally through counting processes. Please see @bhatt2020 
+for more details.
+
+## Population Adjustments {#sec:popadjust}
+
+Nothing in Equation \@ref(eq:renewal) stops cumulative infections from exceeding the total susceptible population 
+$S_0$ in the region being considered. In particular, if $R_t$ is above 1 infections can grow exponentially over time. 
+This does not always present a problem for modeling. Indeed the posterior distribution usually constrains 
+past infections to reasonable values. Nonetheless, forecasting in the basic model will be unrealistic if 
+projected infections grow too large. As the susceptible population diminishes, the transmission rate is also 
+expected to reduce. 
+
+**epidemia** can apply a transformation to infections to ensure cumulative infections remain bounded by $S_0$, and 
+that transmission rates are adjusted for changes in the sucseptible population. We define the susceptible population $S_t$
+at time $t$ as the number of individuals who are susceptible at time $0$ and have not been removed by vaccination. Note 
+that this excludes those who may have been previously infected by time $t$. 
+
+Let $i'_t$ denote the unadjusted infections from the model: this is given by \@ref(eq:renewal) in the basic model 
+or by \@ref(eq:infextended) if the extension of Section \@ref(sec:latent) is applied. Then we let
+\begin{equation}
+    i_t = (S_0 - I_{t-1}) \left(1 - \exp \left(-\frac{S_t}{S_0}\frac{i'_t}{S_0}\right)\right),
+\end{equation}
+where $I_t = \sum_{s< t} i_s$ are cumulative infections by $t-1$. The motivation for this adjustment is 
+provided in @bhatt2020.
+
+# References
+
+</div>

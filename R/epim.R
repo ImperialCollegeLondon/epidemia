@@ -17,37 +17,31 @@
 #'
 #' @param rt An object of class \code{\link[epidemia]{epirt}}. This specifies
 #'  the model for the time-varying reproduction number.
+#' @param inf An object of class \code{\link[epidemia]{epiinf}}. This specifies 
+#'  the model for latent infections. Defaults to \code{epiinf()}.
 #' @param obs A list of \code{\link[epidemia]{epiobs}} objects. Each
 #'  element defines a model for the specified observation vector.
 #' @param data A dataframe containing all data required to fit the model.
 #'  See [lm].
-#' @param pops  A two column dataframe giving the total population of each
-#'  group. First column represents the group, with the second giving the
-#'  corresponding population.
-#' @param si A vector representing the serial interval of the disease (a
-#'  probability vector).
-#' @param seed_days Number of days for which to seed infections.
 #' @param algorithm One of \code{"sampling"}, \code{"meanfield"} or
 #'  \code{"fullrank"}. This specifies which \pkg{rstan} function to use for
 #'  fitting the model.
 #' @param group_subset An optional vector specifying a subset of groups to
 #'  model. Elements should correspond to the group levels specified through the
 #'  \code{data} argument.
-#' @param prior_tau The prior for \eqn{\tau}.This parameter is described in the
-#'  introductory vignette, and controls the variability in the number of
-#'  seeded infections at  the beginning of the epidemic. Must be a call to
-#'  \code{\link[rstanarm]{exponential}}.
 #' @param prior_PD Same as in \code{\link[rstanarm]{stan_glm}}. If \code{TRUE},
 #'  samples parameters from the prior disribution.
 #' Defaults to \code{FALSE}.
-#' @param sampling_args An (optional) named list of parameters to pass to the
+#' @param init_run For certain datasets the sampler can find itself trapped in a
+#'  local mode where herd immunity is achieved. If TRUE, an MCMC run where 
+#'  the population adjustment is disabled is used to initialise the parameters for 
+#'  the main sampling. If TRUE, this is done with default parameters. If instead a list is
+#'  provided, these parameters are passed on to the rstan sampling function for the initial run.
+#'  initial run. The seed used is that specified in \code{init_run}, or that
+#'  specified in ..., or no seed, in that order.
+#' @param ... An (optional) named list of parameters to pass to the
 #'  \pkg{rstan} function used for model fitting, for example
 #'  \code{rstan::sampling}.
-#' @param init_run For certain datasets the sampler can find itself trapped in a
-#'  local mode where herd immunity is achieved. If TRUE, a short MCMC run
-#'  fitting to cumulative data is used to initialize the parameters for the main
-#'  sampler.
-#' @param ... Not used.
 #' @examples
 #' \dontrun{
 #' data("EuropeCovid")
@@ -68,134 +62,129 @@
 #' @references
 #' \insertAllCited{}
 #' @export
-epim <- function(rt,
-                 obs = list(),
-                 data,
-                 pops,
-                 si,
-                 seed_days = 6,
-                 algorithm = c("sampling", "meanfield", "fullrank"),
-                 group_subset = NULL,
-                 prior_tau = rstanarm::exponential(rate = 0.03),
-                 prior_PD = FALSE,
-                 sampling_args = list(),
-                 init_run = FALSE,
-                 ...) {
+epim <- function(
+  rt,
+  inf,
+  obs,
+  data,
+  algorithm = c("sampling", "meanfield", "fullrank"),
+  group_subset = NULL,
+  prior_PD = FALSE,
+  init_run = FALSE,
+  ...
+) {
+  call <- match.call(expand.dots = TRUE)
+  op <- options("warn")
+  on.exit(options(op))
+  options(warn=1)
+  check_rt(rt)
+  check_inf(inf)
+  check_obs(obs)
+  if (inherits(obs, "epiobs")) obs <- list(obs)
+  check_group_subset(group_subset)
+  check_data(data, rt, inf, obs, group_subset)
+  check_logical(prior_PD)
+  check_scalar(prior_PD)
+  check_init_run(init_run)
 
-  call    <- match.call(expand.dots = TRUE)
-  rt_orig <- check_rt(rt)
-  data    <- check_data(formula(rt), data, group_subset)
-  obs_orig <- check_obs(rt, obs)
-  groups  <- levels(data$group)
-  pops    <- check_pops(pops, groups)
-  si      <- check_sv(si, "si")
   algorithm <- match.arg(algorithm)
+  sampling_args <- list(...)
+  data <- parse_data(data, rt, inf, obs, group_subset)
 
-  if (seed_days < 1) {
-    stop("'seed_days' must be greater than zero", call. = FALSE)
-  }
-
-  # generates model matrices for each regression
-  rt <- epirt_(rt_orig, data)
+  # generate model matrices for Rt and obs
+  rt_orig <- rt
+  obs_orig <- obs
+  rt <- epirt_(rt, data)
   obs <- lapply(obs_orig, epiobs_, data)
 
-  sdat <- match.call(expand.dots = FALSE)
-  fml <- formals()
-  dft <- fml[setdiff(names(fml), names(sdat))]
-  sdat[names(dft)] <- dft
-  rm <- c("algorithm", "sampling_args", "init_run", "...")
-  sdat[rm] <- NULL
-  checked <- loo::nlist(rt, data, obs, pops, si)
-  sdat[names(checked)] <- checked
-  sdat[[1L]] <- NULL
-  sdat <- as.list(sdat)
+  # collect arguments for standata function
+  args <- loo::nlist(rt, inf, obs, data, prior_PD)
 
-  if (algorithm == "sampling") { # useful for debugging
-    if (length(sampling_args$chains) > 0 &&
-        sampling_args$chains == 0) {
-          message("Returning standata as chains = 0")
-          return(do.call(standata_all, sdat))
-        }
-  }
+  # compute standata
+  sdat <- do.call(standata_all, args)
 
-  if (init_run) {
-    print("Prefit to obtain reasonable starting values")
-    cobs <- lapply(obs, function(x) cumulate(x))
-    # replace obs with cobs for initial fit
-    sdat_init <- sdat
-    sdat_init$obs <- cobs
-    sdat_init <- do.call(standata_all, sdat_init)
-
-    args <- list(iter = 100, chains = 1)
-    args$object <- stanmodels$epidemia_base
-    args$data <- sdat_init
-    prefit <- do.call("sampling", args)
-
-    # function defining parameter initialisation
-    initf <- function() {
-      i <- sample(1:50, 1)
-      res <- lapply(
-        rstan::extract(prefit),
-        function(x) {
-          if (length(dim(x)) == 1) {
-            as.array(x[i])
-          }
-          else if (length(dim(x)) == 2) {
-            x[i, ]
-          } else {
-            x[i, , ]
-          }
-        }
-      )
-      for (j in names(res)) {
-        if (length(res[j]) == 1) {
-          res[[j]] <- as.array(res[[j]])
-        }
-      }
-      res$tau_raw <- c(res$tau_raw)
-      res
+  # return standata if no chains are specified
+  if (algorithm == "sampling") {
+    chains <- sampling_args$chains
+    if (!is.null(chains) && chains == 0) {
+      message("Returning standata as chains = 0")
+      return(do.call(standata_all, args))
     }
   }
 
-  sdat <- do.call(standata_all, sdat)
-  sdat <- eval(sdat, parent.frame())
-
-    # parameters to keep track of
-  pars <- c(
-    if (sdat$has_intercept) "alpha",
-    if (sdat$K > 0) "beta",
-    if (length(rt$group)) "b",
-    if (length(sdat$ac_nterms)) "ac_noise",
-    if (sdat$num_ointercepts > 0) "ogamma",
-    if (sdat$K_all > 0) "obeta",
-    if (sdat$len_theta_L) "theta_L",
-    "y",
-    "tau2",
-    if (length(sdat$ac_nterms)) "ac_scale",
-    if (sdat$num_oaux > 0) "oaux"
-  )
+  # better initial values
+  if (is.null(sampling_args$init_r))
+    sampling_args$init_r <- 1e-6
 
   args <- c(
     sampling_args,
     list(
       object = stanmodels$epidemia_base,
-      pars = pars,
+      pars = pars(sdat),
       data = sdat
     )
   )
-  
-  if (init_run) 
-    args$init <- initf 
-
-  sampling <- algorithm == "sampling"
 
   fit <-
-    if (sampling) {
+    if (algorithm == "sampling") {
       do.call(rstan::sampling, args)
     } else {
+      args$algorithm <- algorithm
       do.call(rstan::vb, args)
     }
 
+  # replace names for the simulation
+  orig_names <- fit@sim$fnames_oi
+  fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit, data)
+
+
+  out <- loo::nlist(
+    rt_orig,
+    obs_orig,
+    call,
+    stanfit = fit,
+    rt,
+    inf,
+    obs,
+    data,
+    algorithm,
+    standata = sdat,
+    orig_names
+  )
+
+  return(epimodel(out))
+}
+
+# Decides which parameters stan should track
+#
+# @param sdat Standata resulting from standata_all
+pars <- function(sdat) {
+  out <- c(
+      if (sdat$has_intercept) "alpha",
+      if (sdat$K > 0) "beta",
+      if (sdat$q > 0) "b",
+      if (length(sdat$ac_nterms)) "ac_noise",
+      if (sdat$num_ointercepts > 0) "ogamma",
+      if (sdat$K_all > 0) "obeta",
+      if (length(sdat$obs_ac_nterms)) "obs_ac_noise",
+      if (sdat$len_theta_L) "theta_L",
+      "y",
+      "tau2",
+      if (length(sdat$ac_nterms)) "ac_scale",
+      if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
+      if (sdat$num_oaux > 0) "oaux",
+      if (sdat$latent) "inf_noise",
+      if (sdat$latent) "inf_aux"
+    )
+  return(out)
+}
+
+# make names for the coefficient covariance matrix
+#
+# @param rt An epirt_ object
+# @param sdat Standata
+# @param A stanfit
+make_Sigma_nms <- function(rt, sdat, fit) {
   if (sdat$len_theta_L) {
     cnms <- rt$group$cnms
     fit <- transformTheta_L(fit, cnms)
@@ -212,62 +201,62 @@ epim <- function(rt,
     }
 
     Sigma_nms <- unlist(Sigma_nms)
+    return(Sigma_nms)
   }
+}
 
-  new_names <- c(
-    if (sdat$has_intercept) {
-      "R|(Intercept)"
-    },
-    if (sdat$K > 0) {
-      paste0("R|",colnames(sdat$X))
-    },
-    if (length(rt$group) && length(rt$group$flist)) {
-      c(paste0("R|", colnames(rt$group$Z)))
-    },
-    if (sdat$ac_nterms > 0) {
-      paste0("R|", colnames(rt$autocor$Z))
-    },
-    if (sdat$num_ointercepts > 0) {
-      make_ointercept_nms(obs, sdat)
-    },
-    if (sdat$K_all > 0) {
-      make_obeta_nms(obs, sdat)
-    },
-    if (sdat$len_theta_L) {
-      paste0("R|Sigma[", Sigma_nms, "]")
-    },
-    c(paste0("seeds[", groups, "]")),
-    "tau",
-    if (length(sdat$ac_nterms)) {
-      make_rw_sigma_nms(formula(rt), data)
-    },
-    if (sdat$num_oaux > 0) {
-      make_oaux_nms(obs)
-    },
-    "log-posterior"
-  )
-
-
-  # replace names for the simulation
-  orig_names <- fit@sim$fnames_oi
-  fit@sim$fnames_oi <- new_names
-
-  out <- loo::nlist(
-    rt_orig,
-    obs_orig,
-    call,
-    stanfit = fit,
-    rt,
-    obs,
-    data,
-    seed_days,
-    si,
-    pops,
-    algorithm,
-    standata = sdat,
-    orig_names
-  )
-  return(epimodel(out))
+# make new names for all stan parameters
+#
+# @param sdat The standata
+# @param rt An epirt_ object
+# @param obs A list of epiobs_ objects
+# @param fit The stanfit
+new_names <- function(sdat, rt, obs, fit, data) {
+  out <- c(
+      if (sdat$has_intercept) {
+        "R|(Intercept)"
+      },
+      if (sdat$K > 0) {
+        paste0("R|", colnames(sdat$X))
+      },
+      if (length(rt$group) && length(rt$group$flist)) {
+        c(paste0("R|", colnames(rt$group$Z)))
+      },
+      if (sdat$ac_nterms > 0) {
+        paste0("R|",  grep("NA", colnames(rt$autocor$Z), invert=TRUE, value=TRUE))
+      },
+      if (sdat$num_ointercepts > 0) {
+        make_ointercept_nms(obs, sdat)
+      },
+      if (sdat$K_all > 0) {
+        make_obeta_nms(obs, sdat)
+      },
+      if (sdat$obs_ac_nterms > 0) {
+        make_obs_ac_nms(obs)
+      },
+      if (sdat$len_theta_L) {
+        paste0("R|Sigma[", make_Sigma_nms(rt, sdat, fit), "]")
+      },
+      c(paste0("seeds[", sdat$groups, "]")),
+      "tau",
+      if (sdat$ac_nterms > 0) {
+        make_rw_sigma_nms(rt, data)
+      },
+      if (sdat$obs_ac_nterms > 0) {
+        sapply(obs, function(x) make_rw_sigma_nms(x, data))
+      },
+      if (sdat$num_oaux > 0) {
+        make_oaux_nms(obs)
+      },
+      if (sdat$latent) {
+        make_inf_nms(sdat$begin, sdat$starts, sdat$N0, sdat$NC, sdat$groups)
+      },
+      if (sdat$latent) {
+        "inf|dispersion"
+      },
+      "log-posterior"
+    )
+    return(out)
 }
 
 transformTheta_L <- function(stanfit, cnms) {
@@ -303,58 +292,80 @@ transformTheta_L <- function(stanfit, cnms) {
   return(stanfit)
 }
 
+make_obs_ac_nms <- function(obs) {
+  nms <- c()
+  for (o in obs) {
+    x <- grep("NA", colnames(o$autocor$Z), invert=T, value=T)
+    if (length(x) > 0) {
+      x <- paste0(.get_obs(o$formula), "|", x)
+      nms <- c(nms, x)
+    }
+  }
+  return(nms)
+}
+
 make_rw_nms <- function(formula, data) {
   trms <- terms_rw(formula)
   nms <- character()
   for (trm in trms) {
     trm <- eval(parse(text = trm))
     # retrieve the time and group vectors
-    time <- if (trm$time == "NA") data$date else data[[trm$time]]
-    group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
+    time <- if (is.null(trm$time)) data$date else data[[trm$time]]
+    group <- if (is.null(trm$gr)) "all" else droplevels(as.factor(data[[trm$gr]]))
     f <- unique(paste0(trm$label, "[", time, ",", group, "]"))
     nms <- c(nms, f)
   }
-  return(nms)
+
+  return(c(
+    grep("NA", nms, invert=TRUE, value=TRUE),
+    grep("NA", nms, value=TRUE) # NA values go to the end
+  ))
 }
 
-make_rw_sigma_nms <- function(formula, data) {
-  trms <- terms_rw(formula)
+make_rw_sigma_nms <- function(obj, data) {
+  trms <- terms_rw(formula(obj))
+  nme <- ifelse(class(obj) == "epirt_", "R", .get_obs(formula(obj)))
   nms <- character()
   for (trm in trms) {
     trm <- eval(parse(text = trm))
-    group <- if (trm$gr == "NA") "all" else droplevels(data[[trm$gr]])
-    nms <- c(nms, unique(paste0("R|sigma:", trm$label, "[", group, "]")))
+    group <- if (is.null(trm$gr)) "all" else droplevels(as.factor(data[[trm$gr]]))
+    nms <- c(nms, unique(paste0(nme, "|sigma:", trm$label, "[", group, "]")))
   }
   return(nms)
 }
 
 make_oaux_nms <- function(obs) {
-  has_oaux <- sapply(
-    obs,
-    function(x) !is.null(x$prior_aux)
-  )
-  obs_nms <- sapply(
-    obs,
-    function(x) .get_obs(formula(x))
-  )
-  return(paste0(
-    obs_nms[has_oaux],
-    "|reciprocal dispersion"
-  ))
+  nms <- list()
+  for (o in obs) {
+    if (!is.null(o$prior_aux)) {
+      if (o$family == "neg_binom") {
+        x <- "|reciprocal dispersion"
+      } 
+      else if (o$family == "quasi_poisson") {
+        x <- "|dispersion"
+      }
+      else if (o$family == "normal"){
+        x <- "|standard deviation"
+      } else {
+        x <- "|sigma"
+      }
+      nms <- c(nms,
+      paste0(.get_obs(formula(o)), x))
+    }
+  }
+  return(unlist(nms))
 }
 
+
 make_ointercept_nms <- function(obs, sdat) {
-  if (sdat$num_ointercepts == 0) {
-    return(character(0))
+  nms <- character()
+  for (i in 1:length(obs)) {
+    if (sdat$has_ointercept[i]) {
+      nms <- c(nms,
+        paste0(.get_obs(formula(obs[[i]])), "|(Intercept)"))
+    }
   }
-  obs_nms <- sapply(
-    obs,
-    function(x) .get_obs(formula(x))
-  )
-  return(paste0(
-    obs_nms[sdat$has_ointercept],
-    "|(Intercept)"
-  ))
+  return(nms)
 }
 
 make_obeta_nms <- function(obs, sdat) {
@@ -382,3 +393,244 @@ make_obeta_nms <- function(obs, sdat) {
   )
   return(paste0(repnms, "|", obs_beta_nms))
 }
+
+# @param begin First simulation date
+# @param starts Start index for each group
+# @param N0 Seed days
+# @param N2 Total simulation periods
+# @param groups Character vector giving all simulated groups
+make_inf_nms <- function(begin, starts, N0, NC, groups) {
+  nms <- c()
+  for (m in 1:length(groups)) 
+    nms <- paste0("inf_noise[", begin -1 + seq(starts[m] + N0, NC[m]), ",", groups[m],"]")
+  return(nms)
+}
+
+
+# epim <- function(rt,
+#                  inf,
+#                  obs,
+#                  data,
+#                  algorithm = c("sampling", "meanfield", "fullrank"),
+#                  group_subset = NULL,
+#                  prior_PD = FALSE,
+#                  sampling_args = list(),
+#                  init_run = FALSE,
+#                  ...) {
+
+#   call    <- match.call(expand.dots = TRUE)
+#   rt_orig <- check_rt(rt)
+#   data    <- check_data(formula(rt), data, group_subset)
+#   obs_orig <- check_obs(rt, obs)
+#   groups  <- levels(data$group)
+#   pops    <- check_pops(pops, groups)
+#   algorithm <- match.arg(algorithm)
+#   op <- options("warn")
+#   on.exit(options(op))
+#   options(warn=1)
+
+#   # generates model matrices for each regression
+#   rt <- epirt_(rt_orig, data)
+#   obs <- lapply(obs_orig, epiobs_, data)
+
+#   sdat <- match.call(expand.dots = FALSE)
+#   fml <- formals()
+#   dft <- fml[setdiff(names(fml), names(sdat))]
+#   sdat[names(dft)] <- dft
+#   rm <- c("algorithm", "sampling_args", "init_run", "pop_adjust", "...")
+#   sdat[rm] <- NULL
+#   checked <- loo::nlist(rt, inf, data, obs, pops, si)
+#   sdat[names(checked)] <- checked
+#   sdat[[1L]] <- NULL
+#   sdat <- as.list(sdat)
+
+#   if (algorithm == "sampling") { # useful for debugging
+#     if (length(sampling_args$chains) > 0 &&
+#         sampling_args$chains == 0) {
+#           message("Returning standata as chains = 0")
+#           return(do.call(standata_all, sdat))
+#         }
+#   }
+
+#   if (!isFALSE(init_run)) {
+#     print("Prefit to obtain reasonable starting values")
+    
+#     # replace obs with cobs for initial fit
+#     sdat_init <- sdat
+#     sdat_init$obs <- obs
+#     sdat_init <- do.call(standata_all, sdat_init)
+#     sdat_init$pop_adjust <- FALSE
+
+#     if (is.list(init_run)) {
+#       args <- init_run
+#     } else if (isTRUE(init_run)) {
+#       args <- list(iter=100, chains=1)
+#     } else {
+#       stop("init_run must be logical or a list", .call=FALSE)
+#     }
+
+#     if (is.null(args$seed)) { # use seed for main run if specified
+#       args$seed <- sampling_args$seed
+#     }
+
+#     args$object <- stanmodels$epidemia_base
+#     args$data <- sdat_init
+#     prefit <- do.call("sampling", args)
+#     print(warnings())
+
+#     # function defining parameter initialisation
+#     initf <- function() {
+#       res <- lapply(
+#         rstan::extract(prefit),
+#         function(x) {
+#           if (length(dim(x)) == 1) {
+#             as.array(x[length(x)])
+#           }
+#           else if (length(dim(x)) == 2) {
+#             array(x[dim(x)[1],], dim = c(dim(x)[2]))
+#           } else {
+#             array(x[dim(x)[1],,], dim = c(dim(x)[2], dim(x)[3]))
+#           }
+#         }
+#       )
+#       for (j in names(res)) {
+#         if (length(res[j]) == 1) {
+#           res[[j]] <- as.array(res[[j]])
+#         }
+#       }
+#       res$tau_raw <- c(res$tau_raw)
+#       res
+#     }
+#   }
+
+#   sdat <- do.call(standata_all, sdat)
+#   sdat <- eval(sdat, parent.frame())
+#   sdat$pop_adjust <- pop_adjust
+
+#     # parameters to keep track of
+#   pars <- c(
+#     if (sdat$has_intercept) "alpha",
+#     if (sdat$K > 0) "beta",
+#     if (length(rt$group)) "b",
+#     if (length(sdat$ac_nterms)) "ac_noise",
+#     if (sdat$num_ointercepts > 0) "ogamma",
+#     if (sdat$K_all > 0) "obeta",
+#     if (length(sdat$obs_ac_nterms)) "obs_ac_noise",
+#     if (sdat$len_theta_L) "theta_L",
+#     "y",
+#     "tau2",
+#     if (length(sdat$ac_nterms)) "ac_scale",
+#     if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
+#     if (sdat$num_oaux > 0) "oaux",
+#     if (sdat$latent) "inf_noise",
+#     if (sdat$latent) "inf_aux"
+#   )
+
+#   args <- c(
+#     sampling_args,
+#     list(
+#       object = stanmodels$epidemia_base,
+#       pars = pars,
+#       data = sdat
+#     )
+#   )
+  
+#   if (!isFALSE(init_run)) 
+#     args$init <- initf 
+
+#   sampling <- algorithm == "sampling"
+
+#   fit <-
+#     if (sampling) {
+#       do.call(rstan::sampling, args)
+#     } else {
+#       do.call(rstan::vb, args)
+#     }
+
+#   if (sdat$len_theta_L) {
+#     cnms <- rt$group$cnms
+#     fit <- transformTheta_L(fit, cnms)
+
+#     # names
+#     Sigma_nms <- lapply(cnms, FUN = function(grp) {
+#       nm <- outer(grp, grp, FUN = paste, sep = ",")
+#       nm[lower.tri(nm, diag = TRUE)]
+#     })
+
+#     nms <- names(cnms)
+#     for (j in seq_along(Sigma_nms)) {
+#       Sigma_nms[[j]] <- paste0(nms[j], ":", Sigma_nms[[j]])
+#     }
+
+#     Sigma_nms <- unlist(Sigma_nms)
+#   }
+
+#   new_names <- c(
+#     if (sdat$has_intercept) {
+#       "R|(Intercept)"
+#     },
+#     if (sdat$K > 0) {
+#       paste0("R|", colnames(sdat$X))
+#     },
+#     if (length(rt$group) && length(rt$group$flist)) {
+#       c(paste0("R|", colnames(rt$group$Z)))
+#     },
+#     if (sdat$ac_nterms > 0) {
+#       paste0("R|",  grep("NA", colnames(rt$autocor$Z), invert=TRUE, value=TRUE))
+#     },
+#     if (sdat$num_ointercepts > 0) {
+#       make_ointercept_nms(obs, sdat)
+#     },
+#     if (sdat$K_all > 0) {
+#       make_obeta_nms(obs, sdat)
+#     },
+#     if (sdat$obs_ac_nterms > 0) {
+#       make_obs_ac_nms(obs)
+#     },
+#     if (sdat$len_theta_L) {
+#       paste0("R|Sigma[", Sigma_nms, "]")
+#     },
+#     c(paste0("seeds[", groups, "]")),
+#     "tau",
+#     if (sdat$ac_nterms > 0) {
+#       make_rw_sigma_nms(rt, data)
+#     },
+#     if (sdat$obs_ac_nterms > 0) {
+#       sapply(obs, function(x) make_rw_sigma_nms(x, data))
+#     },
+#     if (sdat$num_oaux > 0) {
+#       make_oaux_nms(obs)
+#     },
+#     if (sdat$latent) {
+#       make_inf_nms(sdat$begin, sdat$starts, sdat$N0, sdat$NC, sdat$groups)
+#     },
+#     if (sdat$latent) {
+#       "inf|dispersion"
+#     },
+#     "log-posterior"
+#   )
+
+
+#   # replace names for the simulation
+#   orig_names <- fit@sim$fnames_oi
+#   fit@sim$fnames_oi <- new_names
+
+#   out <- loo::nlist(
+#     rt_orig,
+#     obs_orig,
+#     call,
+#     stanfit = fit,
+#     rt,
+#     inf,
+#     obs,
+#     data,
+#     seed_days,
+#     si,
+#     pops,
+#     algorithm,
+#     standata = sdat,
+#     orig_names,
+#     pop_adjust
+#   )
+#   return(epimodel(out))
+# }

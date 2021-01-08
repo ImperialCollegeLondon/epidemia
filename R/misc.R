@@ -35,6 +35,13 @@ last_dimnames <- function(x) {
   dimnames(x)[[ndim]]
 }
 
+used.sampling <- function(x) {
+  x$algorithm == "sampling"
+}
+used.variational <- function(x) {
+  x$algorithm %in% c("meanfield", "fullrank")
+}
+
 # Maybe broadcast 
 #
 # @param x A vector or scalar.
@@ -86,12 +93,41 @@ check_reTrms <- function(reTrms) {
     dupe <- reTrms$cnms[[i]]
     overlap <- dupe %in% original
     if (any(overlap))
-      stop("rstanarm does not permit formulas with duplicate group-specific terms.\n", 
+      stop("epidemia does not permit formulas with duplicate group-specific terms.\n", 
            "In this case ", nms[i], " is used as a grouping factor multiple times and\n",
            dupe[overlap], " is included multiple times.\n", 
-           "Consider using || or -1 in your formulas to prevent this from happening.")
+           "Consider using || or -1 in your formulas to prevent this from happening.", call.=FALSE)
   }
   return(invisible(NULL))
+}
+
+
+validate_rhat <- function(x) {
+  stopifnot(is.numeric(x), !is.list(x), !is.array(x))
+  if (any(x < 0, na.rm = TRUE)) {
+    stop("All 'rhat' values must be positive.", .call = FALSE)
+  }
+  x
+}
+
+
+validate_neff_ratio <- function(x) {
+  stopifnot(is.numeric(x), !is.list(x), !is.array(x))
+  if (any(x < 0, na.rm = TRUE)) {
+    stop("All neff ratios must be positive.", .call = FALSE)
+  }
+  x
+}
+
+# Consistent error message to use when something is only available for 
+# models fit using MCMC
+#
+# @param what An optional message to prepend to the default message.
+STOP_sampling_only <- function(what) {
+  msg <- "only available for models fit using MCMC (algorithm='sampling')."
+  if (!missing(what)) 
+    msg <- paste(what, msg)
+  stop(msg, call. = FALSE)
 }
 
 make_glmerControl <- function(..., ignore_lhs = FALSE, ignore_x_scale = FALSE) {

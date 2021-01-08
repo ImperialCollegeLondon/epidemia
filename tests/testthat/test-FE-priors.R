@@ -1,10 +1,13 @@
 context("Prior distributions for fixed effect parameters and intercepts")
 library(rstanarm)
 
-args <- load("../data/NYWA.RData")
-args <- NYWA
-# Only testing correctness of data passed to stan
-args$sampling_args <- list(chains=0)
+load("../data/NYWA.RData")
+
+args <- list()
+args$inf <- epiinf(gen = NYWA$si)
+args$chains <- 0
+expect_warning(args$obs <- epiobs(formula = deaths ~ 1, i2o = NYWA$inf2death * 0.02))
+args$data <- NYWA$data
 
 test_that("test manual prior specification works (for parameters and intercept)", {
   # set to student t distribution
@@ -28,11 +31,10 @@ test_that("test manual prior specification works (for parameters and intercept)"
   # also for intercept
   args$rt <- epirt(
     formula = R(code, date) ~ 1 + av_mobility,
-    prior = NULL,
     prior_intercept = do.call("student_t", args = pargs)
   )
   sdat <- do.call("epim", args=args)
-  expect_equal(sdat$prior_dist_for_intercept, 2)
+  expect_equal(sdat$prior_dist_for_intercept, array(2))
   expect_equal(as.numeric(sdat$prior_mean_for_intercept), pargs$location)
   expect_equal(as.numeric(sdat$prior_scale_for_intercept), pargs$scale)
   expect_equal(as.numeric(sdat$prior_df_for_intercept), pargs$df)
@@ -44,11 +46,11 @@ test_that("Default prior specification (including length)", {
   args$rt <- epirt(
     formula = R(code, date) ~ 1 + av_mobility
   )
-  
+
   sdat <- do.call("epim", args=args)
 
-  fields <- c("prior_mean", 
-              "prior_scale", 
+  fields <- c("prior_mean",
+              "prior_scale",
               "prior_df",
               "prior_mean_for_intercept",
               "prior_scale_for_intercept",
@@ -71,11 +73,11 @@ test_that("Prior scales by standard deviation of the predictor", {
 
   args$rt <- epirt(
     formula = R(code, date) ~ 1 + av_mobility,
-    prior = rstanarm::normal(location = 0, 
-                                scale = 1, 
+    prior = rstanarm::normal(location = 0,
+                                scale = 1,
                                 autoscale = TRUE)
   )
-  
+
   sdat <- do.call("epim", args=args)
   scale_factor <- 1 / sd(args$data[, "av_mobility"])
   expect_equal(as.numeric(sdat$prior_scale), scale_factor)

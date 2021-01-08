@@ -40,7 +40,70 @@ posterior_predict.epimodel <-
       seed = seed,
       ...
     )
-    #return(out)
-    out <- if (posterior_mean) out$E_obs else out$obs
+
+    out <- out$E_obs
+
+    # remove unmodelled types
+    out <- out[types]
+
+    if (!posterior_mean) {
+
+      # filter for required types and get associaited aux params
+      obs <- object$obs[alltypes %in% types]
+      mat <- as.matrix(object, pars = make_oaux_nms(obs))
+
+      for (o in obs) {
+
+        type <- .get_obs(formula(o))
+        family <- o$family
+        draws <- out[[type]]$draws
+
+        if (family == "poisson") {# no auxiliary variable
+          draws <- apply(
+            draws, 
+            2, 
+            function(x) rpois(n=x, lambda=x)
+          )
+        } else {
+          # get samples for the auxiliary variables
+          oaux <- mat[, grep(type, colnames(mat)), drop=FALSE]
+          if (ncol(oaux) != 1) {
+            stop("Bug found. Samples from auxiliary variables required but not found.", .call=FALSE)
+          }
+          if (family == "neg_binom") {
+            draws <- apply(
+              draws, 
+              2, 
+              function(x) rnbinom(n=x, mu=x, size=oaux)
+            )
+          } else if (family == "quasi_poisson") {
+            draws <- apply(
+              draws, 
+              2, 
+              function(x) rnbinom(n=x, mu=x, size= x / oaux)
+            )
+          } else if (family == "normal") {
+            draws <- apply(
+              draws, 
+              2, 
+              function(x) rnorm(n=x, mean=x, sd=oaux)
+            )
+          } else { # log normal
+            draws <- apply(
+              draws, 
+              2, 
+              function(x) rlnorm(n=x, meanlog= x - (oaux * oaux) / 2, sdlog = oaux)
+            )
+          }
+        }
+        out[[type]]$draws <- draws
+      }
+    }
     return(out[[types]])
   }
+
+
+
+
+
+

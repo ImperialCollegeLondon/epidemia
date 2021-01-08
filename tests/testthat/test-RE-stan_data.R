@@ -1,12 +1,14 @@
 context("Random effects stan data")
 
 load(file = "../data/NYWA.RData")
-args <- NYWA
-# No sampling, just return stan data
-args$sampling_args <- list(chains=0)
+args <- list()
+args$data <- NYWA$data
+args$inf <- epiinf(gen=NYWA$si)
+expect_warning(args$obs <- epiobs(deaths ~ 1, i2o = NYWA$inf2death * 0.02))
+args$chains <- 0
 
 test_that("Correct dimensions and values for quantities t, p, q and l in the stan data", {
-  
+
   # check terms for random effects are null if there are none
   args$rt <- epirt(
     formula = R(code, date) ~ 1 + av_mobility
@@ -17,7 +19,7 @@ test_that("Correct dimensions and values for quantities t, p, q and l in the sta
   expect_equal(sdat$len_theta_L,0)
   expect_equal(length(sdat$p),0)
   expect_equal(length(sdat$l),0)
-  
+
   # check quantities for a simple random effects term
   args$rt <- epirt(
     formula = R(code, date) ~ 1 + (av_mobility | code)
@@ -28,7 +30,7 @@ test_that("Correct dimensions and values for quantities t, p, q and l in the sta
   expect_equal(as.numeric(sdat$p), 2)
   expect_equal(as.numeric(sdat$l), 3)
   expect_equal(sdat$len_theta_L, sum(factorial(sdat$p + 1)/2))
-  
+
   # Setting with no intercept
   args$rt <- epirt(
     formula = R(code, date) ~ (0 + av_mobility | code)
@@ -39,7 +41,7 @@ test_that("Correct dimensions and values for quantities t, p, q and l in the sta
   expect_equal(as.numeric(sdat$p), 1)
   expect_equal(as.numeric(sdat$l), 3)
   expect_equal(sdat$len_theta_L, sum(factorial(sdat$p + 1)/2))
-  
+
   # Multiple terms
   args$rt <- epirt(
     formula =  R(code, date) ~ (av_mobility | code) + (0 + residential | code)
@@ -80,7 +82,7 @@ test_that("CSR matrix vectors for random slope model", {
 })
 
 test_that("Correct usage of special_case flag in stan data", {
-  
+
   # Only FE
   args$rt <- epirt(
     formula = R(code, date) ~ 1
@@ -93,7 +95,7 @@ test_that("Correct usage of special_case flag in stan data", {
     formula = R(code, date) ~ (1 | code)
   )
   sdat <- do.call("epim", args=args)
-  expect_true(sdat$special_case) 
+  expect_true(sdat$special_case)
 
   # Random slopes (special_case == FALSE)
   args$rt <- epirt(

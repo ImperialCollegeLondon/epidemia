@@ -45,8 +45,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
                                               "cauchy", "hs", "hs_plus", 
                                               "laplace", "lasso", "product_normal")) {
 
-  if (!length(prior))
-    return(list(prior_dist = 0L, prior_mean = as.array(rep(0, nvars)),
+  if (!length(prior) | nvars == 0)
+    return(list(prior_dist = as.array(rep(0, nvars)), prior_mean = as.array(rep(0, nvars)),
                 prior_scale = as.array(rep(1, nvars)),
                 prior_shift = as.array(rep(0, nvars)),
                 prior_shape = as.array(rep(1, nvars)),
@@ -96,6 +96,7 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
     prior_dist <- 3L # only used for scale parameters so 3 not a conflict with 3 for hs
   }
   
+  prior_dist <- array(prior_dist)
   prior_df <- maybe_broadcast(prior_df, nvars)
   prior_df <- as.array(pmin(.Machine$double.xmax, prior_df))
   prior_mean <- maybe_broadcast(prior_mean, nvars)
@@ -107,16 +108,17 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_shift <- maybe_broadcast(prior_shift, nvars)
   prior_shift <- as.array(prior_shift)
 
-  loo::nlist(prior_dist, 
-        prior_mean, 
-        prior_scale,
-        prior_shape,
-        prior_shift, 
-        prior_df, 
-        prior_dist_name, 
-        global_prior_scale,
-        global_prior_df,
-        slab_df,
-        slab_scale,
-        prior_autoscale = isTRUE(prior$autoscale))
+  loo::nlist(prior_dist,
+    prior_mean,
+    prior_scale,
+    prior_shape,
+    prior_shift,
+    prior_df,
+    prior_dist_name,
+    global_prior_scale,
+    global_prior_df,
+    slab_df,
+    slab_scale,
+    prior_autoscale = isTRUE(prior$autoscale)
+  )
 }

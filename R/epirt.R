@@ -1,4 +1,4 @@
-#' Helper for constructing an object of class 'epirt'
+#' Model Reproduction Numbers
 #'
 #' Defines a model for the latent time varying reproduction number. For more
 #' details on the model assumptions please refer to the online vignettes.
@@ -7,8 +7,8 @@
 #' must take the form `R(group,date)`, with `group` representing a factor
 #' vector indicating group membership (i.e. country, state, age cohort),
 #' and `date` being a vector of Date objects.
-#' @param r0 The prior expected value of \eqn{R_0}. The maximum \eqn{R_0} in the
-#'  simulations will be limited to twice this value.
+#' @param link The link function. This must be either "identity", "log", or a call 
+#'  to scaled_logit.
 #' @param center If \code{TRUE} then the covariates for the \eqn{R_t} regression
 #'  are centered to have mean zero. All of the priors are then interpreted as
 #'  prior on the centered covariates. Defaults to \code{FALSE}.
@@ -23,32 +23,100 @@
 #'  used if the \code{formula} argument specifies random effects.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
+#' @examples 
+#' library(epidemia)
+#' data("EuropeCovid")
+#' options(mc.cores = parallel::detectCores())
+#'
+#' data <- EuropeCovid$data
+#' data$week <- lubridate::week(data$date)
+#'
+#' # collect arguments for epim
+#' args <- list(
+#'   inf = epiinf(gen = EuropeCovid$si),
+#'   obs = epiobs(deaths ~ 1, i2o = EuropeCovid$inf2death, link = scaled_logit(0.02)),
+#'   data = data, 
+#'   algorithm = "fullrank", # For speed - should generally use "sampling"
+#'   iter = 2e4,
+#'   group_subset = "France",
+#'   seed = 12345,
+#'   refresh = 0
+#' )
+#'
+#' # a simple random walk model for R
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ rw(time = week),
+#'   link = scaled_logit(7)
+#' )
+#'
+#' fm1 <- do.call(epim, args)
+#' plot_rt(fm1)
+#'
+#' # Modeling effects of NPIs
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ 1 + lockdown + public_events,
+#'   link = scaled_logit(7)
+#' )
+#'
+#' fm2 <- do.call(epim, args)
+#' plot_rt(fm2)
+#'
+#'
+#' # shifted gamma prior for NPI effects
+#' args$rt <- epirt(
+#'   formula = R(country, date) ~ 1 + lockdown + public_events,
+#'   link = scaled_logit(7),
+#'   prior = shifted_gamma(shape = 1/2, scale = 1, shift = log(1.05)/2)
+#' )
+#'
+#' # How does the implied prior look?
+#' args$prior_PD <- TRUE
+#' fm3 <- do.call(epim, args)
+#' plot_rt(fm3)
 epirt <- function(formula,
-                  r0 = 3.28,
+                  link = "log",
                   center = FALSE,
                   prior = rstanarm::normal(scale = .5),
                   prior_intercept = rstanarm::normal(scale = .5),
                   prior_covariance = rstanarm::decov(scale = .5),
                   ...) {
   call <- match.call(expand.dots = TRUE)
-  formula <- check_rt_formula(formula)
 
-  if (r0 <= 0) {
-    stop("'r0' must positive", call. = FALSE)
+  check_formula(formula)
+  check_rt_formula(formula)
+  check_scalar(center)
+  check_logical(center)
+
+  # check priors are returns from rstanarm prior functions
+  check_prior(prior, ok_dists)
+  check_prior(prior_intercept, ok_int_dists)
+  check_prior(prior_covariance, ok_cov_dists)
+
+  # ensure they are in allowed set
+  check_in_set(prior$dist, ok_dists)
+  check_in_set(prior_intercept$dist, ok_int_dists)
+  check_in_set(prior_covariance$dist, ok_cov_dists)
+
+  msg <- "'link' must be either 'log', 'identity', or a call to scaled_logit"
+  if (is.character(link)) {
+    if (!(link %in% c("log", "identity"))) {
+      stop(msg, call.=FALSE)
+    }
+  } else if (class(link) != "scaled_logit") {
+     stop(msg, call.=FALSE)
   }
 
+  class(formula) <- c("epiformula", "formula")
   out <- loo::nlist(
     call,
     formula,
-    r0,
-    link = "logit",
+    link,
     center,
     prior,
     prior_intercept,
     prior_covariance,
     mfargs <- list(...)
   )
-
   class(out) <- "epirt"
   return(out)
 }
@@ -75,10 +143,34 @@ epirt_ <- function(object, data) {
 
   out <- c(object, do.call(parse_mm, args))
   out <- c(out, list(
-    gr = droplevels(as.factor(data[, .get_group(formula), drop = TRUE])),
-    time = data[, .get_time(formula), drop = TRUE]
+    gr = droplevels(as.factor(data$group)),
+    time = data$date
   ))
 
   class(out) <- "epirt_"
   return(out)
+}
+
+#' Represents a 'scaled' logit link
+#'
+#' The link function is parameterised by a value \eqn{r>0}, and takes 
+#' the form
+#' \eqn{log(x/(K - x))}.
+#' The inverse link is then 
+#' \eqn{K* inv_logit(x)}.
+#' This is similar to the logit link, although x can range between 
+#' \eqn{[0, K]} rather than \eqn{[0,1]}. The parameter K can be chosen. 
+#'
+#' @param K parameterises the link function. The inverse of which then
+#'  takes values between 0 and K. 
+#' @return A list with class "scaled_logit"
+#' @export
+scaled_logit <- function(K = 6) {
+  check_scalar(K)
+  check_positive(K)
+
+  return(structure(
+    list(K=K), 
+    class = "scaled_logit")
+  )
 }

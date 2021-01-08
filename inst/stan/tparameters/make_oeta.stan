@@ -12,10 +12,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -31,10 +32,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -50,10 +52,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -69,10 +72,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -88,10 +92,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -107,10 +112,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -126,10 +132,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -145,10 +152,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -164,10 +172,11 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 
     npos += oN[i];
@@ -183,14 +192,15 @@
         // add intercept
         if (has_ointercept[i] > 0)
             oeta[npos:(npos+oN[i]-1)] += ogamma[has_ointercept[i]];
-        else
+        else if (oK[i] > 0) {
             oeta[npos:(npos+oN[i]-1)] += 
                 dot_product(segment(oxbar, kpos, oK[i]), 
                             segment(obeta, kpos, oK[i]));
+        }
     }
 }
 
-{
+{ // add offsets
     int i = 1;
     for (r in 1:R) {
         if (has_offset[r] == 1) {
@@ -200,3 +210,11 @@
     }
 }
 
+// add autocorrelation terms
+for (i in 1:obs_ac_nterms) {
+    for (j in 1:N_obs) {
+        if (obs_ac_V[i,j] > 0) {
+            oeta[j] += obs_ac_beta[obs_ac_V[i,j]];
+        }
+    }
+}

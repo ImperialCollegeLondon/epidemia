@@ -66,12 +66,10 @@ epimodel <- function(object) {
 
   out <- loo::nlist(
     rt = object$rt_orig,
+    inf = object$inf,
     obs = object$obs_orig,
     data = object$data,
     groups = levels(object$data$group),
-    seed_days = object$seed_days,
-    pops = object$pops,
-    si = object$si,
     coefficients = coefs,
     ses,
     linear.predictors = eta,

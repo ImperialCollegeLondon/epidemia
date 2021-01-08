@@ -1,12 +1,17 @@
 context("Test models with autocorrelation terms")
 
 data("EuropeCovid")
-args <- EuropeCovid
-args$sampling_args <- list(chains=0)
+expect_warning(args <- list(
+    data = EuropeCovid$data,
+    obs = epiobs(deaths ~ 1, i2o = EuropeCovid$inf2death * 0.02),
+    group_subset  = c("Germany", "United_Kingdom"),
+    inf = epiinf(gen = EuropeCovid$si),
+    chains = 0
+))
+
 
 test_that("Invalid arguments relating to random walks throw errors", {
 
-    args$group_subset <- c("Germany", "United_Kingdom")
     args$data$week <- format(args$data$date, "%V")
     args$rt <- epirt(
         formula = R(country, date) ~ rw(time=week, gr=country)
@@ -18,15 +23,15 @@ test_that("Invalid arguments relating to random walks throw errors", {
     args2 <- args
     # week column decreasing
     args2$data$week[5] <- "01"
-    expect_error(do.call(epim, args=args2))
+    expect_error(do.call(epim, args=args2), regexp = "non-decreasing")
 
     # week column incrementing more than one
     args2$data$week[5] <- "100"
-    expect_error(do.call(epim, args=args2))
+    expect_error(do.call(epim, args=args2), regexp = "increment")
 
     # week column not integer-like
     args2$data$week[5] <- "5.2"
-    expect_error(do.call(epim, args=args2))
+    expect_error(do.call(epim, args=args2), regexp = "integer")
 
     args3 <- args
     # prohibited character throws error
@@ -35,13 +40,4 @@ test_that("Invalid arguments relating to random walks throw errors", {
     expect_error(do.call(epim, args=args3))
 })
 
-
-#test_that("Introducing new groups in 'newdata' throw errors", {
-#
-#})
-
-
-#test_that("Parsing of rw calls in formula", {
-#    data <- args$data
-#})
 

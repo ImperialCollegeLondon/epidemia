@@ -8,7 +8,7 @@
 #'
 #' @param formula A formula defining the model for the observations.
 #' @param family A string representing the error distribution for the model.
-#'  Can be either "poisson" or "neg_binom".
+#'  Can be "poisson", "neg_binom", "quasi_poisson", "normal" or "log_normal".
 #' @param link A string representing the link function used to transform the
 #'  covariates. The linear predictor constructed from the covariates is
 #' transformed by the inverse link function, then multiplied by the weighted
@@ -21,91 +21,89 @@
 #' @param center If \code{TRUE} then the covariates are centered to
 #'  have mean zero. All of the priors are then interpreted as
 #'  priors on the centered covariates. Defaults to \code{FALSE}.
-#' @param offset Same as \code{\link[stats]{glm}}
 #' @param prior Same as in \code{\link[rstanarm]{stan_glm}}. **Note:**
 #'  If \code{autoscale=TRUE} in the call to the prior distribution
 #'  then automatic rescaling of the prior may take place.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior
 #'  for the regression intercept, if one has been specified.
 #' @param prior_aux Specify the prior distribution for the auxiliary parameter
-#'  if it exists. Only used if family is negative binomial, in which case this
-#'  represents the prior on the reciprocal of the dispersion parameter. See
-#'  \code{\link[rstanarm]{stan_glm}} for more details.
+#'  if it exists. Only used if family is negative binomial (reciprocal
+#'  dispersion), quasi poisson (dispersion), normal (standard deviation) or 
+#'  normal, in which case this represents the prior on the reciprocal 
+#'  log normal (sigma parameter). See \code{\link[rstanarm]{stan_glm}}
+#'  for more details.
 
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-epiobs <- function(formula,
-                   family = "neg_binom",
-                   link = "logit",
-                   i2o,
-                   center = FALSE,
-                   offset = NULL,
-                   prior = rstanarm::normal(scale = .1),
-                   prior_intercept = rstanarm::normal(scale = .1),
-                   prior_aux = rstanarm::exponential(autoscale = TRUE),
-                   ...) {
+#' 
+epiobs <- function(
+  formula,
+  i2o,
+  family = "neg_binom",
+  link = "logit",
+  center = FALSE,
+  prior = rstanarm::normal(scale = 0.2),
+  prior_intercept = rstanarm::normal(scale = 0.2),
+  prior_aux = rstanarm::normal(location=10, scale=5),
+  ...) {
+
   call <- match.call(expand.dots = TRUE)
-  formula <- check_obs_formula(formula)
 
-  ok_families <- c("poisson", "neg_binom")
-  if (!(family %in% ok_families)) {
-    stop("'family' must be one of ", paste(ok_families, collapse= ", "),
-      call. = FALSE
-    )
+  # formula must meet special requirements
+  check_formula(formula)
+  check_obs_formula(formula)
+
+  # check i2o is non-negative vector
+  check_numeric(i2o)
+  check_non_negative(i2o)
+  warn_sum_to_one(i2o)
+
+  # check family is character scalar in given set
+  check_character(family)
+  check_scalar(family)
+  check_in_set(family, ok_families)
+
+  # check link is character scalar in given set
+  msg <- paste0("'link' must be one of : ", paste(ok_links, collapse=", "), ", or a call to scaled_logit")
+  if (is.character(link)) {
+    check_scalar(link)
+    if (!(link %in% ok_links)) {
+      stop(msg, call.=FALSE)
+    }
+  } else if (class(link) != "scaled_logit") {
+     stop(msg, call.=FALSE)
   }
 
-  ok_links <- c("logit", "probit", "cauchit", "cloglog", "identity")
-  if (!(link %in% ok_links)) {
-    stop("'link' must be one of ", paste(ok_links, collapse=", "),
-      call. = FALSE
-    )
+  if (class(link) == "scaled_logit") { # apply adjustment to i2o vector
+    i2o <- i2o * link$K
+    link <- "logit"
   }
 
-  # i2o <- check_sv(i2o, name = "i2o") no longer required to be simplex
-  i2o <- check_v(i2o, name = "i2o")
-  if (sum(i2o) != 1) {
-    warning("'i2o' does not sum to 1
-     - check that this is intentional")
-  }
+  # center must be logical scalar
+  check_scalar(center)
+  check_logical(center)
 
-  if (!is.null(offset) && !is.numeric(offset))
-    stop("offset should be either null or a numeric vector",
-    call. = FALSE)
+  # check priors
+  check_prior(prior)
+  check_prior(prior_intercept)
+  check_prior(prior_aux)
 
-  # only supported prior family is normal. (will change in future)
-  ok_dists <- c("normal")
-  if (!(prior$dist %in% ok_dists)) {
-    stop("'prior' must be a call to rstanarm::normal",
-      call. = FALSE
-    )
-  }
-  if (!(prior_intercept$dist %in% ok_dists)) {
-    stop("'prior_intercept' must be a call to rstanarm::normal",
-      call. = FALSE
-    )
-  }
-
-  ok_aux_dists <- c("normal", "t", "cauchy", "exponential")
-  if (!(prior_aux$dist %in% ok_aux_dists)) {
-    stop("'prior_aux' must be one of ", paste(ok_aux_dists, collapse=", "),
-      call. = FALSE
-    )
-  }
+  # and that they are in allowed set 
+  # (restricting to normal todo: implement in full)
+  check_in_set(prior$dist, "normal")
+  check_in_set(prior_intercept$dist, "normal")
+  check_in_set(prior_aux$dist, ok_aux_dists)
 
   out <- loo::nlist(
     call,
     formula,
+    i2o,
     family,
     link,
-    i2o,
-    has_offset = any(offset != 0),
-    offset,
-    i2otype = "density",
-    link = "logit",
     center,
     prior,
     prior_intercept,
-    prior_aux = if (family == "poisson") NULL else prior_aux,
+    prior_aux = if (family != "poisson") prior_aux else NULL,
     mfargs <- list(...)
   )
   class(out) <- "epiobs"
@@ -123,43 +121,36 @@ epiobs_ <- function(object, data) {
   if (!inherits(object, "epiobs")) {
     stop("Bug found. Argument 'object' should have class 'epiobs'")
   }
-
-  formula <- formula(object)
-  args <- object$mfargs
-
-  # deal with NAs before passing to parse_mm
-  na_action <- args[["na.action"]]
-  vars <- all_vars_obs(formula)
-
-  data <- data[, vars]
-  data <-
-    if (is.null(na_action)) {
-      na.omit(data)
-    } else {
-      na_action(data)
-    }
-  args <- c(args, list(
-    formula = update(formula,
-      paste0(.get_obs(formula), "~.")),
-    data = data,
-    offset = object$offset
-  ))
-  object$offset <- NULL
+  args <- c(object$mfargs, list(formula = formula(object), data=data))
   out <- c(object, do.call(parse_mm, args))
-
-  obs <- data[, .get_obs(formula)]
-  if (!is.numeric(obs)) {
-    stop(paste0("response ", .get_obs(formula), " not numeric"),
-    call. = FALSE)
-  }
-
+  obs <- out$y
+  
+  # get group and time
+  w <- as.integer(names(out$y))
   out <- c(out, list(
-    obs = obs,
-    gr = droplevels(as.factor(data[, .get_group(formula)])),
-    time = data[, .get_time(formula)]
-  ))
-
+    obs = out$y,
+    gr =  droplevels(as.factor(data$group[w])),
+    time = data$date[w])
+  )
+  
+  # check observation vector
+  nme <- .get_obs(formula(object))
+  x <- out$y
+  tol <- .Machine$double.eps
+  if (any(x < 0, na.rm=TRUE)) {
+    if (max(abs(x[x<0] + 1)) > tol) {
+      stop("observation vector ", nme, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)
+    }
+  }
+  
+  discrete_fams <- c("poisson", "quasi_poisson", "neg_binom")
+  if (object$family %in% discrete_fams) {
+    if (any(abs(x - round(x)) > tol, na.rm = TRUE)) 
+      warning(paste0("observation vector ", nme, " is not an integer vector, and will be coerced to one."), call. = FALSE)
+  }
+  
   class(out) <- "epiobs_"
   return(out)
 }
+
 

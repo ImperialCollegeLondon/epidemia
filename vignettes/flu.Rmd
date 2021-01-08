@@ -1,0 +1,192 @@
+---
+title: Flu Pandemic
+output:
+  bookdown::html_document2:
+    number_sections: false
+    toc: true
+pkgdown:
+  as_is: true
+---
+
+<style>
+.contents .page-header {
+    display: none;
+  } 
+</style>
+
+<div class = "article_container">
+
+
+# 1918 H1N1 Pandemic 
+<hr>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.width = 6, fig.height = 6
+)
+```
+
+Here we demonstrate basic usage of **epidemia**; in particular we infer time-varying
+reproduction numbers during the 1918 H1N1 Influenza pandemic in Baltimore using 
+only daily case data and a discrete serial interval. $R_t$ is modeled as 
+following a weekly random walk. Of course **epidemia** is capable of much more 
+complex modeling, and such cases are considered in future sections.
+
+```{r core-packages, message=FALSE}
+library(epidemia)
+library(lubridate)
+library(rstanarm)
+```
+
+In addition to inferring reproduction numbers and seeded infections, we show 
+how to do posterior predictive checks and how to extend the  model to treats latent infections as 
+parameters.
+
+First use the following command.
+```{r parallel}
+options(mc.cores = parallel::detectCores())
+```
+This ensure that chains are run in parallel rather than sequentially. The data 
+for this example is provided by the R package EpiEstim.
+
+```{r flu1918-load_packages, message = FALSE}
+library(EpiEstim)
+data("Flu1918")
+print(Flu1918)
+```
+
+First we form the `data` argument for the model fitting function 
+`epim()`. Recall that this must contain all observations (case data), and 
+covariates to fit the model. Since $R_t$ will follow a weekly random walk, the 
+only covariate required is a `week` column. 
+```{r flu1918-data}
+date <- as.Date("1918-01-01") + seq(0, along.with = c(NA, Flu1918$incidence))
+data <- data.frame(
+  city = "Baltimore",
+  cases = c(NA, Flu1918$incidence),
+  date = date,
+  week = week(date)
+)
+```
+`date` is constructed so that the first observations are seen on the second 
+day of the epidemic rather than the first. This is so that the first obervation 
+can be explained by seeded infections on the previous day.
+
+We need to specify models for $R_t$ and the case data. $R_t$ is modeled through 
+a call to `epirt()`. The parameterisation of $R_t$ is defined by the 
+`formula` argument. A random walk can be specified using the `rw()` 
+function. This has an optional `time` argument which tells **epidemia** which 
+column in `data` to use to define the random walk increments. If unspecified it 
+occurs at the same frequency as $R_t$, i.e. a daily random walk is used. The random 
+walk error is modeled as half-normal with a scale hyperparameter. The value of 
+this is set using the `prior_scale` argument. This is used in the snippet 
+below.
+```{r flu1918-rt}
+rt <- epirt(
+  formula = R(city, date) ~ rw(time = week, prior_scale = 0.1),
+  prior_intercept = normal(log(2), 0.2),
+  link = 'log'
+)
+```
+In this case the prior on the intercept specifies the prior on $R_0$. Since a 
+log link is being used, the prior above gives $R_0$ a prior mean of around 2. 
+
+Each observation vector is modeled through a call to `epiobs()`. These are 
+then collected into a list and passed to `epim()` as the `obs` 
+argument. In this case only case data is used and so their is only one call 
+to `epiobs()` in the list.
+```{r flu1918-obs}
+obs <-  epiobs(
+    formula = cases ~ 1,
+    prior_intercept = rstanarm::normal(location=1, scale=0.01),
+    link = "identity",
+    i2o = rep(.25,4)
+)
+```
+For the purposes of this exercise we have assumed that roughly all infections 
+manifest as a case. There is a small symmetric error around this to account for 
+possible over\/under-reporting. The `i2o` argument implies that cases are 
+recorded with equal probability in any of the four days post infection. 
+
+Finally, we collect all remaining arguments required for `epim()`.
+```{r flu1918-args}
+args <- list(
+  rt = rt,
+  inf = epiinf(gen = Flu1918$si_distr),
+  obs = obs,
+  data = data,
+  iter = 1e3,
+  seed = 12345
+)
+```
+
+The argument `gen` takes a discrete generation distribution. Here we have 
+used the serial interval provided by EpiEstim. `algorithm = "sampling"` 
+ensures that the model is fit using Stan's adaptive HMC sampler. `iter` and 
+`seed` set the number of MCMC iterations and seeds respectively, and are passed
+directly on to `rstan::sampling`. 
+
+```{r flu1918-fm1, cache=TRUE}
+fm1 <- do.call(epim, args)
+```
+
+The fitted model `fm1` does not treat infections as latent parameters, and 
+propagates infections using the renewal process. To extend 
+the model as described in Section 5.2 of the 
+[model description](model-description.html), we simply use `latent = TRUE` in 
+the call to `epiinf()`.
+```{r flu1918-fm2, cache=TRUE, message=FALSE, warning = FALSE}
+args$inf <- epiinf(gen = Flu1918$si_distr, latent=TRUE, prior_aux = normal(10,2))
+fm2 <- do.call(epim, args)
+```
+
+The results of both models are shown in \@ref(fig:flu1918-plots). The key difference 
+stems from the infection process. In the basic model, infections are deterministic 
+given the reproduction numbers and seeds. However when infection counts are low, we 
+generally expect high variance in the infection process. Since this 
+variance is  unaccounted for, the model appears to place too much confidence in 
+the reproduction numbers in this setting. The extended model on the other hand, 
+has much wider credible intervals for $R$ when infections are low. This is intuitive:
+ when counts are low, changes in infections could be explained by either the 
+ variance in the offspring distribution of those who are infected, or by changes 
+ in the $R$ value. This model captures this intuition.
+ 
+Posterior predictive checks are shown in the bottom panel of Figure \@ref(fig:flu1918-plots), 
+and show that both models are able to fit the data well.
+
+```{r flu1918-plots, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 9, fig.height = 12, fig.cap = "Reproduction numbers, infections and posterior predictive for both fits. The basic model is shown in the left column, while the right column is for the extended version."}
+library(ggpubr)
+library(gridExtra)
+p1 <- plot_rt(fm1) + theme_pubr()
+p2 <- plot_rt(fm2) + theme_pubr()
+p3 <- plot_infections(fm1, levels = c(30,60,90)) + theme_pubr()
+p4 <- plot_infections(fm2, levels = c(30,60,90)) + theme_pubr() 
+p5 <- plot_obs(fm1, "cases") + theme_pubr()
+p6 <- plot_obs(fm2, "cases") + theme_pubr()
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+
+legend1 <- g_legend(p2)
+legend2 <- g_legend(p4)
+legend3 <- g_legend(p6)
+
+grid.arrange(
+  legend1,
+  p1 + theme(legend.position = "none" , plot.margin = margin(b=-6)) + ylim(0, 2.5),
+  p2 + theme(legend.position = "none", plot.margin = margin(b=-6)) + theme(axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()) + ylim(0,2.5),
+  legend2,
+  p3 + theme(legend.position = "none" , plot.margin = margin(t = -6, b=-6)) + ylim(0, 470),
+  p4 + theme(legend.position = "none", plot.margin = margin(t = -6, b=-6)) + theme(axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()) + ylim(0, 470),
+  legend3,
+  p5 + theme(legend.position = "none", plot.margin = margin(t = -6)) + ylim(0, 600),
+  p6 + theme(legend.position = "none", plot.margin = margin(t= -6)) + theme(axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()) + ylim(0, 600),
+  layout_matrix = matrix(c(1,1,2,3,4,4,5,6,7,7,8,9), nrow=6, ncol=2, byrow=T),
+  heights = c(2,10,2,10,2,10)
+)
+```
+
+</div>

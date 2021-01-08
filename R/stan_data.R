@@ -3,64 +3,84 @@
 #
 # @inheritParams epim
 # @param group, x Objects returned by parse_mm
-# @param link Not yet used.
 standata_all <- function(rt,
-                         obs,
-                         data,
-                         pops,
-                         si,
-                         seed_days,
-                         group_subset,
-                         prior_tau,
-                         prior_PD) {
-
-  # standata for general model params
-  out <- standata_data(data)
+                        inf,
+                        obs,
+                        data,
+                        prior_PD) {
+  out <- standata_data(data, inf)
   out <- c(
     out,
-    list(
-      si = pad(si, out$NS, 0, TRUE),
-      N0 = seed_days,
-      prior_PD = prior_PD,
-      pop = as.array(pops$pop)
-    ),
-    standata_model_priors(prior_tau),
+    standata_rt(rt),
+    standata_inf(inf),
     standata_obs(
       obs = obs,
       groups = out$groups,
       nsim = out$NS,
       begin = out$begin
-    ),
-    standata_rt(rt)
+    )
   )
+  out$prior_PD <- prior_PD
+  return(out)
+}
+
+standata_inf <- function(inf) {
+
+  out <- list(
+      gen_len = length(inf$gen),
+      gen = inf$gen,
+      N0 = inf$seed_days,
+      latent = 1 * inf$latent,
+      inf_family = 1 * inf$latent,
+      pop_adjust = 1 * inf$pop_adjust
+  )
+
+  # add data for prior on tau
+  prior_tau_stuff <- handle_glm_prior(
+    prior = inf$prior_tau,
+    nvars = 1,
+    default_scale = 1 / 0.03,
+    link = "dummy",
+    ok_dists = loo::nlist("exponential")
+  )
+
+  out$prior_scale_for_tau <- as.numeric(prior_tau_stuff$prior_scale)
+
+  # add data for prior on auxiliary param
+  p_aux <- handle_glm_prior(
+    inf$prior_aux,
+    1 * inf$latent,
+    link = NULL,
+    default_scale = 0.25,
+    ok_dists = ok_aux_dists
+  )
+  names(p_aux) <- paste0(names(p_aux), "_for_inf_aux")
+  out <- c(out, p_aux)
+
   return(out)
 }
 
 # Generate standata for autocorrelation terms
 #
-# @inheritParams epim
-# @param formula, data Same as in epim
-standata_autocor <- function(object) {
+# @param autocor A list containing nproc, ntime, Z and prior_scale
+# @return A new list
+standata_autocor <- function(autocor) {
   out <- list()
+  if (!is.null(autocor)) {
+  out$ac_nterms <- length(autocor$nproc)
+  out$ac_ntime <- as.array(autocor$ntime)
+  out$ac_q <- sum(autocor$ntime)
+  out$ac_nproc <- sum(autocor$nproc)
+  # todo: implement this as an option
+  out$ac_prior_scales <- as.array(autocor$prior_scale)
 
-  if (!inherits(object, "epirt_"))
-    stop("Bug found. 'object' must have class 'epirt_'.")
+  # add sparse matrix representation
+  parts <- rstan::extract_sparse_parts(autocor$Z)
+  out$ac_v <- parts$v - 1L
 
-  formula <- formula(object)
-
-  if (is_autocor(formula)) {
-    autocor <- object$autocor
-    out$ac_nterms <- length(autocor$nproc)
-    out$ac_ntime <- as.array(autocor$ntime)
-    out$ac_q <- sum(autocor$ntime)
-    out$ac_nproc <- sum(autocor$nproc)
-    # todo: implement this as an option
-    out$ac_prior_scales <- as.array(autocor$prior_scale)
-
-    # add sparse matrix representation
-    parts <- rstan::extract_sparse_parts(autocor$Z)
-    out$ac_v <- parts$v - 1L
-    out$ac_nnz <- length(out$ac_v)
+  # NA terms put to index negative 1
+  out$ac_v[out$ac_v >= out$ac_q] <- -1L
+  out$ac_nnz <- length(out$ac_v)
   } else {
     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0
     out$ac_prior_scales <- out$ac_v <- out$ac_ntime <- numeric()
@@ -68,10 +88,7 @@ standata_autocor <- function(object) {
   return(out)
 }
 
-# Generate relevant standata from data. Used internally in epim.
-#
-# @param data The result of checkData
-standata_data <- function(data) {
+standata_data <- function(data, inf) {
   groups <- sort(levels(data$group))
   M <- length(groups)
   NC <- as.numeric(table(data$group))
@@ -81,16 +98,29 @@ standata_data <- function(data) {
   begin <- min(starts)
   # integer index of start (1 being 'begin')
   starts <- as.numeric(starts - begin + 1)
+  N2 = max(starts + NC - 1)
+
+  # get susceptibles data
+  susc <- matrix(1, nrow = N2, ncol = M)
+  if (inf$pop_adjust) {
+    col <- inf$susceptibles
+    df <- split(dplyr::pull(data, col), data$group)
+    for (m in 1:M)
+      susc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]
+  }
+
   return(list(
     groups = groups,
     M = M,
     NC = as.array(NC),
     NS = max_sim,
-    N2 = max(starts + NC - 1),
+    N2 = N2,
     starts = as.array(starts),
-    begin = begin
+    begin = begin,
+    susc = susc
   ))
 }
+
 
 # Parses rt argument into data ready for stan
 #
@@ -98,7 +128,20 @@ standata_data <- function(data) {
 # @param data data argument to epim
 standata_rt <- function(rt) {
   out <- list()
-  out$r0 <- rt$r0
+
+  link <- rt$link
+  if (link == "log") {
+    out$link <- 1
+    out$carry <- 1 # dummy
+  }
+  else if (class(link) == "scaled_logit") {
+    out$link <- 2
+    out$carry <- link$K
+  }
+  else if(link == "identity") {
+    out$link <- 3 
+    out$carry <- 1 # dummy
+  }
   out <- c(
     out,
     standata_reg(rt)
@@ -127,8 +170,11 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oN <- sapply(obs, function(x) nobs(x))
     oN <- array(pad(oN, maxtypes, 0))
 
+    pvecs_len <- array(sapply(obs,
+      function(x) length(x$i2o)))
+
     pvecs <- as.array(lapply(obs,
-      function(x) pad_i2o(x, len = nsim)))
+      function(x) pad(x$i2o, nsim, 0, FALSE)))
 
     dat <- array(unlist(
       lapply(
@@ -153,6 +199,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
 
     # compute regression quantities
     reg <- lapply(obs, standata_reg)
+
     oK <- sapply(reg, function(x) x$K)
     oK <- array(pad(oK, maxtypes, 0))
     K_all <- sum(oK)
@@ -185,14 +232,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
       reg,
       function(x) x$prior_scale
     )))
-    prior_mean_for_ointercept <- array(sapply(
-      reg,
-      function(x) x$prior_mean_for_intercept
-    ))
-    prior_scale_for_ointercept <- array(sapply(
-      reg,
-      function(x) x$prior_scale_for_intercept
-    ))
 
     # auxiliary params
     ofamily <- array(sapply(reg, function(x) x$family))
@@ -201,18 +240,26 @@ standata_obs <- function(obs, groups, nsim, begin) {
     num_oaux <- sum(has_oaux)
     has_oaux <- array(has_oaux * cumsum(has_oaux))
 
-    nms_aux <- c(
-      "prior_dist_for_oaux",
-      "prior_mean_for_oaux",
-      "prior_scale_for_oaux",
-      "prior_df_for_oaux"
-    )
-    for (i in nms_aux){
+    # can only take normal for now
+    prior_mean_for_ointercept <- array(unlist(lapply(
+      reg, 
+      function(x) x$prior_mean_for_intercept
+    )))
+
+    prior_scale_for_ointercept <- array(unlist(lapply(
+      reg, 
+      function(x) x$prior_scale_for_intercept
+    )))
+
+    nms <- c("prior_dist", "prior_mean", 
+                "prior_scale","prior_df")
+
+    for (i in paste0(nms, "_for_oaux")){
       temp <- unlist(lapply(reg, function(x) x[[i]]))
       assign(i, array(as.numeric(temp) %ORifNULL% rep(0,0)))
     }
 
-    has_offset <- array(sapply(obs, function(x) x$has_offset * 1))
+    has_offset <- array(sapply(obs, function(x) any(x$offset != 0) * 1))
     offset_ <- array(unlist(lapply(obs, function(x) x$offset)))
 
     obs_prior_info <- lapply(reg, function(x) x$prior_info)
@@ -225,7 +272,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_df_for_oaux <- offset_ <- rep(0,0)
     obs_group <- obs_date <- obs_type  <- oxbar <-
     has_ointercept <- prior_dist_for_oaux <- has_offset <- 
-    has_oaux <- olink <- ofamily <- integer(0)
+    has_oaux <- olink <- ofamily <- pvecs_len <- integer(0)
     oN <- oK <- rep(0, maxtypes)
     pvecs <- array(0, dim = c(0, nsim))
     obs_prior_info <- NULL
@@ -237,12 +284,53 @@ standata_obs <- function(obs, groups, nsim, begin) {
     }
   }
 
+  # finally add autocorrelation terms
+  get_Z <- function(x) {
+    if (is.null(x$autocor)) {
+      # return a dummy matrix
+      return(Matrix::Matrix(nrow=length(x$obs), ncol=0))
+    } else {
+      return(x$autocor$Z)
+    }
+  }
+
+  # construct overall autocor object from individual ones
+  autocor <- list(
+    nproc = unlist(lapply(obs, function(x) x$autocor$nproc)),
+    ntime = unlist(lapply(obs, function(x) x$autocor$ntime)),
+    prior_scale = unlist(lapply(obs, function(x) x$autocor$prior_scale))
+  )
+  
+  Z_list <- lapply(obs, function(x) get_Z(x))
+  Z <- Matrix::.bdiag(Z_list)
+  colnames(Z) <- unlist(lapply(Z_list, function(x) colnames(x)))
+
+  # move all NA terms to far end of Z
+  new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
+
+  autocor$Z <- Z[, new_idx]
+  
+  if (length(autocor$nproc) == 0)
+    autocor <- NULL
+
+  autocor <- standata_autocor(autocor)
+  
+  autocor$ac_V <- make_V(
+    nproc_by_type = sapply(obs, function(x) sum(x$autocor$nproc)),
+    v = autocor$ac_v,
+    oN = oN
+  )
+  
+  names(autocor) <- paste0("obs_", names(autocor))
+  out <- c(out, autocor)
+
   out <- c(out, loo::nlist(
     obs_prior_info,
     N_obs = sum(oN),
     R = types,
     oN,
-    obs = dat,
+    obs = as.integer(dat),
+    obs_real = dat,
     obs_group,
     obs_date,
     obs_type,
@@ -264,6 +352,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_scale_for_oaux,
     prior_df_for_oaux,
     pvecs,
+    pvecs_len,
     has_offset,
     offset_
   ))
@@ -310,6 +399,39 @@ pad <- function(x, len, a, sv = FALSE) {
   out <- out[1:len]
   if (sv) {
     out <- out / sum(out)
+  }
+  return(out)
+}
+
+
+# Creates a matrix giving group membership per observation
+#
+# @param nproc_by_type Integer vector giving number of autocorrelation processes 
+#   to which an observation of a given type is part of
+# @param v Integer vector giving column memberships. Result of 
+#   extract_sparse_parts
+# @param oN A vector giving number of observations of each type
+# @return An Integer vector
+make_V <- function(nproc_by_type, v, oN) {
+  
+  nobs <- sum(oN)
+  types <- length(nproc_by_type)
+  nproc <- sum(nproc_by_type)
+  out <- matrix(0, nrow = nproc, ncol = nobs)
+  
+  first <- 1 + c(0, cumsum(oN))
+  second <- cumsum(oN)
+  
+  idx <- 1
+  for (r in 1:types) {
+    for (j in first[r]:second[r]) {
+      if (nproc_by_type[r] > 0) {
+        for (i in 1:nproc_by_type[r]) {
+          out[i,j] <- v[idx] + 1
+          idx <- idx + 1
+        }
+      }
+    }
   }
   return(out)
 }

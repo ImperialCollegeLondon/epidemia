@@ -24,26 +24,49 @@ parse_formula <- function(x, fixed.only = FALSE, random.only = FALSE, ...) {
   return(x)
 }
 
-# given a formula, remove any 
-# terms which are calls to epidemia::rw
+# string based method of removing random walk terms
 norws <- function(x) {
-  trms <- terms(x)
-  int <- attr(trms, "intercept")
-  all_terms <- attr(trms, "term.labels")
-  
-  # put brackets around RE terms
-  pos <- grepl("\\|", all_terms)
-  all_terms[pos] <- paste0("(", all_terms[pos], ")")
-  
-  rw_terms <- terms_rw(trms)
-  new_terms <- setdiff(all_terms, rw_terms)
-  out <- paste(c(int, new_terms), collapse = "+")
-  out <- paste("~", out)
-  # add response if it exists
-  if (length(x) == 3L)
-    out <- paste(deparse(x[[2]]), out)
-  return(formula(out))
+  form <- as.string.formula(x)
+  form <- gsub("rw\\(.*?\\) \\+ ", "", form)
+  form <- gsub("\\+ rw\\(.*?\\)", "", form)
+  form <- gsub("rw\\(.*?\\)", "", form)
+
+  form <- tryCatch({
+    as.formula(form)
+    }, 
+    error = function(cond) { # missing terms on r.h.s.
+      as.formula(paste(form, 1))
+    }
+  )
+  return(form)
 }
+
+as.string.formula <- function(x) {
+  form <- paste(deparse(x), collapse = " ")
+  form <- gsub("\\s+", " ", form, perl = FALSE)
+  return(form)
+}
+
+# # given a formula, remove any 
+# # terms which are calls to epidemia::rw
+# norws <- function(x) {
+#   trms <- terms(x)
+#   int <- attr(trms, "intercept")
+#   all_terms <- attr(trms, "term.labels")
+  
+#   # put brackets around RE terms
+#   pos <- grepl("\\|", all_terms)
+#   all_terms[pos] <- paste0("(", all_terms[pos], ")")
+  
+#   rw_terms <- terms_rw(trms)
+#   new_terms <- setdiff(all_terms, rw_terms)
+#   out <- paste(c(int, new_terms), collapse = "+")
+#   out <- paste("~", out)
+#   # add response if it exists
+#   if (length(x) == 3L)
+#     out <- paste(deparse(x[[2]]), out)
+#   return(formula(out))
+# }
 
 ### rstanarm helpers ###
 justRE <- function(f, response = FALSE) {
