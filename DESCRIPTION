@@ -97,6 +97,7 @@ Suggests:
     bookdown,
     EpiEstim,
     lubridate,
-    rstanarm
+    rstanarm,
+    kableExtra
 RdMacros:
     Rdpack
