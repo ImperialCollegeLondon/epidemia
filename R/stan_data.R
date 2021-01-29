@@ -447,7 +447,6 @@ make_V <- function(nproc_by_type, v, oN) {
 #' @import data.table tidyr stringr 
 standata_lowerbound <- function(lbdata){
   
-  
   gc <- data.frame(lbdata)
   counties = unique(gc$county)
   
@@ -473,6 +472,7 @@ standata_lowerbound <- function(lbdata){
   lc <- gc %>% dplyr::group_by(county, week_idx) %>% 
     dplyr::select(county, week, week_idx, cases) %>%
     dplyr::summarise_all(mean) %>% setnames('cases', 'wc')
+  lc$wc[lc$wc == 0] = 1/14 # 0 cases by week mess everything up. 
   lc$lwc <- log(lc$wc)
   lc$lwc[lc$lwc <= 0] = 0 
   
@@ -497,15 +497,21 @@ standata_lowerbound <- function(lbdata){
   lc$lcu <- lc$lmean + qt(0.975, lc$tdf)*lc$lsd
 
   #	make vector of number of week indices per location
-
   smoothed_logcases_weeks_n <- vector('integer', length(counties))
   for(m in 1:length(counties))
   {
     tmp <- dplyr::filter(gc, county== counties[m])
     smoothed_logcases_weeks_n[m] <- max(tmp$week_idx)
   } 
-  
   smoothed_logcases_weeks_n_max <- max(smoothed_logcases_weeks_n)
+  
+  # make indicator of counties and weeks that have too few observed cases:
+  neg_logcases_weeks <- matrix(0, nrow = length(counties), ncol = smoothed_logcases_weeks_n_max)
+  for(m in 1:length(counties))
+  {
+    tmp<- dplyr::filter(lc, county== counties[m] & lwc <=0)$week_idx
+    neg_logcases_weeks[m, tmp] = 1
+  } 
   
   #	make matrix of week map	
   gc$day <- as.integer(strftime(gc$date, format = "%u"))
@@ -539,7 +545,8 @@ standata_lowerbound <- function(lbdata){
     smoothed_logcases_weeks_n_max = smoothed_logcases_weeks_n_max,
     smoothed_logcases_weeks_n = smoothed_logcases_weeks_n, # number of week indices per location
     smoothed_logcases_week_map = smoothed_logcases_week_map, # map of week indices to time indices
-    smoothed_logcases_week_pars = smoothed_logcases_week_pars # likelihood parameters for observed cases
+    smoothed_logcases_week_pars = smoothed_logcases_week_pars, # likelihood parameters for observed cases
+    neg_logcases_weeks = neg_logcases_weeks #indicator of wheter there are too little observations
   )
 }
   
