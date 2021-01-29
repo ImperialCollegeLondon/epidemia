@@ -71,6 +71,9 @@ epim <- function(
   group_subset = NULL,
   prior_PD = FALSE,
   init_run = FALSE,
+  # Log cases shaenanigans: what i have in smooth_cases inludes county/week/lmean/lse/tdf/lcllcu
+  # Melodies' code wants: 
+  lbdata = NULL, #contains cases + date + county (already "cut" dates previous to epidemic start)
   ...
 ) {
   call <- match.call(expand.dots = TRUE)
@@ -98,7 +101,7 @@ epim <- function(
   obs <- lapply(obs_orig, epiobs_, data)
 
   # collect arguments for standata function
-  args <- loo::nlist(rt, inf, obs, data, prior_PD)
+  args <- loo::nlist(rt, inf, obs, data, prior_PD, lbdata)
 
   # compute standata
   sdat <- do.call(standata_all, args)
@@ -119,7 +122,7 @@ epim <- function(
   args <- c(
     sampling_args,
     list(
-      object = stanmodels$epidemia_base,
+      object = stanmodels$epidemia_lowb_base,
       pars = pars(sdat),
       data = sdat
     )
@@ -149,7 +152,8 @@ epim <- function(
     data,
     algorithm,
     standata = sdat,
-    orig_names
+    orig_names,
+    lbdata
   )
 
   return(epimodel(out))
