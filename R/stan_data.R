@@ -495,9 +495,9 @@ standata_lowerbound <- function(lbdata){
   lc <- merge(lc, loess_df, by=c('county','week'))
   lc$lcl <- lc$lmean + qt(0.025, lc$tdf)*lc$lsd
   lc$lcu <- lc$lmean + qt(0.975, lc$tdf)*lc$lsd
-
+  
   #	make vector of number of week indices per location
-  smoothed_logcases_weeks_n <- vector('integer', length(counties))
+  smoothed_logcases_weeks_n <- array( 1, dim = c(length(counties)))
   for(m in 1:length(counties))
   {
     tmp <- dplyr::filter(gc, county== counties[m])
@@ -506,7 +506,7 @@ standata_lowerbound <- function(lbdata){
   smoothed_logcases_weeks_n_max <- max(smoothed_logcases_weeks_n)
   
   # make indicator of counties and weeks that have too few observed cases:
-  neg_logcases_weeks <- matrix(0, nrow = length(counties), ncol = smoothed_logcases_weeks_n_max)
+  neg_logcases_weeks <- array(0, dim = c( length(counties) , smoothed_logcases_weeks_n_max))
   for(m in 1:length(counties))
   {
     tmp<- dplyr::filter(lc, county== counties[m] & lwc <=0)$week_idx
