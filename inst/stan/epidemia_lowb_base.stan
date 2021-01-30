@@ -31,7 +31,7 @@ int smoothed_logcases_weeks_n_max;
 int<lower=1, upper=smoothed_logcases_weeks_n_max> smoothed_logcases_weeks_n[M]; // number of week indices per location
 int smoothed_logcases_week_map[M, smoothed_logcases_weeks_n_max, 7]; // map of week indices to time indices
 real smoothed_logcases_week_pars[M, smoothed_logcases_weeks_n_max, 3]; // likelihood parameters for observed cases
-int<lower=0, upper=1> neg_logcases_weeks[M, smoothed_logcases_weeks_n_max]; // weeks where we have less than 3 weekly cases.
+int<lower=0, upper=1> neg_logcases_weeks[M, smoothed_logcases_weeks_n_max]; // Indicators for weeks with less than 3 weekly cases.
 // * // 
 }
 
@@ -154,25 +154,28 @@ model {
         }
       i += oN[r];
 
-      // * // Melodie 
       // likelihood case data this location
+      
       for(m in 1:M){
+        
         real E_log_week_avg_cases[smoothed_logcases_weeks_n[m]];
+        
         for(week in 1:smoothed_logcases_weeks_n[m])
         {
+          
           if (neg_logcases_weeks[m, week] != 1 ) //if logcases are less than 0, don't bound from below
           {
             E_log_week_avg_cases[week] = log(mean ( infections[ smoothed_logcases_week_map[m, week, :], m ] ) ); 
+            
+            target +=  student_t_lcdf( E_log_week_avg_cases[week] | 
+              smoothed_logcases_week_map[m, week, 3],
+              smoothed_logcases_week_map[m, week, 1],
+              smoothed_logcases_week_map[m, week, 2]
+              );
           }
           
         }
         
-        //compute loglikelihood terms for relevant terms
-        target += student_t_lcdf( E_log_week_avg_cases |
-          smoothed_logcases_week_pars[m, 1:smoothed_logcases_weeks_n[m], 3],
-          smoothed_logcases_week_pars[m, 1:smoothed_logcases_weeks_n[m], 1],
-          smoothed_logcases_week_pars[m, 1:smoothed_logcases_weeks_n[m], 2]
-          );
       }
       // * //
 
