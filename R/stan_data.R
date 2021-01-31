@@ -9,7 +9,7 @@ standata_all <- function(rt,
                         data,
                         prior_PD,
                         lbdata = NULL) {
-  print("Called stadata_all")
+  
   out <- standata_data(data, inf)
   out <- c(
     out,
@@ -450,28 +450,31 @@ standata_lowerbound <- function(lbdata){
   gc <- data.frame(lbdata)
   counties = unique(gc$county)
   
+  #Fix NA's!
+  gc$cases[is.na(gc$cases)] <- 0
+  
   #Enumerate days
   date.min = min(gc$date)
   gc$time_idx <- as.numeric(gc$date - date.min)+1
   
   # Add week column and fix between-year-problem 
   # (Here I am assuming that the epidemic begins in 2020 and ends in 2021, WHICH MIGHT NOT BE THE CASE IF WE WANT THIS TO BE USED IN THE FUTURE)
-  gc = gc %>% mutate(week = as.integer(format(date, "%V")))
+  gc = gc %>% dplyr::mutate(week = as.integer(format(date, "%V")))
   gc$week[gc$date > "2021-01-03"] <-  gc$week[gc$date > "2021-01-03"] + 53
   
   #	subset to complete weeks
-  tmp <- gc %>% group_by(county, week) %>% summarise(length(time_idx)) %>% rename(days_n = 'length(time_idx)')
-  gc <- merge(gc, subset(tmp, days_n==7), by=c('county','week')) %>% select(-days_n)
+  tmp <- gc %>% group_by(county, week) %>% summarise(length(time_idx)) %>% dplyr::rename(days_n = 'length(time_idx)')
+  gc <- merge(gc, subset(tmp, days_n==7), by=c('county','week')) %>% dplyr::select(-days_n)
   
   #	reset so weeks start at 1 in each location
-  tmp <- gc %>% group_by(county) %>% summarise(week = unique(week), week_idx = unique(week) - min(week) + 1L)
+  tmp <- gc %>% dplyr::group_by(county) %>% dplyr::summarise(week = unique(week), week_idx = unique(week) - min(week) + 1L)
   gc <- merge(gc, tmp, by = c('county', 'week')) #%>% select(-week)
   
   # Find smoothed_log_cases for each county
   #Consider cases data, and aggregate by county and week
   lc <- gc %>% dplyr::group_by(county, week_idx) %>% 
     dplyr::select(county, week, week_idx, cases) %>%
-    dplyr::summarise_all(mean) %>% setnames('cases', 'wc')
+    dplyr::summarise_all(mean) %>% dplyr::rename(wc = cases)
   lc$wc[lc$wc == 0] = 1/14 # 0 cases by week mess everything up. 
   lc$lwc <- log(lc$wc)
   lc$lwc[lc$lwc <= 0] = 0 
