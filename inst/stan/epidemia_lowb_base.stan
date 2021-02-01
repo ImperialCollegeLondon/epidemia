@@ -167,10 +167,10 @@ model {
           {
             E_log_week_avg_cases[week] = log(mean ( infections[ smoothed_logcases_week_map[m, week, :], m ] ) ); 
             
-            target +=  student_t_lcdf( E_log_week_avg_cases[week] | 
-              smoothed_logcases_week_map[m, week, 3],
-              smoothed_logcases_week_map[m, week, 1],
-              smoothed_logcases_week_map[m, week, 2]
+            target +=  student_t_lcdf( E_log_week_avg_cases[week] |  //modified this
+              smoothed_logcases_week_pars[m, week, 3],
+              smoothed_logcases_week_pars[m, week, 1],
+              smoothed_logcases_week_pars[m, week, 2]
               );
           }
           
