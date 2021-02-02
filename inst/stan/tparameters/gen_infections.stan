@@ -23,7 +23,7 @@ for (m in 1:M){
     for (i in (n1+1):n2) {
         int start = max(n0, i - gen_len);
         load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
-        infections[i,m] = Rt_unadj[i,m] * load[i,m];
+        infections[i,m] = Rt_unadj[i,m] * load[i,m] + y[m] ; //Added the seed here.
 
         if (latent) { // treat as log-normal (could extend)
             real loginf = log(infections[i,m]);
