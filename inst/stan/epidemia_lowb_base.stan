@@ -160,12 +160,12 @@ model {
         
         real E_log_week_avg_cases[smoothed_logcases_weeks_n[m]];
         
-        for(week in 2:smoothed_logcases_weeks_n[m])
+        for(week in 1:smoothed_logcases_weeks_n[m])
         {
           
           if (neg_logcases_weeks[m, week] != 1 ) //if logcases are less than 0, don't bound from below
           {
-            E_log_week_avg_cases[week] = log(mean ( infections[ smoothed_logcases_week_map[m, week - 1 , :], m ] ) );  //should i write m,week-1,:?
+            E_log_week_avg_cases[week] = log(mean ( infections[ smoothed_logcases_week_map[m, week, :], m ] ) );  //should i write m,week-1,:?
             
             target +=  student_t_lcdf( E_log_week_avg_cases[week] |  //modified this
               smoothed_logcases_week_pars[m, week, 3],
