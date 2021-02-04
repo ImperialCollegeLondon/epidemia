@@ -1,4 +1,5 @@
 { // predict cases over time
+
 int idx=1;
 int idx2=1;
 for (m in 1:M){
@@ -23,7 +24,7 @@ for (m in 1:M){
     for (i in (n1+1):n2) {
         int start = max(n0, i - gen_len);
         load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
-        infections[i,m] = Rt_unadj[i,m] * load[i,m] + perpetual_seed[m]*susc[start,m]/10000 ; //+ y[m] for first model
+        infections[i,m] = Rt_unadj[i,m] * load[i,m] + perpetual_seed[m] * susc[start,m]/10000 ; //+ y[m] for first model
 
         if (latent) { // treat as log-normal (could extend)
             real loginf = log(infections[i,m]);

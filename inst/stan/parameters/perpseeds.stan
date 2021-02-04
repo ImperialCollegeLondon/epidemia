@@ -1,0 +1,1 @@
+vector<lower=0>[M] perpetual_seed_raw; 

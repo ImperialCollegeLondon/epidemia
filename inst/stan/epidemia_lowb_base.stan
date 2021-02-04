@@ -56,9 +56,9 @@ parameters {
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
 #include /parameters/parameters_inf.stan
+#include /parameters/perpseeds.stan
   vector<lower=0>[M] y_raw;
   real<lower=0> tau_raw;
-  vector<lower=0>[M] perpetual_seed_raw //added this parameter right here
 }
 
 transformed parameters {
@@ -69,8 +69,8 @@ transformed parameters {
   vector<lower=0>[M] y = tau2 * y_raw;
   vector<lower=0>[num_oaux] oaux = oaux_raw;
   vector<lower=0>[latent] inf_aux = inf_aux_raw;
-  vector<lower=0>[M] perpetual_seed = perpetual_seed_raw*2
-
+  
+#include /tparameters/perpseeds.stan
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
 #include /tparameters/tparameters_obs.stan
@@ -121,6 +121,10 @@ transformed parameters {
 }
 
 model {
+    //prior for perpetual_seed:
+  target += exponential_lpdf(perpetual_seed_raw | 1);
+  
+  
   target += exponential_lpdf(tau_raw | 1);
   target += exponential_lpdf(y_raw | 1);
 
@@ -157,9 +161,7 @@ model {
       i += oN[r];
       
       
-      //prior for perpetual_seed:
-      target += exponential_lpdf(perpetual_seed_raw | 1);
-      
+
 
       // likelihood case data this location
       
