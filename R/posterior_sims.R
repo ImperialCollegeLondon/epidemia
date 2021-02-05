@@ -201,19 +201,20 @@ subsamp <- function(object, mat, draws=NULL) {
 # @param orig_nms The original names for stan parameters
 # @param groups Sorted character vector of groups to simulate for
 pp_stanmat <- function(stanmat, orig_nms, groups) {
-
+# 
   # hack for dealing with infection noise
   orig_nms <- grep("inf_noise", orig_nms, value=T, invert=T)
-
+  
+  #This seems to do all the work!
   nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
   nms[m] <- paste0("y[", seq_along(groups), "]")
   colnames(stanmat)[seq_along(nms)] <- nms
 
-  nms <- sub("y2\\[[0-9]\\]", "DUMMY", orig_nms) # May need modifications: check we don t need different DUMMY
-  m <- match(paste0("seeds_inflow[", groups, "]"), colnames(stanmat))
-  nms[m] <- paste0("y[", seq_along(groups), "]")
-  colnames(stanmat)[seq_along(nms)] <- nms
+  # nms <- sub("y2\\[[0-9]\\]", "DUMMY2", orig_nms) # May need modifications: check we don t need different DUMMY
+  # m <- match(paste0("seeds_inflow[", groups, "]"), colnames(stanmat))
+  # nms[m] <- paste0("y2[", seq_along(groups), "]")
+  # colnames(stanmat)[seq_along(nms)] <- nms
   
   noaux <- length(grep("^oaux\\[", colnames(stanmat)))
   neta <- length(grep("^eta\\[", colnames(stanmat)))
