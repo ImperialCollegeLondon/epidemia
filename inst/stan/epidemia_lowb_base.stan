@@ -56,21 +56,19 @@ parameters {
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
 #include /parameters/parameters_inf.stan
-#include /parameters/perpseeds.stan
   vector<lower=0>[M] y_raw;
-  real<lower=0> tau_raw;
+  // real<lower=0> tau_raw; 
 }
 
 transformed parameters {
   vector[N_obs] oeta;
   vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
-  real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
-  vector<lower=0>[M] y = tau2 * y_raw;
+  // real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
+  vector<lower=0>[M] y = prior_scale_for_tau * y_raw;
   vector<lower=0>[num_oaux] oaux = oaux_raw;
   vector<lower=0>[latent] inf_aux = inf_aux_raw;
-  
-#include /tparameters/perpseeds.stan
+
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
 #include /tparameters/tparameters_obs.stan
@@ -121,11 +119,9 @@ transformed parameters {
 }
 
 model {
-    //prior for perpetual_seed:
-  target += exponential_lpdf(perpetual_seed_raw | 1);
   
   
-  target += exponential_lpdf(tau_raw | 1);
+  //target += exponential_lpdf(tau_raw | 1);
   target += exponential_lpdf(y_raw | 1);
 
 #include /model/priors_glm.stan
