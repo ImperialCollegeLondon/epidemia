@@ -57,15 +57,17 @@ parameters {
 #include /parameters/parameters_obs.stan
 #include /parameters/parameters_inf.stan
   vector<lower=0>[M] y_raw;
-  // real<lower=0> tau_raw; 
+  vector<lower=0>[M] y2_raw;
+  real<lower=0> tau_raw; 
 }
 
 transformed parameters {
   vector[N_obs] oeta;
   vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
-  // real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
-  vector<lower=0>[M] y = prior_scale_for_tau * y_raw;
+  real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
+  vector<lower=0>[M] y = tau2 * y_raw;
+  vector<lower=0>[M] y2 = 2 * y2_raw;
   vector<lower=0>[num_oaux] oaux = oaux_raw;
   vector<lower=0>[latent] inf_aux = inf_aux_raw;
 
@@ -121,8 +123,9 @@ transformed parameters {
 model {
   
   
-  //target += exponential_lpdf(tau_raw | 1);
+  target += exponential_lpdf(tau_raw | 1);
   target += exponential_lpdf(y_raw | 1);
+  target += exponential_lpdf(y2_raw | 1);
 
 #include /model/priors_glm.stan
 #include /model/priors_ac.stan
@@ -170,7 +173,7 @@ model {
           
           if (neg_logcases_weeks[m, week] != 1 ) //if logcases are less than 0, don't bound from below
           {
-            E_log_week_avg_cases[week] = log(mean ( infections[ smoothed_logcases_week_map[m, week, :], m ] ) );  //should i write m,week-1,:?
+            E_log_week_avg_cases[week] = log(mean ( infections[ smoothed_logcases_week_map[m, week-1, :], m ] ) );  //should i write m,week-1,:?
             
             target +=  student_t_lcdf( E_log_week_avg_cases[week] |  //modified this
               smoothed_logcases_week_pars[m, week, 3],

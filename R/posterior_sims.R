@@ -210,6 +210,11 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   nms[m] <- paste0("y[", seq_along(groups), "]")
   colnames(stanmat)[seq_along(nms)] <- nms
 
+  nms <- sub("y2\\[[0-9]\\]", "DUMMY", orig_nms) # May need modifications: check we don t need different DUMMY
+  m <- match(paste0("seeds_inflow[", groups, "]"), colnames(stanmat))
+  nms[m] <- paste0("y[", seq_along(groups), "]")
+  colnames(stanmat)[seq_along(nms)] <- nms
+  
   noaux <- length(grep("^oaux\\[", colnames(stanmat)))
   neta <- length(grep("^eta\\[", colnames(stanmat)))
   noeta <- length(grep("^oeta\\[", colnames(stanmat)))
@@ -217,14 +222,15 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   ninfaux <- length(grep("^inf_aux\\[", colnames(stanmat)))
 
   # need to pad out for rstan::gqs
-  mat <- matrix(0, nrow = nrow(stanmat), ncol = 12)
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 14)
   colnames(mat) <- c(
     paste0("y[", length(groups) + 1:2, "]"),
     paste0("oaux[", noaux + 1:2, "]"),
     paste0("eta[", neta + 1:2, "]"),
     paste0("oeta[", noeta + 1:2, "]"),
     paste0("inf_noise[", ninfnoise + 1:2, "]"),
-    paste0("inf_aux[", ninfaux + 1:2, "]")
+    paste0("inf_aux[", ninfaux + 1:2, "]"),
+    paste0("y2[", length(groups) + 1:2, "]")
   )
   return(cbind(stanmat, mat))
 }

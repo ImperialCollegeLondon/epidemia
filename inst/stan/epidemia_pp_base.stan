@@ -24,6 +24,7 @@ parameters {
   vector[N_obs+2] oeta;
   vector[latent ? N - M * N0 + 2 : 2] inf_noise;
   vector<lower=0>[latent ? 3 : 2] inf_aux;
+  vector<lower=0>[M+2] y2; 
 }
 
 generated quantities {

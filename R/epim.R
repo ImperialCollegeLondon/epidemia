@@ -173,12 +173,13 @@ pars <- function(sdat) {
       if (length(sdat$obs_ac_nterms)) "obs_ac_noise",
       if (sdat$len_theta_L) "theta_L",
       "y",
-      "tau2",
+      "tau2", # May neeed modifications
       if (length(sdat$ac_nterms)) "ac_scale",
       if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
       if (sdat$num_oaux > 0) "oaux",
       if (sdat$latent) "inf_noise",
-      if (sdat$latent) "inf_aux"
+      if (sdat$latent) "inf_aux",
+      # "y2" 
     )
   return(out)
 }
@@ -242,7 +243,7 @@ new_names <- function(sdat, rt, obs, fit, data) {
         paste0("R|Sigma[", make_Sigma_nms(rt, sdat, fit), "]")
       },
       c(paste0("seeds[", sdat$groups, "]")),
-      "tau",
+      "tau", #may need modifications
       if (sdat$ac_nterms > 0) {
         make_rw_sigma_nms(rt, data)
       },
@@ -258,6 +259,7 @@ new_names <- function(sdat, rt, obs, fit, data) {
       if (sdat$latent) {
         "inf|dispersion"
       },
+      c(paste0("seeds_inflow[", sdat$groups, "]")), #may need modifications
       "log-posterior"
     )
     return(out)
