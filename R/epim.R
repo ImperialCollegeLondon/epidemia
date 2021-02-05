@@ -179,7 +179,7 @@ pars <- function(sdat) {
       if (sdat$num_oaux > 0) "oaux",
       if (sdat$latent) "inf_noise",
       if (sdat$latent) "inf_aux",
-      # "y2" 
+      "y2" 
     )
   return(out)
 }
