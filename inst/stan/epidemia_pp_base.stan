@@ -11,7 +11,7 @@ data {
 }
 
 transformed data {
-#include tdata/tdata_reverse.stan
+#include /tdata/tdata_reverse.stan
 
 for(r in 1:R)
       pvecs_rev[r] = reverse(pvecs[r]);
