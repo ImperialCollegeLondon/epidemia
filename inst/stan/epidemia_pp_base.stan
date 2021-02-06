@@ -1,12 +1,12 @@
 functions {
-#include functions/reverse.stan
-#include functions/linkinv.stan
+#include /functions/reverse.stan
+#include /functions/linkinv.stan
 }
 
 data {
-#include data/data_indices.stan
-#include data/data_obs.stan
-#include data/data_model.stan
+#include /data/data_indices.stan
+#include /data/data_obs.stan
+#include /data/data_model.stan
 #include /data/data_inf.stan
 }
 
