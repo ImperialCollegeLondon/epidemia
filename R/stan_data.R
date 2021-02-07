@@ -7,12 +7,15 @@ standata_all <- function(rt,
                         inf,
                         obs,
                         data,
-                        prior_PD) {
+                        prior_PD,
+                        lbdata = NULL) {
+  print("Called stadata_all")
   out <- standata_data(data, inf)
   out <- c(
     out,
     standata_rt(rt),
     standata_inf(inf),
+    standata_lowerbound(lbdata),
     standata_obs(
       obs = obs,
       groups = out$groups,
@@ -435,3 +438,117 @@ make_V <- function(nproc_by_type, v, oN) {
   }
   return(out)
 }
+
+
+
+
+#' @export
+#' @keywords internal
+#' @import data.table tidyr stringr 
+standata_lowerbound <- function(lbdata){
+  
+  gc <- data.frame(lbdata)
+  counties = unique(gc$county)
+  
+  #Enumerate days
+  date.min = min(gc$date)
+  gc$time_idx <- as.numeric(gc$date - date.min)+1
+  
+  # Add week column and fix between-year-problem 
+  # (Here I am assuming that the epidemic begins in 2020 and ends in 2021, WHICH MIGHT NOT BE THE CASE IF WE WANT THIS TO BE USED IN THE FUTURE)
+  gc = gc %>% mutate(week = as.integer(format(date, "%V")))
+  gc$week[gc$date > "2021-01-03"] <-  gc$week[gc$date > "2021-01-03"] + 53
+  
+  #	subset to complete weeks
+  tmp <- gc %>% group_by(county, week) %>% summarise(length(time_idx)) %>% rename(days_n = 'length(time_idx)')
+  gc <- merge(gc, subset(tmp, days_n==7), by=c('county','week')) %>% select(-days_n)
+  
+  #	reset so weeks start at 1 in each location
+  tmp <- gc %>% group_by(county) %>% summarise(week = unique(week), week_idx = unique(week) - min(week) + 1L)
+  gc <- merge(gc, tmp, by = c('county', 'week')) #%>% select(-week)
+  
+  # Find smoothed_log_cases for each county
+  #Consider cases data, and aggregate by county and week
+  lc <- gc %>% dplyr::group_by(county, week_idx) %>% 
+    dplyr::select(county, week, week_idx, cases) %>%
+    dplyr::summarise_all(mean) %>% setnames('cases', 'wc')
+  lc$wc[lc$wc == 0] = 1/14 # 0 cases by week mess everything up. 
+  lc$lwc <- log(lc$wc)
+  lc$lwc[lc$lwc <= 0] = 0 
+  
+  #Fit loess for each county
+  loess_df <- data.frame()
+  for (m in 1:length(counties)){
+    tmp <- dplyr::filter(lc, county == counties[m])
+    nonzero <- which(tmp$wc!=0)
+    lwc_nz <- tmp$lwc[nonzero]
+    week_nz <- tmp$week[nonzero]
+    tmp2 <- stats::loess(lwc_nz ~ week_nz, span=0.4)
+    tmp2 <- predict(tmp2, data.frame(week_nz=tmp$week), se = TRUE)
+    
+    tmp <- data.frame(county = counties[m], list(week = tmp$week, lmean = tmp2$fit, lsd= tmp2$se.fit, tdf= tmp2$df))
+    loess_df <- rbind(loess_df, tmp)
+  }
+
+  
+  #Extract parameters of interest
+  lc <- merge(lc, loess_df, by=c('county','week'))
+  lc$lcl <- lc$lmean + qt(0.025, lc$tdf)*lc$lsd
+  lc$lcu <- lc$lmean + qt(0.975, lc$tdf)*lc$lsd
+  
+  #	make vector of number of week indices per location
+  smoothed_logcases_weeks_n <- array( 1, dim = c(length(counties)))
+  for(m in 1:length(counties))
+  {
+    tmp <- dplyr::filter(gc, county== counties[m])
+    smoothed_logcases_weeks_n[m] <- max(tmp$week_idx)
+  } 
+  smoothed_logcases_weeks_n_max <- max(smoothed_logcases_weeks_n)
+  
+  # make indicator of counties and weeks that have too few observed cases:
+  neg_logcases_weeks <- array(0, dim = c( length(counties) , smoothed_logcases_weeks_n_max))
+  for(m in 1:length(counties))
+  {
+    tmp<- dplyr::filter(lc, county== counties[m] & lwc <=0)$week_idx
+    neg_logcases_weeks[m, tmp] = 1
+  } 
+  
+  #	make matrix of week map	
+  gc$day <- as.integer(strftime(gc$date, format = "%u"))
+  smoothed_logcases_week_map	<- array(-1, dim = c( length(counties), smoothed_logcases_weeks_n_max, 7L) )
+  for(m in 1:length(counties))
+  {
+    tmp <- dplyr::filter(gc, county == counties[m])
+    tmp <- stats::reshape(tmp, idvar = "week_idx", timevar = "day", direction = "wide", v.names = "time_idx")
+    tmp <- tmp[ grepl(pattern = "time_idx", colnames(tmp))]
+    tmp <- tmp[,order(colnames(tmp))]	
+    smoothed_logcases_week_map[m, 1:nrow(tmp),] <- unname(as.matrix(tmp))				
+  }
+  
+  #	make array of t-distribution parameters state x time x 3 pars for likelihood of observed data
+  smoothed_logcases_week_pars <- array(-1, dim = c( length(counties), smoothed_logcases_weeks_n_max, 3L) )
+  for(m in 1:length(counties))
+  {
+    tmp <- dplyr::filter(lc, county ==counties[m])		
+    tmp <- merge(tmp, unique(subset(gc, select=c(county,week))), by=c('county','week'))
+    smoothed_logcases_week_pars[m, 1:nrow(tmp), ] <- unname(as.matrix(subset(tmp, select=c(lmean, lsd, tdf))))
+  }
+  
+  #	check
+  tmp <- sapply(1:length(counties), function(m) max(which(smoothed_logcases_week_pars[m,,1]!= -1L)))
+  stopifnot(all(tmp==smoothed_logcases_weeks_n))
+  tmp <- sapply(1:length(counties), function(m) max(which(smoothed_logcases_week_map[m,,1]!= -1L)))
+  stopifnot(all(tmp==smoothed_logcases_weeks_n))
+  
+  
+  out <- list(
+    smoothed_logcases_weeks_n_max = smoothed_logcases_weeks_n_max,
+    smoothed_logcases_weeks_n = smoothed_logcases_weeks_n, # number of week indices per location
+    smoothed_logcases_week_map = smoothed_logcases_week_map, # map of week indices to time indices
+    smoothed_logcases_week_pars = smoothed_logcases_week_pars, # likelihood parameters for observed cases
+    neg_logcases_weeks = neg_logcases_weeks #indicator of wheter there are too little observations
+  )
+}
+  
+
+
