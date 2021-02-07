@@ -43,8 +43,7 @@ posterior_sims <- function(object,
     object$inf, 
     obs, 
     data, 
-    FALSE,
-    object$lbdata
+    FALSE
   )
   
   # standata <- pp_standata(

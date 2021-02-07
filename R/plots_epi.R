@@ -898,7 +898,7 @@ plot_linpred.epimodel <-
         date_breaks = date_breaks,
         labels = scales::date_format("%e %b")
       ) +
-      ggpubr::theme_pubr() +
+      ggpubr::theme_pubr +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(
           angle = 45,
