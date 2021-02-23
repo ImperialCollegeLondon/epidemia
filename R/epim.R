@@ -402,7 +402,7 @@ make_obeta_nms <- function(obs, sdat) {
 make_inf_nms <- function(begin, starts, N0, NC, groups) {
   nms <- c()
   for (m in 1:length(groups)) 
-    nms <- paste0("inf_noise[", begin -1 + seq(starts[m] + N0, NC[m]), ",", groups[m],"]")
+    nms <- c(nms, paste0("inf_noise[", begin -1 + N0 + starts[m] + seq(0, NC[m]-N0 - 1), ",", groups[m],"]"))
   return(nms)
 }
 
