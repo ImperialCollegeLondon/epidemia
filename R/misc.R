@@ -1,31 +1,9 @@
-is.epimodel <- function(x) inherits(x, "epimodel")
-
-# @param x An epimodel object.
-is.mixed <- function(x) {
-  stopifnot(is.epimodel(x))
-  check1 <- inherits(x, "mixed")
-  check2 <- !is.null(x$glmod)
-  if (check1 && !check2) {
-    stop("Bug found. 'x' has class 'mixed' but no 'glmod' component.")
-  } else if (!check1 && check2) {
-    stop("Bug found. 'x' has 'glmod' component but not class 'mixed'.")
-  }
-  isTRUE(check1 && check2)
-}
-
 # If a is NULL (and Inf, respectively) return b, otherwise just return a
 # @param a,b Objects
 `%ORifNULL%` <- function(a, b) {
   if (is.null(a)) b else a
 }
 
-# Grep for "b" parameters (ranef)
-#
-# @param x Character vector (often rownames(fit$stan_summary))
-# @param ... Passed to grep
-b_names <- function(x, ...) {
-  grep("^b\\[", x, ...)
-}
 
 # Return names of the last dimension in a matrix/array (e.g. colnames if matrix)
 #

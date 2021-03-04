@@ -47,33 +47,4 @@ as.string.formula <- function(x) {
   return(form)
 }
 
-# # given a formula, remove any 
-# # terms which are calls to epidemia::rw
-# norws <- function(x) {
-#   trms <- terms(x)
-#   int <- attr(trms, "intercept")
-#   all_terms <- attr(trms, "term.labels")
-  
-#   # put brackets around RE terms
-#   pos <- grepl("\\|", all_terms)
-#   all_terms[pos] <- paste0("(", all_terms[pos], ")")
-  
-#   rw_terms <- terms_rw(trms)
-#   new_terms <- setdiff(all_terms, rw_terms)
-#   out <- paste(c(int, new_terms), collapse = "+")
-#   out <- paste("~", out)
-#   # add response if it exists
-#   if (length(x) == 3L)
-#     out <- paste(deparse(x[[2]]), out)
-#   return(formula(out))
-# }
 
-### rstanarm helpers ###
-justRE <- function(f, response = FALSE) {
-  response <- if (response && length(f) == 3) f[[2]] else NULL
-  reformulate(paste0("(", vapply(lme4::findbars(f), 
-                                 function(x) paste(deparse(x, 500L), 
-                                                   collapse = " "), 
-                                 ""), ")"), 
-              response = response)
-}

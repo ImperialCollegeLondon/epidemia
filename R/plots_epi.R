@@ -817,8 +817,6 @@ base_plot <- function(qtl, log, date_breaks, step=FALSE) {
 magrittr::`%>%`
 
 
-# function to format y axis labels
-# bigger numbers are shown as scientific
 fancy_scientific <- function(l) {
   if (all(l[!is.na(l)] <= 1e4)) {
     l <- format(l)

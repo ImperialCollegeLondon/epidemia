@@ -65,13 +65,3 @@ print.epimodel <- function(x, digits=1, ...) {
    invisible(x)
 }
 
-
-# Helpers from rstanarm
-
-.median_and_madsd <- function(x) {
-  cbind(Median = apply(x, 2, median), MAD_SD = apply(x, 2, stats::mad))
-}
-
-.printfr <- function(x, digits, ...) {
-  print(format(round(x, digits), nsmall = digits), quote = FALSE, ...)
-}
