@@ -35,8 +35,10 @@ generated quantities {
 #include /tparameters/gen_eobs.stan
 
   if (pop_adjust) {
-    for (m in 1:M)
+    Rt[1,] = Rt_unadj[1,];
+    for (m in 1:M) {
       Rt[2:N2, m] = (susc[2:N2,m] / susc[starts[m], m]) .* (susc[starts[m], m] - cumm_sum[1:(N2-1), m]) ./ susc[starts[m], m] .* Rt_unadj[2:N2,m];
+    }
   } else {
       Rt = Rt_unadj;
   }

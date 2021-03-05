@@ -38,39 +38,50 @@ Authors@R: c(
            email = "s.bhatt@imperial.ac.uk",
            comment = c(ORCID = "0000-0002-0891-4611")
 	   ),
-     person(given = "Jonathan",
+    person(given = "Jonathan",
            family = "Ish-Horowicz",
            role = c("ctb"),
            email = "jonathan.ish-horowicz17@imperial.ac.uk",
            comment = c(ORCID = "0000-0002-5386-6620")
 	   ),
-       person(given = "Leon",
+    person(given = "Leon",
            family = "Wu",
            role = c("ctb"),
            email = "leon.wu16@imperial.ac.uk"
 	   ),
-       person(given = "Ben",
+    person(given = "Ben",
            family = "Goodrich",
            role = c("ctb"),
            email = "benjamin.goodrich@columbia.edu"
 	   ),
-       person(given = "Jonah",
+    person(given = "Jonah",
            family = "Gabry",
            role = c("ctb"),
            email = "jsg2201@columbia.edu"
 	   ),
-       person(given = "Trustees of", 
+    person(given = "Trustees of", 
             family = "Columbia University", 
             role = "cph", 
             comment = "R/helpers.R"),
-       person(given = "Paul-Christian", 
+    person(given = "Paul-Christian", 
             family = "Burkner", 
             email = "paul.buerkner@gmail.com", 
             role = "cph", 
-            comment = "R/misc.R")
-	   )  
-Description: Tools for a Bayesian hierarchial modelling approach for epidemics. Based on the methodology introduced in 
-	Flaxman, S., Mishra, S., Gandy, A. et al. <doi:10.1038/s41586-020-2405-7>.
+            comment = "R/misc.R"),
+    person(given = "Triad", 
+            family = "Sou", 
+            email = "triadsou@gmail.com", 
+            role = "cph", 
+            comment = "R/geom_stepribbon.R"),
+    person(given = "Kengo", 
+            family = "Nagashima",
+            role = "cph", 
+            comment = "R/geom_stepribbon.R")
+	   )
+Description: Flexibly specify and fit Bayesian statistical models for epidemics. 'epidemia' leverages Rs formula interface so 
+    that users can parameterize reproduction numbers and ascertainment rates in terms of predictors. Infections are propagated over 
+    time using self-exciting point processes. Multiple regions can be modeled simultaneously with multilevel models. The design of the 
+    package has been inspired by, and has borrowed from, 'rstanarm'. 'rstan' is used as the back end for fitting models.
 License: GPL-3
 URL: https://github.com/ImperialCollegeLondon/epidemia
 Encoding: UTF-8

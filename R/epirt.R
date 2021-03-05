@@ -23,7 +23,8 @@
 #'  used if the \code{formula} argument specifies random effects.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
-#' @examples 
+#' @examples
+#' \dontrun{
 #' library(epidemia)
 #' data("EuropeCovid")
 #' options(mc.cores = parallel::detectCores())
@@ -73,6 +74,7 @@
 #' args$prior_PD <- TRUE
 #' fm3 <- do.call(epim, args)
 #' plot_rt(fm3)
+#' }
 epirt <- function(formula,
                   link = "log",
                   center = FALSE,

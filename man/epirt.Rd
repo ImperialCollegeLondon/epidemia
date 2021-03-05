@@ -46,6 +46,7 @@ Defines a model for the latent time varying reproduction number. For more
 details on the model assumptions please refer to the online vignettes.
 }
 \examples{
+\dontrun{
 library(epidemia)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
@@ -95,4 +96,5 @@ args$rt <- epirt(
 args$prior_PD <- TRUE
 fm3 <- do.call(epim, args)
 plot_rt(fm3)
+}
 }
