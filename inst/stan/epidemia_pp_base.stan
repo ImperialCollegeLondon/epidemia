@@ -1,17 +1,17 @@
 functions {
-#include functions/reverse.stan
-#include functions/linkinv.stan
+#include /functions/reverse.stan
+#include /functions/linkinv.stan
 }
 
 data {
-#include data/data_indices.stan
-#include data/data_obs.stan
-#include data/data_model.stan
+#include /data/data_indices.stan
+#include /data/data_obs.stan
+#include /data/data_model.stan
 #include /data/data_inf.stan
 }
 
 transformed data {
-#include tdata/tdata_reverse.stan
+#include /tdata/tdata_reverse.stan
 
 for(r in 1:R)
       pvecs_rev[r] = reverse(pvecs[r]);
