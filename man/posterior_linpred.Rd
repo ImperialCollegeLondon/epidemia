@@ -19,7 +19,7 @@ posterior_linpred(
 )
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{transform}{If TRUE, transforms the predictor by the inverse link function. Defaults
@@ -44,6 +44,9 @@ of parameter draws in the fitted model.}
 \item{offset}{Include offsets. Defaults to TRUE.}
 
 \item{...}{Not used.}
+}
+\value{
+A list containing the parameter draws and associated groups and dates.
 }
 \description{
 Gives the posterior linear predictor for the reproduction numbers

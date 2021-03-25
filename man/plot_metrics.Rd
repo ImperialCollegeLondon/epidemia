@@ -14,14 +14,14 @@ plot_metrics(
 )
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
-\item{groups}{\code{NULL}, string or character vector specifying which groups
-to plot. Default is \code{NULL}, which plots all possible groups.}
+\item{groups}{Either \code{NULL} or a character vector specifying the groups
+to plot for. Default is \code{NULL}, which plots all modelled groups.}
 
-\item{type}{the name of the observations to plot. This should match one
-of the names of the \code{obs} argument to \code{epim}.}
+\item{type}{A string specifying the name of the observations to plot. This should match one
+of the names of the response variables in the \code{obs} argument used int the call to \code{\link{epim}}.}
 
 \item{metrics}{A string or character vector specifying the plotted
 forecast error metrics. One of \code{NULL}, \code{"crps"},
@@ -33,7 +33,8 @@ in \code{object} is overidden. Useful for forecasting}
 \item{plotly}{Convert ggplot into plotly}
 }
 \value{
-A ggplot object which can be further modified.
+If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
+a \code{plotly} object.
 }
 \description{
 Plots various metrics for evaluating probabilistic forecasts by group.

@@ -1,4 +1,4 @@
-vector reverse(vector vec) {
+vector reverse2(vector vec) {
     int K = rows(vec);
     vector[K] rev;
     for (k in 1:K) {

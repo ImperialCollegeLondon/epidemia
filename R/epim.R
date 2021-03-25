@@ -1,66 +1,95 @@
-#' Fits an Epidemiological Model
+#' Fit a Bayesian epidemiological model with epidemia
+#' 
+#' \code{\link{epim}} is the only model fitting function in \pkg{epidemia}.
+#' It takes a model description, a dataframe, and additional 
+#' arguments relating to the fitting algorithm, and translates this
+#' to data that is then passed to a precompiled \pkg{Stan} program which is used to fit the model. 
+#' This allows model fitting to begin immediately as opposed to requiring compilation 
+#' each time \code{epim} is called.
+#' 
+#' 
+#' This is similar to the workflow for fitting Bayesian regression models with \pkg{rstanarm}. 
+#' A key difference, however, is that the models fit by \pkg{epidemia} are much more complex, 
+#' and are therefore inherently more difficult to specify. \pkg{epidemia} aims to simplify this 
+#' process by modularising the model definition into three distinct parts: transmission, infections and observations. 
+#' These components of the model are defined with the functions \code{\link{epirt}}, \code{\link{epiinf}} and \code{\link{epiobs}} 
+#' respectively.
 #'
-#' Fits a Bayesian epidemiological model specified by the \code{formula}
-#' argument.
+#' \code{\link{epim}} has arguments 
+#' \code{rt}, \code{inf} and \code{obs} which expect a description of the 
+#' transmission model, infection model and observational models respectively. 
+#' Together, these fully define the joint distribution of data and parameters. 
+#' Each of these model components are described in terms of variables that are expected to live in a single dataframe, \code{data}. 
+#' This dataframe must be compatible with the model components, in the sense that it holds all variables defined in these models.
+#' 
+#' In addition to taking a model description and a dataframe, \code{\link{epim}} has various 
+#' additional arguments which specify how the model should be fit. If \code{algorithm = "sampling"} 
+#' then the model will be fit using \pkg{Stan}’s adaptive Hamiltonian Monte Carlo sampler. 
+#' This is done internally by calling \code{\link[rstan]{sampling}}. If 
+#' \code{algorithm = "meanfield"} or \code{algorithm = "fullrank"}, then 
+#' \pkg{Stan}’s variational Bayes algorithms are used instead, by calling \code{\link[rstan]{vb}}. 
+#' Any unnamed arguments in the call to \code{\link{epim}} are passed directly on to the \pkg{rstan} sampling function. 
+#' \code{\link{epim}} returns a fitted model object of class \code{epimodel}, which contains posterior samples from the model along with other useful objects.
+#' 
+#' In general, the adaptive Hamiltonian Monte Carlo sampler should be used for final inference. 
+#' Nonetheless, fitting these models using HMC is often computationally demanding, and variational Bayes can often be fruitful for quickly iterating models.
 #'
-#' \code{epim} is the primary model fitting function in \pkg{epidemia}, and
-#'  fits models
-#' in the style of \insertCite{Flaxman2020;textual}{epidemia}. Multiple groups
-#'  (countries/states/age cohorts)
-#' can be modeled simultaneously using multilevel models. The time-varying
-#'  reproduction number can be paramterised by a number of covariates through
-#' the \code{formula} argument. This is reasonably flexible. For example,
-#' random effects terms in the style of the \pkg{lme4} package can be included.
-#' The prior distribution on the parameters in the regression are handled
-#' through the arguments \code{prior},
-#' \code{prior_intercept} and \code{prior_covariance}.
-#'
-#' @param rt An object of class \code{\link[epidemia]{epirt}}. This specifies
-#'  the model for the time-varying reproduction number.
-#' @param inf An object of class \code{\link[epidemia]{epiinf}}. This specifies 
-#'  the model for latent infections. Defaults to \code{epiinf()}.
-#' @param obs A list of \code{\link[epidemia]{epiobs}} objects. Each
-#'  element defines a model for the specified observation vector.
-#' @param data A dataframe containing all data required to fit the model.
-#'  See [lm].
+#' @param rt An object of class \code{epirt}. This defines 
+#'  the model for the time-varying reproduction rates. See \code{\link{epirt}} for more details.
+#' @param inf An object of class \code{epiinf}. This defines
+#'  the model for latent infections. See \code{\link{epiinf}} for more details.
+#' @param obs Either an \code{epiobs} object, or a list of such objects. Each
+#'  element in the list defines a model for the specified observation vector. See \code{\link{epiobs}} for more details.
+#' @param data A dataframe with all data required for fitting the model. This includes all observation variables and covariates specified in the models for the reproduction number and ascertainment rates.
 #' @param algorithm One of \code{"sampling"}, \code{"meanfield"} or
 #'  \code{"fullrank"}. This specifies which \pkg{rstan} function to use for
-#'  fitting the model.
-#' @param group_subset An optional vector specifying a subset of groups to
-#'  model. Elements should correspond to the group levels specified through the
-#'  \code{data} argument.
+#'  fitting the model. For \code{"sampling"} this is \code{\link[rstan]{sampling}}, otherwise 
+#'  this is \code{\link[rstan]{vb}}.
+#' @param group_subset If specified, a character vector naming a subset of regions to include in the model.
 #' @param prior_PD Same as in \code{\link[rstanarm]{stan_glm}}. If \code{TRUE},
-#'  samples parameters from the prior disribution.
-#' Defaults to \code{FALSE}.
-#' @param init_run For certain datasets the sampler can find itself trapped in a
-#'  local mode where herd immunity is achieved. If TRUE, an MCMC run where 
-#'  the population adjustment is disabled is used to initialise the parameters for 
-#'  the main sampling. If TRUE, this is done with default parameters. If instead a list is
-#'  provided, these parameters are passed on to the rstan sampling function for the initial run.
-#'  initial run. The seed used is that specified in \code{init_run}, or that
-#'  specified in ..., or no seed, in that order.
-#' @param ... An (optional) named list of parameters to pass to the
-#'  \pkg{rstan} function used for model fitting, for example
-#'  \code{rstan::sampling}.
+#'  samples all parameters from the joint prior distribution. This is useful for 
+#' prior predictive checks. Defaults to \code{FALSE}.
+#' @param ... Additional arguments to pass to the \pkg{rstan} function used to fit the model.
 #' @examples
-#' \dontrun{
-#' data("EuropeCovid")
 #'
-#' args <- EuropeCovid
-#' args$algorithm <- "sampling"
-#' args$rt <- epirt(
-#'  formula=R(country, date) ~ 0 + lockdown,
-#'  args$prior <- shifted_gamma(shape = 1 / 6,
-#'                              scale = 1,
-#'                              shift = log(1.05) / 6)
+#' library(EpiEstim)
+#' data("Flu1918")
+#'
+#' date <- as.Date("1918-01-01") + seq(0, along.with = c(NA, Flu1918$incidence))
+#' data <- data.frame(
+#'  city = "Baltimore",
+#'  cases = c(NA, Flu1918$incidence),
+#'  date = date,
+#'  week = lubridate::week(date)
+#')
+#'
+#' rt <- epirt(
+#'  formula = R(city, date) ~ rw(time = week, prior_scale = 0.1),
+#'  prior_intercept = normal(log(2), 0.2),
+#'  link = 'log'
 #' )
 #'
-#' fit <- do.call("epim", args)
-#' plot_rt(fit, group = "Germany")
-#' }
-#' @return An object of class "epimodel".
-#' @references
-#' \insertAllCited{}
+#' obs <-  epiobs(
+#'  formula = cases ~ 1,
+#'  prior_intercept = rstanarm::normal(location=1, scale=0.01),
+#'  link = "identity",
+#'  i2o = rep(.25,4)
+#' )
+#'
+#' args <- list(
+#'  rt = rt,
+#'  inf = epiinf(gen = Flu1918$si_distr),
+#'  obs = obs,
+#'  data = data,
+#'  algorithm = "fullrank",
+#'  iter = 1e4,
+#'  seed = 12345
+#' )
+#'
+#' fm <- do.call(epim, args)
+#'
+#' plot_rt(fm)
+#' @return An object of class \code{epimodel}.
 #' @export
 epim <- function(
   rt,
@@ -70,7 +99,6 @@ epim <- function(
   algorithm = c("sampling", "meanfield", "fullrank"),
   group_subset = NULL,
   prior_PD = FALSE,
-  init_run = FALSE,
   ...
 ) {
   call <- match.call(expand.dots = TRUE)
@@ -85,7 +113,6 @@ epim <- function(
   check_data(data, rt, inf, obs, group_subset)
   check_logical(prior_PD)
   check_scalar(prior_PD)
-  check_init_run(init_run)
 
   algorithm <- match.arg(algorithm)
   sampling_args <- list(...)
@@ -340,7 +367,7 @@ make_oaux_nms <- function(obs) {
     if (!is.null(o$prior_aux)) {
       if (o$family == "neg_binom") {
         x <- "|reciprocal dispersion"
-      } 
+      }
       else if (o$family == "quasi_poisson") {
         x <- "|dispersion"
       }
@@ -401,7 +428,7 @@ make_obeta_nms <- function(obs, sdat) {
 # @param groups Character vector giving all simulated groups
 make_inf_nms <- function(begin, starts, N0, NC, groups) {
   nms <- c()
-  for (m in 1:length(groups)) 
+  for (m in 1:length(groups))
     nms <- c(nms, paste0("inf_noise[", begin -1 + N0 + starts[m] + seq(0, NC[m]-N0 - 1), ",", groups[m],"]"))
   return(nms)
 }

@@ -16,7 +16,7 @@
 )
 }
 \arguments{
-\item{x}{A fitted model object returned by \code{epim}.
+\item{x}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{pars}{A character vector giving parameter names.}
@@ -47,6 +47,9 @@ details on this default.}
 \item{...}{Arguments passed to \code{\link[bayesplot:MCMC-scatterplots]{mcmc_pairs}}.
 The arguments \code{np}, \code{lp}, and \code{max_treedepth} are automatically
 handled, and therefore do not need to be specified.}
+}
+\value{
+Multiple \code{ggplot} objects in a grid using \code{\link[bayesplot]{bayesplot_grid}}.
 }
 \description{
 Interface to \pkg{bayesplot}'s

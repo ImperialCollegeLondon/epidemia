@@ -8,7 +8,7 @@ ngrps.mixed <- function(object, ...) vapply(.flist(object), nlevels, 1)
 #' Terms method for epimodel objects
 #' @export
 #' @param x,fixed.only,random.only,... See \code{\link[lme4]{terms.merMod}}
-#' 
+#' @inherit terms_rw return
 terms.epimodel <- function (x, fixed.only=TRUE, random.only=FALSE, ...) {
 
   if (!is.mixed(x))
@@ -40,7 +40,8 @@ terms.epimodel <- function (x, fixed.only=TRUE, random.only=FALSE, ...) {
 #' @template args-epimodel-object
 #' @param ... See \code{\link[stats]{model.frame}}.
 #' @param fixed.only See \code{\link[lme4]{model.frame.merMod}}.
-#' 
+#' @return A \code{\link[base]{data.frame}} containing information needed to fit the model. See 
+#' \code{\link[stats]{model.frame}} for more details.
 model.frame.epimodel <- function(formula, fixed.only=FALSE, ...) {
   if (is.mixed(formula)) {
     fr <- formula$glmod$fr
@@ -56,13 +57,13 @@ model.frame.epimodel <- function(formula, fixed.only=FALSE, ...) {
   return(fr)
 }
 
-#' formula method for epimodel objects
+#' Formula method for epimodel objects
 #' 
 #' @export
 #' @param x An epimodel object.
 #' @param ... Can contain \code{fixed.only} and \code{random.only} arguments 
 #'   that both default to \code{FALSE}.
-#' 
+#' @return An object of class \code{formula}.
 formula.epimodel <- function(x, ...) {
   return(formula(x$formula, ...))
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/epiinf.R
 \name{epiinf}
 \alias{epiinf}
-\title{Modeling Latent Infections}
+\title{Model Latent Infections}
 \usage{
 epiinf(
   gen,
@@ -16,17 +16,14 @@ epiinf(
 )
 }
 \arguments{
-\item{gen}{A vector representing the generation distribution of the disease (a
+\item{gen}{A numeric vector representing the probability mass function for the generation time of the disease (must be a
 probability vector).}
 
-\item{seed_days}{Number of days for which to seed infections.}
+\item{seed_days}{An integer giving the number of days for which to seed infections. Defaults to \code{6L}.}
 
-\item{latent}{If \code{TRUE}, infections are treated as unknown parameters
-to be sampled. If \code{FALSE}, the model only consider their expected value given
-the reproduction numbers and seeded infections. Defaults to \code{FALSE}.}
+\item{latent}{If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.}
 
-\item{family}{Specifies prior family for latent infections.
-Only used if \code{latent = TRUE}, and is currently restricted to be "log-normal".}
+\item{family}{Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{log-normal}.}
 
 \item{prior_aux}{Prior distribution for the coefficient of dispersion \eqn{d} for
 the offspring distribution. Only used if \code{latent = TRUE}. The number of
@@ -34,22 +31,41 @@ offspring of a given infection is assumed to have mean \eqn{\mu} and variance \e
 This argument specifies prior on \eqn{d}. Higher values of \eqn{d} imply more
 super-spreading events.}
 
-\item{prior_tau}{The prior for \eqn{\tau}.This parameter is described in the
-introductory vignette, and controls the variability in the number of
-seeded infections at  the beginning of the epidemic. Must be a call to
-\code{\link[rstanarm]{exponential}}.}
+\item{prior_tau}{The prior distribution for the hyperparameter \eqn{\tau}, which is the mean of the
+prior distribution for infection seeding. Must be a call to
+\code{\link[rstanarm]{exponential}}. Defaults to \code{rstanarm::exponential(0.03)}. See the
+\href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} for
+more details on this parameter.}
 
-\item{pop_adjust}{The population adjustment is a major contributor to algorithm
-runtime. Although it should be implemented for a final model run, it may be
-quicker to develop models without the adjustment. Defaults to TRUE.}
+\item{pop_adjust}{If \code{TRUE}, applies a population adjustment to the infection process. Defaults to \code{FALSE}.}
 
 \item{susceptibles}{A character vector giving the name of the column in the dataframe
-passed as the data argument of epim, that corresponds to the susceptible population over time.
-Only used if pop_adjust=TRUE.}
+passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the susceptible population over time.
+Only used if \code{pop_adjust=TRUE}.}
+}
+\value{
+An object of class \code{epiinf}.
 }
 \description{
-Latent infections can be given a full prior distribution and inferred.
-\code{epiinf} allows you to define this prior distribution. The user can also
-specify models where only the expected infections are used, avoiding the need
-to perform full Bayesian inference for these quantities.
+\code{\link{epiinf}} defines a model for latent infections.
+For the basic version of the model, this defines the generation distribution of the disease, the number of days for which to seed infections, and the prior distribution on the parameter \eqn{\tau},
+as described in the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} vignette. Recall that \eqn{\tau} is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_tau respectively.
+}
+\details{
+\code{\link{epiinf}} has additional arguments which allow the user to extend the basic model.
+Using \code{latent=TRUE} replaces the renewal process with a model that treats latent infections as unknown parameters that are sampled along with other parameters. The \code{family} argument then gives the distribution for
+\eqn{p(i_t^', d)}, while \code{prior_aux} defines the prior on the coefficient of dispersion \eqn{d}.
+
+Recall that one can adjust the infection process to explicitly model changes in infection rates as the remaining susceptible population is depleted.
+In particular, the adjustment ensures that cumulative infections never breaches the initial susceprible population.
+The adjustment was described in Section 5.3 of the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} article.
+It can be employed by setting \code{pop_adjust = TRUE} and using the \code{susceptibles} argument to point towards a variable in the dataframe which gives the susceptible population at each point in time.
+}
+\examples{
+data(EuropeCovid)
+inf <- epiinf(
+ gen = EuropeCovid$si,
+ seed_days = 6L,
+ prior_tau = rstanarm::exponential(0.02)
+)
 }

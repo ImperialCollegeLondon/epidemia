@@ -15,11 +15,9 @@
 #' @return A list to be parsed internally.
 #' @examples
 #' 
-#' \dontrun{
 #' data("EuropeCovid")
 #' args <- EuropeCovid
 #' args$formula <- R(country, date) ~ 1 + rw(gr=country) + lockdown
-#' }
 #' @export
 rw <- function(time, gr, prior_scale = 0.2) {
   label <- deparse(match.call())
@@ -34,6 +32,7 @@ rw <- function(time, gr, prior_scale = 0.2) {
 #' 
 #' @param x An object of class "formula"
 #' @export
+#' @return The value of attributes. See \code{\link[base]{attr}} for more details.
 terms_rw <- function(x) {
   if(!inherits(x,"formula"))
     stop("'formula' must be a formula object.")

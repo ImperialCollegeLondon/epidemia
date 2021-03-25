@@ -9,6 +9,9 @@
 \arguments{
 \item{x, fixed.only, random.only, ...}{See \code{\link[lme4]{terms.merMod}}}
 }
+\value{
+The value of attributes. See \code{\link[base]{attr}} for more details.
+}
 \description{
 Terms method for epimodel objects
 }

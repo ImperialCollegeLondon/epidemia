@@ -125,6 +125,8 @@ posterior_metrics <-
 #' @param by_unseen Plot coverage separately for seen and unseen observations.
 #' Observations are 'seen' if they were used for fitting.
 #' @export
+#' @return If \code{plotly = FALSE} then a \code{ggplot} object. Otherwise a 
+#' \code{plotly} object.
 plot_coverage <-
   function(object,
            type,

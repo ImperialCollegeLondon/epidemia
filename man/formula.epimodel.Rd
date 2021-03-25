@@ -2,7 +2,7 @@
 % Please edit documentation in R/epimodel-methods.R
 \name{formula.epimodel}
 \alias{formula.epimodel}
-\title{formula method for epimodel objects}
+\title{Formula method for epimodel objects}
 \usage{
 \method{formula}{epimodel}(x, ...)
 }
@@ -12,6 +12,9 @@
 \item{...}{Can contain \code{fixed.only} and \code{random.only} arguments
 that both default to \code{FALSE}.}
 }
+\value{
+An object of class \code{formula}.
+}
 \description{
-formula method for epimodel objects
+Formula method for epimodel objects
 }

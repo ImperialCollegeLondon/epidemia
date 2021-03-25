@@ -28,9 +28,7 @@ list with the information needed for the stan data to be parsed correctly.
 }
 \examples{
 
-\dontrun{
 data("EuropeCovid")
 args <- EuropeCovid
 args$formula <- R(country, date) ~ 1 + rw(gr=country) + lockdown
-}
 }

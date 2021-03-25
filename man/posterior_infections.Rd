@@ -10,7 +10,7 @@ posterior_infections(object, ...)
 \method{posterior_infections}{epimodel}(object, newdata = NULL, draws = NULL, seed = NULL, ...)
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{...}{Not used.}

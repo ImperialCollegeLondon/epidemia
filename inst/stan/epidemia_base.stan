@@ -34,7 +34,7 @@ transformed data {
 #include /tdata/tdata_glm.stan
 
 for(r in 1:R)
-      pvecs_rev[r] = reverse(pvecs[r]);
+      pvecs_rev[r] = reverse2(pvecs[r]);
 
 }
 

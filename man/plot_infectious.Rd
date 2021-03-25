@@ -3,7 +3,7 @@
 \name{plot_infectious}
 \alias{plot_infectious}
 \alias{plot_infectious.epimodel}
-\title{Plotting the underlying total infectiousness over time}
+\title{Plot total infectiousness over time.}
 \usage{
 plot_infectious(object, ...)
 
@@ -20,43 +20,96 @@ plot_infectious(object, ...)
 )
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{...}{Additional arguments for
-\code{\link[epidemia]{posterior_infectious}}. Examples include
+\code{\link{posterior_infectious}}. Examples include
 \code{newdata}, which allows predictions or counterfactuals.}
 
-\item{groups}{\code{NULL}, string or character vector specifying which groups
-to plot. Default is \code{NULL}, which plots all possible groups.}
+\item{groups}{Either \code{NULL} or a character vector specifying the groups
+to plot for. Default is \code{NULL}, which plots all modelled groups.}
 
-\item{dates}{a vector of (start date, end date) defining the date range
-to be plotted. Must be coercible to date if not NA. If NA, this means
-use the lower/upper limit as appropriate. See examples.}
+\item{dates}{A length 2 vector of \code{Date} objects. This defines the
+start and end dates of the date-range to be plotted. Must be coercible to
+\code{Date} if not \code{NA}. If an element of the vector is \code{NA} then
+the default lower/upper limit is used. See examples.}
 
-\item{date_breaks}{string giving the distance between date tick labels.
-Default is "2 weeks".
-Passed as \code{date_breaks} argument to \code{ggplot::scale_x_date} -
-see \url{https://ggplot2.tidyverse.org/reference/scale_date.html}}
+\item{date_breaks}{A string giving the distance between date tick labels.
+Default is \code{"2 weeks"}. This is passed as the \code{date_breaks} argument to
+\code{\link[ggplot2]{scale_x_date}}. Please see \href{https://ggplot2.tidyverse.org/reference/scale_date.html}{here} for details.}
 
-\item{date_format}{the date format for coercing \code{dates}.
-Default is "\%Y-\%m-\%d"}
+\item{date_format}{This function attempts to coerce the \code{dates} argument
+to a vector of \code{Date} objects. \code{date_format} is passed as the \code{format}
+argument to \code{\link[base]{as.Date}}. Default is "\%Y-\%m-\%d".}
 
-\item{levels}{numeric vector giving the levels of the plotted
-credible intervals}
+\item{levels}{A numeric vector defining the levels of the plotted
+credible intervals.}
 
-\item{log}{If TRUE, plots the observations on a pseudo-linear scale.}
+\item{log}{If \code{TRUE}, plot quantities on a log10-scale. This argument
+must be \code{logical}, and defaults to \code{FALSE}.}
 
-\item{plotly}{If TRUE, wraps the ggplot object into a plotly object, for
-interactive graphing.}
+\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
+useful for interactive graphing.}
 }
 \value{
-A ggplot object which can be further modified.
+If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
+a \code{plotly} object.
 }
 \description{
-Plots credible intervals for the total infectiousness over time. This is
-defined as the sum of each infected person, weighted by how infectious each
-individual is, given how long they have been infected for.The user can
-control the levels of the intervals and the plotted group(s).
+Plots credible intervals and the median for total infectiousness over time. This is
+basically a weighted sum of all infected individuals. Each infected individual is weighted
+by how infectious they are expected to be given how long they have been infected for. The user can
+control the interval levels (i.e. 30\%, 50\% etc.) and the plotted group(s).
 This is a generic function.
+}
+\examples{
+data("EuropeCovid2")
+data <- EuropeCovid2$data
+data <- filter(data, date > date[which(cumsum(deaths) > 10)[1] - 30])
+data <- filter(data, date < as.Date("2020-05-05"))
+
+rt <- epirt(
+  formula = R(country, date) ~ 0 + (1 + public_events + schools_universities + self_isolating_if_ill + social_distancing_encouraged + lockdown || country) + public_events + schools_universities + self_isolating_if_ill + social_distancing_encouraged + lockdown,
+  prior = shifted_gamma(shape=1/6, scale = 1, shift = log(1.05)/6),
+  prior_covariance = decov(shape = c(2, rep(0.5, 5)),scale=0.25),
+  link = scaled_logit(6.5)
+)
+
+inf <- epiinf(gen = EuropeCovid$si, seed_days = 6)
+
+deaths <- epiobs(
+  formula = deaths ~ 1,
+  i2o = EuropeCovid2$inf2death,
+  prior_intercept = normal(0,0.2),
+  link = scaled_logit(0.02)
+)
+
+args <- list(rt=rt, inf=inf, obs=deaths, data=data, seed=12345)
+args$group_subset <- c("Italy", "Austria", "Germany")
+args$algorithm <- "fullrank"
+args$iter <- 1e4
+args$tol_rel_obj <- 1e-3
+
+fm <- do.call(epim, args)
+
+# different ways of using plot_rt
+plot_rt(fm) # default, plots all groups and dates
+plot_rt(fm, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+plot_rt(fm, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+plot_rt(fm, dates=c("2020-03-20", "2020-04-20"))
+plot_rt(fm,
+         dates=c("2020-03-20", "2020-04-20"),
+        date_breaks="1 day") # ticks every day
+plot_rt(fm,
+       dates=c("2020-20-03", "2020-20-04"),
+       date_format="\%Y-\%d-\%m") # (different date format)
+
+# other plotting functions
+plot_obs(fm, type = "deaths")
+plot_infections(fm)
+plot_infectious(fm) 
+}
+\seealso{
+\code{\link{plot_rt}}, \code{\link{plot_obs}}, \code{\link{plot_infections}}, \code{\link{posterior_infectious}}
 }

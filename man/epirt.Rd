@@ -2,7 +2,7 @@
 % Please edit documentation in R/epirt.R
 \name{epirt}
 \alias{epirt}
-\title{Model Reproduction Numbers}
+\title{Model Reproduction Rates}
 \usage{
 epirt(
   formula,
@@ -15,15 +15,15 @@ epirt(
 )
 }
 \arguments{
-\item{formula}{An R object of class \code{"formula"}. The left hand side
-must take the form \code{R(group,date)}, with \code{group} representing a factor
-vector indicating group membership (i.e. country, state, age cohort),
-and \code{date} being a vector of Date objects.}
+\item{formula}{An object of class \code{formula} which determines the linear predictor for
+the reproduction rates. The left hand side must take the form \code{R(group, date)}, where \code{group} and \code{date} variables.
+\code{group} must be a factor vector indicating group membership (i.e. country, state, age cohort), and \code{date} must be a vector of class \code{Date}.
+This is syntactic sugar for the reproduction number in the given group at the given date.}
 
-\item{link}{The link function. This must be either "identity", "log", or a call
-to scaled_logit.}
+\item{link}{The link function. This must be either \code{"identity"}, \code{"log"}, or a call
+to \code{\link{scaled_logit}}.}
 
-\item{center}{If \code{TRUE} then the covariates for the \eqn{R_t} regression
+\item{center}{If \code{TRUE} then the covariates for the regression
 are centered to have mean zero. All of the priors are then interpreted as
 prior on the centered covariates. Defaults to \code{FALSE}.}
 
@@ -41,12 +41,26 @@ used if the \code{formula} argument specifies random effects.}
 
 \item{...}{Additional arguments for \code{\link[stats]{model.frame}}}
 }
+\value{
+An object of class \code{epirt}.
+}
 \description{
-Defines a model for the latent time varying reproduction number. For more
-details on the model assumptions please refer to the online vignettes.
+\code{\link{epirt}} defines a model for reproduction rates. For more
+details on the model assumptions, please read the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description}
+vignette.
+}
+\details{
+\code{\link{epirt}} has a \code{formula} argument which defines the linear predictor, an argument \code{link} defining the link function,
+and additional arguments to specify priors on parameters making up the linear predictor.
+
+A general R formula gives a symbolic description of a model. It takes the form \code{y ~ model}, where \code{y} is the response
+and \code{model} is a collection of terms separated by the \code{+} operator. \code{model} fully defines a linear predictor used to predict \code{y}.
+In this case, the “response” being modeled are reproduction numbers which are unobserved.
+\code{\link{epirt}} therefore requires that the left hand side of the formula takes the form \code{R(group, date)},
+where \code{group} and \code{date} refer to variables representing the region and date respectively.
+The right hand side can consist of fixed effects, random effects, and autocorrelation terms.
 }
 \examples{
-\dontrun{
 library(epidemia)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
@@ -96,5 +110,4 @@ args$rt <- epirt(
 args$prior_PD <- TRUE
 fm3 <- do.call(epim, args)
 plot_rt(fm3)
-}
 }

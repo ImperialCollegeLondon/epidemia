@@ -18,7 +18,7 @@ posterior_rt(object, ...)
 )
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{...}{Not used.}

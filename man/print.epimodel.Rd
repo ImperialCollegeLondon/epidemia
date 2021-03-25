@@ -7,12 +7,15 @@
 \method{print}{epimodel}(x, digits = 1, ...)
 }
 \arguments{
-\item{x}{A fitted model object returned by \code{epim}.
+\item{x}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{digits}{Number of decimal places to print.}
 
 \item{...}{Not used.}
+}
+\value{
+No return value.
 }
 \description{
 Prints estimated regression parameters, and other model parameters.

@@ -8,12 +8,16 @@ for more details.}
 \method{model.frame}{epimodel}(formula, fixed.only = FALSE, ...)
 }
 \arguments{
-\item{formula}{A fitted model object returned by \code{epim}.
+\item{formula}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{fixed.only}{See \code{\link[lme4]{model.frame.merMod}}.}
 
 \item{...}{See \code{\link[stats]{model.frame}}.}
+}
+\value{
+A \code{\link[base]{data.frame}} containing information needed to fit the model. See
+\code{\link[stats]{model.frame}} for more details.
 }
 \description{
 model.frame method for epimodel objects. Please see  \code{\link[stats]{model.frame}}

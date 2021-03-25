@@ -17,7 +17,7 @@
 \method{print}{summary.epimodel}(x, digits = max(1, attr(x, "print.digits")), ...)
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{pars}{A character vector giving a subset of parameters to include.

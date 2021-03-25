@@ -7,12 +7,15 @@
 \method{print}{prior_summary.epimodel}(x, digits, ...)
 }
 \arguments{
-\item{x}{A fitted model object returned by \code{epim}.
+\item{x}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{digits}{Number of decimal places to print.}
 
 \item{...}{Not used.}
+}
+\value{
+No return value.
 }
 \description{
 Print method for \code{prior_summary.epimodel} objects

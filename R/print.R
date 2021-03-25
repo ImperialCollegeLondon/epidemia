@@ -8,6 +8,7 @@
 #' @param digits Number of decimal places to print.
 #' @param ... Not used.
 #' @export
+#' @return No return value.
 print.epimodel <- function(x, digits=1, ...) {
 
   mixed <- is.mixed(x)

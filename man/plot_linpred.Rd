@@ -20,7 +20,7 @@ plot_linpred(object, ...)
 )
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{...}{Additional arguments for
@@ -31,29 +31,31 @@ predictions or counterfactuals.}
 \item{type}{the name of the observations to plot. This should match one
 of the names of the \code{obs} argument to \code{epim}.}
 
-\item{groups}{\code{NULL}, string or character vector specifying which groups
-to plot. Default is \code{NULL}, which plots all possible groups.}
+\item{groups}{Either \code{NULL} or a character vector specifying the groups
+to plot for. Default is \code{NULL}, which plots all modelled groups.}
 
-\item{dates}{a vector of (start date, end date) defining the date range
-to be plotted. Must be coercible to date if not NA. If NA, this means
-use the lower/upper limit as appropriate. See examples.}
+\item{dates}{A length 2 vector of \code{Date} objects. This defines the
+start and end dates of the date-range to be plotted. Must be coercible to
+\code{Date} if not \code{NA}. If an element of the vector is \code{NA} then
+the default lower/upper limit is used. See examples.}
 
-\item{date_breaks}{string giving the distance between date tick labels.
-Default is "2 weeks".
-Passed as \code{date_breaks} argument to \code{ggplot::scale_x_date} -
-see \url{https://ggplot2.tidyverse.org/reference/scale_date.html}}
+\item{date_breaks}{A string giving the distance between date tick labels.
+Default is \code{"2 weeks"}. This is passed as the \code{date_breaks} argument to
+\code{\link[ggplot2]{scale_x_date}}. Please see \href{https://ggplot2.tidyverse.org/reference/scale_date.html}{here} for details.}
 
-\item{date_format}{the date format for coercing \code{dates}.
-Default is "\%Y-\%m-\%d"}
+\item{date_format}{This function attempts to coerce the \code{dates} argument
+to a vector of \code{Date} objects. \code{date_format} is passed as the \code{format}
+argument to \code{\link[base]{as.Date}}. Default is "\%Y-\%m-\%d".}
 
-\item{levels}{numeric vector giving the levels of the plotted
-credible intervals}
+\item{levels}{A numeric vector defining the levels of the plotted
+credible intervals.}
 
-\item{plotly}{If TRUE, wraps the ggplot object into a plotly object, for
-interactive graphing.}
+\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
+useful for interactive graphing.}
 }
 \value{
-A ggplot object which can be further modified.
+If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
+a \code{plotly} object.
 }
 \description{
 Plots credible intervals for the observed data under the posterior

@@ -9,6 +9,9 @@ terms_rw(x)
 \arguments{
 \item{x}{An object of class "formula"}
 }
+\value{
+The value of attributes. See \code{\link[base]{attr}} for more details.
+}
 \description{
 Finds random walk terms in a formula object
 }

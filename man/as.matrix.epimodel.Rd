@@ -37,7 +37,7 @@
 )
 }
 \arguments{
-\item{x}{A fitted model object returned by \code{epim}.
+\item{x}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{...}{Not used.}

@@ -1,23 +1,27 @@
 
-#' Helper for constructing an object of class 'epiobs'
+#' Define Observational Models
 #'
-#' Defines a model for an observation vector. These observations
+#' \code{\link{epiobs}} defines a model for an observation vector. These observations
 #' are taken to be a function of the latent infections in the poulation.
 #' Examples include daily death or hospitalisation rates. For more details on
-#' the model assumptions please refer to the online vignettes.
+#' the model assumptions please refer to the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} 
+#' vignette.
+#' 
+#' Each observational model is given by a call to \code{\link{epiobs}}. 
+#' In particular, this must define the model for ascertainment rates and the time distribution from infection to observation. 
+#' \code{\link{epiobs}} has a \code{formula} argument. The left hand side must define the observation vector  to be modeled, while the right hand side defines a linear predictor for the ascertainment rate.
+#' The argument \code{i2o} plays a similar role to the \code{gen} argument in \code{epiinf}, however it instead defines the probability mass function for the time between infection and observation.
 #'
-#' @param formula A formula defining the model for the observations.
-#' @param family A string representing the error distribution for the model.
+#' @param formula An object of class \code{formula} which determines the linear predictor for the ascertainment rate. 
+#' The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainments) in a given country on a given date. 
+#' @param family A string representing the family of the sampling distribution. 
 #'  Can be "poisson", "neg_binom", "quasi_poisson", "normal" or "log_normal".
-#' @param link A string representing the link function used to transform the
-#'  covariates. The linear predictor constructed from the covariates is
-#' transformed by the inverse link function, then multiplied by the weighted
-#' previous infections. This quantity represents the mean of the response
-#' distribution.
-#' @param i2o A probability vector with the following interpretation.
-#' Conditional on an observation "event" (i.e. a single death or
-#' hospitalisation etc.), the nth element represents the probability that the
-#' individual was infected exactly n days prior to this.
+#' @param link A string representing the link function used to transform the linear predictor. Can be one of \code{"logit"}, \code{"probit"}, \code{"cauchit"}, \code{"cloglog"}, \code{"identity"}. 
+#' Defaults to \code{"logit"}.
+#' @param i2o A numeric (simplex) vector defining the probability mass function 
+#' of the time distribution from infection to observation (i.e. a single death or
+#' hospitalisation etc.). The \eqn{n}th element represents the probability that the
+#' individual was infected exactly \eqn{n} days prior to this.
 #' @param center If \code{TRUE} then the covariates are centered to
 #'  have mean zero. All of the priors are then interpreted as
 #'  priors on the centered covariates. Defaults to \code{FALSE}.
@@ -26,14 +30,19 @@
 #'  then automatic rescaling of the prior may take place.
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior
 #'  for the regression intercept, if one has been specified.
-#' @param prior_aux Specify the prior distribution for the auxiliary parameter
-#'  if it exists. Only used if family is negative binomial (reciprocal
-#'  dispersion), quasi poisson (dispersion), normal (standard deviation) or 
-#'  normal, in which case this represents the prior on the reciprocal 
-#'  log normal (sigma parameter). See \code{\link[rstanarm]{stan_glm}}
-#'  for more details.
-
+#' @param prior_aux 	The prior distribution for the auxiliary parameter, if it exists. 
+#' Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter).
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
+#' @return An object of class \code{epiobs}.
+#' @examples 
+#' data(EuropeCovid)
+#' # constant ascertainment rate (intercept model)
+#' # link ensures ascertainment is between 0 and 2%
+#' deaths <- epiobs(
+#'  deaths ~ 1,
+#'  i2o = EuropeCovid$inf2death,
+#'  link = scaled_logit(0.02)
+#' )
 #' @export
 #' 
 epiobs <- function(

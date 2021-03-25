@@ -32,7 +32,7 @@ prior_summary.epimodel <- function(object, digits = 3, ...) {
 
 #' Print method for \code{prior_summary.epimodel} objects
 #' 
-#' @inheritParams print.epimodel
+#' @inherit print.epimodel params return
 #' 
 #' @export
 print.prior_summary.epimodel <- function(x, digits, ...) {
@@ -50,7 +50,7 @@ print.prior_summary.epimodel <- function(x, digits, ...) {
 
 #' Print method for \code{prior_summary_reg.epimodel} objects
 #' 
-#' @inheritParams print.epimodel
+#' @inherit print.epimodel params return
 #' 
 #' @export
 print.prior_summary_reg.epimodel <- function(x, digits, ...) {

@@ -12,6 +12,7 @@
 #' @param offset Include offsets. Defaults to TRUE.
 #' @param ... Not used.
 #' @export 
+#' @return A list containing the parameter draws and associated groups and dates.
 posterior_linpred <- function(object,
                               transform = FALSE,
                               type = NULL,

@@ -85,6 +85,7 @@ plot.epimodel <- function(x, plotfun = "intervals", pars = NULL,
 #' @method pairs epimodel
 #' @export
 #' @importFrom bayesplot pairs_style_np pairs_condition
+#' @return Multiple \code{ggplot} objects in a grid using \code{\link[bayesplot]{bayesplot_grid}}.
 pairs.epimodel <- function(x, pars = NULL, regex_pars = NULL, par_models = NULL,
                            par_types = NULL, par_groups = NULL,
                            condition = pairs_condition(nuts = "accept_stat__"),

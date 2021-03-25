@@ -17,20 +17,20 @@ plot_coverage(
 )
 }
 \arguments{
-\item{object}{A fitted model object returned by \code{epim}.
+\item{object}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
-\item{type}{the name of the observations to plot. This should match one
-of the names of the \code{obs} argument to \code{epim}.}
+\item{type}{A string specifying the name of the observations to plot. This should match one
+of the names of the response variables in the \code{obs} argument used int the call to \code{\link{epim}}.}
 
 \item{newdata}{If provided, the original \code{data} used
 in \code{object} is overidden. Useful for forecasting}
 
-\item{groups}{\code{NULL}, string or character vector specifying which groups
-to plot. Default is \code{NULL}, which plots all possible groups.}
+\item{groups}{Either \code{NULL} or a character vector specifying the groups
+to plot for. Default is \code{NULL}, which plots all modelled groups.}
 
-\item{levels}{numeric vector giving the levels of the plotted
-credible intervals}
+\item{levels}{A numeric vector defining the levels of the plotted
+credible intervals.}
 
 \item{period}{Buckets computed empirical probabilities into time periods
 if specified.}
@@ -40,8 +40,12 @@ if specified.}
 \item{by_unseen}{Plot coverage separately for seen and unseen observations.
 Observations are 'seen' if they were used for fitting.}
 
-\item{plotly}{If TRUE, wraps the ggplot object into a plotly object, for
-interactive graphing.}
+\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
+useful for interactive graphing.}
+}
+\value{
+If \code{plotly = FALSE} then a \code{ggplot} object. Otherwise a
+\code{plotly} object.
 }
 \description{
 Plots histograms showing empirical coverage of credible intervals

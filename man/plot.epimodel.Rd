@@ -16,7 +16,7 @@
 )
 }
 \arguments{
-\item{x}{A fitted model object returned by \code{epim}.
+\item{x}{A fitted model object returned by \code{\link{epim}}.
 See \code{\link{epimodel-objects}}.}
 
 \item{plotfun}{Same as in \code{\link[rstanarm]{plot.stanreg}}.
