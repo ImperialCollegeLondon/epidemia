@@ -16,3 +16,4 @@
 ^man-roxygen
 ^index\.Rmd$
 ^index\.md$
+^CRAN-RELEASE$
