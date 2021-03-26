@@ -65,7 +65,7 @@
 #'
 #' rt <- epirt(
 #'  formula = R(city, date) ~ rw(time = week, prior_scale = 0.1),
-#'  prior_intercept = normal(log(2), 0.2),
+#'  prior_intercept = rstanarm::normal(log(2), 0.2),
 #'  link = 'log'
 #' )
 #'

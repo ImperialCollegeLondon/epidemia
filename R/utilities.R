@@ -406,14 +406,6 @@ check_group_subset <- function(group_subset) {
   }
 }
 
-check_init_run <- function(init_run) {
-  if (is.logical(init_run)) {
-    check_scalar(init_run)
-  } else {
-    check_list(init_run)
-  }
-}
-
 # Generic checking of a dataframe
 #
 # @param df The Data.Frame to be checked

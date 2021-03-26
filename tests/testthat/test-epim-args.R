@@ -48,12 +48,5 @@ test_that("check_group_subset", {
   expect_error(check_group_subset(na.fail), "coercible")
 })
 
-test_that("check_init_run", {
-  expect_error(check_init_run(FALSE), NA)
-  expect_error(check_init_run(TRUE), NA)
-  expect_error(check_init_run(c(FALSE, TRUE)), regexp = "scalar")
-  expect_error(check_init_run(1), regexp = "list")
-  expect_error(check_init_run(list()), NA)
-})
 
 

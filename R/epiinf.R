@@ -6,8 +6,8 @@
 #' as described in the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} vignette. Recall that \eqn{\tau} is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_tau respectively.
 #'
 #' \code{\link{epiinf}} has additional arguments which allow the user to extend the basic model. 
-#' Using \code{latent=TRUE} replaces the renewal process with a model that treats latent infections as unknown parameters that are sampled along with other parameters. The \code{family} argument then gives the distribution for 
-#' \eqn{p(i_t^', d)}, while \code{prior_aux} defines the prior on the coefficient of dispersion \eqn{d}.
+#' Using \code{latent=TRUE} replaces the renewal process with a model that treats latent infections as unknown parameters that are sampled along with other parameters. The \code{family} argument then gives the distribution family for 
+#' latent infections, while \code{prior_aux} defines the prior on the coefficient of dispersion \eqn{d} of this distribution.
 #' 
 #' Recall that one can adjust the infection process to explicitly model changes in infection rates as the remaining susceptible population is depleted. 
 #' In particular, the adjustment ensures that cumulative infections never breaches the initial susceprible population. 

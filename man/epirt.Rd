@@ -61,6 +61,7 @@ where \code{group} and \code{date} refer to variables representing the region an
 The right hand side can consist of fixed effects, random effects, and autocorrelation terms.
 }
 \examples{
+\donttest{
 library(epidemia)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
@@ -110,4 +111,5 @@ args$rt <- epirt(
 args$prior_PD <- TRUE
 fm3 <- do.call(epim, args)
 plot_rt(fm3)
+}
 }

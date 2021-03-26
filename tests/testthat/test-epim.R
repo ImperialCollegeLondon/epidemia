@@ -40,16 +40,6 @@ test_that("epim runs through with different algorithms", {
   expect_true(inherits(fm, "epimodel"))
 })
 
-test_that("epim works with init_run", {
-  run_args <- args
-  run_args$init_run <- TRUE
-  run_args$algorithm <- "sampling"
-  run_args$iter <- 10
-  run_args$seed <- 12345
-  run_args$chains <- 1 
-  expect_warning(fm <- do.call(epim, run_args))
-  expect_true(inherits(fm, "epimodel"))
-})
 
 
 

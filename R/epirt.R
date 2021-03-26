@@ -36,6 +36,7 @@
 #' @export
 #' @return An object of class \code{epirt}.
 #' @examples
+#' \donttest{
 #' library(epidemia)
 #' data("EuropeCovid")
 #' options(mc.cores = parallel::detectCores())
@@ -85,6 +86,7 @@
 #' args$prior_PD <- TRUE
 #' fm3 <- do.call(epim, args)
 #' plot_rt(fm3)
+#' }
 epirt <- function(formula,
                   link = "log",
                   center = FALSE,
