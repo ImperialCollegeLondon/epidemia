@@ -30,7 +30,7 @@ where $y_t$ is the expected value of the data distribution and $\phi$ is an auxi
 i_t &= R_t \sum_{s < t} i_s g_{t-s},
 (\#eq:renewal)
 \end{align}
-where $g$ is a probability mass function for the time between infections. The recursion is initialised with *seeded* infections $i_{v:0}$, $v < 0$, which are treated as unknown parameters. All parameters are assigned priors, i.e.
+where $g$ is a probability mass function for the time between infections. The recursion is initialized with *seeded* infections $i_{v:0}$, $v < 0$, which are treated as unknown parameters. All parameters are assigned priors, i.e.
 \begin{equation}
     i_{v:0}, R, \phi, \alpha \sim p(\cdot),
 \end{equation}
@@ -40,7 +40,7 @@ where $R = (R_1, \ldots, R_n)$ and $\alpha = (\alpha_1, \ldots, \alpha_n)$. The 
 \end{equation}
 **epidemia** represents this posterior distribution in Stan, and uses its adaptive Hamiltonian Monte Carlo sampler to approximately draw samples from this posterior distribution. These samples allow for inference on the parameters, in addition to simulating data from the posterior predictive distribution.
 
-Transmission rates $R$ and ascertainments $\alpha$ can be modeled flexibly using Bayesian regression models, and through sharing of parameters, are the means through which we tie together multiple regions or groups using multilevel modeling. One can, for example, model transmission rates as depending on a binary covariate for an NPI, say full lockdown. The coefficient for this can be *partially pooled* between these groups. The effect is to share information between groups, while still permitting between group variation.
+Transmission rates $R$ and ascertainment rates $\alpha$ can be modeled flexibly using Bayesian regression models, and through sharing of parameters, are the means through which we tie together multiple regions or groups using multilevel modeling. One can, for example, model transmission rates as depending on a binary covariate for an NPI, say full lockdown. The coefficient for this can be *partially pooled* between these groups. The effect is to share information between groups, while still permitting between group variation.
 
 
 # Observations {#sec:observations}
@@ -66,7 +66,7 @@ Poisson has no auxiliary parameter $\phi$, while for the latter two families thi
 **epidemia** allows for multiple observation vectors, in which case we can simply 
 superscript $Y_t^{(l)}$, $\alpha_{t}^{(l)}$ and $\pi^{(l)}$, and assign independent sampling distributions for each type. 
 Separate models are then specified $\alpha_{t}^{(l)}$.
-Multiple observation types can often enchance a model.
+Multiple observation types can often enhance a model.
 High quality death data existed during the first wave of the Covid-19 pandemic in Europe.
 Case data gradually increased in reliability over time, and has the advantage of picking up 
 changes in transmission dynamics much quicker than death data. 
@@ -130,7 +130,7 @@ Choosing an appropriate link function $g$ is difficult. $R_t$ is non-negative, b
 \begin{equation}
     g^{-1}(x) = \frac{K}{1 + e^{-x}} (\#eq:scaledlogit).
 \end{equation}
-This is a generalisation of the logit-link, and we refer to it as the *scaled-logit*.
+This is a generalization of the logit-link, and we refer to it as the *scaled-logit*.
 That is to say we expect $R$ to have some *carry capacity*. These considerations should inform the choice of link function.
 
 

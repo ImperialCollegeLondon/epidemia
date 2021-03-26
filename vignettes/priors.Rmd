@@ -137,7 +137,7 @@ call to `epiinf()`. `prior_aux` can be a call to one of `rstanarm::normal()`,
 ## Priors on Covariance Matrices
 
 Recall that partial pooling can be used in the regression for $R$. The 
-partially pooled parameters $b$ are characterised as zero mean multivariate 
+partially pooled parameters $b$ are characterized as zero mean multivariate 
 normal with an unknown covariance matrix, which must itself be assigned a prior.
 The precise model for these parameters is described in detail in the 
 [partial pooling article](partial-pooling.html). The prior on the covariance 

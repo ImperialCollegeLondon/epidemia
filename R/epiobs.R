@@ -3,7 +3,7 @@
 #'
 #' \code{\link{epiobs}} defines a model for an observation vector. These observations
 #' are taken to be a function of the latent infections in the population.
-#' Examples include daily death or hospitalisation rates. For more details on
+#' Examples include daily death or hospitalization rates. For more details on
 #' the model assumptions please refer to the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} 
 #' vignette.
 #' 
@@ -13,14 +13,14 @@
 #' The argument \code{i2o} plays a similar role to the \code{gen} argument in \code{epiinf}, however it instead defines the probability mass function for the time between infection and observation.
 #'
 #' @param formula An object of class \code{formula} which determines the linear predictor for the ascertainment rate. 
-#' The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainments) in a given country on a given date. 
+#' The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainment rates) in a given country on a given date. 
 #' @param family A string representing the family of the sampling distribution. 
 #'  Can be "poisson", "neg_binom", "quasi_poisson", "normal" or "log_normal".
 #' @param link A string representing the link function used to transform the linear predictor. Can be one of \code{"logit"}, \code{"probit"}, \code{"cauchit"}, \code{"cloglog"}, \code{"identity"}. 
 #' Defaults to \code{"logit"}.
 #' @param i2o A numeric (simplex) vector defining the probability mass function 
 #' of the time distribution from infection to observation (i.e. a single death or
-#' hospitalisation etc.). The \eqn{n}th element represents the probability that the
+#' hospitalization etc.). The \eqn{n}th element represents the probability that the
 #' individual was infected exactly \eqn{n} days prior to this.
 #' @param center If \code{TRUE} then the covariates are centered to
 #'  have mean zero. All of the priors are then interpreted as

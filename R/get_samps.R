@@ -12,7 +12,7 @@
 #' is particularly useful, for example, when you wish to fit a model using 
 #' \code{pop_adjust = T}, as this makes the posterior geometry difficult to 
 #' explore. Using a "prefit" run with \code{pop_adjust = F} is useful for 
-#' finding good states that can be usedas initial states for the run with 
+#' finding good states that can be used as initial states for the run with 
 #' the population adjustment.
 #' 
 #' @param prefit An object of class \code{epimodel}. This object must have 

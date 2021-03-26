@@ -308,7 +308,7 @@ knitr::include_graphics("multilevel-rt-plot.png")
 ## Effect Sizes
 <hr>
 
-In **epidemia**, estimated effect sizes can be visualised using the `plot.epimodel` 
+In **epidemia**, estimated effect sizes can be visualized using the `plot.epimodel` 
 method. This serves a similar purpose to `plot.stanreg` in **rstanarm**, 
 providing an interface to the **bayesplot** package. The models in **epidemia** 
 often have many parameters, some of which pertain to a particular part of the model 
@@ -444,7 +444,7 @@ newdata <- mutate(newdata,
 )
 ```
 
-Figure \@ref(fig:counterfactuals) visualises the counterfactual scenario of all 
+Figure \@ref(fig:counterfactuals) visualizes the counterfactual scenario of all 
 policies being implemented in the UK three days earlier. Deaths are projected 
 over both the in-sample period, and the out of sample period. The left plot
 is obtained using `plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")`,

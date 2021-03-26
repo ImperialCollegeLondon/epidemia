@@ -3,7 +3,7 @@
 
 <div class="subtext">
 Flexibly specify and fit Bayesian statistical models for epidemics.
-epidemia leverages R’s formula interface to paramaterize the time-varying
+epidemia leverages R’s formula interface to parameterize the time-varying
 reproduction rate as a function of covariates. Multiple regions can
 be modeled simultaneously with multilevel models. The design of the
 package has been inspired by, and has borrowed from,

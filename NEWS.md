@@ -1,7 +1,7 @@
 ## epidemia 1.0.0
 * First version submitted to CRAN
 * Bug fixed for latent infections and first Rt with pop_adjust
-* Reorganised files to correctly attribute copyright.
+* reorganized files to correctly attribute copyright.
 
 ## epidemia 0.7.0
 * Changes to general interface - new epiinf() function for representing infection model

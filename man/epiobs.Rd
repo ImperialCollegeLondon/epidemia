@@ -18,11 +18,11 @@ epiobs(
 }
 \arguments{
 \item{formula}{An object of class \code{formula} which determines the linear predictor for the ascertainment rate.
-The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainments) in a given country on a given date.}
+The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainment rates) in a given country on a given date.}
 
 \item{i2o}{A numeric (simplex) vector defining the probability mass function
 of the time distribution from infection to observation (i.e. a single death or
-hospitalisation etc.). The \eqn{n}th element represents the probability that the
+hospitalization etc.). The \eqn{n}th element represents the probability that the
 individual was infected exactly \eqn{n} days prior to this.}
 
 \item{family}{A string representing the family of the sampling distribution.
@@ -53,7 +53,7 @@ An object of class \code{epiobs}.
 \description{
 \code{\link{epiobs}} defines a model for an observation vector. These observations
 are taken to be a function of the latent infections in the population.
-Examples include daily death or hospitalisation rates. For more details on
+Examples include daily death or hospitalization rates. For more details on
 the model assumptions please refer to the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description}
 vignette.
 }

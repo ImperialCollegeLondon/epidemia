@@ -3,7 +3,7 @@
 \name{plot_linpred}
 \alias{plot_linpred}
 \alias{plot_linpred.epimodel}
-\title{Plotting the posterior linear predictor for R or ascertainments}
+\title{Plotting the posterior linear predictor for R or ascertainment rates}
 \usage{
 plot_linpred(object, ...)
 

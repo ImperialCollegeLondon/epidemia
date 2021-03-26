@@ -774,7 +774,7 @@ fancy_scientific <- function(l) {
   parse(text=l)
 }
 
-#' Plotting the posterior linear predictor for R or ascertainments
+#' Plotting the posterior linear predictor for R or ascertainment rates
 #'
 #' Plots credible intervals for the observed data under the posterior
 #' predictive distribution, and for a specific observation type. 

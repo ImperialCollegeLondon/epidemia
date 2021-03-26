@@ -57,7 +57,7 @@ Using \code{latent=TRUE} replaces the renewal process with a model that treats l
 latent infections, while \code{prior_aux} defines the prior on the coefficient of dispersion \eqn{d} of this distribution.
 
 Recall that one can adjust the infection process to explicitly model changes in infection rates as the remaining susceptible population is depleted.
-In particular, the adjustment ensures that cumulative infections never breaches the initial susceprible population.
+In particular, the adjustment ensures that cumulative infections never breaches the initial susceptible population.
 The adjustment was described in Section 5.3 of the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} article.
 It can be employed by setting \code{pop_adjust = TRUE} and using the \code{susceptibles} argument to point towards a variable in the dataframe which gives the susceptible population at each point in time.
 }

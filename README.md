@@ -4,7 +4,7 @@ epidemia  <img src='man/figures/logo.png' width="120" align="right"/>
 The epidemia package allows researchers to flexibly specify and fit
 Bayesian epidemiological models in the style of [Flaxman et
 al. (2020)](https://www.nature.com/articles/s41586-020-2405-7). The
-package leverages R’s formula interface to paramaterize the time-varying
+package leverages R’s formula interface to parameterize the time-varying
 reproduction rate as a function of covariates. Multiple populations can
 be modeled simultaneously with hierarchical models. The design of the
 package has been inspired by, and has borrowed from,

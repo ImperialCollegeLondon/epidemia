@@ -1,8 +1,8 @@
 #' Covid-19 data for European countries
 #' 
-#' Constains a dataframe with recorded daily deaths from Covid-19 in 11 European countries up until 05/05/2020.
+#' contains a dataframe with recorded daily deaths from Covid-19 in 11 European countries up until 05/05/2020.
 #' The dataframe includes variables representing different non-pharmaceutical interventions implemented by the 
-#' countries consisdered. The data matches that used in \insertCite{Flaxman2020;textual}{epidemia}. Also 
+#' countries considered. The data matches that used in \insertCite{Flaxman2020;textual}{epidemia}. Also 
 #' includes empirical distributions for the serial interval and the time from infection to death.
 #' 
 #' @format A named list. The fields are:

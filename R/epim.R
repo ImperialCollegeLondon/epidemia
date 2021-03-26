@@ -11,7 +11,7 @@
 #' This is similar to the workflow for fitting Bayesian regression models with \pkg{rstanarm}. 
 #' A key difference, however, is that the models fit by \pkg{epidemia} are much more complex, 
 #' and are therefore inherently more difficult to specify. \pkg{epidemia} aims to simplify this 
-#' process by modularising the model definition into three distinct parts: transmission, infections and observations. 
+#' process by modularizing the model definition into three distinct parts: transmission, infections and observations. 
 #' These components of the model are defined with the functions \code{\link{epirt}}, \code{\link{epiinf}} and \code{\link{epiobs}} 
 #' respectively.
 #'

@@ -3,7 +3,7 @@
 #' @description The \pkg{epidemia} package allows researchers to flexibly 
 #'      specify and fit Bayesian epidemiological models in the style of 
 #'      \insertCite{Flaxman2020;textual}{epidemia}. The 
-#'      package leverages R's formula interface to paramterise the reproduction rate 
+#'      package leverages R's formula interface to parameterize the reproduction rate 
 #'      in terms of covariates, and allows pooling of parameters. 
 #'      The design of the package has been inspired by, and borrowed from, the \pkg{rstanarm} 
 #'      package \insertCite{rstanarm}{epidemia}.

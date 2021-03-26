@@ -24,7 +24,7 @@ See \code{\link{epimodel-objects}}.}
 \item{...}{Not used.}
 
 \item{newdata}{If provided, the original \code{data} used
-in \code{object} is overridden. Useful both for conterfactual
+in \code{object} is overridden. Useful both for counterfactual
 and prediction analysis}
 
 \item{series}{Type of latent series to return.}
