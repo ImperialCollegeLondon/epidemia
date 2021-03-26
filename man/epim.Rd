@@ -79,7 +79,7 @@ In general, the adaptive Hamiltonian Monte Carlo sampler should be used for fina
 Nonetheless, fitting these models using HMC is often computationally demanding, and variational Bayes can often be fruitful for quickly iterating models.
 }
 \examples{
-
+\donttest{
 library(EpiEstim)
 data("Flu1918")
 
@@ -117,4 +117,5 @@ args <- list(
 fm <- do.call(epim, args)
 
 plot_rt(fm)
+}
 }

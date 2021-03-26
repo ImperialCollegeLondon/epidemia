@@ -48,7 +48,7 @@ nobs.epiobs_ <- function(object, ...) {
 
 # Turn observations into cumulatives
 #
-# Cumsums the obervation vector and the i2o vector.
+# Cumsums the observation vector and the i2o vector.
 # This is useful for getting good starting values for
 # the sampler.
 cumulate <- function(object, ...) UseMethod("cumulate")

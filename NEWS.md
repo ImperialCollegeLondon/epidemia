@@ -27,7 +27,7 @@ easily allows the user to choose different components of the model.
 * Improved structure to epimodel objects
 * Refactoring of main epim function
 * Improved plots, including interactive plots using plotly
-* Forecast evaluation using coverage and diffeent metrics
+* Forecast evaluation using coverage and different metrics
 * Ability to do an initial run fit to cumulatives within epim
 * Updated tests, documentation and vignettes
 

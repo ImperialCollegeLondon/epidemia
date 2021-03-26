@@ -43,7 +43,7 @@ posterior_predict.epimodel <-
 
     out <- out$E_obs
 
-    # remove unmodelled types
+    # remove unmodeled types
     out <- out[types]
 
     if (!posterior_mean) {

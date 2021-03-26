@@ -3,7 +3,7 @@
 #' @templateVar epimodelArg object
 #' @template args-epimodel-object
 #' @param newdata If provided, the original \code{data} used
-#'  in \code{object} is overidden. Useful both for conterfactual
+#'  in \code{object} is overridden. Useful both for conterfactual
 #'  and prediction analysis
 #' @param draws Number of posterior draws to use. Defaults to the number
 #'  of parameter draws in the fitted model.

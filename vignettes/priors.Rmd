@@ -101,7 +101,7 @@ for more details.
 
 In addition to **rstanarm**'s prior functions, **epidemia** offers additional 
 priors for regression coefficients. Currently, there is just one, `shifted_gamma`. 
-This represents a gamma distributionthat can be shifted so that it has support 
+This represents a gamma distribution that can be shifted so that it has support 
 other than on $[0, \infty)$. Specifically,
 \begin{equation}
 \beta_i \sim \text{Gamma}(\alpha_i, \theta_i) - a_i,
@@ -202,7 +202,7 @@ no longer has an easily intuited interpretation.
 
 ### Autoscaling {#sec:autoscale}
 
-**rstanarm**'s prior functions have an arugment called `autoscale`. 
+**rstanarm**'s prior functions have an argument called `autoscale`. 
 If `autoscale = TRUE`, then **epidemia** automatically adjusts the prior scale to 
 account for the scale of the covariates. This only applies to priors on 
 fixed effects, and not to the intercepts. **epidemia** rescales according to the 

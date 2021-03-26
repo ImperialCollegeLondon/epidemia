@@ -23,7 +23,7 @@ See \code{\link{epimodel-objects}}.}
 \item{pars}{A character vector giving a subset of parameters to include.
 Default is NULL, in which case all parameters are included.}
 
-\item{regex_pars}{A character vector of regular expressions to select paramters.
+\item{regex_pars}{A character vector of regular expressions to select parameters.
 If pars is also used, regex_pars is used in conjunction with pars.}
 
 \item{probs}{A numeric vector of probabilities for computing quantiles of

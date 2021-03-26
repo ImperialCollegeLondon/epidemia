@@ -1,5 +1,5 @@
 ---
-title: Intallation
+title: Installation
 output:
   bookdown::html_document2:
     theme: flatly

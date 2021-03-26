@@ -17,7 +17,7 @@ See \code{\link{epimodel-objects}}.}
 \item{...}{Not used.}
 
 \item{newdata}{If provided, the original \code{data} used
-in \code{object} is overidden. Useful both for conterfactual
+in \code{object} is overridden. Useful both for conterfactual
 and prediction analysis}
 
 \item{draws}{Number of posterior draws to use. Defaults to the number

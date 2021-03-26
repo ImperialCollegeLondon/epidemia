@@ -69,7 +69,7 @@ data <- data.frame(
 )
 ```
 `date` is constructed so that the first observations are seen on the second 
-day of the epidemic rather than the first. This is so that the first obervation 
+day of the epidemic rather than the first. This is so that the first observation 
 can be explained by seeded infections on the previous day.
 
 We need to specify models for $R_t$ and the case data. $R_t$ is modeled through 

@@ -448,7 +448,7 @@ Figure \@ref(fig:counterfactuals) visualises the counterfactual scenario of all
 policies being implemented in the UK three days earlier. Deaths are projected 
 over both the in-sample period, and the out of sample period. The left plot
 is obtained using `plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")`,
-while the right plot adds the `cumulative = TRUE` argument. We reiterate that hese results are 
+while the right plot adds the `cumulative = TRUE` argument. We reiterate that these results are 
 not intended to be statistically rigorous - simply to illustrate usage of epidemia.
 
 ```{r counterfactuals, out.width = "100%", fig.cap = "Counterfactual for UK where all NPIs implemented 3 days earlier. Left is daily deaths, right is cumulative.", echo=FALSE}

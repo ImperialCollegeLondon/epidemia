@@ -2,7 +2,7 @@
 #' Define Observational Models
 #'
 #' \code{\link{epiobs}} defines a model for an observation vector. These observations
-#' are taken to be a function of the latent infections in the poulation.
+#' are taken to be a function of the latent infections in the population.
 #' Examples include daily death or hospitalisation rates. For more details on
 #' the model assumptions please refer to the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} 
 #' vignette.

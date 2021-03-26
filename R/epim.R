@@ -51,7 +51,7 @@
 #' prior predictive checks. Defaults to \code{FALSE}.
 #' @param ... Additional arguments to pass to the \pkg{rstan} function used to fit the model.
 #' @examples
-#'
+#' \donttest{
 #' library(EpiEstim)
 #' data("Flu1918")
 #'
@@ -89,6 +89,7 @@
 #' fm <- do.call(epim, args)
 #'
 #' plot_rt(fm)
+#' }
 #' @return An object of class \code{epimodel}.
 #' @export
 epim <- function(

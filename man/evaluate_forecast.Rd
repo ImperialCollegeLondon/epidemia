@@ -18,13 +18,13 @@ evaluate_forecast(
 See \code{\link{epimodel-objects}}.}
 
 \item{newdata}{If provided, the original \code{data} used
-in \code{object} is overidden. Useful for forecasting}
+in \code{object} is overridden. Useful for forecasting}
 
 \item{type}{A string specifying the name of the observations to plot. This should match one
 of the names of the response variables in the \code{obs} argument used int the call to \code{\link{epim}}.}
 
 \item{groups}{Either \code{NULL} or a character vector specifying the groups
-to plot for. Default is \code{NULL}, which plots all modelled groups.}
+to plot for. Default is \code{NULL}, which plots all modeled groups.}
 
 \item{metrics}{A string or character vector specifying the plotted
 forecast error metrics. One of \code{NULL}, \code{"crps"},

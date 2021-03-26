@@ -26,7 +26,7 @@ listed using \code{\link[bayesplot]{available_mcmc}}. Defaults to "interval"}
 
 \item{pars}{A character vector giving parameter names.}
 
-\item{regex_pars}{A character vector of regular expressions to select paramters.
+\item{regex_pars}{A character vector of regular expressions to select parameters.
 If pars is also used, regex_pars is used in conjunction with pars.}
 
 \item{par_models}{A character vector that restricts parameters to a subset of

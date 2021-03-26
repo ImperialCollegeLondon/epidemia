@@ -28,7 +28,7 @@ See \code{\link{epimodel-objects}}.}
 \code{newdata}, which allows predictions or counterfactuals.}
 
 \item{groups}{Either \code{NULL} or a character vector specifying the groups
-to plot for. Default is \code{NULL}, which plots all modelled groups.}
+to plot for. Default is \code{NULL}, which plots all modeled groups.}
 
 \item{dates}{A length 2 vector of \code{Date} objects. This defines the
 start and end dates of the date-range to be plotted. Must be coercible to

@@ -31,7 +31,7 @@ counterfactuals. \code{adjusted=FALSE} prevents application of
 the population adjustment to the reproduction number.}
 
 \item{groups}{Either \code{NULL} or a character vector specifying the groups
-to plot for. Default is \code{NULL}, which plots all modelled groups.}
+to plot for. Default is \code{NULL}, which plots all modeled groups.}
 
 \item{step}{If \code{TRUE}, plot the median and credible intervals as a step function.}
 

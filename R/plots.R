@@ -15,7 +15,7 @@
 #' \link[bayesplot:MCMC-overview]{MCMC} function to use. These can be
 #' listed using \code{\link[bayesplot]{available_mcmc}}. Defaults to "interval"
 #' @param pars A character vector giving parameter names.
-#' @param regex_pars A character vector of regular expressions to select paramters.
+#' @param regex_pars A character vector of regular expressions to select parameters.
 #' If pars is also used, regex_pars is used in conjunction with pars.
 #' @param par_models A character vector that restricts parameters to a subset of
 #' model components. For example, "R" only uses parameters in the transmission model,

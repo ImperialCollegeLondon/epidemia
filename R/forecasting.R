@@ -6,7 +6,7 @@
 #'
 #' @inherit plot_obs params
 #' @param newdata  If provided, the original \code{data} used
-#'  in \code{object} is overidden. Useful for forecasting
+#'  in \code{object} is overridden. Useful for forecasting
 #' @param metrics A string or character vector specifying the plotted
 #'  forecast error metrics. One of \code{NULL}, \code{"crps"},
 #'  \code{"mean_abs_error"}
