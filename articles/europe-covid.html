@@ -411,7 +411,7 @@ Figure 1.2: Credible intervals for reproduction numbers. These are step function
 <h2 class="hasAnchor">
 <a href="#effect-sizes" class="anchor"></a><span class="header-section-number">1.4</span> Effect Sizes</h2>
 <hr>
-<p>In <strong>epidemia</strong>, estimated effect sizes can be visualised using the <code>plot.epimodel</code>
+<p>In <strong>epidemia</strong>, estimated effect sizes can be visualized using the <code>plot.epimodel</code>
 method. This serves a similar purpose to <code>plot.stanreg</code> in <strong>rstanarm</strong>,
 providing an interface to the <strong>bayesplot</strong> package. The models in <strong>epidemia</strong>
 often have many parameters, some of which pertain to a particular part of the model
@@ -525,11 +525,11 @@ In this case we shift all NPIs back three days.</p>
   <span class="kw">self_isolating_if_ill</span> <span class="kw">=</span> <span class="fu">shift_earlier</span>(<span class="no">self_isolating_if_ill</span>, <span class="no">days</span>),
   <span class="kw">schools_universities</span> <span class="kw">=</span> <span class="fu">shift_earlier</span>(<span class="no">schools_universities</span>, <span class="no">days</span>)
 )</pre></body></html></div>
-<p>Figure <a href="#fig:counterfactuals">1.7</a> visualises the counterfactual scenario of all
+<p>Figure <a href="#fig:counterfactuals">1.7</a> visualizes the counterfactual scenario of all
 policies being implemented in the UK three days earlier. Deaths are projected
 over both the in-sample period, and the out of sample period. The left plot
 is obtained using <code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")</a></code>,
-while the right plot adds the <code>cumulative = TRUE</code> argument. We reiterate that hese results are
+while the right plot adds the <code>cumulative = TRUE</code> argument. We reiterate that these results are
 not intended to be statistically rigorous - simply to illustrate usage of epidemia.</p>
 <div class="figure" style="text-align: center">
 <span id="fig:counterfactuals"></span>

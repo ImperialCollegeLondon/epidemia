@@ -206,11 +206,9 @@ a half-normal prior. <code>prior_scale</code> sets the scale parameter of this h
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid"</span>)
 <span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
-<span class='no'>args</span>$<span class='no'>formula</span> <span class='kw'>&lt;-</span> <span class='fu'>R</span>(<span class='no'>country</span>, <span class='no'>date</span>) ~ <span class='fl'>1</span> + <span class='fu'>rw</span>(<span class='kw'>gr</span><span class='kw'>=</span><span class='no'>country</span>) + <span class='no'>lockdown</span>
-}</div></pre>
+<span class='no'>args</span>$<span class='no'>formula</span> <span class='kw'>&lt;-</span> <span class='fu'>R</span>(<span class='no'>country</span>, <span class='no'>date</span>) ~ <span class='fl'>1</span> + <span class='fu'>rw</span>(<span class='kw'>gr</span><span class='kw'>=</span><span class='no'>country</span>) + <span class='no'>lockdown</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

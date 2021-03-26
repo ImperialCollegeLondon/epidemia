@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plotting the posterior linear predictor for R or ascertainments — plot_linpred • epidemia</title>
+<title>Plotting the posterior linear predictor for R or ascertainment rates — plot_linpred • epidemia</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,7 +48,7 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Plotting the posterior linear predictor for R or ascertainments — plot_linpred" />
+<meta property="og:title" content="Plotting the posterior linear predictor for R or ascertainment rates — plot_linpred" />
 <meta property="og:description" content="Plots credible intervals for the observed data under the posterior
 predictive distribution, and for a specific observation type.
 The user can control the levels of the intervals and the plotted group(s).
@@ -166,7 +166,7 @@ This is a generic function." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plotting the posterior linear predictor for R or ascertainments</h1>
+    <h1>Plotting the posterior linear predictor for R or ascertainment rates</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plots_epi.R'><code>R/plots_epi.R</code></a></small>
     <div class="hidden name"><code>plot_linpred.Rd</code></div>
     </div>
@@ -198,7 +198,7 @@ This is a generic function.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A fitted model object returned by <code>epim</code>.
+      <td><p>A fitted model object returned by <code><a href='epim.html'>epim</a></code>.
 See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
     </tr>
     <tr>
@@ -215,42 +215,44 @@ of the names of the <code>obs</code> argument to <code>epim</code>.</p></td>
     </tr>
     <tr>
       <th>groups</th>
-      <td><p><code>NULL</code>, string or character vector specifying which groups
-to plot. Default is <code>NULL</code>, which plots all possible groups.</p></td>
+      <td><p>Either <code>NULL</code> or a character vector specifying the groups
+to plot for. Default is <code>NULL</code>, which plots all modeled groups.</p></td>
     </tr>
     <tr>
       <th>dates</th>
-      <td><p>a vector of (start date, end date) defining the date range
-to be plotted. Must be coercible to date if not NA. If NA, this means
-use the lower/upper limit as appropriate. See examples.</p></td>
+      <td><p>A length 2 vector of <code>Date</code> objects. This defines the
+start and end dates of the date-range to be plotted. Must be coercible to
+<code>Date</code> if not <code>NA</code>. If an element of the vector is <code>NA</code> then
+the default lower/upper limit is used. See examples.</p></td>
     </tr>
     <tr>
       <th>date_breaks</th>
-      <td><p>string giving the distance between date tick labels.
-Default is "2 weeks".
-Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code> -
-see <a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>https://ggplot2.tidyverse.org/reference/scale_date.html</a></p></td>
+      <td><p>A string giving the distance between date tick labels.
+Default is <code>"2 weeks"</code>. This is passed as the <code>date_breaks</code> argument to
+<code><a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>scale_x_date</a></code>. Please see <a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>here</a> for details.</p></td>
     </tr>
     <tr>
       <th>date_format</th>
-      <td><p>the date format for coercing <code>dates</code>.
-Default is "%Y-%m-%d"</p></td>
+      <td><p>This function attempts to coerce the <code>dates</code> argument
+to a vector of <code>Date</code> objects. <code>date_format</code> is passed as the <code>format</code>
+argument to <code><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></code>. Default is "%Y-%m-%d".</p></td>
     </tr>
     <tr>
       <th>levels</th>
-      <td><p>numeric vector giving the levels of the plotted
-credible intervals</p></td>
+      <td><p>A numeric vector defining the levels of the plotted
+credible intervals.</p></td>
     </tr>
     <tr>
       <th>plotly</th>
-      <td><p>If TRUE, wraps the ggplot object into a plotly object, for
-interactive graphing.</p></td>
+      <td><p>If <code>TRUE</code>, wraps the <code>ggplot</code> object into a <code>plotly</code> object. This is
+useful for interactive graphing.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A ggplot object which can be further modified.</p>
+    <p>If <code>plotly = FALSE</code>, a <code>ggplot</code> object which can be further modified. Otherwise
+a <code>plotly</code> object.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

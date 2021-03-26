@@ -148,7 +148,7 @@ where <span class="math inline">\(y_t\)</span> is the expected value of the data
 i_t &amp;= R_t \sum_{s &lt; t} i_s g_{t-s},
 \tag{1.3}
 \end{align}\]</span>
-where <span class="math inline">\(g\)</span> is a probability mass function for the time between infections. The recursion is initialised with <em>seeded</em> infections <span class="math inline">\(i_{v:0}\)</span>, <span class="math inline">\(v &lt; 0\)</span>, which are treated as unknown parameters. All parameters are assigned priors, i.e.
+where <span class="math inline">\(g\)</span> is a probability mass function for the time between infections. The recursion is initialized with <em>seeded</em> infections <span class="math inline">\(i_{v:0}\)</span>, <span class="math inline">\(v &lt; 0\)</span>, which are treated as unknown parameters. All parameters are assigned priors, i.e.
 <span class="math display">\[\begin{equation}
     i_{v:0}, R, \phi, \alpha \sim p(\cdot),
 \end{equation}\]</span>
@@ -157,14 +157,14 @@ where <span class="math inline">\(R = (R_1, \ldots, R_n)\)</span> and <span clas
     p(i_{v:0}, R, \phi, \alpha \mid Y) \propto p(i_{v:0})p(R)p(\phi)p(\alpha) \prod_{t} p(Y_t \mid y_t, \phi).
 \end{equation}\]</span>
 <strong>epidemia</strong> represents this posterior distribution in Stan, and uses its adaptive Hamiltonian Monte Carlo sampler to approximately draw samples from this posterior distribution. These samples allow for inference on the parameters, in addition to simulating data from the posterior predictive distribution.</p>
-<p>Transmission rates <span class="math inline">\(R\)</span> and ascertainments <span class="math inline">\(\alpha\)</span> can be modeled flexibly using Bayesian regression models, and through sharing of parameters, are the means through which we tie together multiple regions or groups using multilevel modeling. One can, for example, model transmission rates as depending on a binary covariate for an NPI, say full lockdown. The coefficient for this can be <em>partially pooled</em> between these groups. The effect is to share information between groups, while still permitting between group variation.</p>
+<p>Transmission rates <span class="math inline">\(R\)</span> and ascertainment rates <span class="math inline">\(\alpha\)</span> can be modeled flexibly using Bayesian regression models, and through sharing of parameters, are the means through which we tie together multiple regions or groups using multilevel modeling. One can, for example, model transmission rates as depending on a binary covariate for an NPI, say full lockdown. The coefficient for this can be <em>partially pooled</em> between these groups. The effect is to share information between groups, while still permitting between group variation.</p>
 </div>
 <div id="sec:observations" class="section level1">
 <h1 class="hasAnchor">
 <a href="#sec:observations" class="anchor"></a><span class="header-section-number">2</span> Observations</h1>
 <hr>
 <p><span class="math inline">\(Y_t\)</span> is typically the  occurring at time <span class="math inline">\(t\)</span>.
-Such events are precipated by past infections.
+Such events are precipitated by past infections.
 Prototypical examples include daily case or death counts.
 <span class="math inline">\(\alpha_t\)</span> represents an <em>ascertainment rate</em>.
 For case or death data this would be the infection ascertainment rate (IAR) or the infection fatality rate (IFR) respectively.
@@ -181,7 +181,7 @@ Poisson has no auxiliary parameter <span class="math inline">\(\phi\)</span>, wh
 <p><strong>epidemia</strong> allows for multiple observation vectors, in which case we can simply
 superscript <span class="math inline">\(Y_t^{(l)}\)</span>, <span class="math inline">\(\alpha_{t}^{(l)}\)</span> and <span class="math inline">\(\pi^{(l)}\)</span>, and assign independent sampling distributions for each type.
 Separate models are then specified <span class="math inline">\(\alpha_{t}^{(l)}\)</span>.
-Multiple observation types can often enchance a model.
+Multiple observation types can often enhance a model.
 High quality death data existed during the first wave of the Covid-19 pandemic in Europe.
 Case data gradually increased in reliability over time, and has the advantage of picking up
 changes in transmission dynamics much quicker than death data.</p>
@@ -226,7 +226,7 @@ where <span class="math inline">\(g\)</span> is a link function and <span class=
 \end{equation}\]</span>
 where <span class="math inline">\(X\)</span> is an <span class="math inline">\(n \times p\)</span> model matrix, <span class="math inline">\(Z\)</span> is an <span class="math inline">\(n \times q\)</span> model matrix for the <span class="math inline">\(q\)</span>-vector of group-specific parameters <span class="math inline">\(b\)</span>. <span class="math inline">\(Q\)</span> is an <span class="math inline">\(n \times r\)</span> model matrix for the <span class="math inline">\(r\)</span>-vector of autocorrelation terms.
 The columns of <span class="math inline">\(X\)</span> are predictors explaining changes in transmission. These could, for example, be binary vectors encoding non-pharmaceutical interventions, as in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>.
-A number of families can be used for the prior on <span class="math inline">\(\beta\)</span>, including normal, cauchy, and hierarchical shrinkage familes.
+A number of families can be used for the prior on <span class="math inline">\(\beta\)</span>, including normal, cauchy, and hierarchical shrinkage families.
 The parameters <span class="math inline">\(b\)</span> are modeled hierarchically as
 <span class="math display">\[\begin{equation}
     b \sim N(0, \Sigma),
@@ -245,7 +245,7 @@ can have increments that occur at a different time scale to <span class="math in
 <span class="math display" id="eq:scaledlogit">\[\begin{equation}
     g^{-1}(x) = \frac{K}{1 + e^{-x}} \tag{4.2}.
 \end{equation}\]</span>
-This is a generalisation of the logit-link, and we refer to it as the <em>scaled-logit</em>.
+This is a generalization of the logit-link, and we refer to it as the <em>scaled-logit</em>.
 That is to say we expect <span class="math inline">\(R\)</span> to have some <em>carry capacity</em>. These considerations should inform the choice of link function.</p>
 </div>
 </div>
@@ -253,9 +253,9 @@ That is to say we expect <span class="math inline">\(R\)</span> to have some <em
 <h1 class="hasAnchor">
 <a href="#extensions" class="anchor"></a><span class="header-section-number">5</span> Extensions</h1>
 <hr>
-<div id="joint-modelling-of-multiple-regions" class="section level2">
+<div id="joint-modeling-of-multiple-regions" class="section level2">
 <h2 class="hasAnchor">
-<a href="#joint-modelling-of-multiple-regions" class="anchor"></a><span class="header-section-number">5.1</span> Joint Modelling of Multiple Regions</h2>
+<a href="#joint-modeling-of-multiple-regions" class="anchor"></a><span class="header-section-number">5.1</span> Joint modeling of Multiple Regions</h2>
 <p>Consider modeling the evolution of an epidemic across multiple regions/groups.
 Of course, one can always specify separate models for each group.
 This approach is quick as each model can be fit in parallel.
@@ -294,7 +294,7 @@ where <span class="math inline">\(i^{(m)}\)</span> is the daily seeding for the 
 This model does not adequately capture important epidemiological dynamics including, for example,
 the effects of super-spreading events.
 Although the <em>expected</em> number of offspring of any given infection is driven
-by <span class="math inline">\(R\)</span>, in practice the actual number of offspring can exhibity considerable variation around this.
+by <span class="math inline">\(R\)</span>, in practice the actual number of offspring can exhibit considerable variation around this.
 To capture this randomness, replace Equation <a href="#eq:renewal">(1.3)</a> with
 <span class="math display" id="eq:infextended">\[\begin{align}
     i_t &amp;\sim p(i_t', d), \tag{5.1}\\\\
@@ -315,7 +315,7 @@ past infections to reasonable values. Nonetheless, forecasting in the basic mode
 projected infections grow too large. As the susceptible population diminishes, the transmission rate is also
 expected to reduce.</p>
 <p><strong>epidemia</strong> can apply a transformation to infections to ensure cumulative infections remain bounded by <span class="math inline">\(S_0\)</span>, and
-that transmission rates are adjusted for changes in the sucseptible population. We define the susceptible population <span class="math inline">\(S_t\)</span>
+that transmission rates are adjusted for changes in the susceptible population. We define the susceptible population <span class="math inline">\(S_t\)</span>
 at time <span class="math inline">\(t\)</span> as the number of individuals who are susceptible at time <span class="math inline">\(0\)</span> and have not been removed by vaccination. Note
 that this excludes those who may have been previously infected by time <span class="math inline">\(t\)</span>.</p>
 <p>Let <span class="math inline">\(i'_t\)</span> denote the unadjusted infections from the model: this is given by <a href="#eq:renewal">(1.3)</a> in the basic model
@@ -357,7 +357,7 @@ provided in <span class="citation">Bhatt et al. (<a href="#ref-bhatt2020" role="
 <p>Fraser, Christophe. 2007. “Estimating individual and household reproduction numbers in an emerging epidemic.” <em>PLoS ONE</em>. <a href="https://doi.org/10.1371/journal.pone.0000758">https://doi.org/10.1371/journal.pone.0000758</a>.</p>
 </div>
 <div id="ref-mishra2020">
-<p>Mishra, Swapnil, Tresnia Berah, Thomas A Mellan, H Juliette T Unwin, Michaela A Vollmer, Kris V Parag, Axel Gandy, Seth Flaxman, and Samir Bhatt. 2020. “On the Derivation of the Renewal Equation from an Age-Dependent Branching Process: An Epidemic Modelling Perspective.” <em>arXiv Preprint arXiv:2006.16487</em>.</p>
+<p>Mishra, Swapnil, Tresnia Berah, Thomas A Mellan, H Juliette T Unwin, Michaela A Vollmer, Kris V Parag, Axel Gandy, Seth Flaxman, and Samir Bhatt. 2020. “On the Derivation of the Renewal Equation from an Age-Dependent Branching Process: An Epidemic Modeling Perspective.” <em>arXiv Preprint arXiv:2006.16487</em>.</p>
 </div>
 <div id="ref-nouvellet_2018">
 <p>Nouvellet, Pierre, Anne Cori, Tini Garske, Isobel M. Blake, Ilaria Dorigatti, Wes Hinsley, Thibaut Jombart, et al. 2018. “A simple approach to measure transmissibility and forecast incidence.” <em>Epidemics</em>. <a href="https://doi.org/10.1016/j.epidem.2017.02.012">https://doi.org/10.1016/j.epidem.2017.02.012</a>.</p>

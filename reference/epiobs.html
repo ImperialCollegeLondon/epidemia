@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Helper for constructing an object of class 'epiobs' — epiobs • epidemia</title>
+<title>Define Observational Models — epiobs • epidemia</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,11 +48,12 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Helper for constructing an object of class 'epiobs' — epiobs" />
-<meta property="og:description" content="Defines a model for an observation vector. These observations
-are taken to be a function of the latent infections in the poulation.
-Examples include daily death or hospitalisation rates. For more details on
-the model assumptions please refer to the online vignettes." />
+<meta property="og:title" content="Define Observational Models — epiobs" />
+<meta property="og:description" content="epiobs defines a model for an observation vector. These observations
+are taken to be a function of the latent infections in the population.
+Examples include daily death or hospitalization rates. For more details on
+the model assumptions please refer to the model description
+vignette." />
 <meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png" />
 
 
@@ -166,16 +167,17 @@ the model assumptions please refer to the online vignettes." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Helper for constructing an object of class 'epiobs'</h1>
+    <h1>Define Observational Models</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/epiobs.R'><code>R/epiobs.R</code></a></small>
     <div class="hidden name"><code>epiobs.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Defines a model for an observation vector. These observations
-are taken to be a function of the latent infections in the poulation.
-Examples include daily death or hospitalisation rates. For more details on
-the model assumptions please refer to the online vignettes.</p>
+    <p><code>epiobs</code> defines a model for an observation vector. These observations
+are taken to be a function of the latent infections in the population.
+Examples include daily death or hospitalization rates. For more details on
+the model assumptions please refer to the <a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>model description</a>
+vignette.</p>
     </div>
 
     <pre class="usage"><span class='fu'>epiobs</span>(
@@ -195,27 +197,25 @@ the model assumptions please refer to the online vignettes.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>formula</th>
-      <td><p>A formula defining the model for the observations.</p></td>
+      <td><p>An object of class <code>formula</code> which determines the linear predictor for the ascertainment rate.
+The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainment rates) in a given country on a given date.</p></td>
     </tr>
     <tr>
       <th>i2o</th>
-      <td><p>A probability vector with the following interpretation.
-Conditional on an observation "event" (i.e. a single death or
-hospitalisation etc.), the nth element represents the probability that the
-individual was infected exactly n days prior to this.</p></td>
+      <td><p>A numeric (simplex) vector defining the probability mass function
+of the time distribution from infection to observation (i.e. a single death or
+hospitalization etc.). The \(n\)th element represents the probability that the
+individual was infected exactly \(n\) days prior to this.</p></td>
     </tr>
     <tr>
       <th>family</th>
-      <td><p>A string representing the error distribution for the model.
+      <td><p>A string representing the family of the sampling distribution.
 Can be "poisson", "neg_binom", "quasi_poisson", "normal" or "log_normal".</p></td>
     </tr>
     <tr>
       <th>link</th>
-      <td><p>A string representing the link function used to transform the
-covariates. The linear predictor constructed from the covariates is
-transformed by the inverse link function, then multiplied by the weighted
-previous infections. This quantity represents the mean of the response
-distribution.</p></td>
+      <td><p>A string representing the link function used to transform the linear predictor. Can be one of <code>"logit"</code>, <code>"probit"</code>, <code>"cauchit"</code>, <code>"cloglog"</code>, <code>"identity"</code>.
+Defaults to <code>"logit"</code>.</p></td>
     </tr>
     <tr>
       <th>center</th>
@@ -236,12 +236,8 @@ for the regression intercept, if one has been specified.</p></td>
     </tr>
     <tr>
       <th>prior_aux</th>
-      <td><p>Specify the prior distribution for the auxiliary parameter
-if it exists. Only used if family is negative binomial (reciprocal
-dispersion), quasi poisson (dispersion), normal (standard deviation) or
-normal, in which case this represents the prior on the reciprocal
-log normal (sigma parameter). See <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>
-for more details.</p></td>
+      <td><p>The prior distribution for the auxiliary parameter, if it exists.
+Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter).</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -249,7 +245,25 @@ for more details.</p></td>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>An object of class <code>epiobs</code>.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Each observational model is given by a call to <code>epiobs</code>.
+In particular, this must define the model for ascertainment rates and the time distribution from infection to observation.
+<code>epiobs</code> has a <code>formula</code> argument. The left hand side must define the observation vector  to be modeled, while the right hand side defines a linear predictor for the ascertainment rate.
+The argument <code>i2o</code> plays a similar role to the <code>gen</code> argument in <code>epiinf</code>, however it instead defines the probability mass function for the time between infection and observation.</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>EuropeCovid</span>)
+<span class='co'># constant ascertainment rate (intercept model)</span>
+<span class='co'># link ensures ascertainment is between 0 and 2%</span>
+<span class='no'>deaths</span> <span class='kw'>&lt;-</span> <span class='fu'>epiobs</span>(
+ <span class='no'>deaths</span> ~ <span class='fl'>1</span>,
+ <span class='kw'>i2o</span> <span class='kw'>=</span> <span class='no'>EuropeCovid</span>$<span class='no'>inf2death</span>,
+ <span class='kw'>link</span> <span class='kw'>=</span> <span class='fu'><a href='scaled_logit.html'>scaled_logit</a></span>(<span class='fl'>0.02</span>)
+)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

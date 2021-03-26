@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Modeling Latent Infections — epiinf • epidemia</title>
+<title>Model Latent Infections — epiinf • epidemia</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,11 +48,10 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Modeling Latent Infections — epiinf" />
-<meta property="og:description" content="Latent infections can be given a full prior distribution and inferred.
-epiinf allows you to define this prior distribution. The user can also
-specify models where only the expected infections are used, avoiding the need
-to perform full Bayesian inference for these quantities." />
+<meta property="og:title" content="Model Latent Infections — epiinf" />
+<meta property="og:description" content="epiinf defines a model for latent infections.
+For the basic version of the model, this defines the generation distribution of the disease, the number of days for which to seed infections, and the prior distribution on the parameter \(\tau\),
+as described in the model description vignette. Recall that \(\tau\) is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_tau respectively." />
 <meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png" />
 
 
@@ -166,16 +165,15 @@ to perform full Bayesian inference for these quantities." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Modeling Latent Infections</h1>
+    <h1>Model Latent Infections</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/epiinf.R'><code>R/epiinf.R</code></a></small>
     <div class="hidden name"><code>epiinf.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Latent infections can be given a full prior distribution and inferred.
-<code>epiinf</code> allows you to define this prior distribution. The user can also
-specify models where only the expected infections are used, avoiding the need
-to perform full Bayesian inference for these quantities.</p>
+    <p><code>epiinf</code> defines a model for latent infections.
+For the basic version of the model, this defines the generation distribution of the disease, the number of days for which to seed infections, and the prior distribution on the parameter \(\tau\),
+as described in the <a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>model description</a> vignette. Recall that \(\tau\) is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_tau respectively.</p>
     </div>
 
     <pre class="usage"><span class='fu'>epiinf</span>(
@@ -194,23 +192,20 @@ to perform full Bayesian inference for these quantities.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>gen</th>
-      <td><p>A vector representing the generation distribution of the disease (a
+      <td><p>A numeric vector representing the probability mass function for the generation time of the disease (must be a
 probability vector).</p></td>
     </tr>
     <tr>
       <th>seed_days</th>
-      <td><p>Number of days for which to seed infections.</p></td>
+      <td><p>An integer giving the number of days for which to seed infections. Defaults to <code>6L</code>.</p></td>
     </tr>
     <tr>
       <th>latent</th>
-      <td><p>If <code>TRUE</code>, infections are treated as unknown parameters
-to be sampled. If <code>FALSE</code>, the model only consider their expected value given
-the reproduction numbers and seeded infections. Defaults to <code>FALSE</code>.</p></td>
+      <td><p>If <code>TRUE</code>, treat infections as latent parameters using the extensions described in Section 5.2 <a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>here</a>.</p></td>
     </tr>
     <tr>
       <th>family</th>
-      <td><p>Specifies prior family for latent infections.
-Only used if <code>latent = TRUE</code>, and is currently restricted to be "log-normal".</p></td>
+      <td><p>Specifies the family for the prior distribution on daily infections. Only used if <code>latent = TRUE</code>, and currently restricted to <code>log-normal</code>.</p></td>
     </tr>
     <tr>
       <th>prior_aux</th>
@@ -222,26 +217,44 @@ super-spreading events.</p></td>
     </tr>
     <tr>
       <th>prior_tau</th>
-      <td><p>The prior for \(\tau\).This parameter is described in the
-introductory vignette, and controls the variability in the number of
-seeded infections at  the beginning of the epidemic. Must be a call to
-<code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>.</p></td>
+      <td><p>The prior distribution for the hyperparameter \(\tau\), which is the mean of the
+prior distribution for infection seeding. Must be a call to
+<code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>. Defaults to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>rstanarm::exponential(0.03)</a></code>. See the
+<a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>model description</a> for
+more details on this parameter.</p></td>
     </tr>
     <tr>
       <th>pop_adjust</th>
-      <td><p>The population adjustment is a major contributor to algorithm
-runtime. Although it should be implemented for a final model run, it may be
-quicker to develop models without the adjustment. Defaults to TRUE.</p></td>
+      <td><p>If <code>TRUE</code>, applies a population adjustment to the infection process. Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>susceptibles</th>
       <td><p>A character vector giving the name of the column in the dataframe
-passed as the data argument of epim, that corresponds to the susceptible population over time.
-Only used if pop_adjust=TRUE.</p></td>
+passed as the <code>data</code> argument of <code><a href='epim.html'>epim</a></code>, that corresponds to the susceptible population over time.
+Only used if <code>pop_adjust=TRUE</code>.</p></td>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>An object of class <code>epiinf</code>.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p><code>epiinf</code> has additional arguments which allow the user to extend the basic model.
+Using <code>latent=TRUE</code> replaces the renewal process with a model that treats latent infections as unknown parameters that are sampled along with other parameters. The <code>family</code> argument then gives the distribution family for
+latent infections, while <code>prior_aux</code> defines the prior on the coefficient of dispersion \(d\) of this distribution.</p>
+<p>Recall that one can adjust the infection process to explicitly model changes in infection rates as the remaining susceptible population is depleted.
+In particular, the adjustment ensures that cumulative infections never breaches the initial susceptible population.
+The adjustment was described in Section 5.3 of the <a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>model description</a> article.
+It can be employed by setting <code>pop_adjust = TRUE</code> and using the <code>susceptibles</code> argument to point towards a variable in the dataframe which gives the susceptible population at each point in time.</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>EuropeCovid</span>)
+<span class='no'>inf</span> <span class='kw'>&lt;-</span> <span class='fu'>epiinf</span>(
+ <span class='kw'>gen</span> <span class='kw'>=</span> <span class='no'>EuropeCovid</span>$<span class='no'>si</span>,
+ <span class='kw'>seed_days</span> <span class='kw'>=</span> <span class='fl'>6L</span>,
+ <span class='kw'>prior_tau</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='fl'>0.02</span>)
+)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

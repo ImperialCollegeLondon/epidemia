@@ -147,7 +147,7 @@ precompiled Stan program. This allows model fitting to begin immediately as oppo
 <p>This is similar to the workflow for fitting Bayesian regression models
 with <strong>rstanarm</strong>. A key difference, however, is that the models fit by <strong>epidemia</strong> are much more
 complex, and are therefore inherently more difficult to specify. <strong>epidemia</strong> aims to simplify this process
-by modularising the model definition into three distinct parts: transmission,
+by modularizing the model definition into three distinct parts: transmission,
 infections and observations. These components of the model are defined with the functions <code><a href="../reference/epirt.html">epirt()</a></code>, <code><a href="../reference/epiinf.html">epiinf()</a></code> and
 <code><a href="../reference/epiobs.html">epiobs()</a></code> respectively.</p>
 <p><strong>epidemia</strong> contains an example dataset <code>EuropeCovid</code> which contains data
@@ -409,7 +409,7 @@ coefficient of dispersion <span class="math inline">\(d\)</span>.</p>
 <p>Recall that one can adjust the infection process to explicitly
 model changes in infection rates as the remaining susceptible population is
 depleted. In particular, the adjustment ensures that cumulative infections
-never breaches the initial susceprible population. The adjustment was described
+never breaches the initial susceptible population. The adjustment was described
 in Section 5.3 of the model description article. It can be employed by
 setting <code>pop_adjust = TRUE</code> and using the
 <code>susceptibles</code> argument to point towards a variable in the dataframe which gives
@@ -520,7 +520,7 @@ link. This implies that it is constant over time, can achieve a maximum value of
 2%, and a minimum value of 0%. If <code>prior_intercept</code> is chosen to be symmetric
 around zero, then the prior mean of <span class="math inline">\(\alpha\)</span> is 1%. <code>EuropeCovid$inf2death</code> is
 a numeric simplex vector that gives the same delay distribution as used in
-<span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, which is a discretised p.d.f. of a mixture of Gamma random variables.</p>
+<span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, which is a discretized p.d.f. of a mixture of Gamma random variables.</p>
 <p>Additional arguments include <code>family</code>, which specifies the sampling distribution
 <span class="math inline">\(p(y_t, \phi)\)</span>. There are also arguments allowing the user to control
 prior distributions for parameters describing <span class="math inline">\(\alpha\)</span>, and the prior on the
@@ -545,7 +545,7 @@ Description
 <code>formula</code>
 </td>
 <td style="text-align:left;">
-An object of class <code>"formula"</code> which determines the linear predictor for the ascertainment rate for a particular observation vector. The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainments)in a given country on a given date. <code>obs</code> refers to the response variable to be modeled.
+An object of class <code>"formula"</code> which determines the linear predictor for the ascertainment rate for a particular observation vector. The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainment rates)in a given country on a given date. <code>obs</code> refers to the response variable to be modeled.
 </td>
 </tr>
 <tr>

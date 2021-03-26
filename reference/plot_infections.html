@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plotting the underlying number of infections over time — plot_infections • epidemia</title>
+<title>Plot latent infections — plot_infections • epidemia</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,9 +48,9 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Plotting the underlying number of infections over time — plot_infections" />
-<meta property="og:description" content="Plots credible intervals for the underlying number of infections.
-The user can control the levels of the intervals and the plotted group(s).
+<meta property="og:title" content="Plot latent infections — plot_infections" />
+<meta property="og:description" content="Plots posterior credible intervals and median for latent infections over time.
+The user can control the interval levels (i.e. 30%, 50% etc.) and the plotted group(s).
 This is a generic function." />
 <meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png" />
 
@@ -165,14 +165,14 @@ This is a generic function." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plotting the underlying number of infections over time</h1>
+    <h1>Plot latent infections</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plots_epi.R'><code>R/plots_epi.R</code></a></small>
     <div class="hidden name"><code>plot_infections.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Plots credible intervals for the underlying number of infections.
-The user can control the levels of the intervals and the plotted group(s).
+    <p>Plots posterior credible intervals and median for latent infections over time.
+The user can control the interval levels (i.e. 30%, 50% etc.) and the plotted group(s).
 This is a generic function.</p>
     </div>
 
@@ -197,7 +197,7 @@ This is a generic function.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A fitted model object returned by <code>epim</code>.
+      <td><p>A fitted model object returned by <code><a href='epim.html'>epim</a></code>.
 See <code><a href='epimodel-objects.html'>epimodel-objects</a></code>.</p></td>
     </tr>
     <tr>
@@ -207,88 +207,227 @@ predictions or counterfactuals.</p></td>
     </tr>
     <tr>
       <th>groups</th>
-      <td><p><code>NULL</code>, string or character vector specifying which groups
-to plot. Default is <code>NULL</code>, which plots all possible groups.</p></td>
+      <td><p>Either <code>NULL</code> or a character vector specifying the groups
+to plot for. Default is <code>NULL</code>, which plots all modeled groups.</p></td>
     </tr>
     <tr>
       <th>dates</th>
-      <td><p>a vector of (start date, end date) defining the date range
-to be plotted. Must be coercible to date if not NA. If NA, this means
-use the lower/upper limit as appropriate. See examples.</p></td>
+      <td><p>A length 2 vector of <code>Date</code> objects. This defines the
+start and end dates of the date-range to be plotted. Must be coercible to
+<code>Date</code> if not <code>NA</code>. If an element of the vector is <code>NA</code> then
+the default lower/upper limit is used. See examples.</p></td>
     </tr>
     <tr>
       <th>date_breaks</th>
-      <td><p>string giving the distance between date tick labels.
-Default is "2 weeks".
-Passed as <code>date_breaks</code> argument to <code>ggplot::scale_x_date</code> -
-see <a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>https://ggplot2.tidyverse.org/reference/scale_date.html</a></p></td>
+      <td><p>A string giving the distance between date tick labels.
+Default is <code>"2 weeks"</code>. This is passed as the <code>date_breaks</code> argument to
+<code><a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>scale_x_date</a></code>. Please see <a href='https://ggplot2.tidyverse.org/reference/scale_date.html'>here</a> for details.</p></td>
     </tr>
     <tr>
       <th>date_format</th>
-      <td><p>the date format for coercing <code>dates</code>.
-Default is "%Y-%m-%d"</p></td>
+      <td><p>This function attempts to coerce the <code>dates</code> argument
+to a vector of <code>Date</code> objects. <code>date_format</code> is passed as the <code>format</code>
+argument to <code><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></code>. Default is "%Y-%m-%d".</p></td>
     </tr>
     <tr>
       <th>cumulative</th>
-      <td><p>If TRUE, plots the cumulative observations.</p></td>
+      <td><p>If <code>TRUE</code> then cumulative observations are plotted rather than daily. Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>levels</th>
-      <td><p>numeric vector giving the levels of the plotted
-credible intervals</p></td>
+      <td><p>A numeric vector defining the levels of the plotted
+credible intervals.</p></td>
     </tr>
     <tr>
       <th>log</th>
-      <td><p>If TRUE, plots the observations on a pseudo-linear scale.</p></td>
+      <td><p>If <code>TRUE</code>, plot quantities on a log10-scale. This argument
+must be <code>logical</code>, and defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>plotly</th>
-      <td><p>If TRUE, wraps the ggplot object into a plotly object, for
-interactive graphing.</p></td>
+      <td><p>If <code>TRUE</code>, wraps the <code>ggplot</code> object into a <code>plotly</code> object. This is
+useful for interactive graphing.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A ggplot object which can be further modified.</p>
+    <p>If <code>plotly = FALSE</code>, a <code>ggplot</code> object which can be further modified. Otherwise
+a <code>plotly</code> object.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='plot_rt.html'>plot_rt</a></code>, <code><a href='plot_obs.html'>plot_obs</a></code>, <code><a href='plot_infectious.html'>plot_infectious</a></code>, <code><a href='posterior_infections.html'>posterior_infections</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='co'>## load required data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>epidemia</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid"</span>)
-<span class='co'>## setup sampling</span>
-<span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
-<span class='no'>args</span>$<span class='no'>algorithm</span> <span class='kw'>&lt;-</span> <span class='st'>"sampling"</span>
-<span class='no'>args</span>$<span class='no'>sampling_args</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>iter</span><span class='kw'>=</span><span class='fl'>1e3</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>12345</span>)
-<span class='no'>args</span>$<span class='no'>group_subset</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Italy"</span>, <span class='st'>"Austria"</span>, <span class='st'>"Germany"</span>)
-<span class='no'>args</span>$<span class='no'>rt</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='epirt.html'>epirt</a></span>(
-  <span class='kw'>formula</span> <span class='kw'>=</span> <span class='fu'>R</span>(<span class='no'>country</span>, <span class='no'>date</span>) ~ <span class='fl'>1</span> + <span class='no'>lockdown</span>,
-  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>location</span><span class='kw'>=</span><span class='fl'>0</span>, <span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>.5</span>),
-  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>location</span><span class='kw'>=</span><span class='fl'>0</span>, <span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>2</span>)
+    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid2"</span>)
+<span class='no'>data</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid2</span>$<span class='no'>data</span>
+<span class='no'>data</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>dplyr</span><span class='kw ns'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span>(<span class='no'>data</span>, <span class='no'>date</span> <span class='kw'>&gt;</span> <span class='no'>date</span>[<span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/cumsum.html'>cumsum</a></span>(<span class='no'>deaths</span>) <span class='kw'>&gt;</span> <span class='fl'>10</span>)[<span class='fl'>1</span>] - <span class='fl'>30</span>])
+<span class='no'>data</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>dplyr</span><span class='kw ns'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span>(<span class='no'>data</span>, <span class='no'>date</span> <span class='kw'>&lt;</span> <span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span>(<span class='st'>"2020-05-05"</span>))
+
+<span class='no'>rt</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='epirt.html'>epirt</a></span>(
+  <span class='kw'>formula</span> <span class='kw'>=</span> <span class='fu'>R</span>(<span class='no'>country</span>, <span class='no'>date</span>) ~ <span class='fl'>0</span> + (<span class='fl'>1</span> + <span class='no'>public_events</span> + <span class='no'>schools_universities</span> +
+     <span class='no'>self_isolating_if_ill</span> + <span class='no'>social_distancing_encouraged</span> + <span class='no'>lockdown</span> <span class='kw'>||</span> <span class='no'>country</span>) +
+     <span class='no'>public_events</span> + <span class='no'>schools_universities</span> + <span class='no'>self_isolating_if_ill</span> +
+     <span class='no'>social_distancing_encouraged</span> + <span class='no'>lockdown</span>,
+  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='fu'><a href='shifted_gamma.html'>shifted_gamma</a></span>(<span class='kw'>shape</span><span class='kw'>=</span><span class='fl'>1</span>/<span class='fl'>6</span>, <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>shift</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.05</span>)/<span class='fl'>6</span>),
+  <span class='kw'>prior_covariance</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>decov</a></span>(<span class='kw'>shape</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0.5</span>, <span class='fl'>5</span>)),<span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>0.25</span>),
+  <span class='kw'>link</span> <span class='kw'>=</span> <span class='fu'><a href='scaled_logit.html'>scaled_logit</a></span>(<span class='fl'>6.5</span>)
 )
 
-<span class='co'>## run sampling</span>
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='no'>args</span>)
+<span class='no'>inf</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='epiinf.html'>epiinf</a></span>(<span class='kw'>gen</span> <span class='kw'>=</span> <span class='no'>EuropeCovid</span>$<span class='no'>si</span>, <span class='kw'>seed_days</span> <span class='kw'>=</span> <span class='fl'>6</span>)
 
-<span class='co'>## make plots</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>) <span class='co'># default, plots all groups and dates</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>)) <span class='co'># plot 20 March-20 April 2020</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
-                <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 day"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every day</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
-                <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 week"</span>) <span class='co'># plot 21 March-20 April 2020 with ticks every week</span>
-<span class='fu'>plot_infections</span>(<span class='no'>fit</span>,
-                <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>),
-                <span class='kw'>date_format</span><span class='kw'>=</span><span class='st'>"%Y-%d-%m"</span>) <span class='co'># plot 21 March-20 April 2020 (different date format)</span>
-}</div></pre>
+<span class='no'>deaths</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='epiobs.html'>epiobs</a></span>(
+  <span class='kw'>formula</span> <span class='kw'>=</span> <span class='no'>deaths</span> ~ <span class='fl'>1</span>,
+  <span class='kw'>i2o</span> <span class='kw'>=</span> <span class='no'>EuropeCovid2</span>$<span class='no'>inf2death</span>,
+  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='fl'>0</span>,<span class='fl'>0.2</span>),
+  <span class='kw'>link</span> <span class='kw'>=</span> <span class='fu'><a href='scaled_logit.html'>scaled_logit</a></span>(<span class='fl'>0.02</span>)
+)
+
+<span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>rt</span><span class='kw'>=</span><span class='no'>rt</span>, <span class='kw'>inf</span><span class='kw'>=</span><span class='no'>inf</span>, <span class='kw'>obs</span><span class='kw'>=</span><span class='no'>deaths</span>, <span class='kw'>data</span><span class='kw'>=</span><span class='no'>data</span>, <span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>12345</span>)
+<span class='no'>args</span>$<span class='no'>group_subset</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Italy"</span>, <span class='st'>"Austria"</span>, <span class='st'>"Germany"</span>)
+<span class='no'>args</span>$<span class='no'>algorithm</span> <span class='kw'>&lt;-</span> <span class='st'>"fullrank"</span>
+<span class='no'>args</span>$<span class='no'>iter</span> <span class='kw'>&lt;-</span> <span class='fl'>1e4</span>
+<span class='no'>args</span>$<span class='no'>tol_rel_obj</span> <span class='kw'>&lt;-</span> <span class='fl'>1e-3</span>
+
+<span class='no'>fm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; Chain 1: ------------------------------------------------------------
+#&gt; Chain 1: EXPERIMENTAL ALGORITHM:
+#&gt; Chain 1:   This procedure has not been thoroughly tested and may be unstable
+#&gt; Chain 1:   or buggy. The interface is subject to change.
+#&gt; Chain 1: ------------------------------------------------------------
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Gradient evaluation took 0.000589 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 5.89 seconds.
+#&gt; Chain 1: Adjust your expectations accordingly!
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Begin eta adaptation.
+#&gt; Chain 1: Iteration:   1 / 250 [  0%]  (Adaptation)
+#&gt; Chain 1: Iteration:  50 / 250 [ 20%]  (Adaptation)
+#&gt; Chain 1: Iteration: 100 / 250 [ 40%]  (Adaptation)
+#&gt; Chain 1: Iteration: 150 / 250 [ 60%]  (Adaptation)
+#&gt; Chain 1: Iteration: 200 / 250 [ 80%]  (Adaptation)
+#&gt; Chain 1: Iteration: 250 / 250 [100%]  (Adaptation)
+#&gt; Chain 1: Success! Found best value [eta = 0.1].
+#&gt; Chain 1: 
+#&gt; Chain 1: Begin stochastic gradient ascent.
+#&gt; Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
+#&gt; Chain 1:    100       -15498.854             1.000            1.000
+#&gt; Chain 1:    200        -7409.437             1.046            1.092
+#&gt; Chain 1:    300        -5098.258             0.848            1.000
+#&gt; Chain 1:    400        -4438.630             0.673            1.000
+#&gt; Chain 1:    500        -3563.464             0.588            0.453
+#&gt; Chain 1:    600        -2847.222             0.532            0.453
+#&gt; Chain 1:    700        -2828.410             0.457            0.252
+#&gt; Chain 1:    800        -2567.207             0.412            0.252
+#&gt; Chain 1:    900        -2615.583             0.369            0.246
+#&gt; Chain 1:   1000        -2316.989             0.345            0.246
+#&gt; Chain 1:   1100        -2025.114             0.259            0.149
+#&gt; Chain 1:   1200        -2050.223             0.151            0.144
+#&gt; Chain 1:   1300        -1897.996             0.114            0.129
+#&gt; Chain 1:   1400        -1897.654             0.099            0.102
+#&gt; Chain 1:   1500        -1703.371             0.086            0.102
+#&gt; Chain 1:   1600        -1524.389             0.072            0.102
+#&gt; Chain 1:   1700        -1593.692             0.076            0.102
+#&gt; Chain 1:   1800        -1382.811             0.081            0.114
+#&gt; Chain 1:   1900        -1356.087             0.081            0.114
+#&gt; Chain 1:   2000        -1287.613             0.074            0.080
+#&gt; Chain 1:   2100        -1242.744             0.063            0.053
+#&gt; Chain 1:   2200        -1298.518             0.066            0.053
+#&gt; Chain 1:   2300        -1158.171             0.070            0.053
+#&gt; Chain 1:   2400        -1148.673             0.071            0.053
+#&gt; Chain 1:   2500        -1112.960             0.063            0.043
+#&gt; Chain 1:   2600        -1063.253             0.056            0.043
+#&gt; Chain 1:   2700        -1037.914             0.054            0.043
+#&gt; Chain 1:   2800        -1062.149             0.041            0.036
+#&gt; Chain 1:   2900        -1025.294             0.042            0.036
+#&gt; Chain 1:   3000        -1028.503             0.037            0.036
+#&gt; Chain 1:   3100        -1008.079             0.036            0.032
+#&gt; Chain 1:   3200        -1003.260             0.032            0.024
+#&gt; Chain 1:   3300         -973.994             0.023            0.024
+#&gt; Chain 1:   3400         -998.511             0.024            0.025
+#&gt; Chain 1:   3500         -961.686             0.025            0.025
+#&gt; Chain 1:   3600         -973.330             0.022            0.024
+#&gt; Chain 1:   3700         -948.012             0.022            0.025
+#&gt; Chain 1:   3800         -957.482             0.021            0.025
+#&gt; Chain 1:   3900         -942.377             0.019            0.020
+#&gt; Chain 1:   4000         -957.282             0.020            0.020
+#&gt; Chain 1:   4100         -960.648             0.018            0.016
+#&gt; Chain 1:   4200         -950.738             0.019            0.016
+#&gt; Chain 1:   4300         -948.464             0.016            0.016
+#&gt; Chain 1:   4400         -954.030             0.014            0.012
+#&gt; Chain 1:   4500         -947.623             0.011            0.010
+#&gt; Chain 1:   4600         -939.038             0.011            0.010
+#&gt; Chain 1:   4700         -942.188             0.008            0.009
+#&gt; Chain 1:   4800         -936.880             0.008            0.007
+#&gt; Chain 1:   4900         -938.273             0.006            0.006
+#&gt; Chain 1:   5000         -933.556             0.005            0.006
+#&gt; Chain 1:   5100         -929.439             0.005            0.006
+#&gt; Chain 1:   5200         -929.740             0.004            0.005
+#&gt; Chain 1:   5300         -936.469             0.005            0.006
+#&gt; Chain 1:   5400         -934.142             0.005            0.005
+#&gt; Chain 1:   5500         -924.523             0.005            0.005
+#&gt; Chain 1:   5600         -929.735             0.005            0.005
+#&gt; Chain 1:   5700         -929.857             0.004            0.005
+#&gt; Chain 1:   5800         -919.809             0.005            0.005
+#&gt; Chain 1:   5900         -936.527             0.006            0.006
+#&gt; Chain 1:   6000         -993.485             0.012            0.007
+#&gt; Chain 1:   6100         -925.833             0.019            0.010
+#&gt; Chain 1:   6200         -921.205             0.019            0.010
+#&gt; Chain 1:   6300         -923.194             0.018            0.010
+#&gt; Chain 1:   6400         -928.790             0.019            0.010
+#&gt; Chain 1:   6500         -919.124             0.019            0.011
+#&gt; Chain 1:   6600         -921.084             0.019            0.011
+#&gt; Chain 1:   6700         -917.565             0.019            0.011
+#&gt; Chain 1:   6800         -921.111             0.018            0.006
+#&gt; Chain 1:   6900         -918.001             0.017            0.005
+#&gt; Chain 1:   7000         -913.075             0.012            0.005
+#&gt; Chain 1:   7100         -921.793             0.005            0.005
+#&gt; Chain 1:   7200         -927.539             0.005            0.005
+#&gt; Chain 1:   7300         -915.573             0.006            0.006
+#&gt; Chain 1:   7400         -914.450             0.006            0.005
+#&gt; Chain 1:   7500         -919.167             0.005            0.005
+#&gt; Chain 1:   7600         -920.140             0.005            0.005
+#&gt; Chain 1:   7700         -914.457             0.005            0.005
+#&gt; Chain 1:   7800         -915.387             0.005            0.005
+#&gt; Chain 1:   7900         -916.610             0.005            0.005
+#&gt; Chain 1:   8000         -911.921             0.005            0.005
+#&gt; Chain 1:   8100         -910.984             0.004            0.005
+#&gt; Chain 1:   8200         -915.187             0.004            0.005
+#&gt; Chain 1:   8300         -910.686             0.003            0.005
+#&gt; Chain 1:   8400         -917.383             0.004            0.005
+#&gt; Chain 1:   8500         -908.228             0.004            0.005
+#&gt; Chain 1:   8600         -914.883             0.005            0.005
+#&gt; Chain 1:   8700         -911.800             0.005            0.005
+#&gt; Chain 1:   8800         -910.920             0.005            0.005
+#&gt; Chain 1:   8900         -907.848             0.005            0.005
+#&gt; Chain 1:   9000         -914.024             0.005            0.005
+#&gt; Chain 1:   9100         -907.792             0.006            0.007
+#&gt; Chain 1:   9200         -908.857             0.005            0.007
+#&gt; Chain 1:   9300         -909.113             0.005            0.007
+#&gt; Chain 1:   9400         -907.337             0.004            0.003
+#&gt; Chain 1:   9500         -909.013             0.003            0.003
+#&gt; Chain 1:   9600         -909.910             0.003            0.002
+#&gt; Chain 1:   9700         -906.587             0.003            0.002
+#&gt; Chain 1:   9800         -905.629             0.003            0.002
+#&gt; Chain 1:   9900         -905.946             0.002            0.002
+#&gt; Chain 1:   10000         -908.949             0.002            0.002
+#&gt; Chain 1: Informational Message: The maximum number of iterations is reached! The algorithm may not have converged.
+#&gt; Chain 1: This variational approximation is not guaranteed to be meaningful.
+#&gt; Chain 1: 
+#&gt; Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
+#&gt; Chain 1: COMPLETED.</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 2.4. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'>
+<span class='co'># different ways of using plot_rt</span>
+<span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>) <span class='co'># default, plots all groups and dates</span></div><div class='img'><img src='plot_infections-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span></div><div class='img'><img src='plot_infections-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span></div><div class='img'><img src='plot_infections-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>))</div><div class='img'><img src='plot_infections-4.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>,
+         <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
+        <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 day"</span>) <span class='co'># ticks every day</span></div><div class='img'><img src='plot_infections-5.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>,
+       <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>),
+       <span class='kw'>date_format</span><span class='kw'>=</span><span class='st'>"%Y-%d-%m"</span>) <span class='co'># (different date format)</span></div><div class='img'><img src='plot_infections-6.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># other plotting functions</span>
+<span class='fu'><a href='plot_obs.html'>plot_obs</a></span>(<span class='no'>fm</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"deaths"</span>)</div><div class='img'><img src='plot_infections-7.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>plot_infections</span>(<span class='no'>fm</span>)</div><div class='img'><img src='plot_infections-8.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_infectious.html'>plot_infectious</a></span>(<span class='no'>fm</span>)</div><div class='img'><img src='plot_infections-9.png' alt='' width='700' height='433' /></div><div class='input'># }
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

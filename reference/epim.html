@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fits an Epidemiological Model — epim • epidemia</title>
+<title>Fit a Bayesian epidemiological model with epidemia — epim • epidemia</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,9 +48,13 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Fits an Epidemiological Model — epim" />
-<meta property="og:description" content="Fits a Bayesian epidemiological model specified by the formula
-argument." />
+<meta property="og:title" content="Fit a Bayesian epidemiological model with epidemia — epim" />
+<meta property="og:description" content="epim is the only model fitting function in epidemia.
+It takes a model description, a dataframe, and additional
+arguments relating to the fitting algorithm, and translates this
+to data that is then passed to a precompiled Stan program which is used to fit the model.
+This allows model fitting to begin immediately as opposed to requiring compilation
+each time epim is called." />
 <meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png" />
 
 
@@ -164,14 +168,18 @@ argument." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Fits an Epidemiological Model</h1>
+    <h1>Fit a Bayesian epidemiological model with epidemia</h1>
     <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/epim.R'><code>R/epim.R</code></a></small>
     <div class="hidden name"><code>epim.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Fits a Bayesian epidemiological model specified by the <code>formula</code>
-argument.</p>
+    <p><code>epim</code> is the only model fitting function in <span class="pkg">epidemia</span>.
+It takes a model description, a dataframe, and additional
+arguments relating to the fitting algorithm, and translates this
+to data that is then passed to a precompiled <span class="pkg">Stan</span> program which is used to fit the model.
+This allows model fitting to begin immediately as opposed to requiring compilation
+each time <code>epim</code> is called.</p>
     </div>
 
     <pre class="usage"><span class='fu'>epim</span>(
@@ -182,7 +190,6 @@ argument.</p>
   <span class='kw'>algorithm</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"sampling"</span>, <span class='st'>"meanfield"</span>, <span class='st'>"fullrank"</span>),
   <span class='kw'>group_subset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>prior_PD</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>init_run</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -191,101 +198,245 @@ argument.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>rt</th>
-      <td><p>An object of class <code><a href='epirt.html'>epirt</a></code>. This specifies
-the model for the time-varying reproduction number.</p></td>
+      <td><p>An object of class <code>epirt</code>. This defines
+the model for the time-varying reproduction rates. See <code><a href='epirt.html'>epirt</a></code> for more details.</p></td>
     </tr>
     <tr>
       <th>inf</th>
-      <td><p>An object of class <code><a href='epiinf.html'>epiinf</a></code>. This specifies
-the model for latent infections. Defaults to <code><a href='epiinf.html'>epiinf()</a></code>.</p></td>
+      <td><p>An object of class <code>epiinf</code>. This defines
+the model for latent infections. See <code><a href='epiinf.html'>epiinf</a></code> for more details.</p></td>
     </tr>
     <tr>
       <th>obs</th>
-      <td><p>A list of <code><a href='epiobs.html'>epiobs</a></code> objects. Each
-element defines a model for the specified observation vector.</p></td>
+      <td><p>Either an <code>epiobs</code> object, or a list of such objects. Each
+element in the list defines a model for the specified observation vector. See <code><a href='epiobs.html'>epiobs</a></code> for more details.</p></td>
     </tr>
     <tr>
       <th>data</th>
-      <td><p>A dataframe containing all data required to fit the model.
-See <a href='https://rdrr.io/r/stats/lm.html'>lm</a>.</p></td>
+      <td><p>A dataframe with all data required for fitting the model. This includes all observation variables and covariates specified in the models for the reproduction number and ascertainment rates.</p></td>
     </tr>
     <tr>
       <th>algorithm</th>
       <td><p>One of <code>"sampling"</code>, <code>"meanfield"</code> or
 <code>"fullrank"</code>. This specifies which <span class="pkg">rstan</span> function to use for
-fitting the model.</p></td>
+fitting the model. For <code>"sampling"</code> this is <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>sampling</a></code>, otherwise
+this is <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-vb.html'>vb</a></code>.</p></td>
     </tr>
     <tr>
       <th>group_subset</th>
-      <td><p>An optional vector specifying a subset of groups to
-model. Elements should correspond to the group levels specified through the
-<code>data</code> argument.</p></td>
+      <td><p>If specified, a character vector naming a subset of regions to include in the model.</p></td>
     </tr>
     <tr>
       <th>prior_PD</th>
       <td><p>Same as in <code><a href='https://mc-stan.org/rstanarm/reference/stan_glm.html'>stan_glm</a></code>. If <code>TRUE</code>,
-samples parameters from the prior disribution.
-Defaults to <code>FALSE</code>.</p></td>
-    </tr>
-    <tr>
-      <th>init_run</th>
-      <td><p>For certain datasets the sampler can find itself trapped in a
-local mode where herd immunity is achieved. If TRUE, an MCMC run where
-the population adjustment is disabled is used to initialise the parameters for
-the main sampling. If TRUE, this is done with default parameters. If instead a list is
-provided, these parameters are passed on to the rstan sampling function for the initial run.
-initial run. The seed used is that specified in <code>init_run</code>, or that
-specified in ..., or no seed, in that order.</p></td>
+samples all parameters from the joint prior distribution. This is useful for
+prior predictive checks. Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>An (optional) named list of parameters to pass to the
-<span class="pkg">rstan</span> function used for model fitting, for example
-<code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>rstan::sampling</a></code>.</p></td>
+      <td><p>Additional arguments to pass to the <span class="pkg">rstan</span> function used to fit the model.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class "epimodel".</p>
+    <p>An object of class <code>epimodel</code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>epim</code> is the primary model fitting function in <span class="pkg">epidemia</span>, and
-fits models
-in the style of Flaxman et al. (2020)
-. Multiple groups
-(countries/states/age cohorts)
-can be modeled simultaneously using multilevel models. The time-varying
-reproduction number can be paramterised by a number of covariates through
-the <code>formula</code> argument. This is reasonably flexible. For example,
-random effects terms in the style of the <span class="pkg">lme4</span> package can be included.
-The prior distribution on the parameters in the regression are handled
-through the arguments <code>prior</code>,
-<code>prior_intercept</code> and <code>prior_covariance</code>.</p>
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p>Flaxman S, Mishra S, Gandy A, Unwin HJT, Mellan TA, Coupland H, Whittaker C, Zhu H, Berah T, Eaton JW, Monod M, Perez-Guzman PN, Schmit N, Cilloni L, Ainslie KEC, Baguelin M, Boonyasiri A, Boyd O, Cattarino L, Cooper LV, Cucunubá Z, Cuomo-Dannenburg G, Dighe A, Djaafara B, Dorigatti I, van Elsland SL, FitzJohn RG, Gaythorpe KAM, Geidelberg L, Grassly NC, Green WD, Hallett T, Hamlet A, Hinsley W, Jeffrey B, Knock E, Laydon DJ, Nedjati-Gilani G, Nouvellet P, Parag KV, Siveroni I, Thompson HA, Verity R, Volz E, Walters CE, Wang H, Wang Y, Watson OJ, Winskill P, Xi X, Walker PGT, Ghani AC, Donnelly CA, Riley SM, Vollmer MAC, Ferguson NM, Okell LC, Bhatt S, Team ICCR (2020).
-&#8220;Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.&#8221;
-<em>Nature</em>.
-ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038/s41586-020-2405-7</a>
-, <a href='https://doi.org/10.1038/s41586-020-2405-7'>https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
+    <p>This is similar to the workflow for fitting Bayesian regression models with <span class="pkg">rstanarm</span>.
+A key difference, however, is that the models fit by <span class="pkg">epidemia</span> are much more complex,
+and are therefore inherently more difficult to specify. <span class="pkg">epidemia</span> aims to simplify this
+process by modularizing the model definition into three distinct parts: transmission, infections and observations.
+These components of the model are defined with the functions <code><a href='epirt.html'>epirt</a></code>, <code><a href='epiinf.html'>epiinf</a></code> and <code><a href='epiobs.html'>epiobs</a></code>
+respectively.</p>
+<p><code>epim</code> has arguments
+<code>rt</code>, <code>inf</code> and <code>obs</code> which expect a description of the
+transmission model, infection model and observational models respectively.
+Together, these fully define the joint distribution of data and parameters.
+Each of these model components are described in terms of variables that are expected to live in a single dataframe, <code>data</code>.
+This dataframe must be compatible with the model components, in the sense that it holds all variables defined in these models.</p>
+<p>In addition to taking a model description and a dataframe, <code>epim</code> has various
+additional arguments which specify how the model should be fit. If <code>algorithm = "sampling"</code>
+then the model will be fit using <span class="pkg">Stan</span>’s adaptive Hamiltonian Monte Carlo sampler.
+This is done internally by calling <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>sampling</a></code>. If
+<code>algorithm = "meanfield"</code> or <code>algorithm = "fullrank"</code>, then
+<span class="pkg">Stan</span>’s variational Bayes algorithms are used instead, by calling <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-vb.html'>vb</a></code>.
+Any unnamed arguments in the call to <code>epim</code> are passed directly on to the <span class="pkg">rstan</span> sampling function.
+<code>epim</code> returns a fitted model object of class <code>epimodel</code>, which contains posterior samples from the model along with other useful objects.</p>
+<p>In general, the adaptive Hamiltonian Monte Carlo sampler should be used for final inference.
+Nonetheless, fitting these models using HMC is often computationally demanding, and variational Bayes can often be fruitful for quickly iterating models.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid"</span>)
+    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>EpiEstim</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"Flu1918"</span>)
 
-<span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
-<span class='no'>args</span>$<span class='no'>algorithm</span> <span class='kw'>&lt;-</span> <span class='st'>"sampling"</span>
-<span class='no'>args</span>$<span class='no'>rt</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='epirt.html'>epirt</a></span>(
- <span class='kw'>formula</span><span class='kw'>=</span><span class='fu'>R</span>(<span class='no'>country</span>, <span class='no'>date</span>) ~ <span class='fl'>0</span> + <span class='no'>lockdown</span>,
- <span class='no'>args</span>$<span class='no'>prior</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shifted_gamma.html'>shifted_gamma</a></span>(<span class='kw'>shape</span> <span class='kw'>=</span> <span class='fl'>1</span> / <span class='fl'>6</span>,
-                             <span class='kw'>scale</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-                             <span class='kw'>shift</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>1.05</span>) / <span class='fl'>6</span>)
+<span class='no'>date</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span>(<span class='st'>"1918-01-01"</span>) + <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>0</span>, <span class='kw'>along.with</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='no'>Flu1918</span>$<span class='no'>incidence</span>))
+<span class='no'>data</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span>(
+ <span class='kw'>city</span> <span class='kw'>=</span> <span class='st'>"Baltimore"</span>,
+ <span class='kw'>cases</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='no'>Flu1918</span>$<span class='no'>incidence</span>),
+ <span class='kw'>date</span> <span class='kw'>=</span> <span class='no'>date</span>,
+ <span class='kw'>week</span> <span class='kw'>=</span> <span class='kw pkg'>lubridate</span><span class='kw ns'>::</span><span class='fu'><a href='http://lubridate.tidyverse.org/reference/week.html'>week</a></span>(<span class='no'>date</span>)
 )
 
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='st'>"epim"</span>, <span class='no'>args</span>)
-<span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fit</span>, <span class='kw'>group</span> <span class='kw'>=</span> <span class='st'>"Germany"</span>)
-}</div></pre>
+<span class='no'>rt</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='epirt.html'>epirt</a></span>(
+ <span class='kw'>formula</span> <span class='kw'>=</span> <span class='fu'>R</span>(<span class='no'>city</span>, <span class='no'>date</span>) ~ <span class='fu'><a href='rw.html'>rw</a></span>(<span class='kw'>time</span> <span class='kw'>=</span> <span class='no'>week</span>, <span class='kw'>prior_scale</span> <span class='kw'>=</span> <span class='fl'>0.1</span>),
+ <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='fl'>2</span>), <span class='fl'>0.2</span>),
+ <span class='kw'>link</span> <span class='kw'>=</span> <span class='st'>'log'</span>
+)
+
+<span class='no'>obs</span> <span class='kw'>&lt;-</span>  <span class='fu'><a href='epiobs.html'>epiobs</a></span>(
+ <span class='kw'>formula</span> <span class='kw'>=</span> <span class='no'>cases</span> ~ <span class='fl'>1</span>,
+ <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='kw'>location</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>0.01</span>),
+ <span class='kw'>link</span> <span class='kw'>=</span> <span class='st'>"identity"</span>,
+ <span class='kw'>i2o</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>.25</span>,<span class='fl'>4</span>)
+)
+
+<span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(
+ <span class='kw'>rt</span> <span class='kw'>=</span> <span class='no'>rt</span>,
+ <span class='kw'>inf</span> <span class='kw'>=</span> <span class='fu'><a href='epiinf.html'>epiinf</a></span>(<span class='kw'>gen</span> <span class='kw'>=</span> <span class='no'>Flu1918</span>$<span class='no'>si_distr</span>),
+ <span class='kw'>obs</span> <span class='kw'>=</span> <span class='no'>obs</span>,
+ <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>data</span>,
+ <span class='kw'>algorithm</span> <span class='kw'>=</span> <span class='st'>"fullrank"</span>,
+ <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e4</span>,
+ <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>12345</span>
+)
+
+<span class='no'>fm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; Chain 1: ------------------------------------------------------------
+#&gt; Chain 1: EXPERIMENTAL ALGORITHM:
+#&gt; Chain 1:   This procedure has not been thoroughly tested and may be unstable
+#&gt; Chain 1:   or buggy. The interface is subject to change.
+#&gt; Chain 1: ------------------------------------------------------------
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Rejecting initial value:
+#&gt; Chain 1:   Error evaluating the log probability at the initial value.
+#&gt; Chain 1: Exception: neg_binomial_2_lpmf: Location parameter[1] is -7.96211e-06, but must be &gt; 0!  (in 'model_epidemia_base' at line 132)
+#&gt; 
+#&gt; Chain 1: 
+#&gt; Chain 1: Gradient evaluation took 0.000289 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.89 seconds.
+#&gt; Chain 1: Adjust your expectations accordingly!
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Begin eta adaptation.
+#&gt; Chain 1: Iteration:   1 / 250 [  0%]  (Adaptation)
+#&gt; Chain 1: Iteration:  50 / 250 [ 20%]  (Adaptation)
+#&gt; Chain 1: Iteration: 100 / 250 [ 40%]  (Adaptation)
+#&gt; Chain 1: Iteration: 150 / 250 [ 60%]  (Adaptation)
+#&gt; Chain 1: Iteration: 200 / 250 [ 80%]  (Adaptation)
+#&gt; Chain 1: Iteration: 250 / 250 [100%]  (Adaptation)
+#&gt; Chain 1: Success! Found best value [eta = 0.1].
+#&gt; Chain 1: 
+#&gt; Chain 1: Begin stochastic gradient ascent.
+#&gt; Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
+#&gt; Chain 1:    100       -10224.766             1.000            1.000
+#&gt; Chain 1:    200        -6242.872             0.819            1.000
+#&gt; Chain 1:    300        -4460.624             0.679            0.638
+#&gt; Chain 1:    400        -3018.208             0.629            0.638
+#&gt; Chain 1:    500        -1929.581             0.616            0.564
+#&gt; Chain 1:    600        -1509.661             0.560            0.564
+#&gt; Chain 1:    700        -1172.784             0.521            0.478
+#&gt; Chain 1:    800        -1042.063             0.471            0.478
+#&gt; Chain 1:    900         -943.309             0.431            0.400
+#&gt; Chain 1:   1000        -1118.005             0.403            0.400
+#&gt; Chain 1:   1100         -879.886             0.330            0.287
+#&gt; Chain 1:   1200         -838.614             0.271            0.278
+#&gt; Chain 1:   1300         -821.186             0.233            0.271
+#&gt; Chain 1:   1400         -770.641             0.192            0.156
+#&gt; Chain 1:   1500         -863.898             0.147            0.125
+#&gt; Chain 1:   1600         -810.893             0.125            0.108
+#&gt; Chain 1:   1700         -735.930             0.107            0.105
+#&gt; Chain 1:   1800         -680.682             0.102            0.102
+#&gt; Chain 1:   1900         -705.569             0.095            0.081
+#&gt; Chain 1:   2000         -699.094             0.081            0.066
+#&gt; Chain 1:   2100         -613.973             0.068            0.066
+#&gt; Chain 1:   2200         -660.284             0.070            0.070
+#&gt; Chain 1:   2300         -691.698             0.072            0.070
+#&gt; Chain 1:   2400         -650.282             0.072            0.070
+#&gt; Chain 1:   2500         -655.797             0.062            0.065
+#&gt; Chain 1:   2600         -661.337             0.056            0.064
+#&gt; Chain 1:   2700         -601.600             0.056            0.064
+#&gt; Chain 1:   2800         -590.878             0.050            0.045
+#&gt; Chain 1:   2900         -598.213             0.047            0.045
+#&gt; Chain 1:   3000         -654.266             0.055            0.064
+#&gt; Chain 1:   3100         -550.376             0.060            0.064
+#&gt; Chain 1:   3200         -561.904             0.055            0.045
+#&gt; Chain 1:   3300         -559.239             0.051            0.021
+#&gt; Chain 1:   3400         -595.660             0.051            0.021
+#&gt; Chain 1:   3500         -595.639             0.050            0.021
+#&gt; Chain 1:   3600         -570.589             0.053            0.044
+#&gt; Chain 1:   3700         -581.496             0.045            0.021
+#&gt; Chain 1:   3800         -590.731             0.045            0.021
+#&gt; Chain 1:   3900         -568.836             0.048            0.038
+#&gt; Chain 1:   4000         -557.317             0.041            0.021
+#&gt; Chain 1:   4100         -506.965             0.032            0.021
+#&gt; Chain 1:   4200         -519.702             0.033            0.025
+#&gt; Chain 1:   4300         -504.915             0.035            0.029
+#&gt; Chain 1:   4400         -531.954             0.034            0.029
+#&gt; Chain 1:   4500         -598.248             0.045            0.038
+#&gt; Chain 1:   4600         -496.190             0.061            0.038
+#&gt; Chain 1:   4700         -527.987             0.066            0.051
+#&gt; Chain 1:   4800         -521.152             0.065            0.051
+#&gt; Chain 1:   4900         -528.863             0.063            0.051
+#&gt; Chain 1:   5000         -526.002             0.061            0.051
+#&gt; Chain 1:   5100         -542.573             0.055            0.031
+#&gt; Chain 1:   5200         -528.794             0.055            0.031
+#&gt; Chain 1:   5300         -469.201             0.064            0.051
+#&gt; Chain 1:   5400         -489.398             0.063            0.041
+#&gt; Chain 1:   5500         -523.486             0.059            0.041
+#&gt; Chain 1:   5600         -480.915             0.047            0.041
+#&gt; Chain 1:   5700         -476.770             0.042            0.031
+#&gt; Chain 1:   5800         -522.249             0.049            0.041
+#&gt; Chain 1:   5900         -507.258             0.051            0.041
+#&gt; Chain 1:   6000         -518.603             0.053            0.041
+#&gt; Chain 1:   6100         -474.961             0.059            0.065
+#&gt; Chain 1:   6200         -494.737             0.060            0.065
+#&gt; Chain 1:   6300         -514.214             0.051            0.041
+#&gt; Chain 1:   6400         -510.252             0.048            0.040
+#&gt; Chain 1:   6500         -476.462             0.048            0.040
+#&gt; Chain 1:   6600         -517.731             0.048            0.040
+#&gt; Chain 1:   6700         -485.916             0.053            0.065
+#&gt; Chain 1:   6800         -489.885             0.045            0.040
+#&gt; Chain 1:   6900         -465.209             0.048            0.053
+#&gt; Chain 1:   7000         -472.794             0.047            0.053
+#&gt; Chain 1:   7100         -475.276             0.038            0.040
+#&gt; Chain 1:   7200         -505.793             0.040            0.053
+#&gt; Chain 1:   7300         -463.735             0.046            0.060
+#&gt; Chain 1:   7400         -468.833             0.046            0.060
+#&gt; Chain 1:   7500         -504.262             0.046            0.060
+#&gt; Chain 1:   7600         -496.296             0.040            0.053
+#&gt; Chain 1:   7700         -496.305             0.033            0.016
+#&gt; Chain 1:   7800         -453.705             0.042            0.053
+#&gt; Chain 1:   7900         -494.136             0.045            0.060
+#&gt; Chain 1:   8000         -500.360             0.044            0.060
+#&gt; Chain 1:   8100         -464.209             0.051            0.070
+#&gt; Chain 1:   8200         -469.179             0.046            0.070
+#&gt; Chain 1:   8300         -479.486             0.040            0.021
+#&gt; Chain 1:   8400         -457.231             0.043            0.049
+#&gt; Chain 1:   8500         -460.266             0.037            0.021
+#&gt; Chain 1:   8600         -473.518             0.038            0.028
+#&gt; Chain 1:   8700         -443.380             0.045            0.049
+#&gt; Chain 1:   8800         -458.211             0.039            0.032
+#&gt; Chain 1:   8900         -463.556             0.032            0.028
+#&gt; Chain 1:   9000         -468.748             0.032            0.028
+#&gt; Chain 1:   9100         -458.397             0.026            0.023
+#&gt; Chain 1:   9200         -450.545             0.027            0.023
+#&gt; Chain 1:   9300         -448.172             0.025            0.023
+#&gt; Chain 1:   9400         -457.934             0.022            0.021
+#&gt; Chain 1:   9500         -458.506             0.022            0.021
+#&gt; Chain 1:   9600         -444.452             0.022            0.021
+#&gt; Chain 1:   9700         -456.377             0.018            0.021
+#&gt; Chain 1:   9800         -456.189             0.015            0.017
+#&gt; Chain 1:   9900         -441.026             0.017            0.021
+#&gt; Chain 1:   10000         -470.592             0.022            0.023
+#&gt; Chain 1: Informational Message: The maximum number of iterations is reached! The algorithm may not have converged.
+#&gt; Chain 1: This variational approximation is not guaranteed to be meaningful.
+#&gt; Chain 1: 
+#&gt; Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
+#&gt; Chain 1: COMPLETED.</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 4.8. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'>
+<span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>)</div><div class='img'><img src='epim-1.png' alt='' width='700' height='433' /></div><div class='input'># }
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -206,7 +206,7 @@ for more details.</p>
 <a href="#additional-priors" class="anchor"></a><span class="header-section-number">1.2.1</span> Additional Priors</h3>
 <p>In addition to <strong>rstanarm</strong>’s prior functions, <strong>epidemia</strong> offers additional
 priors for regression coefficients. Currently, there is just one, <code>shifted_gamma</code>.
-This represents a gamma distributionthat can be shifted so that it has support
+This represents a gamma distribution that can be shifted so that it has support
 other than on <span class="math inline">\([0, \infty)\)</span>. Specifically,
 <span class="math display">\[\begin{equation}
 \beta_i \sim \text{Gamma}(\alpha_i, \theta_i) - a_i,
@@ -244,7 +244,7 @@ call to <code><a href="../reference/epiinf.html">epiinf()</a></code>. <code>prio
 <h2 class="hasAnchor">
 <a href="#priors-on-covariance-matrices" class="anchor"></a><span class="header-section-number">1.4</span> Priors on Covariance Matrices</h2>
 <p>Recall that partial pooling can be used in the regression for <span class="math inline">\(R\)</span>. The
-partially pooled parameters <span class="math inline">\(b\)</span> are characterised as zero mean multivariate
+partially pooled parameters <span class="math inline">\(b\)</span> are characterized as zero mean multivariate
 normal with an unknown covariance matrix, which must itself be assigned a prior.
 The precise model for these parameters is described in detail in the
 <a href="partial-pooling.html">partial pooling article</a>. The prior on the covariance
@@ -309,7 +309,7 @@ no longer has an easily intuited interpretation.</p>
 <div id="sec:autoscale" class="section level3">
 <h3 class="hasAnchor">
 <a href="#sec:autoscale" class="anchor"></a><span class="header-section-number">2.1.1</span> Autoscaling</h3>
-<p><strong>rstanarm</strong>’s prior functions have an arugment called <code>autoscale</code>.
+<p><strong>rstanarm</strong>’s prior functions have an argument called <code>autoscale</code>.
 If <code>autoscale = TRUE</code>, then <strong>epidemia</strong> automatically adjusts the prior scale to
 account for the scale of the covariates. This only applies to priors on
 fixed effects, and not to the intercepts. <strong>epidemia</strong> rescales according to the
