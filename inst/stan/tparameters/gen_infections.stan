@@ -17,13 +17,13 @@ for (m in 1:M){
     }
     
     idx += NC[m];
-    infections[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
+    infections[n0:n1,m] = rep_vector( y[m] * susc[n0, m] / 100000 ,N0); // learn the number of cases in the first N0 days
     cumm_sum[n0:n1,m] = cumulative_sum(infections[n0:n1,m]);
 
     for (i in (n1+1):n2) {
         int start = max(n0, i - gen_len);
         load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
-        infections[i,m] = Rt_unadj[i,m] * load[i,m];
+        infections[i,m] = Rt_unadj[i,m] * load[i,m] + y[m] * susc[n0, m] / 100000 ; //use the same seed for imported infections
 
         if (latent) { // treat as log-normal (could extend)
             real loginf = log(infections[i,m]);

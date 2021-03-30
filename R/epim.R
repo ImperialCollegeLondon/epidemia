@@ -197,7 +197,7 @@ pars <- function(sdat) {
       if (length(sdat$obs_ac_nterms)) "obs_ac_noise",
       if (sdat$len_theta_L) "theta_L",
       "y",
-      "tau2",
+      #"tau2",
       if (length(sdat$ac_nterms)) "ac_scale",
       if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
       if (sdat$num_oaux > 0) "oaux",
