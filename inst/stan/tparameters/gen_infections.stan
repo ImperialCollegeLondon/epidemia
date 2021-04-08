@@ -20,6 +20,10 @@ for (m in 1:M){
     infections[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
     cumm_sum[n0:n1,m] = cumulative_sum(infections[n0:n1,m]);
 
+    if (pop_adjust)
+        for (i in (n0+1):n1)
+            vacc[i,m] = vacc[i-1,m] + (susc[i-1,m] - susc[i,m]) * (1 - cumm_sum[i,m] / susc[n0,m]);
+
     for (i in (n1+1):n2) {
         int start = max(n0, i - gen_len);
         load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
@@ -31,10 +35,14 @@ for (m in 1:M){
             infections[i,m] = exp( (3 * loginf - loginfd) / 2 + sqrt(loginfd - loginf) * inf_noise[idx2]);
         }
         
-        if (pop_adjust) 
-            infections[i,m] = (susc[start,m] - cumm_sum[i-1,m]) * (1 - exp(-(susc[i,m] / susc[start,m]) * (infections[i,m] / susc[start,m])));
-        
+        if (pop_adjust)
+            infections[i,m] = (susc[n0,m] - vacc[i-1,m] - cumm_sum[i-1,m]) * (1 - exp(-infections[i,m] / susc[n0,m]));
+
         cumm_sum[i,m] = cumm_sum[i-1,m] + infections[i,m];
+
+        if (pop_adjust) 
+            vacc[i,m] = vacc[i-1,m] + (susc[i-1,m] - susc[i,m]) * (1 - cumm_sum[i,m] / susc[n0,m]);
+
         idx2 += 1;
     }
 }
