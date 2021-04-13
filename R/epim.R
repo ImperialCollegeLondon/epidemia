@@ -100,6 +100,8 @@ epim <- function(
   algorithm = c("sampling", "meanfield", "fullrank"),
   group_subset = NULL,
   prior_PD = FALSE,
+  # LogCases Lowerbound
+  lbdata = NULL, #contains cases + date + county
   ...
 ) {
   call <- match.call(expand.dots = TRUE)
@@ -126,7 +128,7 @@ epim <- function(
   obs <- lapply(obs_orig, epiobs_, data)
 
   # collect arguments for standata function
-  args <- loo::nlist(rt, inf, obs, data, prior_PD)
+  args <- loo::nlist(rt, inf, obs, data, prior_PD, lbdata)
 
   # compute standata
   sdat <- do.call(standata_all, args)
@@ -177,7 +179,8 @@ epim <- function(
     data,
     algorithm,
     standata = sdat,
-    orig_names
+    orig_names,
+    lbdata
   )
 
   return(epimodel(out))
