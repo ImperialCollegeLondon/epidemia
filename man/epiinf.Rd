@@ -8,11 +8,13 @@ epiinf(
   gen,
   seed_days = 6L,
   latent = FALSE,
+  prior_tau = rstanarm::exponential(0.03),
   family = "log-normal",
   prior_aux = rstanarm::normal(10, 5),
-  prior_tau = rstanarm::exponential(0.03),
   pop_adjust = FALSE,
-  susceptibles = NULL
+  pops = NULL,
+  susceptibles = NULL,
+  prior_I0 = 0
 )
 }
 \arguments{
@@ -23,6 +25,12 @@ probability vector).}
 
 \item{latent}{If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.}
 
+\item{prior_tau}{The prior distribution for the hyperparameter \eqn{\tau}, which is the mean of the
+prior distribution for infection seeding. Must be a call to
+\code{\link[rstanarm]{exponential}}. Defaults to \code{rstanarm::exponential(0.03)}. See the
+\href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} for
+more details on this parameter.}
+
 \item{family}{Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{log-normal}.}
 
 \item{prior_aux}{Prior distribution for the coefficient of dispersion \eqn{d} for
@@ -31,17 +39,21 @@ offspring of a given infection is assumed to have mean \eqn{\mu} and variance \e
 This argument specifies prior on \eqn{d}. Higher values of \eqn{d} imply more
 super-spreading events.}
 
-\item{prior_tau}{The prior distribution for the hyperparameter \eqn{\tau}, which is the mean of the
-prior distribution for infection seeding. Must be a call to
-\code{\link[rstanarm]{exponential}}. Defaults to \code{rstanarm::exponential(0.03)}. See the
-\href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} for
-more details on this parameter.}
-
 \item{pop_adjust}{If \code{TRUE}, applies a population adjustment to the infection process. Defaults to \code{FALSE}.}
+
+\item{pops}{A character vector giving the name of the column in the dataframe
+passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the population of each group.
+Only used if \code{pop_adjust=TRUE}.}
 
 \item{susceptibles}{A character vector giving the name of the column in the dataframe
 passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the susceptible population over time.
 Only used if \code{pop_adjust=TRUE}.}
+
+\item{prior_I0}{Prior distribution on cumulative infections at time 0 as a proportion of the population size.
+This is useful when the first modeled date is after the true beginning of the epidemic and when pop_adjust = TRUE.
+In this case, initial cumulative infections are important for realistically applying the population adjustment.
+If the value 0 is used (the default), then initial cumulative infections taken to be 0. Otherwise, must be a call
+to \code{\link[rstanarm]{normal}}. See examples for more details on using this argument.}
 }
 \value{
 An object of class \code{epiinf}.
