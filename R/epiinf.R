@@ -93,12 +93,11 @@ epiinf <- function(
   check_in_set(prior_tau$dist, "exponential")
   check_in_set(prior_aux$dist, ok_aux_dists)
 
-  if (prior_I0 != 0) {
+  if (!(is.numeric(prior_I0) && is.scalar(prior_I0) && prior_I0 == 0)) {
     check_prior(prior_I0)
     check_in_set(prior_I0$dist, "normal")
   }
   
-
   s <- substitute(susceptibles)
   check_character(s)
   if (!is.character(s)) 
