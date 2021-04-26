@@ -29,11 +29,19 @@
 #'  offspring of a given infection is assumed to have mean \eqn{\mu} and variance \eqn{d \mu}.
 #'  This argument specifies prior on \eqn{d}. Higher values of \eqn{d} imply more 
 #'  super-spreading events.
+#' @param prior_I0 Prior distribution on cumulative infections at time 0 as a proportion of the population size. 
+#'  This is useful when the first modeled date is after the true beginning of the epidemic and when pop_adjust = TRUE. 
+#'  In this case, initial cumulative infections are important for realistically applying the population adjustment. 
+#'  If the value 0 is used (the default), then initial cumulative infections taken to be 0. Otherwise, must be a call 
+#'  to \code{\link[rstanarm]{normal}}. See examples for more details on using this argument.
 #' @param pop_adjust If \code{TRUE}, applies a population adjustment to the infection process. Defaults to \code{FALSE}.
 #' @param susceptibles A character vector giving the name of the column in the dataframe 
-#' passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the susceptible population over time. 
-#' Only used if \code{pop_adjust=TRUE}.
+#'  passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the susceptible population over time. 
+#'  Only used if \code{pop_adjust=TRUE}.
 #' @return An object of class \code{epiinf}.
+#' @param pops A character vector giving the name of the column in the dataframe
+#'  passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the population of each group.
+#'  Only used if \code{pop_adjust=TRUE}.
 #' @examples 
 #' data(EuropeCovid)
 #' inf <- epiinf(
@@ -47,11 +55,13 @@ epiinf <- function(
   gen,
   seed_days = 6L,
   latent = FALSE,
+  prior_tau = rstanarm::exponential(0.03),
   family = "log-normal",
   prior_aux = rstanarm::normal(10,5),
-  prior_tau = rstanarm::exponential(0.03),
   pop_adjust = FALSE,
-  susceptibles = NULL) {
+  pops = NULL,
+  susceptibles = NULL,
+  prior_I0 = 0) {
 
   call <- match.call(expand.dots = TRUE)
 
@@ -83,11 +93,23 @@ epiinf <- function(
   check_in_set(prior_tau$dist, "exponential")
   check_in_set(prior_aux$dist, ok_aux_dists)
 
+  if (prior_I0 != 0) {
+    check_prior(prior_I0)
+    check_in_set(prior_I0$dist, "normal")
+  }
+  
+
   s <- substitute(susceptibles)
   check_character(s)
   if (!is.character(s)) 
     s <- as.character.expr(s)
   check_scalar(s)
+
+  p <- substitute(pops)
+  check_character(p)
+  if (!is.character(p)) 
+    p <- as.character.expr(p)
+  check_scalar(p)
 
   out <- loo::nlist(
     call,
@@ -98,7 +120,9 @@ epiinf <- function(
     family = if (latent) family else NULL,
     prior_aux = if (latent) prior_aux else NULL,
     pop_adjust,
-    susceptibles = if (pop_adjust) s else NULL
+    pops = if (pop_adjust) p else NULL,
+    susceptibles = if (pop_adjust) s else NULL,
+    prior_I0
   )
   class(out) <- "epiinf"
   return(out)
