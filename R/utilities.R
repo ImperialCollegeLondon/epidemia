@@ -501,7 +501,7 @@ parse_data <- function(data, rt, inf, obs, group_subset) {
 check_pops_unique <- function(inf, data) {
   if (inf$pop_adjust) {
     col <- inf$pops
-    df <- summarise(data, unique = length(unique(!!sym(col))))
+    df <- dplyr::summarise(data, unique = length(unique(!!dplyr::sym(col))))
     if (any(df$unique != 1)) {
       stop(paste0("Populations must be constant over time; i.e. there should be one unique value in column ", col, " of data for each modeled group."))
     }

@@ -103,7 +103,6 @@ epiinf <- function(
   if (!is.character(p)) 
     p <- as.character.expr(p)
   check_scalar(p)
-  print(p)
 
   if (pop_adjust == TRUE && p == "NULL")
     stop("pops must be specified if pop_adjust = TRUE", call. = FALSE)
@@ -115,7 +114,7 @@ epiinf <- function(
   check_scalar(s)
 
   if (pop_adjust == TRUE && s == "NULL") s = p
-  
+
   out <- loo::nlist(
     call,
     seed_days,

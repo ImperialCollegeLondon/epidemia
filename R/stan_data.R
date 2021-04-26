@@ -12,7 +12,7 @@ standata_all <- function(rt,
   out <- c(
     out,
     standata_rt(rt),
-    standata_inf(inf),
+    standata_inf(inf, out$M),
     standata_obs(
       obs = obs,
       groups = out$groups,
@@ -24,7 +24,7 @@ standata_all <- function(rt,
   return(out)
 }
 
-standata_inf <- function(inf) {
+standata_inf <- function(inf, M) {
 
   out <- list(
       gen_len = length(inf$gen),
@@ -56,6 +56,23 @@ standata_inf <- function(inf) {
   )
   names(p_aux) <- paste0(names(p_aux), "_for_inf_aux")
   out <- c(out, p_aux)
+
+  # add prior for I0/P (initial cumulative infections)
+  out$I0_fixed <- as.numeric(!is.list(inf$prior_I0))
+
+  p_I0 <- list()
+  if (out$I0_fixed) p_I0 <- list()
+  else p_I0 <- inf$prior_I0
+
+  p_I0 <- handle_glm_prior(
+    p_I0,
+    M * inf$pop_adjust * (1 - out$I0_fixed),
+    link = NULL,
+    default_scale = 0.1,
+    ok_dists = loo::nlist("normal")
+  )
+  names(p_I0) <- paste0(names(p_I0), "_for_I0")
+  out <- c(out, p_I0)
 
   return(out)
 }
@@ -109,6 +126,13 @@ standata_data <- function(data, inf) {
       susc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]
   }
 
+  pops <- numeric(M)
+  # get populations if population adjustment engaged
+  if (inf$pop_adjust) {
+    df <- dplyr::summarise(data, pops = head(!!dplyr::sym(inf$pops),1))
+    pops <- df$pops
+  }
+
   return(list(
     groups = groups,
     M = M,
@@ -117,7 +141,8 @@ standata_data <- function(data, inf) {
     N2 = N2,
     starts = as.array(starts),
     begin = begin,
-    susc = susc
+    susc = susc,
+    pops = pops
   ))
 }
 
