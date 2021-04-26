@@ -281,6 +281,35 @@ check_susceptibles <- function(inf, data, tol = .Machine$double.eps) {
 }
 
 
+# checks pops found in data and has required format
+#
+# @param inf An epiinf object
+# @param data the data frame to check
+# @param tol the tolerance for checking integer
+check_pops <- function(inf, data, tol = .Machine$double.eps) {
+  if (inf$pop_adjust) {
+    col <- inf$pops
+    not_found <- !(col %in% colnames(data))
+    if (not_found)
+      stop(paste0("column ", col, " required to compute population adjustment, but not found in `data`. Please add to the dataframe."), call. = FALSE)
+    
+    x <- data[, col]
+    x <- suppressWarnings(as.numeric(x))
+    
+    # check that this is numeric, integer and non-negative
+    if (anyNA(x)) 
+      stop(paste0("column ", col, " in data should be coercible to numeric and have no NAs."), call.=FALSE)
+    if (any(x < 0)) 
+      stop(paste0("all entries in column ", col, " of data should be non-negative."), call. = FALSE)
+    if (any(abs(x - round(x)) > tol, na.rm = TRUE)) 
+      warning(paste0("column ", col, " in data is not an integer vector, and will be coerced to one."), call. = FALSE)
+
+  }
+}
+
+
+
+
 # checks for consecutive dates in each group
 #
 # @param object An epirt object
@@ -343,6 +372,7 @@ check_data <- function(data, rt, inf, obs, group_subset) {
   check_group_as_factor(rt, data)
   check_time_as_date(rt, data)
   check_susceptibles(inf, data)
+  check_pops(inf, data)
   check_consecutive_dates(rt, data)
   check_groups_data(rt, group_subset, data)
 }
@@ -460,7 +490,22 @@ parse_data <- function(data, rt, inf, obs, group_subset) {
     dplyr::ungroup() %>% 
     dplyr::group_by(.data$group) %>%
     dplyr::arrange(.data$group, .data$date)
+  check_pops_unique(inf, data)
   return(data)
+}
+
+# Checks for unique population value for each group
+#
+# @param inf An epiinf object
+# @param data the data frame to check. Should have been parsed using parse_data
+check_pops_unique <- function(inf, data) {
+  if (inf$pop_adjust) {
+    col <- inf$pops
+    df <- summarise(data, unique = length(unique(!!sym(col))))
+    if (any(df$unique != 1)) {
+      stop(paste0("Populations must be constant over time; i.e. there should be one unique value in column ", col, " of data for each modeled group."))
+    }
+  }
 }
 
 # subsets the data for only groups implied by group_subset
