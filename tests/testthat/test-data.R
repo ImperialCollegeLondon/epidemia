@@ -74,15 +74,15 @@ test_that("susceptibles has correct format", {
   df$A <- 10
   inf <- epiinf(gen=1)
   expect_error(check_susceptibles(inf, df), NA)
-  inf <- epiinf(gen=1, pop_adjust = TRUE, susceptibles = A)
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, susceptibles = A)
   expect_error(check_susceptibles(inf, df), NA)
-  inf <- epiinf(gen=1, pop_adjust = TRUE, susceptibles = "A")
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, susceptibles = "A")
   check_susceptibles(inf, df)
-  inf <- epiinf(gen=1, pop_adjust = TRUE, susceptibles = B)
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, susceptibles = B)
   expect_error(check_susceptibles(inf, df), regexp = "not found")
-  inf <- epiinf(gen=1, pop_adjust = TRUE, susceptibles = "B")
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, susceptibles = "B")
   expect_error(check_susceptibles(inf, df), regexp = "not found")
-  inf <- epiinf(gen=1, pop_adjust = TRUE, susceptibles = A)
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, susceptibles = A)
   df$A <- 10.3
   expect_warning(check_susceptibles(inf, df), regexp = "integer")
   df$A <- "a"
@@ -168,7 +168,7 @@ test_that("Simple overall testing of check_data", {
 
   args1 <- args
   args1$data[4,3] <- -1
-  args1$inf <- epiinf(gen=1, pop_adjust=TRUE, susceptibles = C)
+  args1$inf <- epiinf(gen=1, pop_adjust=TRUE, pops=A, susceptibles = C)
   expect_error(do.call(check_data, args1), regexp = "non-negative")
 
   args1 <- args
