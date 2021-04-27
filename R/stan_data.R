@@ -133,6 +133,12 @@ standata_data <- function(data, inf) {
     pops <- df$pops
   }
 
+  susc0 <- numeric(M)
+  if (inf$pop_adjust) {
+    susc0 <- sapply(seq_len(M), function(m) susc[starts[m],m])
+    susc0 <- susc0 / pops
+  }
+
   return(list(
     groups = groups,
     M = M,
@@ -142,7 +148,8 @@ standata_data <- function(data, inf) {
     starts = as.array(starts),
     begin = begin,
     susc = susc,
-    pops = pops
+    pops = pops,
+    susc0 = susc0
   ))
 }
 
