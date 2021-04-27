@@ -63,6 +63,7 @@ transformed parameters {
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
 #include /tparameters/tparameters_obs.stan
+#include /tparameters/tparameters_inf.stan
 #include /tparameters/tparameters_glm.stan
 
 // transform auxiliary parameters

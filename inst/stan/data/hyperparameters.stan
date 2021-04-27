@@ -36,4 +36,5 @@ vector<lower=0>[ac_nproc] ac_prior_scales; // prior scale for hyperparameter for
 vector<lower=0>[obs_ac_nproc] obs_ac_prior_scales;
 
 real prior_mean_for_I0[I0_fixed ? 0 : M];
-real<lower=0> prior_scale_for_I0[I0_fixed ? 0 : M]
+real<lower=0> prior_scale_for_I0[I0_fixed ? 0 : M];
+
