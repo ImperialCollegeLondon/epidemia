@@ -100,10 +100,10 @@ print.summary.epimodel <-
                          nsmall = digits)
       n_eff <- format(x[, "n_eff", drop = FALSE], drop0trailing = TRUE)
       print(cbind(mcse_hat, n_eff), quote = FALSE)
-      cat("\nFor each parameter, mcse is Monte Carlo standard error, ", 
+      strwrap(capture.output(cat("\nFor each parameter, mcse is Monte Carlo standard error, ", 
           "n_eff is a crude measure of effective sample size, ", 
           str1, 
-          str2, sep = '')
+          str2, sep = '')))
     }
     
     invisible(x)
