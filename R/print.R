@@ -33,7 +33,7 @@ print.epimodel <- function(x, digits=1, ...) {
   estimates_mod <- estimates[model_pars,, drop=FALSE]
 
   cat("\nRt regression parameters:\n")
-  cat("-----")
+  cat("==========")
   cat("\ncoefficients:\n")
   nms <- grep("^R\\|", rownames(estimates_reg), value=T)
   mat <- estimates_reg[nms,,drop=FALSE]
@@ -50,7 +50,7 @@ print.epimodel <- function(x, digits=1, ...) {
   for(obs in x$obs) {
   nme <- .get_obs(formula(obs))
   cat("\n", nme, " regression parameters:\n")
-  cat("-----")
+  cat("==========")
   cat("\ncoefficients:\n")
   nms <- grep(paste0("^", nme, "\\|"), rownames(estimates_reg), value=T)
   mat <- estimates_reg[nms,,drop=FALSE]
@@ -60,7 +60,7 @@ print.epimodel <- function(x, digits=1, ...) {
   
 } 
   cat("\nOther model parameters:\n")
-  cat("-----\n")
+  cat("==========\n")
   .printfr(estimates_mod, digits)
 
    invisible(x)
