@@ -8,7 +8,7 @@
         int n2 = n0 + NC[m] - 1;
         int len;
 
-        # compute Rt over the entire period
+        // compute Rt over the entire period
         if (link == 1) 
             Rt_unadj[n0:n2,m] = exp(eta[idx1:(idx1+NC[m]-1)]); // log-link
         else if (link == 2) 
@@ -21,7 +21,8 @@
         infections[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
 
         if (pop_adjust) {
-            cumm_sum[n0,m] = y[m] + (1 - I0_fixed) * I0[m];
+            cumm_sum[n0,m] = y[m];
+            if (!I0_fixed) cumm_sum[n0,m] += I0[m];
             for (i in (n0+1):n1) {
                 cumm_sum[i,m] = cumm_sum[i-1,m] + y[m];
                 cumm_sum[i,m] += (susc[i-1,m] - susc[i,m]) * (1 - cumm_sum[i,m] / pops[m]);

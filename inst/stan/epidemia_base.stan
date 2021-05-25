@@ -103,6 +103,8 @@ transformed parameters {
         i += obs_ac_ntime[proc];
     }
   }
+
+  if(!I0_fixed) I0 = 1 - susc0 + (susc0 .* I0_raw);
   
 #include /tparameters/make_eta.stan
 #include /tparameters/make_oeta.stan

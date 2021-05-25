@@ -61,7 +61,8 @@ epiinf <- function(
   pop_adjust = FALSE,
   pops = NULL,
   susceptibles = NULL,
-  prior_I0 = 0) {
+  prior_I0 = 0,
+  fixed_vtm = 1) {
 
   call <- match.call(expand.dots = TRUE)
 
@@ -126,7 +127,8 @@ epiinf <- function(
     pop_adjust,
     pops = if (pop_adjust) p else NULL,
     susceptibles = if (pop_adjust) s else NULL,
-    prior_I0
+    prior_I0,
+    fixed_vtm = fixed_vtm
   )
   class(out) <- "epiinf"
   return(out)

@@ -3,6 +3,7 @@
 \name{plot_infections}
 \alias{plot_infections}
 \alias{plot_infections.epimodel}
+\alias{spaghetti_infections}
 \title{Plot latent infections}
 \usage{
 plot_infections(object, ...)
@@ -16,6 +17,21 @@ plot_infections(object, ...)
   cumulative = FALSE,
   levels = c(30, 60, 90),
   log = FALSE,
+  plotly = FALSE,
+  ...
+)
+
+spaghetti_infections(
+  object,
+  draws = min(500, posterior_sample_size(object)),
+  alpha = 1/sqrt(draws),
+  groups = NULL,
+  dates = NULL,
+  date_breaks = "2 weeks",
+  date_format = "\%Y-\%m-\%d",
+  cumulative = FALSE,
+  log = FALSE,
+  smooth = 1,
   plotly = FALSE,
   ...
 )
@@ -53,6 +69,9 @@ must be \code{logical}, and defaults to \code{FALSE}.}
 
 \item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
 useful for interactive graphing.}
+
+\item{smooth}{An integer specifying the window used to smooth the reproduction rates. The
+default is \code{1}, which corresponds to no smoothing.}
 }
 \value{
 If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise

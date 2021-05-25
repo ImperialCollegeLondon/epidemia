@@ -3,6 +3,7 @@
 \name{plot_rt}
 \alias{plot_rt}
 \alias{plot_rt.epimodel}
+\alias{spaghetti_rt}
 \title{Plot time-varying reproduction rates}
 \usage{
 plot_rt(object, ...)
@@ -15,6 +16,21 @@ plot_rt(object, ...)
   date_breaks = "2 weeks",
   date_format = "\%Y-\%m-\%d",
   levels = c(30, 60, 90),
+  log = FALSE,
+  smooth = 1,
+  plotly = FALSE,
+  ...
+)
+
+spaghetti_rt(
+  object,
+  draws = min(500, posterior_sample_size(object)),
+  alpha = 1/sqrt(draws),
+  groups = NULL,
+  step = FALSE,
+  dates = NULL,
+  date_breaks = "2 weeks",
+  date_format = "\%Y-\%m-\%d",
   log = FALSE,
   smooth = 1,
   plotly = FALSE,

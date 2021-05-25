@@ -201,8 +201,9 @@ pars <- function(sdat) {
       if (length(sdat$ac_nterms)) "ac_scale",
       if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
       if (sdat$num_oaux > 0) "oaux",
-      if (sdat$latent) "inf_noise",
-      if (sdat$latent) "inf_aux"
+      if (sdat$latent) "infections_raw",
+      if (sdat$latent) "inf_aux",
+      if (!sdat$I0_fixed) "I0"
     )
   return(out)
 }
@@ -281,6 +282,9 @@ new_names <- function(sdat, rt, obs, fit, data) {
       },
       if (sdat$latent) {
         "inf|dispersion"
+      },
+      if (!sdat$I0_fixed) {
+        paste0("I0[",sdat$groups, "]")
       },
       "log-posterior"
     )
@@ -430,6 +434,6 @@ make_obeta_nms <- function(obs, sdat) {
 make_inf_nms <- function(begin, starts, N0, NC, groups) {
   nms <- c()
   for (m in 1:length(groups))
-    nms <- c(nms, paste0("inf_noise[", begin -1 + N0 + starts[m] + seq(0, NC[m]-N0 - 1), ",", groups[m],"]"))
+    nms <- c(nms, paste0("infections_raw[", begin -1 + N0 + starts[m] + seq(0, NC[m]-N0 - 1), ",", groups[m],"]"))
   return(nms)
 }

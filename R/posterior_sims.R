@@ -45,13 +45,6 @@ posterior_sims <- function(object,
     data, 
     FALSE
   )
-  
-  # standata <- pp_standata(
-  #   object = object,
-  #   rt = rt,
-  #   obs = obs,
-  #   data = data
-  # )
  
   # construct linear predictors
   eta <- pp_eta(rt, stanmat)
@@ -200,48 +193,57 @@ subsamp <- function(object, mat, draws=NULL) {
 # @param orig_nms The original names for stan parameters
 # @param groups Sorted character vector of groups to simulate for
 pp_stanmat <- function(stanmat, orig_nms, groups) {
-
+  
   # hack for dealing with infection noise
-  orig_nms <- grep("inf_noise", orig_nms, value=T, invert=T)
+  orig_nms <- grep("infections_raw", orig_nms, value=T, invert=T)
 
   nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
   nms[m] <- paste0("y[", seq_along(groups), "]")
-  colnames(stanmat)[seq_along(nms)] <- nms
 
+  nms <- sub("I0\\[[0-9]\\]", "DUMMY", orig_nms)
+  m <- match(paste0("I0[", groups, "]"), colnames(stanmat))
+  if (!anyNA(m)) {
+    nms[m] <- paste0("I0[", seq_along(groups), "]")
+  }
+
+  colnames(stanmat)[seq_along(nms)] <- nms
+  
   noaux <- length(grep("^oaux\\[", colnames(stanmat)))
   neta <- length(grep("^eta\\[", colnames(stanmat)))
   noeta <- length(grep("^oeta\\[", colnames(stanmat)))
-  ninfnoise <- length(grep("^inf_noise\\[", colnames(stanmat)))
+  ninfraw <- length(grep("^infections_raw\\[", colnames(stanmat)))
   ninfaux <- length(grep("^inf_aux\\[", colnames(stanmat)))
-
+  nI0 <- length(grep("^I0\\[", colnames(stanmat)))
+  
   # need to pad out for rstan::gqs
-  mat <- matrix(0, nrow = nrow(stanmat), ncol = 12)
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 14)
   colnames(mat) <- c(
     paste0("y[", length(groups) + 1:2, "]"),
     paste0("oaux[", noaux + 1:2, "]"),
     paste0("eta[", neta + 1:2, "]"),
     paste0("oeta[", noeta + 1:2, "]"),
-    paste0("inf_noise[", ninfnoise + 1:2, "]"),
-    paste0("inf_aux[", ninfaux + 1:2, "]")
+    paste0("infections_raw[", ninfraw + 1:2, "]"),
+    paste0("inf_aux[", ninfaux + 1:2, "]"),
+    paste0("I0[", nI0 + 1:2, "]")
   )
   return(cbind(stanmat, mat))
 }
 
-#create new stanmat with new infection noises
+
 new_inf_stanmat <- function(stanmat, begin, starts, N0, NC, groups) {
-  newnms <- make_inf_nms(begin, starts, N0, NC, groups) 
+  newnms <- make_inf_nms(begin, starts, N0, NC, groups)
 
   nr <- nrow(stanmat)
   nc <- length(newnms)
-  mat <- matrix(rnorm(nr * nc), nrow = nr, ncol = nc)
+  mat <- matrix(0, nrow = nr, ncol = nc)
   colnames(mat) <- newnms
 
   locs <- match(newnms, colnames(stanmat))
   mat[, !is.na(locs)] <- stanmat[, na.omit(locs), drop = FALSE]
-  colnames(mat) <- paste0("inf_noise[", seq_len(nc), "]")
-  
-  w <- grep("inf_noise", colnames(stanmat), invert=TRUE)
-  stanmat <- cbind(stanmat[,w], mat)
+  colnames(mat) <- paste0("infections_raw[", seq_len(nc), "]")
+
+  w <- grep("infections_raw", colnames(stanmat), invert = TRUE)
+  stanmat <- cbind(stanmat[, w], mat)
   return(as.matrix(stanmat))
 }

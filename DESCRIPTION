@@ -114,7 +114,9 @@ Imports:
     tidyr,
     rlang,
     tidyselect,
-    bayesplot
+    bayesplot,
+    reshape2,
+    hrbrthemes
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),

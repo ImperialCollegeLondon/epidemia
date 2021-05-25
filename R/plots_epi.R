@@ -139,13 +139,15 @@ plot_rt.epimodel <-
       p <- p + ggplot2::geom_step(
         mapping = ggplot2::aes(x = .data$date, y = median), 
         data = df, 
-        color = "seagreen"
+        color = "black",
+        size=0.8
       )
     } else {
       p <- p + ggplot2::geom_line(
         mapping = ggplot2::aes(x = .data$date, y = median), 
         data = df, 
-        color = "seagreen"
+        color = "black",
+        size = 0.8
       )
     }
 
@@ -179,9 +181,6 @@ plot_rt.epimodel <-
 #' @inherit plot_rt params return examples
 #' @param type A string specifying the name of the observations to plot. This should match one
 #'  of the names of the response variables in the \code{obs} argument used int the call to \code{\link{epim}}.
-#' @param posterior_mean If \code{TRUE}, then credible intervals are plotted for the
-#'  posterior mean rather than the full posterior. Defaults to \code{FALSE}, 
-#'  in which case the posterior predictive is plotted.
 #' @param cumulative If \code{TRUE} then cumulative observations are plotted rather than daily. Defaults to \code{FALSE}.
 #' @param bar If \code{TRUE}, observations are plotted as a bar plot. Otherwise, a scatterplot is used. Defaults to \code{TRUE}.
 #' @param ... Additional arguments for
@@ -195,166 +194,82 @@ plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 
 #' @rdname plot_obs
 #' @export
-plot_obs.epimodel <-
-  function(object,
-           type,
-           posterior_mean = FALSE,
-           groups = NULL,
-           dates = NULL,
-           date_breaks = "2 weeks",
-           date_format = "%Y-%m-%d",
-           cumulative = FALSE,
-           bar = TRUE,
-           levels = c(30, 60, 90),
-           log = FALSE,
-           plotly = FALSE,
-           ...) {
-    levels <- check_levels(levels)
+plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL, 
+  date_breaks = "2 weeks", date_format = "%Y-%m-%d", cumulative = FALSE, 
+  bar = TRUE, levels = c(30, 60, 90), log = FALSE, plotly = FALSE, ...) {
 
-    if (is.null(type)) {
-      stop("must specify an observation type")
-    }
-
-    alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
-    w <- which(type == alltypes)
-    if (length(w) == 0) {
-      stop(paste0("obs does not contain any observations
-    for type '", type, "'"), call. = FALSE)
-    }
-
-    groups <- groups %ORifNULL% object$groups
-
-    obs <- posterior_predict(
-      object = object,
-      types = type,
-      posterior_mean = posterior_mean,
-      ...
-    )
-
-    # transform data
-    obs <- gr_subset(obs, groups)
-
-    data_orig <- object$data
-    data_orig <- data_orig[data_orig$group %in% groups, ]
-
-    newdata <- list(...)$newdata
-    if (is.null(newdata)) {
-      data <- data_orig
-    } else {
-      check_data(newdata, object$rt, object$inf, object$obs, groups)
-      data <- parse_data(newdata, object$rt, object$inf, object$obs, groups)
-    }
-
-    # get observed outcomes
-    obj <- epiobs_(object$obs[[w]], data)
-    df <- data.frame(
-      group = get_gr(obj),
-      date = get_time(obj),
-      obs = get_obs(obj)
-    )
-    
-    # remove negative values
-    df <- df[df$obs >= 0, ]
-
-    # classify data as prediction or not a prediction
-    data_orig <- data_orig[, c("group", "date", type)]
-    df <- dplyr::left_join(df, data_orig, , by = c("group", "date"))
-    names(df)[4] <- c("new")
-    w <- is.na(df$new)
-
-    all_in_sample <- ifelse(any(w), FALSE, TRUE)
-    empty <- nrow(df) == 0
-    if (!empty) {
-      if (all_in_sample){
-        df$new <- "Observed"
-      } else {
-        df$new[w] <- "Out-of-sample"
-        df$new[!w] <- "In-sample"
-      }
-    }
-
-    if (cumulative) {
-      obs <- cumul(obs)
-      df <- df %>%
-        dplyr::group_by(.data$group) %>%
-        dplyr::mutate(obs = cumsum(obs))
-      df <- as.data.frame(df)
-    }
-
-    qtl <- get_quantiles(
-      obs,
-      levels,
-      dates,
-      date_format
-    )
-    # only want to plot dates/groups that appear in qtl as it has been
-    # subsetted
-    df <- df %>%
-      dplyr::right_join(qtl %>%
-                          dplyr::select(.data$date, .data$group) %>%
-                          dplyr::distinct(),
-                        by=c("date", "group"))
-
-    names(df)[3] <- type
-    p <- base_plot(qtl, log, date_breaks)
-
-    if (bar) {
-      p <- p + ggplot2::geom_bar(
-        mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
-        data = df,
-        stat = "identity",
-        alpha = 0.7
-      )
-    } else {
-      p <- p + ggplot2::geom_point(
-        mapping = ggplot2::aes_string(x = "date", y = type, fill = "new"),
-        data = df,
-        stat = "identity"
-      )
-    }
-
-    df1 <- data.frame(
-      date = obs$time, 
-      median = apply(obs$draws, 2, function(x) quantile(x, 0.5)),
-      group = obs$group
-    )
-    # only want to plot dates/groups that appear in qtl as it has been
-    # subsetted
-    df1 <- df1 %>%
-      dplyr::right_join(qtl %>%
-                          dplyr::select(.data$date, .data$group) %>%
-                          dplyr::distinct(),
-                        by=c("date", "group"))
-
-    p <- p + ggplot2::geom_line(
-      mapping = ggplot2::aes(x = .data$date, y = median), 
-      data = df1, 
-      color = "deepskyblue4"
-    )
-
-    cols <- c(
-      "deepskyblue4",
-      ggplot2::alpha("deepskyblue4", rev(levels) * 0.7 / 100),
-      "coral4",
-      "darkslategray3"
-    )
-
-    if (all_in_sample) {
-      names(cols) <- c("median", paste0(levels, "% CI"), "Observed", "dummy")
-    } else {
-      names(cols) <- c("median", paste0(levels, "% CI"), "In-sample", "Out-of-sample")
-    }
-
-    nme <- type
-    cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
-
-    p <- p + cols
-
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
-    return(p)
+  levels <- check_levels(levels)
+  
+  if (is.null(type)) stop("must specify an observation type", call.=FALSE)
+  
+  if (!type %in% all_obs_types(object)) {
+    stop(paste0("obs does not contain any observations for type '", 
+    type, "'"), call. = FALSE)
   }
+  
+  groups <- groups %ORifNULL% object$groups
+  
+  obs <- posterior_predict(object = object, types = type, ...)
+  obs <- gr_subset(obs, groups)
+  
+  df <- parse_new_data(object, type, list(...)$newdata , groups)
+  
+  if (cumulative) {
+    obs <- cumul(obs)
+    df <- df %>%
+      dplyr::group_by(.data$group) %>%
+      dplyr::mutate(obs = cumsum(obs))
+    df <- as.data.frame(df)
+  }
+  
+  qtl <- get_quantiles(
+    obs,
+    levels,
+    dates,
+    date_format
+  )
+  # only want to plot dates/groups that appear in qtl as it has been
+  # subsetted
+  df <- df %>%
+    dplyr::right_join(qtl %>%
+                        dplyr::select(.data$date, .data$group) %>%
+                        dplyr::distinct(),
+                      by=c("date", "group"))
+  
+  p <- base_plot(qtl, log, date_breaks)
+  
+  layer_fun <- if (bar) ggplot2::geom_bar else ggplot2::geom_point
+  p <- p + layer_fun(
+    mapping = ggplot2::aes_string(x = "date", y = "obs", fill = "new"),
+    data = df,
+    stat = "identity",
+    alpha = if(bar) 0.7 else 1.0
+  )
+  
+  p <- add_median(p, obs)
+
+  cols <- c(
+    "deepskyblue4",
+    ggplot2::alpha("deepskyblue4", rev(levels) * 0.7 / 100),
+    "coral4",
+    "darkslategray3"
+  )
+  
+  if (any(df$new == "Observed")) {
+    names(cols) <- c("median", paste0(levels, "% CI"), "Observed", "dummy")
+  } else {
+    names(cols) <- c("median", paste0(levels, "% CI"), "In-sample", "Out-of-sample")
+  }
+  
+  nme <- type
+  cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
+  
+  p <- p + cols
+  
+  if (plotly) p <- plotly::ggplotly(p)
+
+  return(p)
+}
 
 #' Plot latent infections
 #'
@@ -483,8 +398,312 @@ plot_infectious.epimodel <-
     return(p)
   }
 
+#' @rdname plot_rt
+#' @export
+spaghetti_rt <- function(
+  object, 
+  draws = min(500, posterior_sample_size(object)), 
+  alpha = 1 / sqrt(draws), 
+  groups = NULL, 
+  step = FALSE, 
+  dates = NULL, 
+  date_breaks = "2 weeks", 
+  date_format = "%Y-%m-%d", 
+  log = FALSE, 
+  smooth = 1, 
+  plotly = FALSE, 
+  ...) {
+
+  rt <- posterior_rt(object = object, ...)
+  rt <- gr_subset(rt, groups)
+  rt <- smooth_obs(rt, smooth)
+
+  check_draws(draws, object)
+  check_alpha(alpha)
+
+  obj <- rt
+  obj$draws <- subsamp(object, rt$draws, draws)
+  
+  p <- spaghetti_base(obj, log, alpha, date_breaks, step)
+
+  df <- data.frame(
+    date = rt$time, 
+    median = apply(rt$draws, 2, function(x) quantile(x, 0.5)),
+    group = rt$group
+  )
+
+  if (step) {
+    p <- p + ggplot2::geom_step(
+      mapping = ggplot2::aes(x = .data$date, y = median), 
+      data = df, size = 0.8)
+  } else {
+    p <- p + ggplot2::geom_line(
+      mapping = ggplot2::aes(x = .data$date, y = median), 
+      data = df,  size = 0.8)
+  }
+
+  p <- p + ggplot2::ylab(expression(R[t]))
+  
+  return(p)
+}
+
+#' @rdname plot_infections
+#' @export
+spaghetti_infections <- 
+  function(object, 
+  draws = min(500, posterior_sample_size(object)), 
+  alpha = 1 / sqrt(draws), 
+  groups = NULL,
+  dates=NULL, 
+  date_breaks="2 weeks", 
+  date_format="%Y-%m-%d",
+  cumulative=FALSE, 
+  log=FALSE,
+  smooth=1,
+  plotly = FALSE, 
+  ...) {
+
+  inf <- posterior_infections(object = object, ...)
+  inf <- gr_subset(inf, groups)
+  if (cumulative) inf <- cumul(inf)
+  inf <- smooth_obs(inf, smooth)
+
+  check_draws(draws, object)
+  check_alpha(alpha)
+
+  obj <- inf
+  obj$draws <- subsamp(object, inf$draws, draws)
+  
+  p <- spaghetti_base(obj, log, alpha, date_breaks)
+
+  df <- data.frame(
+    date = inf$time, 
+    median = apply(inf$draws, 2, function(x) quantile(x, 0.5)),
+    group = inf$group
+  )
+
+  p <- p + ggplot2::geom_line(
+      mapping = ggplot2::aes(x = .data$date, y = median), 
+      data = df, size = 0.8)
+
+  p <- p + ggplot2::ylab("Infections")
+
+  return(p)
+
+}
+
+#' @rdname plot_obs
+#' @export
+spaghetti_obs <- function(
+  object, 
+  type, 
+  draws = min(500, posterior_sample_size(object)), 
+  alpha = 1 / sqrt(draws),
+  groups = NULL, 
+  dates = NULL, 
+  date_breaks = "2 weeks", 
+  date_format = "%Y-%m-%d", 
+  cumulative = FALSE, 
+  bar = TRUE, 
+  log = FALSE, 
+  smooth = 1,
+  plotly = FALSE, 
+  ...) {
+  
+  if (is.null(type)) stop("must specify an observation type", call.=FALSE)
+  
+  if (!type %in% all_obs_types(object)) {
+    stop(paste0("obs does not contain any observations for type '", 
+    type, "'"), call. = FALSE)
+  }
+  
+  check_draws(draws, object)
+  check_alpha(alpha)
+
+  groups <- groups %ORifNULL% object$groups
+  
+  obs <- posterior_predict(object = object, types = type, ...)
+  obs <- gr_subset(obs, groups)
+  
+  df <- parse_new_data(object, type, list(...)$newdata , groups)
+  
+  if (cumulative) {
+    obs <- cumul(obs)
+    df <- df %>%
+      dplyr::group_by(.data$group) %>%
+      dplyr::mutate(obs = cumsum(obs))
+    df <- as.data.frame(df)
+  }
+
+  obs <- smooth_obs(obs, smooth)
+
+  obj <- obs
+  obj$draws <- subsamp(object, obs$draws, draws)
+  
+  p <- spaghetti_base(obj, log, alpha, date_breaks)
+
+  layer_fun <- if (bar) ggplot2::geom_bar else ggplot2::geom_point
+  p <- p + layer_fun(
+    mapping = ggplot2::aes_string(x = "date", y = "obs", fill = "new"),
+    data = df,
+    stat = "identity",
+    alpha = if(bar) 0.7 else 1.0
+  )
+  
+  p <- add_median(p, obs)
+
+  cols <- c("deepskyblue4", "coral4", "darkslategray3")
+  
+  if (any(df$new == "Observed")) {
+    names(cols) <- c("median", "Observed", "dummy")
+  } else {
+    names(cols) <- c("median", "In-sample", "Out-of-sample")
+  }
+  
+  nme <- type
+  cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
+  
+  p <- p + cols + ylab(type)
+  
+  if (plotly) p <- plotly::ggplotly(p)
+
+  return(p)
+}
+
+
+
+spaghetti_base <- function(
+  object, 
+  log, 
+  alpha, 
+  date_breaks, 
+  step = FALSE) {
+
+  mat <- object$draws
+  ndraws <- nrow(mat)
+  colnames(mat) <- as.character(object$time)
+  mat <- reshape2::melt(mat)
+  colnames(mat) <- c("id", "date", "rt")
+  mat$date <- as.Date(mat$date)
+  mat$group <- as.vector(sapply(object$group, function(x) rep(x, ndraws)))
+  
+  p <- ggplot2::ggplot(mat, ggplot2::aes(x = date, y = rt, group = group))
+  
+  if (step) {
+    p <- p + ggplot2::geom_step(ggplot2::aes(group=id), alpha=alpha, colour="deepskyblue4")
+  }
+  else {
+    p <- p + ggplot2::geom_line(ggplot2::aes(group=id), alpha=alpha, colour="deepskyblue4")
+  }
+
+  p <- p + hrbrthemes::theme_ipsum() +
+    ggplot2::xlab("") +
+    ggplot2::scale_x_date(
+      date_breaks = date_breaks,
+      labels = scales::date_format("%e %b"),
+      expand = ggplot2::expansion(mult=0.02),
+      minor_breaks = NULL
+    ) +
+    ggplot2::scale_y_continuous(
+      labels = fancy_scientific,
+      expand = ggplot2::expansion(mult = c(0,0.02)),
+      trans = ifelse(log, "pseudo_log", "identity"),
+      limits = c(ifelse(log, NA, 0), NA),
+      minor_breaks = NULL
+    ) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(
+        angle = 45,
+        hjust = 1
+      ),
+      axis.text = ggplot2::element_text(size = 12),
+      axis.title = ggplot2::element_text(size = 12),
+      legend.position = "top"
+    )
+  
+  if (length(unique(mat$group)) > 1) {
+    p <- p + ggplot2::facet_wrap(~group, scale = "free_y") + 
+      ggplot2::theme(strip.background = ggplot2::element_blank(), 
+                     strip.text = ggplot2::element_text(face = "bold"), 
+                     axis.text.x = ggplot2::element_text(angle = 45, 
+                                                         hjust = 1, size = 8), axis.text.y = ggplot2::element_text(size = 8), 
+                     panel.spacing = ggplot2::unit(0.1, "lines")) 
+      #ggplot2::geom_hline(yintercept = 0, size = 1)
+  }
+  
+  return(p)
+}
+
 
 # ---- internal -----
+
+# Parse newdata argument into format required for plotting 
+parse_new_data <- function(object, type, newdata, groups) {
+  
+  data_orig <- object$data
+  data_orig <- data_orig[data_orig$group %in% groups, ]
+  
+  if (is.null(newdata)) {
+    data <- data_orig
+  } else {
+    check_data(newdata, object$rt, object$inf, object$obs, groups)
+    data <- parse_data(newdata, object$rt, object$inf, object$obs, groups)
+  }
+  
+  # get observed outcomes
+  w <- which(type == all_obs_types(object))
+  obj <- epiobs_(object$obs[[w]], data)
+  df <- data.frame(
+    group = get_gr(obj),
+    date = get_time(obj),
+    obs = get_obs(obj)
+  )
+  
+  # remove negative values
+  df <- df[df$obs >= 0, ]
+  
+  # classify data as prediction or not a prediction
+  data_orig <- data_orig[, c("group", "date", type)]
+  df <- dplyr::left_join(df, data_orig, , by = c("group", "date"))
+  names(df)[4] <- c("new")
+  w <- is.na(df$new)
+  
+  all_in_sample <- ifelse(any(w), FALSE, TRUE)
+  empty <- nrow(df) == 0
+  if (!empty) {
+    if (all_in_sample){
+      df$new <- "Observed"
+    } else {
+      df$new[w] <- "Out-of-sample"
+      df$new[!w] <- "In-sample"
+    }
+  }
+  
+  names(df)[3] <- "obs"
+  
+  return(df)
+}
+
+
+# Add a line for the median value of a series onto a plot
+add_median <- function(p, object) {
+  df <- data.frame(
+    date = object$time, 
+    median = apply(object$draws, 2, function(x) quantile(x, 0.5)),
+    group = object$group
+  )
+  
+  df <- df %>%
+    dplyr::right_join(p$data %>%
+                        dplyr::select(.data$date, .data$group) %>%
+                        dplyr::distinct(),
+                      by=c("date", "group"))
+  
+  p <- p + ggplot2::geom_line(
+    mapping = ggplot2::aes(x = .data$date, y = median), 
+    data = df, size = 0.8)
+  return(p)
+}
 
 # transform into cumulatives
 # @param object Result of posterior_ function
@@ -695,6 +914,23 @@ check_dates <- function(dates, date_format, min_date, max_date) {
   return(dates)
 }
 
+
+check_draws <- function(draws, object) {
+    check_integer(draws)
+    check_scalar(draws)
+    if (draws <= 0)
+      stop("'draws' must be > 0", call. = FALSE)
+    if (draws > posterior_sample_size(object))
+      stop("'draws' must be <= posterior sample size", call.= FALSE)
+}
+
+check_alpha <- function(alpha) {
+  check_scalar(alpha)
+  if (alpha < 0 || alpha > 1)
+    stop("'alpha' must be in [0,1]", call.=FALSE)
+}
+
+
 # Basic ggplot. Plotting functions add to this
 #
 # @param qtl dataframe giving quantiles
@@ -716,18 +952,20 @@ base_plot <- function(qtl, log, date_breaks, step=FALSE) {
     p <- p + ggplot2::geom_ribbon(aes_str)
   }
 
-  p <- p + ggpubr::theme_pubr() +
+  p <- p + hrbrthemes::theme_ipsum() +
     ggplot2::xlab("") +
     ggplot2::scale_x_date(
       date_breaks = date_breaks,
       labels = scales::date_format("%e %b"),
-      expand = ggplot2::expansion(mult=0.02)
+      expand = ggplot2::expansion(mult=0.02),
+      minor_breaks = NULL
     ) +
     ggplot2::scale_y_continuous(
       labels = fancy_scientific,
       expand = ggplot2::expansion(mult = c(0,0.02)),
       trans = ifelse(log, "pseudo_log", "identity"),
-      limits = c(ifelse(log, NA, 0), NA)
+      limits = c(ifelse(log, NA, 0), NA),
+      minor_breaks = NULL
     ) +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(
@@ -735,7 +973,8 @@ base_plot <- function(qtl, log, date_breaks, step=FALSE) {
         hjust = 1
       ),
       axis.text = ggplot2::element_text(size = 12),
-      axis.title = ggplot2::element_text(size = 12)
+      axis.title = ggplot2::element_text(size = 12),
+      legend.position = "top"
     ) 
     
 
@@ -748,8 +987,8 @@ base_plot <- function(qtl, log, date_breaks, step=FALSE) {
           axis.text.x = ggplot2::element_text(angle=45, hjust=1, size=8),
           axis.text.y = ggplot2::element_text(size=8),
           panel.spacing = ggplot2::unit(0.1, "lines")
-        ) +
-        ggplot2::geom_hline(yintercept=0, size=1)
+        ) #+
+        #ggplot2::geom_hline(yintercept=0, size=1)
   }
   return(p)
 }
@@ -804,9 +1043,16 @@ plot_linpred.epimodel <-
            levels = c(30, 60, 90),
            plotly = FALSE,
            ...) {
-    levels <- check_levels(levels)
 
+    levels <- check_levels(levels)
     groups <- groups %ORifNULL% object$groups
+
+    alltypes <- sapply(object$obs, function(x) .get_obs(formula(x)))
+    w <- which(type == alltypes)
+    if (length(w) == 0) {
+      stop(paste0("obs does not contain any observations
+    for type '", type, "'"), call. = FALSE)
+    }
 
     pred <- posterior_linpred(
       object = object,
@@ -836,9 +1082,10 @@ plot_linpred.epimodel <-
       ggplot2::xlab("") +
       ggplot2::scale_x_date(
         date_breaks = date_breaks,
-        labels = scales::date_format("%e %b")
+        labels = scales::date_format("%e %b"),
+        minor_breaks = NULL
       ) +
-      ggpubr::theme_pubr +
+      hrbrthemes::theme_ipsum() +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(
           angle = 45,

@@ -8,11 +8,13 @@ if (latent) {
       int n1 = n0 + N0 - 1;
       int n2 = n0 + NC[m] - 1;
       vector[n2-n1] mu = E_infections[(n1+1):n2,m];
-      vector[n2-n1] sigma = sqrt(E_infections[(n1+1):n2,m] * inf_aux[1]);
+      vector[n2-n1] sigma = inf_aux[1] * E_infections[(n1+1):n2,m];
+      if (fixed_vtm) sigma = sqrt(sigma);
       target += normal_lpdf(infections_raw[idx:(idx+NC[m]-N0-1)]| mu, sigma);
       idx += NC[m]-N0;
     }
-  }
+    
+    }
 
     // prior for coef dispersion for inf
     if (prior_dist_for_inf_aux[1] == 1) 

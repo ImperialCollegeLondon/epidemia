@@ -3,6 +3,7 @@
 \name{plot_obs}
 \alias{plot_obs}
 \alias{plot_obs.epimodel}
+\alias{spaghetti_obs}
 \title{Plot posterior predictive distributions}
 \usage{
 plot_obs(object, ...)
@@ -10,7 +11,6 @@ plot_obs(object, ...)
 \method{plot_obs}{epimodel}(
   object,
   type,
-  posterior_mean = FALSE,
   groups = NULL,
   dates = NULL,
   date_breaks = "2 weeks",
@@ -19,6 +19,23 @@ plot_obs(object, ...)
   bar = TRUE,
   levels = c(30, 60, 90),
   log = FALSE,
+  plotly = FALSE,
+  ...
+)
+
+spaghetti_obs(
+  object,
+  type,
+  draws = min(500, posterior_sample_size(object)),
+  alpha = 1/sqrt(draws),
+  groups = NULL,
+  dates = NULL,
+  date_breaks = "2 weeks",
+  date_format = "\%Y-\%m-\%d",
+  cumulative = FALSE,
+  bar = TRUE,
+  log = FALSE,
+  smooth = 1,
   plotly = FALSE,
   ...
 )
@@ -34,10 +51,6 @@ predictions or counterfactuals.}
 
 \item{type}{A string specifying the name of the observations to plot. This should match one
 of the names of the response variables in the \code{obs} argument used int the call to \code{\link{epim}}.}
-
-\item{posterior_mean}{If \code{TRUE}, then credible intervals are plotted for the
-posterior mean rather than the full posterior. Defaults to \code{FALSE},
-in which case the posterior predictive is plotted.}
 
 \item{groups}{Either \code{NULL} or a character vector specifying the groups
 to plot for. Default is \code{NULL}, which plots all modeled groups.}
@@ -67,6 +80,9 @@ must be \code{logical}, and defaults to \code{FALSE}.}
 
 \item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
 useful for interactive graphing.}
+
+\item{smooth}{An integer specifying the window used to smooth the reproduction rates. The
+default is \code{1}, which corresponds to no smoothing.}
 }
 \value{
 If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise

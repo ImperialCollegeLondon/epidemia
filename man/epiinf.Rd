@@ -14,7 +14,8 @@ epiinf(
   pop_adjust = FALSE,
   pops = NULL,
   susceptibles = NULL,
-  prior_I0 = 0
+  prior_I0 = 0,
+  fixed_vtm = 1
 )
 }
 \arguments{

@@ -74,6 +74,8 @@ standata_inf <- function(inf, M) {
   names(p_I0) <- paste0(names(p_I0), "_for_I0")
   out <- c(out, p_I0)
 
+  out$fixed_vtm <- inf$fixed_vtm
+
   return(out)
 }
 
@@ -147,9 +149,9 @@ standata_data <- function(data, inf) {
     N2 = N2,
     starts = as.array(starts),
     begin = begin,
-    susc = susc,
-    pops = pops,
-    susc0 = susc0
+    susc = as.array(susc),
+    pops = as.array(pops),
+    susc0 = as.array(susc0)
   ))
 }
 

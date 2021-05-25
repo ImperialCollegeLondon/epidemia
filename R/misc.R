@@ -130,10 +130,31 @@ check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
 }
 
 
-# Get total number of posterior parameter draws
+#' Get posterior sample size from a fitted model
+#'
+#' @export
 posterior_sample_size <- function(object) {
+  UseMethod("posterior_sample_size", object)
+}
+
+#' @rdname plot_linpred
+#' @export
+posterior_sample_size.epimodel <- function(object) {
   return(sum(object$stanfit@sim$n_save
          - object$stanfit@sim$warmup2))
+}
+
+#' Get posterior sample size from a fitted model
+#'
+#' @export
+all_obs_types <- function(object) {
+  UseMethod("all_obs_types", object)
+}
+
+#' @rdname plot_linpred
+#' @export
+all_obs_types.epimodel <- function(object) {
+  return(sapply(object$obs, function(x) .get_obs(formula(x))))
 }
 
 
