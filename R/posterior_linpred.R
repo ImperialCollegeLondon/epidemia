@@ -78,7 +78,7 @@ posterior_linpred <- function(object,
     }
   }
 
-  if (is.null(type) & offset) {
+  if (!is.null(type) & offset) {
      draws <- sweep(draws, 2, obj$offset, "+")
   }
 
