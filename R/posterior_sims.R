@@ -236,7 +236,7 @@ new_inf_stanmat <- function(stanmat, begin, starts, N0, NC, groups) {
 
   nr <- nrow(stanmat)
   nc <- length(newnms)
-  mat <- matrix(0, nrow = nr, ncol = nc)
+  mat <- matrix(-0.5, nrow = nr, ncol = nc)
   colnames(mat) <- newnms
 
   locs <- match(newnms, colnames(stanmat))

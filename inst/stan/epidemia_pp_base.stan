@@ -22,7 +22,7 @@ parameters {
   vector<lower=0>[num_oaux+2] oaux;
   vector[N+2] eta;
   vector[N_obs+2] oeta;
-  vector<lower=0>[latent ? N - M * N0 + 2 : 2] infections_raw;
+  vector<lower=-1>[latent ? N - M * N0 + 2 : 2] infections_raw;
   vector<lower=0>[latent ? 3 : 2] inf_aux;
   vector<lower=0,upper=1>[I0_fixed ? 2 : M+2] I0;
 }
@@ -31,7 +31,7 @@ generated quantities {
   matrix<lower=0>[N2, M] Rt = rep_matrix(0,N2,M);
   matrix<lower=0>[N2, M] infectiousness;
 #include /tparameters/infections_rt.stan
-#include /tparameters/gen_infections.stan
+#include /generated_quantities/gen_infections_pp.stan
 #include /tparameters/gen_eobs.stan
 
   if (pop_adjust) {
