@@ -1,6 +1,7 @@
 functions {
 #include functions/reverse.stan
 #include functions/linkinv.stan
+#include functions/trunc_normal.stan
 }
 
 data {

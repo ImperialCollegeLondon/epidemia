@@ -22,7 +22,7 @@
 
         if (pop_adjust) {
             cumm_sum[n0,m] = y[m];
-            if (!I0_fixed) cumm_sum[n0,m] += I0[m];
+            if (!I0_fixed) cumm_sum[n0,m] += I0[m] * pops[m];
             for (i in (n0+1):n1) {
                 cumm_sum[i,m] = cumm_sum[i-1,m] + y[m];
                 cumm_sum[i,m] += (susc[i-1,m] - susc[i,m]) * (1 - cumm_sum[i,m] / pops[m]);
