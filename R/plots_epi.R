@@ -563,7 +563,7 @@ spaghetti_obs <- function(
   nme <- type
   cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
   
-  p <- p + cols + ylab(type)
+  p <- p + cols + ggplot2::ylab(type)
   
   if (plotly) p <- plotly::ggplotly(p)
 
