@@ -26,18 +26,18 @@ test_that("data is as expected", {
   expect_equal(sdat$N2, 14)
   expect_equal(sdat$starts, array(c(1,2,3)))
   expect_equal(sdat$begin, as.Date("2020-05-01"))
-  expect_equal(sdat$susc, matrix(1, 14, 3))
+  expect_equal(sdat$vacc, matrix(0, 14, 3))
 })
 
 test_that("pops populated correctly", {
   sdat <- standata_data(df, epiinf(gen=1))
-  expect_equal(sdat$pops, numeric(3))
+  expect_equal(sdat$pops, array(numeric(3)))
   
   sdat <- standata_data(df, epiinf(gen=1, pops=A))
-  expect_equal(sdat$pops, numeric(3))
+  expect_equal(sdat$pops, array(numeric(3)))
   
   sdat <- standata_data(df, epiinf(gen=1, pop_adjust=T, pops=A))
-  expect_equal(sdat$pops, c(5,12,17))
+  expect_equal(sdat$pops, array(c(5,12,17)))
   
 })
 
@@ -45,18 +45,21 @@ test_that("vacc populated correctly", {
   nrow <- as.numeric(max(df$date) - min(df$date) + 1)
   
   sdat <- standata_data(df, epiinf(gen=1))
-  expect_equal(sdat$vacc, matrix(1, 14, 3))
+  expect_equal(sdat$vacc, matrix(0, 14, 3))
   
   sdat <- standata_data(df, epiinf(gen=1, vacc=A))
-  expect_equal(sdat$vacc, matrix(1, 14, 3))
+  expect_equal(sdat$vacc, matrix(0, 14, 3))
   
   sdat <- standata_data(df, epiinf(gen=1, pop_adjust=T, pops=A))
+  expect_equal(sdat$vacc, matrix(0, 14, 3))
+  
+  sdat <- standata_data(df, epiinf(gen=1, pop_adjust=T, pops=A, vacc=A))
   
   expect_equal(sum(sdat$vacc[,1] == 5), 5)
   expect_equal(sum(sdat$vacc[,2] == 12), 7)
   expect_equal(sum(sdat$vacc[,3] == 17), 12)
   
-  expect_equal(which(sdat$vacc[,1] != 1)[1], 1)
-  expect_equal(which(sdat$vacc[,2] != 1)[1], 2)
-  expect_equal(which(sdat$vacc[,3] != 1)[1], 3)
+  expect_equal(which(sdat$vacc[,1] != 0)[1], 1)
+  expect_equal(which(sdat$vacc[,2] != 0)[1], 2)
+  expect_equal(which(sdat$vacc[,3] != 0)[1], 3)
 })

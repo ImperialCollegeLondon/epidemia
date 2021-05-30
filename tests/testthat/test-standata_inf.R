@@ -61,45 +61,84 @@ test_that("prior for aux", {
   expect_equal(sdat$prior_scale_for_inf_aux,  array(12))
 })
 
-test_that("prior for I0", {
+test_that("prior for susc0", {
   
-  inf <- epiinf(gen=1, prior_I0 = rstanarm::normal(0.32, 0.12))
+  inf <- epiinf(gen=1, prior_susc0 = rstanarm::normal(0.32, 0.12))
   sdat <- standata_inf(inf, 1)
-  expect_equal(sdat$prior_mean_for_I0, array(numeric()))
-  expect_equal(sdat$prior_scale_for_I0, array(numeric()))
-  expect_equal(sdat$I0_fixed, 0)
+  expect_equal(sdat$prior_mean_for_S0, array(numeric()))
+  expect_equal(sdat$prior_scale_for_S0, array(numeric()))
+  expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_I0 = rstanarm::normal(0.32, 0.12))
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = rstanarm::normal(0.32, 0.12))
   sdat <- standata_inf(inf, 1)
-  expect_equal(sdat$prior_mean_for_I0, array(0.32))
-  expect_equal(sdat$prior_scale_for_I0, array(0.12))
-  expect_equal(sdat$I0_fixed, 0)
+  expect_equal(sdat$prior_mean_for_S0, array(0.32))
+  expect_equal(sdat$prior_scale_for_S0, array(0.12))
+  expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_I0 = rstanarm::normal(0.32, 0.12))
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = rstanarm::normal(0.32, 0.12))
   sdat <- standata_inf(inf, 4)
-  expect_equal(sdat$prior_mean_for_I0, array(rep(0.32,4)))
-  expect_equal(sdat$prior_scale_for_I0, array(rep(0.12,4)))
-  expect_equal(sdat$I0_fixed, 0)
+  expect_equal(sdat$prior_mean_for_S0, array(rep(0.32,4)))
+  expect_equal(sdat$prior_scale_for_S0, array(rep(0.12,4)))
+  expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_I0 = rstanarm::normal(c(0.32, 0.83), c(0.12, 0.08)))
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = rstanarm::normal(c(0.32, 0.83), c(0.12, 0.08)))
   sdat <- standata_inf(inf, 2)
-  expect_equal(sdat$prior_mean_for_I0, array(c(0.32, 0.83)))
-  expect_equal(sdat$prior_scale_for_I0, array( c(0.12, 0.08)))
-  expect_equal(sdat$I0_fixed, 0)
+  expect_equal(sdat$prior_mean_for_S0, array(c(0.32, 0.83)))
+  expect_equal(sdat$prior_scale_for_S0, array( c(0.12, 0.08)))
+  expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_I0 = 0)
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = NULL)
   sdat <- standata_inf(inf, 1)
-  expect_equal(sdat$prior_mean_for_I0, array(numeric()))
-  expect_equal(sdat$prior_scale_for_I0, array(numeric()))
-  expect_equal(sdat$I0_fixed, 1)
+  expect_equal(sdat$prior_mean_for_S0, array(numeric()))
+  expect_equal(sdat$prior_scale_for_S0, array(numeric()))
+  expect_equal(sdat$S0_fixed, 1)
   
   inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy)
   sdat <- standata_inf(inf, 1)
-  expect_equal(sdat$prior_mean_for_I0, array(numeric()))
-  expect_equal(sdat$prior_scale_for_I0, array(numeric()))
-  expect_equal(sdat$I0_fixed, 1)
+  expect_equal(sdat$prior_mean_for_S0, array(numeric()))
+  expect_equal(sdat$prior_scale_for_S0, array(numeric()))
+  expect_equal(sdat$S0_fixed, 1)
 })
 
+
+test_that("prior for vnoise", {
+  
+  inf <- epiinf(gen=1, prior_vnoise = rstanarm::normal(0.32, 0.12))
+  sdat <- standata_inf(inf, 1)
+  expect_equal(sdat$prior_mean_for_veps, array(numeric()))
+  expect_equal(sdat$prior_scale_for_veps, array(numeric()))
+  expect_equal(sdat$veps_fixed, 0)
+  
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_vnoise = rstanarm::normal(0.32, 0.12))
+  sdat <- standata_inf(inf, 1)
+  expect_equal(sdat$prior_mean_for_veps, array(0.32))
+  expect_equal(sdat$prior_scale_for_veps, array(0.12))
+  expect_equal(sdat$veps_fixed, 0)
+  
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_vnoise = rstanarm::normal(0.32, 0.12))
+  sdat <- standata_inf(inf, 4)
+  expect_equal(sdat$prior_mean_for_veps, array(rep(0.32,4)))
+  expect_equal(sdat$prior_scale_for_veps, array(rep(0.12,4)))
+  expect_equal(sdat$veps_fixed, 0)
+  
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_vnoise = rstanarm::normal(c(0.32, 0.83), c(0.12, 0.08)))
+  sdat <- standata_inf(inf, 2)
+  expect_equal(sdat$prior_mean_for_veps, array(c(0.32, 0.83)))
+  expect_equal(sdat$prior_scale_for_veps, array( c(0.12, 0.08)))
+  expect_equal(sdat$veps_fixed, 0)
+  
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_vnoise = NULL)
+  sdat <- standata_inf(inf, 1)
+  expect_equal(sdat$prior_mean_for_veps, array(numeric()))
+  expect_equal(sdat$prior_scale_for_veps, array(numeric()))
+  expect_equal(sdat$veps_fixed, 1)
+  
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy)
+  sdat <- standata_inf(inf, 1)
+  expect_equal(sdat$prior_mean_for_veps, array(numeric()))
+  expect_equal(sdat$prior_scale_for_veps, array(numeric()))
+  expect_equal(sdat$veps_fixed, 1)
+})
 
 
 

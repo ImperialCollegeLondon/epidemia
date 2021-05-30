@@ -20,14 +20,6 @@ group_subset <- NULL
 # tibble the data
 data <- dplyr::tibble(data)
 
-test_that("susceptible_to_int", {
-  data$E <- 1 + runif(1, min=0, max=0.1)
-  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=E, susceptibles = E)
-  data <- susceptibles_to_int(data, inf)
-  expect_true(max(abs(data$E - 1)) < tol)
-})
-
-
 test_that("obs_to_int", {
   data$E <- 1 + runif(1, min=0, max=0.1)
   obj <- epiobs(formula = E ~ 1, i2o=1)
@@ -60,7 +52,7 @@ test_that("group_date_col_data", {
 })
 
 test_that("select_cols_data", {
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops=E, susceptibles=E)
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops=E, vacc=E)
   dat <- group_date_col_data(data, rt)
   dat$E <- 1
   res <- select_cols_data(dat, rt, inf, obs)

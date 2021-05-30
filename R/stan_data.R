@@ -58,10 +58,10 @@ standata_inf <- function(inf, M) {
   out <- c(out, p_aux)
 
   # add prior for S0/P (initial cumulative infections)
-  out$S0_fixed <- as.numeric(!is.list(inf$prior_S0))
+  out$S0_fixed <- as.numeric(!is.list(inf$prior_susc0))
 
   if (out$S0_fixed) p_S0 <- list()
-  else p_S0 <- inf$prior_S0
+  else p_S0 <- inf$prior_susc0
 
   p_S0 <- handle_glm_prior(
     p_S0,

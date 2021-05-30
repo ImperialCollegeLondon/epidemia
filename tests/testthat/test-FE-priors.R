@@ -82,3 +82,4 @@ test_that("Prior scales by standard deviation of the predictor", {
   scale_factor <- 1 / sd(args$data[, "av_mobility"])
   expect_equal(as.numeric(sdat$prior_scale), scale_factor)
 })
+

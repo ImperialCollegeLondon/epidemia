@@ -1,6 +1,6 @@
 # context("Test forecast evaluations")
 
-test_data <- readRDS("../data/forecast-test-data.rds")
+#test_data <- readRDS("../data/forecast-test-data.rds")
 
 
 # # load data
