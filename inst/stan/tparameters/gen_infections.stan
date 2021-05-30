@@ -7,6 +7,8 @@
         int n1 = n0 + N0 - 1;
         int n2 = n0 + NC[m] - 1;
         int len;
+        real susc;
+        real vt;
 
         // compute Rt over the entire period
         if (link == 1) 
@@ -21,7 +23,7 @@
         infections[n0:n1,m] = rep_vector(y[m], N0); // seeded infections
 
         if (pop_adjust) { // initialise susceptible population
-            real susc = pops[m];
+            susc = pops[m];
             if (!S0_fixed) susc *= S0[m];
         }
 
@@ -38,8 +40,8 @@
             
             if (pop_adjust) {
                 infections[i,m] = susc * (1 - exp(-infections[i,m] / pops[m]));
-                real vt = vacc[i,m];
-                if (!vesp_fixed) vt *= vesp[m];
+                vt = vacc[i,m];
+                if (!veps_fixed) vt *= veps[m];
                 susc = (1 - vt) * (susc - infections[i,m]);
             }
         }    

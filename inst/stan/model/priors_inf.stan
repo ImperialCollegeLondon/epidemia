@@ -30,6 +30,6 @@ if (!S0_fixed) {
     target += normal_lpdf(S0 | prior_mean_for_S0, prior_scale_for_S0);
 }
 
-if (!vesp_fixed) {
-    target += normal_lpdf(vesp | prior_mean_for_vesp, prior_scale_for_vesp);
+if (!veps_fixed) {
+    target += normal_lpdf(veps | prior_mean_for_veps, prior_scale_for_veps);
 }

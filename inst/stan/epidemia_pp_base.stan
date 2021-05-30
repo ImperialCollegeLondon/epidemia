@@ -26,6 +26,7 @@ parameters {
   vector<lower=-1>[latent ? N - M * N0 + 2 : 2] infections_raw;
   vector<lower=0>[latent ? 3 : 2] inf_aux;
   vector<lower=0,upper=1>[S0_fixed ? 2 : M+2] S0;
+  vector<lower=0,upper=1>[veps_fixed ? 2 : M+2] veps;
 }
 generated quantities {
   vector[N_obs] E_obs;
