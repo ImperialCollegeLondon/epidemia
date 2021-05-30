@@ -203,7 +203,8 @@ pars <- function(sdat) {
       if (sdat$num_oaux > 0) "oaux",
       if (sdat$latent) "infections_raw",
       if (sdat$latent) "inf_aux",
-      if (!sdat$S0_fixed) "S0"
+      if (!sdat$S0_fixed) "S0",
+      if (!sdat$veps_fixed) "veps"
     )
   return(out)
 }
@@ -285,6 +286,9 @@ new_names <- function(sdat, rt, obs, fit, data) {
       },
       if (!sdat$S0_fixed) {
         paste0("S0[",sdat$groups, "]")
+      },
+      if (!sdat$veps_fixed) {
+        paste0("VaccNoise[", sdat$groups, "]")
       },
       "log-posterior"
     )
