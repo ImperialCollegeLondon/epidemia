@@ -55,14 +55,15 @@ epiinf <- function(
   gen,
   seed_days = 6L,
   latent = FALSE,
+  fixed_vtm = 1,
   prior_tau = rstanarm::exponential(0.03),
   family = "log-normal",
   prior_aux = rstanarm::normal(10,5),
   pop_adjust = FALSE,
   pops = NULL,
-  susceptibles = NULL,
-  prior_I0 = 0,
-  fixed_vtm = 1) {
+  vacc = NULL,
+  prior_susc0 = NULL,
+  prior_vnoise = NULL) {
 
   call <- match.call(expand.dots = TRUE)
 
@@ -94,9 +95,14 @@ epiinf <- function(
   check_in_set(prior_tau$dist, "exponential")
   check_in_set(prior_aux$dist, ok_aux_dists)
 
-  if (!(is.numeric(prior_I0) && is.scalar(prior_I0) && prior_I0 == 0)) {
-    check_prior(prior_I0)
-    check_in_set(prior_I0$dist, "normal")
+  if (!is.null(prior_susc0)) {
+    check_prior(prior_susc0)
+    check_in_set(prior_susc0$dist, "normal")
+  }
+
+  if (!is.null(prior_vnoise)) {
+    check_prior(prior_vnoise)
+    check_in_set(prior_vnoise$dist, "normal")
   }
   
   p <- substitute(pops)
@@ -108,13 +114,13 @@ epiinf <- function(
   if (pop_adjust == TRUE && p == "NULL")
     stop("pops must be specified if pop_adjust = TRUE", call. = FALSE)
 
-  s <- substitute(susceptibles)
+  s <- substitute(vacc)
   check_character(s)
   if (!is.character(s)) 
     s <- as.character.expr(s)
   check_scalar(s)
 
-  if (pop_adjust == TRUE && s == "NULL") s = p
+  if (pop_adjust == TRUE && s == "NULL") s = 0
 
   out <- loo::nlist(
     call,
@@ -126,8 +132,9 @@ epiinf <- function(
     prior_aux = if (latent) prior_aux else NULL,
     pop_adjust,
     pops = if (pop_adjust) p else NULL,
-    susceptibles = if (pop_adjust) s else NULL,
-    prior_I0,
+    vacc = if (pop_adjust) s else NULL,
+    prior_susc0,
+    prior_vnoise,
     fixed_vtm = fixed_vtm
   )
   class(out) <- "epiinf"
