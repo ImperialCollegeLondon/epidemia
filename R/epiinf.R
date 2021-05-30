@@ -120,7 +120,7 @@ epiinf <- function(
     s <- as.character.expr(s)
   check_scalar(s)
 
-  if (pop_adjust == TRUE && s == "NULL") s = 0
+  if (s == "NULL") s <- NULL
 
   out <- loo::nlist(
     call,
@@ -132,7 +132,7 @@ epiinf <- function(
     prior_aux = if (latent) prior_aux else NULL,
     pop_adjust,
     pops = if (pop_adjust) p else NULL,
-    vacc = if (pop_adjust) s else NULL,
+    vacc = if (pop_adjust && !is.null(s)) s else NULL,
     prior_susc0,
     prior_vnoise,
     fixed_vtm = fixed_vtm

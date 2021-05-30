@@ -260,12 +260,12 @@ check_time_as_date <- function(object, data) {
 # @param inf An epiinf object
 # @param data the data frame to check
 # @param tol the tolerance for checking integer
-check_susceptibles <- function(inf, data, tol = .Machine$double.eps) {
+check_vacc <- function(inf, data, tol = .Machine$double.eps) {
   if (inf$pop_adjust) {
-    col <- inf$susceptibles
+    col <- inf$vacc
     not_found <- !(col %in% colnames(data))
     if (not_found)
-      stop(paste0("column ", col, " required to compute susceptibles adjustment, but not found in `data`. Please add to the dataframe."), call. = FALSE)
+      stop(paste0("column ", col, " required to compute vaccine adjustment, but not found in `data`. Please add to the dataframe."), call. = FALSE)
     
     x <- data[, col]
     x <- suppressWarnings(as.numeric(x))
@@ -273,13 +273,10 @@ check_susceptibles <- function(inf, data, tol = .Machine$double.eps) {
     # check that this is numeric, integer and non-negative
     if (anyNA(x)) 
       stop(paste0("column ", col, " in data should be coercible to numeric and have no NAs."), call.=FALSE)
-    if (any(x < 0)) 
-      stop(paste0("all entries in column ", col, " of data should be non-negative."), call. = FALSE)
-    if (any(abs(x - round(x)) > tol, na.rm = TRUE)) 
-      warning(paste0("column ", col, " in data is not an integer vector, and will be coerced to one."), call. = FALSE)
+    if (any(x < 0) || any(x > 1)) 
+      stop(paste0("all entries in column ", col, " of data should be in [0,1]."), call. = FALSE)
   }
 }
-
 
 # checks pops found in data and has required format
 #
@@ -301,9 +298,6 @@ check_pops <- function(inf, data, tol = .Machine$double.eps) {
       stop(paste0("column ", col, " in data should be coercible to numeric and have no NAs."), call.=FALSE)
     if (any(x < 0)) 
       stop(paste0("all entries in column ", col, " of data should be non-negative."), call. = FALSE)
-    if (any(abs(x - round(x)) > tol, na.rm = TRUE)) 
-      warning(paste0("column ", col, " in data is not an integer vector, and will be coerced to one."), call. = FALSE)
-
   }
 }
 
@@ -371,7 +365,7 @@ check_data <- function(data, rt, inf, obs, group_subset) {
 
   check_group_as_factor(rt, data)
   check_time_as_date(rt, data)
-  check_susceptibles(inf, data)
+  check_vacc(inf, data)
   check_pops(inf, data)
   check_consecutive_dates(rt, data)
   check_groups_data(rt, group_subset, data)
@@ -485,7 +479,6 @@ parse_data <- function(data, rt, inf, obs, group_subset) {
   data <- subset_data(data, rt, group_subset)
   data <- group_date_col_data(data, rt)
   data <- select_cols_data(data, rt, inf, obs)
-  data <- susceptibles_to_int(data, inf)
   data <- data %>% 
     dplyr::ungroup() %>% 
     dplyr::group_by(.data$group) %>%
@@ -550,7 +543,8 @@ select_cols_data <- function(data, rt, inf, obs) {
     "date",
     all_vars(rhs(formula(rt))),
     unlist(lapply(obs, function(x) all_vars(formula(x)))),
-    if(inf$pop_adjust) inf$susceptibles 
+    if(inf$pop_adjust) inf$pops,
+    if(inf$pop_adjust) inf$vacc
   )
   # keep only required variables
   data <- dplyr::select(data, tidyselect::all_of(unique(vars)))
@@ -564,18 +558,6 @@ obs_to_int <- function(data, obs) {
   col <- .get_obs(formula(obs))
   discrete_fams <- c("neg_binom", "poisson", "quasi_poisson")
   if (obs$family %in% discrete_fams) {
-    data <- dplyr::mutate(data, dplyr::across(col, as.integer))
-  }
-  return(data)
-}
-
-# converts column of susceptibles to integer
-#
-# @param data The data argument to epim
-# @param inf An epiinf object
-susceptibles_to_int <- function(data, inf) {
-  if (inf$pop_adjust) {
-    col <- inf$susceptibles
     data <- dplyr::mutate(data, dplyr::across(col, as.integer))
   }
   return(data)

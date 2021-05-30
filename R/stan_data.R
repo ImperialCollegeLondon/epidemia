@@ -60,7 +60,6 @@ standata_inf <- function(inf, M) {
   # add prior for S0/P (initial cumulative infections)
   out$S0_fixed <- as.numeric(!is.list(inf$prior_S0))
 
-  p_S0 <- list()
   if (out$S0_fixed) p_S0 <- list()
   else p_S0 <- inf$prior_S0
 
@@ -73,6 +72,22 @@ standata_inf <- function(inf, M) {
   )
   names(p_S0) <- paste0(names(p_S0), "_for_S0")
   out <- c(out, p_S0)
+
+
+  out$veps_fixed <- as.numeric(!is.list(inf$prior_veps))
+
+  if (out$veps_fixed) p_veps <- list()
+  else p_veps <- inf$prior_veps
+
+  p_veps <- handle_glm_prior(
+    p_veps,
+    M * inf$pop_adjust * (1 - out$veps_fixed),
+    link = NULL,
+    default_scale = 0.1,
+    ok_dists = loo::nlist("normal")
+  )
+  names(p_veps) <- paste0(names(p_veps), "_for_veps")
+  out <- c(out, p_veps)
 
   out$fixed_vtm <- inf$fixed_vtm
 
@@ -120,8 +135,8 @@ standata_data <- function(data, inf) {
   N2 = max(starts + NC - 1)
 
   # get susceptibles data
-  vacc <- matrix(1, nrow = N2, ncol = M)
-  if (inf$pop_adjust) {
+  vacc <- matrix(0, nrow = N2, ncol = M)
+  if (inf$pop_adjust && !is.null(inf$vacc)) {
     col <- inf$vacc
     df <- split(dplyr::pull(data, col), data$group)
     for (m in 1:M)
