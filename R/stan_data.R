@@ -159,7 +159,7 @@ standata_data <- function(data, inf) {
     starts = as.array(starts),
     begin = begin,
     vacc = as.array(vacc),
-    pops = as.array(pops),
+    pops = as.array(pops)
   ))
 }
 
