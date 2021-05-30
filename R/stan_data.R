@@ -57,22 +57,22 @@ standata_inf <- function(inf, M) {
   names(p_aux) <- paste0(names(p_aux), "_for_inf_aux")
   out <- c(out, p_aux)
 
-  # add prior for I0/P (initial cumulative infections)
-  out$I0_fixed <- as.numeric(!is.list(inf$prior_I0))
+  # add prior for S0/P (initial cumulative infections)
+  out$S0_fixed <- as.numeric(!is.list(inf$prior_S0))
 
-  p_I0 <- list()
-  if (out$I0_fixed) p_I0 <- list()
-  else p_I0 <- inf$prior_I0
+  p_S0 <- list()
+  if (out$S0_fixed) p_S0 <- list()
+  else p_S0 <- inf$prior_S0
 
-  p_I0 <- handle_glm_prior(
-    p_I0,
-    M * inf$pop_adjust * (1 - out$I0_fixed),
+  p_S0 <- handle_glm_prior(
+    p_S0,
+    M * inf$pop_adjust * (1 - out$S0_fixed),
     link = NULL,
     default_scale = 0.1,
     ok_dists = loo::nlist("normal")
   )
-  names(p_I0) <- paste0(names(p_I0), "_for_I0")
-  out <- c(out, p_I0)
+  names(p_S0) <- paste0(names(p_S0), "_for_S0")
+  out <- c(out, p_S0)
 
   out$fixed_vtm <- inf$fixed_vtm
 
@@ -120,12 +120,12 @@ standata_data <- function(data, inf) {
   N2 = max(starts + NC - 1)
 
   # get susceptibles data
-  susc <- matrix(1, nrow = N2, ncol = M)
+  vacc <- matrix(1, nrow = N2, ncol = M)
   if (inf$pop_adjust) {
-    col <- inf$susceptibles
+    col <- inf$vacc
     df <- split(dplyr::pull(data, col), data$group)
     for (m in 1:M)
-      susc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]
+      vacc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]
   }
 
   pops <- numeric(M)
@@ -133,12 +133,6 @@ standata_data <- function(data, inf) {
   if (inf$pop_adjust) {
     df <- dplyr::summarise(data, pops = head(!!dplyr::sym(inf$pops),1))
     pops <- df$pops
-  }
-
-  susc0 <- numeric(M)
-  if (inf$pop_adjust) {
-    susc0 <- sapply(seq_len(M), function(m) susc[starts[m],m])
-    susc0 <- susc0 / pops
   }
 
   return(list(
@@ -149,9 +143,8 @@ standata_data <- function(data, inf) {
     N2 = N2,
     starts = as.array(starts),
     begin = begin,
-    susc = as.array(susc),
+    vacc = as.array(vacc),
     pops = as.array(pops),
-    susc0 = as.array(susc0)
   ))
 }
 

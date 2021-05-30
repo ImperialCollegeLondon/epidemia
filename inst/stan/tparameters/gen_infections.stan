@@ -17,33 +17,31 @@
             Rt_unadj[n0:n2,m] = eta[idx1:(idx1+NC[m]-1)]; // identity
         
         idx1 += NC[m];
+        
+        infections[n0:n1,m] = rep_vector(y[m], N0); // seeded infections
 
-        infections[n0:n1,m] = rep_vector(y[m],N0); // learn the number of cases in the first N0 days
-
-        if (pop_adjust) {
-            cumm_sum[n0,m] = y[m];
-            if (!I0_fixed) cumm_sum[n0,m] += I0[m];
-            for (i in (n0+1):n1) {
-                cumm_sum[i,m] = cumm_sum[i-1,m] + y[m];
-                cumm_sum[i,m] += (susc[i-1,m] - susc[i,m]) * (1 - cumm_sum[i,m] / pops[m]);
-            }
+        if (pop_adjust) { // initialise susceptible population
+            real susc = pops[m];
+            if (!S0_fixed) susc *= S0[m];
         }
 
-        for (i in (n1+1):n2) {
-            int start = max(n0, i - gen_len);
-            load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
-            E_infections[i,m] = Rt_unadj[i,m] * load[i,m];
-        
-            if (latent) infections[i,m] = infections_raw[idx2];
-            else infections[i,m] = E_infections[i,m];
+        for (i in n0:n2) {
+
+            if (i > n1) { // infections after the seeding period
+                int start = max(n0, i - gen_len);
+                load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
+                E_infections[i,m] = Rt_unadj[i,m] * load[i,m];
+                if (latent) infections[i,m] = infections_raw[idx2];
+                else infections[i,m] = E_infections[i,m];
+                idx2 += 1;
+            }
             
             if (pop_adjust) {
-                infections[i,m] = (pops[m] - cumm_sum[i-1,m]) * (1 - exp(-infections[i,m] / pops[m]));
-                cumm_sum[i,m] = cumm_sum[i-1,m] + infections[i,m];
-                cumm_sum[i,m] += (susc[i-1,m] - susc[i,m]) * (1 - cumm_sum[i,m] / pops[m]);
+                infections[i,m] = susc * (1 - exp(-infections[i,m] / pops[m]));
+                real vt = vacc[i,m];
+                if (!vesp_fixed) vt *= vesp[m];
+                susc = (1 - vt) * (susc - infections[i,m]);
             }
-
-            idx2 += 1;
         }    
     }
 }

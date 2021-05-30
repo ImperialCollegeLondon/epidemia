@@ -26,6 +26,10 @@ if (latent) {
 }
 
 
-if (!I0_fixed) {
-    target += normal_lpdf(I0 | prior_mean_for_I0, prior_scale_for_I0);
+if (!S0_fixed) {
+    target += normal_lpdf(S0 | prior_mean_for_S0, prior_scale_for_S0);
+}
+
+if (!vesp_fixed) {
+    target += normal_lpdf(vesp | prior_mean_for_vesp, prior_scale_for_vesp);
 }

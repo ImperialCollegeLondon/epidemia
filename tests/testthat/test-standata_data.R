@@ -41,22 +41,22 @@ test_that("pops populated correctly", {
   
 })
 
-test_that("susc populated correctly", {
+test_that("vacc populated correctly", {
   nrow <- as.numeric(max(df$date) - min(df$date) + 1)
   
   sdat <- standata_data(df, epiinf(gen=1))
-  expect_equal(sdat$susc, matrix(1, 14, 3))
+  expect_equal(sdat$vacc, matrix(1, 14, 3))
   
-  sdat <- standata_data(df, epiinf(gen=1, susceptibles=A))
-  expect_equal(sdat$susc, matrix(1, 14, 3))
+  sdat <- standata_data(df, epiinf(gen=1, vacc=A))
+  expect_equal(sdat$vacc, matrix(1, 14, 3))
   
   sdat <- standata_data(df, epiinf(gen=1, pop_adjust=T, pops=A))
   
-  expect_equal(sum(sdat$susc[,1] == 5), 5)
-  expect_equal(sum(sdat$susc[,2] == 12), 7)
-  expect_equal(sum(sdat$susc[,3] == 17), 12)
+  expect_equal(sum(sdat$vacc[,1] == 5), 5)
+  expect_equal(sum(sdat$vacc[,2] == 12), 7)
+  expect_equal(sum(sdat$vacc[,3] == 17), 12)
   
-  expect_equal(which(sdat$susc[,1] != 1)[1], 1)
-  expect_equal(which(sdat$susc[,2] != 1)[1], 2)
-  expect_equal(which(sdat$susc[,3] != 1)[1], 3)
+  expect_equal(which(sdat$vacc[,1] != 1)[1], 1)
+  expect_equal(which(sdat$vacc[,2] != 1)[1], 2)
+  expect_equal(which(sdat$vacc[,3] != 1)[1], 3)
 })

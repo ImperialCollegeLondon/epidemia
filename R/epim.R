@@ -203,7 +203,7 @@ pars <- function(sdat) {
       if (sdat$num_oaux > 0) "oaux",
       if (sdat$latent) "infections_raw",
       if (sdat$latent) "inf_aux",
-      if (!sdat$I0_fixed) "I0"
+      if (!sdat$S0_fixed) "S0"
     )
   return(out)
 }
@@ -283,8 +283,8 @@ new_names <- function(sdat, rt, obs, fit, data) {
       if (sdat$latent) {
         "inf|dispersion"
       },
-      if (!sdat$I0_fixed) {
-        paste0("I0[",sdat$groups, "]")
+      if (!sdat$S0_fixed) {
+        paste0("S0[",sdat$groups, "]")
       },
       "log-posterior"
     )

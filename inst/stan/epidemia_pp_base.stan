@@ -25,7 +25,7 @@ parameters {
   vector[N_obs+2] oeta;
   vector<lower=-1>[latent ? N - M * N0 + 2 : 2] infections_raw;
   vector<lower=0>[latent ? 3 : 2] inf_aux;
-  vector<lower=0,upper=1>[I0_fixed ? 2 : M+2] I0;
+  vector<lower=0,upper=1>[S0_fixed ? 2 : M+2] S0;
 }
 generated quantities {
   vector[N_obs] E_obs;
@@ -37,8 +37,10 @@ generated quantities {
 
   if (pop_adjust) {
     Rt[1,] = Rt_unadj[1,];
-    for (m in 1:M) 
+    for (m in 1:M) {
+      if (!S0_fixed) Rt[1,m] = (1 - S0[m]) .* Rt[1,m];
       Rt[2:N2, m] = (pops[m] - cumm_sum[1:(N2-1),m]) ./ pops[m] .* Rt_unadj[2:N2,m];
+    }
   } else {
       Rt = Rt_unadj;
   }

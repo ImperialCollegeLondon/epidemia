@@ -63,7 +63,6 @@ transformed parameters {
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
 #include /tparameters/tparameters_obs.stan
-#include /tparameters/tparameters_inf.stan
 #include /tparameters/tparameters_glm.stan
 
 // transform auxiliary parameters
@@ -103,8 +102,6 @@ transformed parameters {
         i += obs_ac_ntime[proc];
     }
   }
-
-  if(!I0_fixed) I0 = 1 - susc0 + (susc0 .* I0_raw);
   
 #include /tparameters/make_eta.stan
 #include /tparameters/make_oeta.stan
