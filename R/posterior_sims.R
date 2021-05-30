@@ -201,10 +201,16 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
   nms[m] <- paste0("y[", seq_along(groups), "]")
 
-  nms <- sub("I0\\[[0-9]\\]", "DUMMY", orig_nms)
-  m <- match(paste0("I0[", groups, "]"), colnames(stanmat))
+  nms <- sub("S0\\[[0-9]\\]", "DUMMY", orig_nms)
+  m <- match(paste0("S0[", groups, "]"), colnames(stanmat))
   if (!anyNA(m)) {
-    nms[m] <- paste0("I0[", seq_along(groups), "]")
+    nms[m] <- paste0("S0[", seq_along(groups), "]")
+  }
+
+  nms <- sub("veps\\[[0-9]\\]", "DUMMY", orig_nms)
+  m <- match(paste0("veps[", groups, "]"), colnames(stanmat))
+  if (!anyNA(m)) {
+    nms[m] <- paste0("veps[", seq_along(groups), "]")
   }
 
   colnames(stanmat)[seq_along(nms)] <- nms
@@ -214,10 +220,11 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   noeta <- length(grep("^oeta\\[", colnames(stanmat)))
   ninfraw <- length(grep("^infections_raw\\[", colnames(stanmat)))
   ninfaux <- length(grep("^inf_aux\\[", colnames(stanmat)))
-  nI0 <- length(grep("^I0\\[", colnames(stanmat)))
+  nS0 <- length(grep("^S0\\[", colnames(stanmat)))
+  nveps <- length(grep("^veps\\[", colnames(stanmat)))
   
   # need to pad out for rstan::gqs
-  mat <- matrix(0, nrow = nrow(stanmat), ncol = 14)
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 16)
   colnames(mat) <- c(
     paste0("y[", length(groups) + 1:2, "]"),
     paste0("oaux[", noaux + 1:2, "]"),
@@ -225,7 +232,8 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
     paste0("oeta[", noeta + 1:2, "]"),
     paste0("infections_raw[", ninfraw + 1:2, "]"),
     paste0("inf_aux[", ninfaux + 1:2, "]"),
-    paste0("I0[", nI0 + 1:2, "]")
+    paste0("S0[", nS0 + 1:2, "]"),
+    paste0("veps[", nveps + 1:2, "]")
   )
   return(cbind(stanmat, mat))
 }

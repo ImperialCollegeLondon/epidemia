@@ -14,34 +14,34 @@
 #' The adjustment was described in Section 5.3 of the \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} article. 
 #' It can be employed by setting \code{pop_adjust = TRUE} and using the \code{susceptibles} argument to point towards a variable in the dataframe which gives the susceptible population at each point in time. 
 #' 
-#' @param seed_days An integer giving the number of days for which to seed infections. Defaults to \code{6L}.
 #' @param gen A numeric vector representing the probability mass function for the generation time of the disease (must be a
 #'  probability vector).
+#' @param seed_days An integer giving the number of days for which to seed infections. Defaults to \code{6L}.
 #' @param prior_tau The prior distribution for the hyperparameter \eqn{\tau}, which is the mean of the 
 #' prior distribution for infection seeding. Must be a call to
 #'  \code{\link[rstanarm]{exponential}}. Defaults to \code{rstanarm::exponential(0.03)}. See the
 #' \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} for 
 #' more details on this parameter.
 #' @param latent If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.
-#' @param family 	Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{log-normal}.
-#' @param prior_aux Prior distribution for the coefficient of dispersion \eqn{d} for  
-#'  the offspring distribution. Only used if \code{latent = TRUE}. The number of 
-#'  offspring of a given infection is assumed to have mean \eqn{\mu} and variance \eqn{d \mu}.
-#'  This argument specifies prior on \eqn{d}. Higher values of \eqn{d} imply more 
-#'  super-spreading events.
-#' @param prior_I0 Prior distribution on cumulative infections at time 0 as a proportion of the population size. 
-#'  This is useful when the first modeled date is after the true beginning of the epidemic and when pop_adjust = TRUE. 
-#'  In this case, initial cumulative infections are important for realistically applying the population adjustment. 
-#'  If the value 0 is used (the default), then initial cumulative infections taken to be 0. Otherwise, must be a call 
-#'  to \code{\link[rstanarm]{normal}}. See examples for more details on using this argument.
+#' @param family 	Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{normal}.
+#' @param prior_aux Prior distribution for the auxiliary variable in the model for latent infections. Only used if \code{latent = TRUE}. If \code{fixed_vtm = TRUE}, then 
+#' the auxiliary variable refers to the coefficient of dispersion. If \code{fixed_vtm = FALSE}, this refers to 
+#' the coefficient of variation instead.
+#' @param fixed_vtm If \code{TRUE}, then the prior ratio of variance to mean for latent infections is fixed, i.e. the auxiliary 
+#' variable refers to the coefficient of dispersion. If \code{FALSE}, then the prior ratio of standard deviation to mean is fixed instead,
+#' and the auxiliary variable refers to the coefficient of variation.
 #' @param pop_adjust If \code{TRUE}, applies a population adjustment to the infection process. Defaults to \code{FALSE}.
-#' @param susceptibles A character vector giving the name of the column in the dataframe 
-#'  passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the susceptible population over time. 
-#'  Only used if \code{pop_adjust=TRUE}.
+#' @param pops A character vector giving the name of the column in the dataframe.
+#' @param vacc A characted vector giving a column name in \code{data} (see \code{\link{epim}}). This 
+#' column should correspond to vaccination data. Each entry should be the proportion of the unvaccinated 
+#' population in that group, that are removed by vaccination at that point in time. Only used if \code{pop_adjust=TRUE}.
+#' @param prior_susc0 Prior distribution on the initial susceptible population at time 0, expressed as a proportion of the total population size.
+#' This quantity lies between 0 and 1, and is useful when the first modeled date is after the true beginning of an epidemic. Only used when \code{pop_adjust = TRUE}.
+#' If unspecified, then the entire population is assumed to be susceptible at time 0.  If specified, should be a call to \code{\link[rstanarm]{normal}}.
+#' @param prior_vnoise Vaccination adjustments may be applied using the \code{vacc} argument. However, in practice, it 
+#' is difficult to specify the proportion of the susceptible class removed by vaccination at any point in time. \code{prior_vnoise} 
+#' helps to model noise around this. If specified, should be a call to \code{\link[rstanarm]{normal}}.
 #' @return An object of class \code{epiinf}.
-#' @param pops A character vector giving the name of the column in the dataframe
-#'  passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the population of each group.
-#'  Only used if \code{pop_adjust=TRUE}.
 #' @examples 
 #' data(EuropeCovid)
 #' inf <- epiinf(
@@ -54,11 +54,11 @@
 epiinf <- function(
   gen,
   seed_days = 6L,
-  latent = FALSE,
-  fixed_vtm = 1,
   prior_tau = rstanarm::exponential(0.03),
-  family = "log-normal",
+  latent = FALSE,
+  family = "normal",
   prior_aux = rstanarm::normal(10,5),
+  fixed_vtm = 1,
   pop_adjust = FALSE,
   pops = NULL,
   vacc = NULL,
@@ -87,7 +87,7 @@ epiinf <- function(
   # family should be scalar character in the set
   check_character(family)
   check_scalar(family)
-  check_in_set(family, "log-normal")
+  check_in_set(family, "normal")
 
   # priors have restricted families
   check_prior(prior_tau)

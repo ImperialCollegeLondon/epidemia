@@ -7,15 +7,16 @@
 epiinf(
   gen,
   seed_days = 6L,
-  latent = FALSE,
   prior_tau = rstanarm::exponential(0.03),
-  family = "log-normal",
+  latent = FALSE,
+  family = "normal",
   prior_aux = rstanarm::normal(10, 5),
+  fixed_vtm = 1,
   pop_adjust = FALSE,
   pops = NULL,
-  susceptibles = NULL,
-  prior_I0 = 0,
-  fixed_vtm = 1
+  vacc = NULL,
+  prior_susc0 = NULL,
+  prior_vnoise = NULL
 )
 }
 \arguments{
@@ -24,37 +25,39 @@ probability vector).}
 
 \item{seed_days}{An integer giving the number of days for which to seed infections. Defaults to \code{6L}.}
 
-\item{latent}{If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.}
-
 \item{prior_tau}{The prior distribution for the hyperparameter \eqn{\tau}, which is the mean of the
 prior distribution for infection seeding. Must be a call to
 \code{\link[rstanarm]{exponential}}. Defaults to \code{rstanarm::exponential(0.03)}. See the
 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} for
 more details on this parameter.}
 
-\item{family}{Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{log-normal}.}
+\item{latent}{If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.}
 
-\item{prior_aux}{Prior distribution for the coefficient of dispersion \eqn{d} for
-the offspring distribution. Only used if \code{latent = TRUE}. The number of
-offspring of a given infection is assumed to have mean \eqn{\mu} and variance \eqn{d \mu}.
-This argument specifies prior on \eqn{d}. Higher values of \eqn{d} imply more
-super-spreading events.}
+\item{family}{Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{normal}.}
+
+\item{prior_aux}{Prior distribution for the auxiliary variable in the model for latent infections. Only used if \code{latent = TRUE}. If \code{fixed_vtm = TRUE}, then
+the auxiliary variable refers to the coefficient of dispersion. If \code{fixed_vtm = FALSE}, this refers to
+the coefficient of variation instead.}
+
+\item{fixed_vtm}{If \code{TRUE}, then the prior ratio of variance to mean for latent infections is fixed, i.e. the auxiliary
+variable refers to the coefficient of dispersion. If \code{FALSE}, then the prior ratio of standard deviation to mean is fixed instead,
+and the auxiliary variable refers to the coefficient of variation.}
 
 \item{pop_adjust}{If \code{TRUE}, applies a population adjustment to the infection process. Defaults to \code{FALSE}.}
 
-\item{pops}{A character vector giving the name of the column in the dataframe
-passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the population of each group.
-Only used if \code{pop_adjust=TRUE}.}
+\item{pops}{A character vector giving the name of the column in the dataframe.}
 
-\item{susceptibles}{A character vector giving the name of the column in the dataframe
-passed as the \code{data} argument of \code{\link{epim}}, that corresponds to the susceptible population over time.
-Only used if \code{pop_adjust=TRUE}.}
+\item{vacc}{A characted vector giving a column name in \code{data} (see \code{\link{epim}}). This
+column should correspond to vaccination data. Each entry should be the proportion of the unvaccinated
+population in that group, that are removed by vaccination at that point in time. Only used if \code{pop_adjust=TRUE}.}
 
-\item{prior_I0}{Prior distribution on cumulative infections at time 0 as a proportion of the population size.
-This is useful when the first modeled date is after the true beginning of the epidemic and when pop_adjust = TRUE.
-In this case, initial cumulative infections are important for realistically applying the population adjustment.
-If the value 0 is used (the default), then initial cumulative infections taken to be 0. Otherwise, must be a call
-to \code{\link[rstanarm]{normal}}. See examples for more details on using this argument.}
+\item{prior_susc0}{Prior distribution on the initial susceptible population at time 0, expressed as a proportion of the total population size.
+This quantity lies between 0 and 1, and is useful when the first modeled date is after the true beginning of an epidemic. Only used when \code{pop_adjust = TRUE}.
+If unspecified, then the entire population is assumed to be susceptible at time 0.  If specified, should be a call to \code{\link[rstanarm]{normal}}.}
+
+\item{prior_vnoise}{Vaccination adjustments may be applied using the \code{vacc} argument. However, in practice, it
+is difficult to specify the proportion of the susceptible class removed by vaccination at any point in time. \code{prior_vnoise}
+helps to model noise around this. If specified, should be a call to \code{\link[rstanarm]{normal}}.}
 }
 \value{
 An object of class \code{epiinf}.
