@@ -261,7 +261,7 @@ check_time_as_date <- function(object, data) {
 # @param data the data frame to check
 # @param tol the tolerance for checking integer
 check_vacc <- function(inf, data, tol = .Machine$double.eps) {
-  if (inf$pop_adjust) {
+  if (inf$pop_adjust && !is.null(inf$vacc)) {
     col <- inf$vacc
     not_found <- !(col %in% colnames(data))
     if (not_found)

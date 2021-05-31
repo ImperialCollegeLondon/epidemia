@@ -37,13 +37,11 @@ generated quantities {
 #include /tparameters/gen_eobs.stan
 
   if (pop_adjust) {
-    Rt[1,] = Rt_unadj[1,];
     for (m in 1:M) {
-      if (!S0_fixed) Rt[1,m] = (1 - S0[m]) .* Rt[1,m];
-      Rt[2:N2, m] = (pops[m] - cumm_sum[1:(N2-1),m]) ./ pops[m] .* Rt_unadj[2:N2,m];
+      Rt[1:N2, m] = susc[1:N2, m] ./ pops[m] .* Rt_unadj[1:N2,m];
     }
   } else {
-      Rt = Rt_unadj;
+    Rt = Rt_unadj;
   }
 
   infectiousness = load / max(gen);

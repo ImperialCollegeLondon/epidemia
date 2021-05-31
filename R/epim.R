@@ -422,7 +422,7 @@ make_obeta_nms <- function(obs, sdat) {
     function(a) colnames(get_x(a))
   ))
   obs_beta_nms <- grep(
-    pattern = "(Intercept)",
+    pattern = "^\\(Intercept\\)|^rw\\(",
     x = obs_beta_nms,
     invert = T,
     value = T
