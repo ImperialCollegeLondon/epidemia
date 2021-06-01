@@ -273,7 +273,7 @@ new_names <- function(sdat, rt, obs, fit, data) {
         make_rw_sigma_nms(rt, data)
       },
       if (sdat$obs_ac_nterms > 0) {
-        sapply(obs, function(x) make_rw_sigma_nms(x, data))
+        do.call("c", sapply(obs, function(x) make_rw_sigma_nms(x, data)))
       },
       if (sdat$num_oaux > 0) {
         make_oaux_nms(obs)
