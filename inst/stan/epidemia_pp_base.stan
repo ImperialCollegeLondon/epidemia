@@ -19,7 +19,7 @@ for(r in 1:R)
 }
 
 parameters {
-  vector<lower=0>[M+2] y;
+  vector<lower=0>[M+2] seeds;
   vector<lower=0>[num_oaux+2] oaux;
   vector[N+2] eta;
   vector[N_obs+2] oeta;

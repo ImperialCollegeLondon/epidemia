@@ -31,7 +31,18 @@ real prior_mean_for_inf_aux[latent];
 real<lower=0> prior_scale_for_inf_aux[latent];
 real<lower=0> prior_df_for_inf_aux[latent];
 
-real<lower=0> prior_scale_for_tau;
+// and seed auxiliary variable
+int<lower=0, upper=3> prior_dist_for_seeds_aux[hseeds];
+vector[hseeds] prior_mean_for_seeds_aux;
+vector<lower=0>[hseeds] prior_scale_for_seeds_aux;
+vector<lower=0>[hseeds] prior_df_for_seeds_aux;
+
+// and the actual seeds
+int<lower=0, upper=4> prior_dist_for_seeds;
+vector[M] prior_mean_for_seeds;
+vector<lower=0>[M] prior_scale_for_seeds;
+vector<lower=0>[M] prior_df_for_seeds;
+
 vector<lower=0>[ac_nproc] ac_prior_scales; // prior scale for hyperparameter for each walk.
 vector<lower=0>[obs_ac_nproc] obs_ac_prior_scales;
 

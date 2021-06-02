@@ -25,6 +25,23 @@ if (latent) {
         target += exponential_lpdf(inf_aux_raw[1] | 1);
 }
 
+if (hseeds) { // hierarchical seeds need auxiliary parameter
+    if (prior_dist_for_seeds_aux[1] == 1) 
+        target += normal_lpdf(seeds_aux_raw[1] | 0, 1);
+    else if (prior_dist_for_seeds_aux[1] == 2)
+        target += student_t_lpdf(seeds_aux_raw[1] | prior_df_for_seeds_aux[1], 0, 1);
+    else if (prior_dist_for_seeds_aux[1] == 3)
+        target += exponential_lpdf(seeds_aux_raw[1] | 1);
+}
+
+// prior for seeded infections
+if (prior_dist_for_seeds == 1) 
+    target += normal_lpdf(seeds_raw | 0, 1);
+else if (prior_dist_for_seeds == 2)
+    target += student_t_lpdf(seeds_raw | prior_df_for_seeds, 0, 1);
+else if (prior_dist_for_seeds <= 4)
+    target += exponential_lpdf(seeds_raw | 1);
+
 
 if (!S0_fixed) {
     target += normal_lpdf(S0 | prior_mean_for_S0, prior_scale_for_S0);

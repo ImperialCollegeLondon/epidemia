@@ -47,25 +47,23 @@ parameters {
 #include /parameters/parameters_ac.stan
 #include /parameters/parameters_obs.stan
 #include /parameters/parameters_inf.stan
-  vector<lower=0>[M] y_raw;
-  real<lower=0> tau_raw;
 }
 
 transformed parameters {
   vector[N_obs] oeta;
   vector[N_obs] E_obs; // expected values of the observations 
   vector[N] eta;  // linear predictor
-  real<lower=0> tau2 = prior_scale_for_tau * tau_raw;
-  vector<lower=0>[M] y = tau2 * y_raw;
   vector<lower=0>[num_oaux] oaux = oaux_raw;
   vector<lower=0>[latent] inf_aux = inf_aux_raw;
+  vector<lower=0>[M] seeds = seeds_raw;
+  vector<lower=0>[hseeds] seeds_aux = seeds_aux_raw;
 
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
 #include /tparameters/tparameters_obs.stan
 #include /tparameters/tparameters_glm.stan
 
-// transform auxiliary parameters
+  // transform auxiliary parameters
   for (i in 1:num_oaux) {
     if (prior_dist_for_oaux[i] > 0) {
       if (prior_scale_for_oaux[i] > 0) {
@@ -89,6 +87,31 @@ transformed parameters {
     }
   }
 
+  // transform seeds_aux parameter
+  if (hseeds) { 
+    if (prior_dist_for_seeds_aux[1] > 0) {
+      if (prior_scale_for_seeds_aux[1] > 0) {
+        seeds_aux[1] *= prior_scale_for_seeds_aux[1];
+      }
+      if (prior_dist_for_seeds_aux[1] <= 2) {
+        seeds_aux[1] += prior_mean_for_seeds_aux[1];
+      }
+    }
+  }
+
+  // transform seed parameters
+  if (prior_dist_for_seeds < 4) {
+    seeds .*= prior_scale_for_seeds;
+    if (prior_dist_for_seeds < 3) {
+      seeds += prior_mean_for_seeds;
+    }
+  } 
+
+  // in this case, transform by hyperparameter
+  if (prior_dist_for_seeds == 4) {
+    seeds *= seeds_aux[1];
+  }
+
   {
     int i = 1;
     for (proc in 1:ac_nproc) { // this treats ac terms as random walks for now (to be extended to AR(p))
@@ -110,9 +133,6 @@ transformed parameters {
 }
 
 model {
-  target += exponential_lpdf(tau_raw | 1);
-  target += exponential_lpdf(y_raw | 1);
-
 #include /model/priors_glm.stan
 #include /model/priors_ac.stan
 #include /model/priors_obs.stan

@@ -19,7 +19,7 @@
         
         idx1 += NC[m];
         
-        infections[n0:n1,m] = rep_vector(y[m], N0); // seeded infections
+        infections[n0:n1,m] = rep_vector(seeds[m], N0); // seeded infections
 
         if (pop_adjust) { // initialise susceptible population
             susc[n0,m] = pops[m];
