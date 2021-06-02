@@ -35,3 +35,30 @@ shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
   loo::nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)
 }
 
+
+#' A hierarchical model for seeded infections
+#' 
+#' This distribution assigns seeded infections in each population an 
+#' exponential prior. The \code{aux} parameter refers to the mean of this 
+#' distribution. This mean parameter is common to seeded infections in each 
+#' group, and is given a prior distribution. This approach of assigning 
+#' priors to hyperparameters is referred to as hierarchical modeling. A call 
+#' to this function can be passed as the \code{prior_seeds} argument in 
+#' \code{\link[epidemia]{epiinf}}.
+#'
+#' @param prior_aux Specifies the prior distribution on the auxiliary parameter. 
+#' This can be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} 
+#' or \code{\link[rstanarm]{exponential}}.
+#' 
+#' @return A named list to be parsed internally by \code{\link[epidemia]{epim}}.
+#' 
+#' @examples
+#' 
+#' @references
+#' \insertAllCited{}
+#' @export
+
+hexp <- function(prior_aux = rstanarm::exponential(0.03)) {
+  loo::nlist(dist = "hexp", aux)
+}
+

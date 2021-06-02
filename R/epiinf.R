@@ -17,11 +17,8 @@
 #' @param gen A numeric vector representing the probability mass function for the generation time of the disease (must be a
 #'  probability vector).
 #' @param seed_days An integer giving the number of days for which to seed infections. Defaults to \code{6L}.
-#' @param prior_tau The prior distribution for the hyperparameter \eqn{\tau}, which is the mean of the 
-#' prior distribution for infection seeding. Must be a call to
-#'  \code{\link[rstanarm]{exponential}}. Defaults to \code{rstanarm::exponential(0.03)}. See the
-#' \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{model description} for 
-#' more details on this parameter.
+#' @param prior_seeds The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, or to \code{\link[epidemia]{hexp}}. The latter 
+#' distribution allows hierarchical modeling of seeded infections.
 #' @param latent If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.
 #' @param family 	Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{normal}.
 #' @param prior_aux Prior distribution for the auxiliary variable in the model for latent infections. Only used if \code{latent = TRUE}. If \code{fixed_vtm = TRUE}, then 
@@ -54,7 +51,7 @@
 epiinf <- function(
   gen,
   seed_days = 6L,
-  prior_tau = rstanarm::exponential(0.03),
+  prior_seeds = hexp(prior_aux = rstanarm::exponential(0.03)),
   latent = FALSE,
   family = "normal",
   prior_aux = rstanarm::normal(10,5),
