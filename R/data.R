@@ -39,7 +39,7 @@
 #' 
 #' Contains case counts of SARS-CoV-2 in England from 30/01/2020 until 30/05/2021. Case counts correspond to 
 #' 'New Cases by Specimen Date', as defined by Public Health England. The data was downloaded from 
-#' \inserCite{PHE;textual}{epidemia} on 01/06/2021. Case counts in the last few days of May may be 
+#' \insertCite{PHE;textual}{epidemia} on 01/06/2021. Case counts in the last few days of May may be 
 #' underreported as not all cases have been counted as of the download date.
 #'
 #' @format A dataframe with three columns, `date`, `region` and `cases`. Each row gives case counts for a given date in England.
