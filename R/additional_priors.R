@@ -57,8 +57,8 @@ shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
 #' @references
 #' \insertAllCited{}
 #' @export
-
 hexp <- function(prior_aux = rstanarm::exponential(0.03)) {
+  check_prior(prior_aux)
+  check_in_set(prior_aux$dist, ok_aux_dists)
   loo::nlist(dist = "hexp", aux)
 }
-
