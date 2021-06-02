@@ -35,10 +35,10 @@ test_that("latent, pop_adjust", {
   expect_equal(sdat$pop_adjust, 1)
 })
 
-test_that("prior for tau", {
-  inf <- epiinf(gen=1, prior_tau = rstanarm::exponential(1/15))
+test_that("prior for seeds", {
+  inf <- epiinf(gen=1, prior_seeds = rstanarm::exponential(1/15))
   sdat <- standata_inf(inf, 1)
-  expect_equal(as.numeric(sdat$prior_scale_for_tau), 15)
+  expect_equal(as.numeric(sdat$prior_scale_for_seeds), 15)
 })
 
 test_that("prior for aux", {
@@ -63,31 +63,31 @@ test_that("prior for aux", {
 
 test_that("prior for susc0", {
   
-  inf <- epiinf(gen=1, prior_susc0 = rstanarm::normal(0.32, 0.12))
+  inf <- epiinf(gen=1, prior_susc = rstanarm::normal(0.32, 0.12))
   sdat <- standata_inf(inf, 1)
   expect_equal(sdat$prior_mean_for_S0, array(numeric()))
   expect_equal(sdat$prior_scale_for_S0, array(numeric()))
   expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = rstanarm::normal(0.32, 0.12))
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc = rstanarm::normal(0.32, 0.12))
   sdat <- standata_inf(inf, 1)
   expect_equal(sdat$prior_mean_for_S0, array(0.32))
   expect_equal(sdat$prior_scale_for_S0, array(0.12))
   expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = rstanarm::normal(0.32, 0.12))
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc = rstanarm::normal(0.32, 0.12))
   sdat <- standata_inf(inf, 4)
   expect_equal(sdat$prior_mean_for_S0, array(rep(0.32,4)))
   expect_equal(sdat$prior_scale_for_S0, array(rep(0.12,4)))
   expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = rstanarm::normal(c(0.32, 0.83), c(0.12, 0.08)))
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc = rstanarm::normal(c(0.32, 0.83), c(0.12, 0.08)))
   sdat <- standata_inf(inf, 2)
   expect_equal(sdat$prior_mean_for_S0, array(c(0.32, 0.83)))
   expect_equal(sdat$prior_scale_for_S0, array( c(0.12, 0.08)))
   expect_equal(sdat$S0_fixed, 0)
   
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc0 = NULL)
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops = dummy, prior_susc = NULL)
   sdat <- standata_inf(inf, 1)
   expect_equal(sdat$prior_mean_for_S0, array(numeric()))
   expect_equal(sdat$prior_scale_for_S0, array(numeric()))

@@ -609,7 +609,8 @@ ok_dists <- loo::nlist(
   "hs_plus", 
   "laplace", 
   "lasso", 
-  "product_normal"
+  "product_normal",
+  "hexp"
 )
 
 ok_int_dists <- loo::nlist(

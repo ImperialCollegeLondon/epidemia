@@ -668,7 +668,7 @@ process_x <- function(x, center) {
 handle_glm_prior <- function(prior, nvars, default_scale, link,
                              ok_dists = loo::nlist("gamma", "normal", student_t = "t", 
                                               "cauchy", "hs", "hs_plus", 
-                                              "laplace", "lasso", "product_normal")) {
+                                              "laplace", "lasso", "product_normal", "hexp")) {
 
   if (!length(prior) | nvars == 0)
     return(list(prior_dist = as.array(rep(0, nvars)), prior_mean = as.array(rep(0, nvars)),
@@ -719,6 +719,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
     slab_scale <- prior$slab_scale
   } else if (prior_dist_name %in% "exponential") {
     prior_dist <- 3L # only used for scale parameters so 3 not a conflict with 3 for hs
+  } else if(prior_dist_name %in% "hexp") {
+    prior_dist = 9L
   }
   
   prior_dist <- array(prior_dist)

@@ -217,7 +217,7 @@ For our example, a possible model is the following.
 inf <- epiinf(
   gen = EuropeCovid$si,
   seed_days = 6L,
-  prior_tau = rstanarm::exponential(0.02)
+  prior_seeds = hexp(rstanarm::exponential(0.02))
 )
 ```
 `EuropeCovid$si` is a numeric vector representing the probability mass 

@@ -199,7 +199,7 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
 
   nms <- sub("y\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("seeds[", groups, "]"), colnames(stanmat))
-  nms[m] <- paste0("y[", seq_along(groups), "]")
+  nms[m] <- paste0("seeds[", seq_along(groups), "]")
 
   nms <- sub("S0\\[[0-9]\\]", "DUMMY", orig_nms)
   m <- match(paste0("S0[", groups, "]"), colnames(stanmat))
@@ -226,7 +226,7 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   # need to pad out for rstan::gqs
   mat <- matrix(0, nrow = nrow(stanmat), ncol = 16)
   colnames(mat) <- c(
-    paste0("y[", length(groups) + 1:2, "]"),
+    paste0("seeds[", length(groups) + 1:2, "]"),
     paste0("oaux[", noaux + 1:2, "]"),
     paste0("eta[", neta + 1:2, "]"),
     paste0("oeta[", noeta + 1:2, "]"),

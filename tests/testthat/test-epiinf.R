@@ -22,12 +22,12 @@ test_that("seed_days is positive, scalar integer", {
 })
 
 test_that("Correct priors are enforced", {
-  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_tau = "dummy"), regexp = "prior")
-  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_tau = rstanarm::normal()), regexp = "exponential")
+  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_seeds = "dummy"), regexp = "prior")
+  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_seeds = rstanarm::lasso()), regexp = "exponential")
   expect_error(inf <- epiinf(gen = rep(0.2,5), prior_aux = "dummy"), regexp = "prior")
   expect_error(inf <- epiinf(gen = rep(0.2,5), prior_aux = rstanarm::lasso()), regexp = "normal")
-  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_susc0 = "dummy"), regexp = "prior")
-  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_susc0 = rstanarm::lasso()), regexp = "normal")
+  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_susc = "dummy"), regexp = "prior")
+  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_susc = rstanarm::lasso()), regexp = "normal")
   expect_error(inf <- epiinf(gen = rep(0.2,5), prior_vnoise = "dummy"), regexp = "prior")
   expect_error(inf <- epiinf(gen = rep(0.2,5), prior_vnoise = rstanarm::lasso()), regexp = "normal")
 })

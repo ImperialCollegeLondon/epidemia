@@ -38,7 +38,7 @@ vector<lower=0>[hseeds] prior_scale_for_seeds_aux;
 vector<lower=0>[hseeds] prior_df_for_seeds_aux;
 
 // and the actual seeds
-int<lower=0, upper=4> prior_dist_for_seeds;
+int<lower=0, upper=9> prior_dist_for_seeds;
 vector[M] prior_mean_for_seeds;
 vector<lower=0>[M] prior_scale_for_seeds;
 vector<lower=0>[M] prior_df_for_seeds;

@@ -39,7 +39,7 @@ if (prior_dist_for_seeds == 1)
     target += normal_lpdf(seeds_raw | 0, 1);
 else if (prior_dist_for_seeds == 2)
     target += student_t_lpdf(seeds_raw | prior_df_for_seeds, 0, 1);
-else if (prior_dist_for_seeds <= 4)
+else if (prior_dist_for_seeds == 3 || prior_dist_for_seeds == 9)
     target += exponential_lpdf(seeds_raw | 1);
 
 

@@ -35,16 +35,30 @@ standata_inf <- function(inf, M) {
       pop_adjust = 1 * inf$pop_adjust
   )
 
-  # add data for prior on tau
-  prior_tau_stuff <- handle_glm_prior(
-    prior = inf$prior_tau,
-    nvars = 1,
-    default_scale = 1 / 0.03,
-    link = "dummy",
-    ok_dists = loo::nlist("exponential")
+  # are seeds modeled hierarchically?
+  out$hseeds <- 1 * (inf$prior_seeds$dist == "hexp")
+
+  # add data for prior on seeds
+  prior_seeds_stuff <- handle_glm_prior(
+    prior = inf$prior_seeds,
+    nvars = M,
+    ok_dists = c(ok_aux_dists, "hexp")
   )
 
-  out$prior_scale_for_tau <- as.numeric(prior_tau_stuff$prior_scale)
+  names(prior_seeds_stuff) <- paste0(names(prior_seeds_stuff), "_for_seeds")
+  out <- c(out, prior_seeds_stuff)
+
+  # add data for prior on seeds auxiliary param
+  prior_seeds_aux_stuff <- handle_glm_prior(
+    inf$prior_seeds$prior_aux,
+    1 * out$hseeds,
+    link = NULL,
+    default_scale = 0.25,
+    ok_dists = ok_aux_dists
+  )
+
+  names(prior_seeds_aux_stuff) <- paste0(names(prior_seeds_aux_stuff), "_for_seeds_aux")
+  out <- c(out, prior_seeds_aux_stuff)
 
   # add data for prior on auxiliary param
   p_aux <- handle_glm_prior(
@@ -58,10 +72,10 @@ standata_inf <- function(inf, M) {
   out <- c(out, p_aux)
 
   # add prior for S0/P (initial cumulative infections)
-  out$S0_fixed <- as.numeric(!is.list(inf$prior_susc0))
+  out$S0_fixed <- as.numeric(!is.list(inf$prior_susc))
 
   if (out$S0_fixed) p_S0 <- list()
-  else p_S0 <- inf$prior_susc0
+  else p_S0 <- inf$prior_susc
 
   p_S0 <- handle_glm_prior(
     p_S0,
@@ -400,35 +414,6 @@ standata_obs <- function(obs, groups, nsim, begin) {
   ))
   return(out)
 }
-
-# Parse model priors (currently just tau) to standata representation.
-# Used internally in epim.
-#
-# @param prior_tau See \code{\link{epim}}
-standata_model_priors <- function(prior_tau) {
-
-  # for passing R CMD Check
-  prior_scale_for_tau <- NULL
-
-  prior_tau_stuff <- handle_glm_prior(
-    prior = prior_tau,
-    nvars = 1,
-    default_scale = 1 / 0.03,
-    link = "dummy",
-    ok_dists = loo::nlist("exponential")
-  )
-
-  names(prior_tau_stuff) <- paste0(names(prior_tau_stuff), "_for_tau")
-
-  for (i in names(prior_tau_stuff)) {
-    assign(i, prior_tau_stuff[[i]])
-  }
-
-  return(list(
-    prior_scale_for_tau = as.numeric(prior_scale_for_tau)
-  ))
-}
-
 
 # Takes a vector and extends to required length
 #

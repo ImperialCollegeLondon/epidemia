@@ -100,15 +100,15 @@ transformed parameters {
   }
 
   // transform seed parameters
-  if (prior_dist_for_seeds < 4) {
+  if (prior_dist_for_seeds <=3) {
     seeds .*= prior_scale_for_seeds;
-    if (prior_dist_for_seeds < 3) {
+    if (prior_dist_for_seeds <= 2) {
       seeds += prior_mean_for_seeds;
     }
   } 
 
   // in this case, transform by hyperparameter
-  if (prior_dist_for_seeds == 4) {
+  if (prior_dist_for_seeds == 9) {
     seeds *= seeds_aux[1];
   }
 
