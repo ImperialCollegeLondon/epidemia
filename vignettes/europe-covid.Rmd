@@ -378,7 +378,7 @@ partial pooling is essential for explaining difference between countries. If
 full pooling were used, effect sizes would be overly influenced by outliers like 
 Sweden. This argument is made in more detail in @Flaxman2020MA.
 
-```{r interval-plots, fig.cap = "Seeds, intercepts and public polic effects for each country", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
+```{r interval-plots, fig.cap = "Seeds, intercepts and public policy effects for each country", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
 p_seeds <- plot(fm, "areas", regex_pars = "seeds")
 p_int <- plot(fm, regex_pars = "R\\|b\\[\\(Int", par_types = "random", par_groups=fm$groups)
 mat <- as.matrix(fm, regex_pars = "(^R\\|pub)|(^R\\|b\\[public)", par_groups = fm$groups)
