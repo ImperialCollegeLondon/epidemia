@@ -228,6 +228,7 @@ plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL,
     dates,
     date_format
   )
+
   # only want to plot dates/groups that appear in qtl as it has been
   # subsetted
   df <- df %>%
@@ -424,13 +425,15 @@ spaghetti_rt <- function(
   obj <- rt
   obj$draws <- subsamp(object, rt$draws, draws)
   
-  p <- spaghetti_base(obj, log, alpha, date_breaks, step)
+  p <- spaghetti_base(obj, log, alpha, dates, date_format, date_breaks, step)
 
   df <- data.frame(
     date = rt$time, 
     median = apply(rt$draws, 2, function(x) quantile(x, 0.5)),
     group = rt$group
   )
+
+  df <- subset_for_dates(df, dates, date_format)
 
   if (step) {
     p <- p + ggplot2::geom_step(
@@ -442,7 +445,12 @@ spaghetti_rt <- function(
       data = df,  size = 0.8)
   }
 
-  p <- p + ggplot2::ylab(expression(R[t]))
+  if (plotly) {
+      p <- p + ggplot2::ylab(plotly::TeX("$R_t$"))
+      p <- plotly::ggplotly(p) %>% plotly::config(mathjax = "cdn")
+    } else {
+      p <- p + ggplot2::ylab(expression(R[t]))
+  }
   
   return(p)
 }
@@ -474,7 +482,7 @@ spaghetti_infections <-
   obj <- inf
   obj$draws <- subsamp(object, inf$draws, draws)
   
-  p <- spaghetti_base(obj, log, alpha, date_breaks)
+  p <- spaghetti_base(obj, log, alpha, dates, date_format, date_breaks)
 
   df <- data.frame(
     date = inf$time, 
@@ -482,11 +490,17 @@ spaghetti_infections <-
     group = inf$group
   )
 
+  df <- subset_for_dates(df, dates, date_format)
+
   p <- p + ggplot2::geom_line(
       mapping = ggplot2::aes(x = .data$date, y = median), 
       data = df, size = 0.8)
 
   p <- p + ggplot2::ylab("Infections")
+
+  if (plotly) {
+      p <- plotly::ggplotly(p)
+  }
 
   return(p)
 
@@ -540,7 +554,15 @@ spaghetti_obs <- function(
   obj <- obs
   obj$draws <- subsamp(object, obs$draws, draws)
   
-  p <- spaghetti_base(obj, log, alpha, date_breaks)
+  p <- spaghetti_base(obj, log, alpha, dates, date_format, date_breaks)
+
+   # only want to plot dates/groups that appear in p$data as it has been
+  # subsetted
+  df <- df %>%
+    dplyr::right_join(p$data %>%
+                        dplyr::select(.data$date, .data$group) %>%
+                        dplyr::distinct(),
+                      by=c("date", "group"))
 
   layer_fun <- if (bar) ggplot2::geom_bar else ggplot2::geom_point
   p <- p + layer_fun(
@@ -570,12 +592,12 @@ spaghetti_obs <- function(
   return(p)
 }
 
-
-
 spaghetti_base <- function(
   object, 
   log, 
-  alpha, 
+  alpha,
+  dates,
+  date_format,
   date_breaks, 
   step = FALSE) {
 
@@ -586,6 +608,8 @@ spaghetti_base <- function(
   colnames(mat) <- c("id", "date", "rt")
   mat$date <- as.Date(mat$date)
   mat$group <- as.vector(sapply(object$group, function(x) rep(x, ndraws)))
+
+  mat <- subset_for_dates(mat, dates, date_format)
   
   p <- ggplot2::ggplot(mat, ggplot2::aes(x = date, y = rt, group = group))
   
