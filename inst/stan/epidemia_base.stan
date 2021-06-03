@@ -40,7 +40,7 @@ for(r in 1:R)
 
 parameters {
   vector[num_ointercepts] ogamma;
-  real gamma[has_intercept];
+  vector[has_intercept] gamma_raw;
   vector<lower=0>[num_oaux] oaux_raw;
   vector<lower=0>[latent] inf_aux_raw;
 #include /parameters/parameters_glm.stan
@@ -57,6 +57,7 @@ transformed parameters {
   vector<lower=0>[latent] inf_aux = inf_aux_raw;
   vector<lower=0>[M] seeds = seeds_raw;
   vector<lower=0>[hseeds] seeds_aux = seeds_aux_raw;
+  vector[has_intercept] gamma;
 
 #include /tparameters/infections_rt.stan
 #include /tparameters/tparameters_ac.stan
@@ -73,6 +74,11 @@ transformed parameters {
         oaux[i] += prior_mean_for_oaux[i];
       }
     }
+  }
+
+  if (has_intercept) {
+    if (prior_dist_for_intercept[1] == 1 || prior_dist_for_intercept[1] == 2)
+      gamma = gamma_raw * prior_scale_for_intercept[1] + prior_mean_for_intercept[1];
   }
 
   // transform inf_aux paramaters
