@@ -28,9 +28,10 @@
 
         for (i in n0:n2) {
 
+            int start = max(n0, i - gen_len);
+            load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
+
             if (i > n1) { // infections after the seeding period
-                int start = max(n0, i - gen_len);
-                load[i,m] = dot_product(sub_col(infections, start, m, i - start), tail(gen_rev, i - start));
                 E_infections[i,m] = Rt_unadj[i,m] * load[i,m];
                 if (latent) {
                     if (infections_raw[idx2] >= 0) infections[i,m] = infections_raw[idx2];

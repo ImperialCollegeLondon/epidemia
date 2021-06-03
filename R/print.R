@@ -26,7 +26,7 @@ print.epimodel <- function(x, digits=1, ...) {
     estimates <- estimates[!grepl("^R\\|Sigma\\[", rownames(estimates)),, drop=FALSE]
   }
 
-  model_pars <- c("seeds", "tau")
+  model_pars <- c("seeds", "seeds_aux")
   model_pars <- paste(paste0("^", model_pars), collapse="|")
   model_pars <- grepl(model_pars, rownames(estimates))
   estimates_reg <- estimates[!model_pars,, drop=FALSE]

@@ -42,11 +42,14 @@ standata_inf <- function(inf, M) {
   prior_seeds_stuff <- handle_glm_prior(
     prior = inf$prior_seeds,
     nvars = M,
+    default_scale = 1,
+    link = NULL,
     ok_dists = c(ok_aux_dists, "hexp")
   )
 
   names(prior_seeds_stuff) <- paste0(names(prior_seeds_stuff), "_for_seeds")
   out <- c(out, prior_seeds_stuff)
+  out$prior_dist_for_seeds <- as.numeric(out$prior_dist_for_seeds)
 
   # add data for prior on seeds auxiliary param
   prior_seeds_aux_stuff <- handle_glm_prior(

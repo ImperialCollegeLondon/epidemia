@@ -268,12 +268,12 @@ new_names <- function(sdat, rt, obs, fit, data) {
         paste0("R|Sigma[", make_Sigma_nms(rt, sdat, fit), "]")
       },
       c(paste0("seeds[", sdat$groups, "]")),
-      "tau",
+      if (sdat$hseeds) "seeds_aux",
       if (sdat$ac_nterms > 0) {
         make_rw_sigma_nms(rt, data)
       },
       if (sdat$obs_ac_nterms > 0) {
-        do.call("c", sapply(obs, function(x) make_rw_sigma_nms(x, data)))
+        do.call("c", as.list(sapply(obs, function(x) make_rw_sigma_nms(x, data))))
       },
       if (sdat$num_oaux > 0) {
         make_oaux_nms(obs)
