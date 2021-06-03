@@ -208,7 +208,7 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   }
 
   nms <- sub("veps\\[[0-9]\\]", "DUMMY", orig_nms)
-  m <- match(paste0("VaccNoise[", groups, "]"), colnames(stanmat))
+  m <- match(paste0("rm_noise[", groups, "]"), colnames(stanmat))
   if (!anyNA(m)) {
     nms[m] <- paste0("veps[", seq_along(groups), "]")
   }

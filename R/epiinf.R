@@ -29,14 +29,13 @@
 #' and the auxiliary variable refers to the coefficient of variation.
 #' @param pop_adjust If \code{TRUE}, applies a population adjustment to the infection process. Defaults to \code{FALSE}.
 #' @param pops A character vector giving the name of the column in the dataframe.
-#' @param vacc A characted vector giving a column name in \code{data} (see \code{\link{epim}}). This 
-#' column should correspond to vaccination data. Each entry should be the proportion of the unvaccinated 
-#' population in that group, that are removed by vaccination at that point in time. Only used if \code{pop_adjust=TRUE}.
+#' @param rm A characted vector giving a column name in \code{data} (see \code{\link{epim}}). Each entry should be the proportion of the susceptible 
+#' population in that group that are removed at that point by some means other than infection; i.e. vaccination. Only used if \code{pop_adjust=TRUE}.
 #' @param prior_susc Prior distribution on the initial susceptible population at time 0, expressed as a proportion of the total population size.
 #' This quantity lies between 0 and 1, and is useful when the first modeled date is after the true beginning of an epidemic. Only used when \code{pop_adjust = TRUE}.
 #' If unspecified, then the entire population is assumed to be susceptible at time 0.  If specified, should be a call to \code{\link[rstanarm]{normal}}.
-#' @param prior_vnoise Vaccination adjustments may be applied using the \code{vacc} argument. However, in practice, it 
-#' is difficult to specify the proportion of the susceptible class removed by vaccination at any point in time. \code{prior_vnoise} 
+#' @param prior_rm_noise Removal from the susceptible population (to account for vaccinations) can be applied using the \code{rm} argument. However, in practice, it 
+#' is difficult to specify the proportion of the susceptible class removed at any point in time. \code{prior_rm_noise} 
 #' helps to model noise around this. If specified, should be a call to \code{\link[rstanarm]{normal}}.
 #' @return An object of class \code{epiinf}.
 #' @examples 
@@ -58,9 +57,9 @@ epiinf <- function(
   fixed_vtm = 1,
   pop_adjust = FALSE,
   pops = NULL,
-  vacc = NULL,
+  rm = NULL,
   prior_susc = NULL,
-  prior_vnoise = NULL) {
+  prior_rm_noise = NULL) {
 
   call <- match.call(expand.dots = TRUE)
 
@@ -97,9 +96,9 @@ epiinf <- function(
     check_in_set(prior_susc$dist, "normal")
   }
 
-  if (!is.null(prior_vnoise)) {
-    check_prior(prior_vnoise)
-    check_in_set(prior_vnoise$dist, "normal")
+  if (!is.null(prior_rm_noise)) {
+    check_prior(prior_rm_noise)
+    check_in_set(prior_rm_noise$dist, "normal")
   }
   
   p <- substitute(pops)
@@ -111,7 +110,7 @@ epiinf <- function(
   if (pop_adjust == TRUE && p == "NULL")
     stop("pops must be specified if pop_adjust = TRUE", call. = FALSE)
 
-  s <- substitute(vacc)
+  s <- substitute(rm)
   check_character(s)
   if (!is.character(s)) 
     s <- as.character.expr(s)
@@ -129,9 +128,9 @@ epiinf <- function(
     prior_aux = if (latent) prior_aux else NULL,
     pop_adjust,
     pops = if (pop_adjust) p else NULL,
-    vacc = if (pop_adjust && !is.null(s)) s else NULL,
+    rm = if (pop_adjust && !is.null(s)) s else NULL,
     prior_susc,
-    prior_vnoise,
+    prior_rm_noise,
     fixed_vtm = fixed_vtm
   )
   class(out) <- "epiinf"

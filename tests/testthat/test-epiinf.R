@@ -42,25 +42,25 @@ test_that("latent and pop_adjust are logical scalars", {
 test_that("populations and susceptibles behave correctly", {
   inf <- epiinf(gen = rep(0.2, 5), pop_adjust = FALSE)
   expect_equal(inf$pops, NULL)
-  expect_equal(inf$vacc, NULL)
+  expect_equal(inf$rm, NULL)
   
-  inf <- epiinf(gen = rep(0.2, 5), pop_adjust = FALSE, pops = dummy1, vacc = dummy2)
+  inf <- epiinf(gen = rep(0.2, 5), pop_adjust = FALSE, pops = dummy1, rm = dummy2)
   expect_equal(inf$pops, NULL)
-  expect_equal(inf$vacc, NULL)
+  expect_equal(inf$rm, NULL)
   
   expect_error(epiinf(gen = rep(0.2, 5), pop_adjust = TRUE), regexp = "pop")
   
   inf <- epiinf(gen = rep(0.2, 5), pop_adjust = TRUE, pop = dummy)
   expect_equal(inf$pops, "dummy")
-  expect_equal(inf$vacc, NULL)
+  expect_equal(inf$rm, NULL)
   
-  inf <- epiinf(gen = rep(0.2, 5), pop_adjust = TRUE, pop = dummy1, vacc = dummy2)
+  inf <- epiinf(gen = rep(0.2, 5), pop_adjust = TRUE, pop = dummy1, rm = dummy2)
   expect_equal(inf$pops, "dummy1")
-  expect_equal(inf$vacc, "dummy2") 
+  expect_equal(inf$rm, "dummy2") 
   
-  inf <- epiinf(gen = rep(0.2, 5), pop_adjust = TRUE, pop = "dummy1", vacc = "dummy2")
+  inf <- epiinf(gen = rep(0.2, 5), pop_adjust = TRUE, pop = "dummy1", rm = "dummy2")
   expect_equal(inf$pops, "dummy1")
-  expect_equal(inf$vacc, "dummy2")
+  expect_equal(inf$rm, "dummy2")
 })
 
 test_that("family is scalar character and in required set", {

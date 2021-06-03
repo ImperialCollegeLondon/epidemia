@@ -288,7 +288,7 @@ new_names <- function(sdat, rt, obs, fit, data) {
         paste0("S0[",sdat$groups, "]")
       },
       if (!sdat$veps_fixed) {
-        paste0("VaccNoise[", sdat$groups, "]")
+        paste0("rm_noise[", sdat$groups, "]")
       },
       "log-posterior"
     )

@@ -153,8 +153,8 @@ standata_data <- function(data, inf) {
 
   # get susceptibles data
   vacc <- matrix(0, nrow = N2, ncol = M)
-  if (inf$pop_adjust && !is.null(inf$vacc)) {
-    col <- inf$vacc
+  if (inf$pop_adjust && !is.null(inf$rm)) {
+    col <- inf$rm
     df <- split(dplyr::pull(data, col), data$group)
     for (m in 1:M)
       vacc[starts[m] + seq_len(NC[m])-1L, m] <- df[[m]]

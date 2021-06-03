@@ -70,21 +70,21 @@ test_that("check_group_as_factor", {
 })
 
 
-test_that("vaccinations have correct format", {
+test_that("rm have correct format", {
   df$A <- 0.5
   inf <- epiinf(gen=1)
-  expect_error(check_vacc(inf, df), NA)
-  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, vacc = A)
-  expect_error(check_vacc(inf, df), NA)
-  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, vacc = "A")
-  expect_error(check_vacc(inf, df), NA)
-  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, vacc = B)
-  expect_error(check_vacc(inf, df), regexp = "not found")
-  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, vacc = A)
+  expect_error(check_rm(inf, df), NA)
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, rm = A)
+  expect_error(check_rm(inf, df), NA)
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, rm = "A")
+  expect_error(check_rm(inf, df), NA)
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, rm = B)
+  expect_error(check_rm(inf, df), regexp = "not found")
+  inf <- epiinf(gen=1, pop_adjust = TRUE, pops=A, rm = A)
   df$A <- 1.2
-  expect_error(check_vacc(inf, df), regexp = "[0,1]")
+  expect_error(check_rm(inf, df), regexp = "[0,1]")
   df$A <- -0.2
-  expect_error(check_vacc(inf, df), regexp = "[0,1]")
+  expect_error(check_rm(inf, df), regexp = "[0,1]")
 })
 
 
@@ -163,7 +163,7 @@ test_that("Simple overall testing of check_data", {
 
   args1 <- args
   args1$data[4,3] <- -1
-  args1$inf <- epiinf(gen=1, pop_adjust=TRUE, pops=A, vacc = C)
+  args1$inf <- epiinf(gen=1, pop_adjust=TRUE, pops=A, rm = C)
   expect_error(do.call(check_data, args1), regexp = "[0,1]")
 
   args1 <- args

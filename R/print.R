@@ -26,11 +26,11 @@ print.epimodel <- function(x, digits=1, ...) {
     estimates <- estimates[!grepl("^R\\|Sigma\\[", rownames(estimates)),, drop=FALSE]
   }
 
-  model_pars <- c("seeds", "seeds_aux")
-  model_pars <- paste(paste0("^", model_pars), collapse="|")
-  model_pars <- grepl(model_pars, rownames(estimates))
-  estimates_reg <- estimates[!model_pars,, drop=FALSE]
-  estimates_mod <- estimates[model_pars,, drop=FALSE]
+  inf_pars <- c("seeds", "seeds_aux", "inf_aux", "rm_noise")
+  inf_pars <- paste(paste0("^", inf_pars), collapse="|")
+  inf_pars <- grepl(inf_pars, rownames(estimates))
+  estimates_reg <- estimates[!inf_pars,, drop=FALSE]
+  estimates_inf <- estimates[inf_pars,, drop=FALSE]
 
   cat("\nRt regression parameters:\n")
   cat("==========")
@@ -59,9 +59,9 @@ print.epimodel <- function(x, digits=1, ...) {
 
   
 } 
-  cat("\nOther model parameters:\n")
+  cat("\nInfection model parameters:\n")
   cat("==========\n")
-  .printfr(estimates_mod, digits)
+  .printfr(estimates_inf, digits)
 
    invisible(x)
 }

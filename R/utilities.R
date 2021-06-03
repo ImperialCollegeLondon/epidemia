@@ -260,12 +260,12 @@ check_time_as_date <- function(object, data) {
 # @param inf An epiinf object
 # @param data the data frame to check
 # @param tol the tolerance for checking integer
-check_vacc <- function(inf, data, tol = .Machine$double.eps) {
-  if (inf$pop_adjust && !is.null(inf$vacc)) {
-    col <- inf$vacc
+check_rm <- function(inf, data, tol = .Machine$double.eps) {
+  if (inf$pop_adjust && !is.null(inf$rm)) {
+    col <- inf$rm
     not_found <- !(col %in% colnames(data))
     if (not_found)
-      stop(paste0("column ", col, " required to compute vaccine adjustment, but not found in `data`. Please add to the dataframe."), call. = FALSE)
+      stop(paste0("column ", col, " required to compute removal from susceptibles, but not found in `data`. Please add to the dataframe."), call. = FALSE)
     
     x <- data[, col]
     x <- suppressWarnings(as.numeric(x))
@@ -365,7 +365,7 @@ check_data <- function(data, rt, inf, obs, group_subset) {
 
   check_group_as_factor(rt, data)
   check_time_as_date(rt, data)
-  check_vacc(inf, data)
+  check_rm(inf, data)
   check_pops(inf, data)
   check_consecutive_dates(rt, data)
   check_groups_data(rt, group_subset, data)
@@ -544,7 +544,7 @@ select_cols_data <- function(data, rt, inf, obs) {
     all_vars(rhs(formula(rt))),
     unlist(lapply(obs, function(x) all_vars(formula(x)))),
     if(inf$pop_adjust) inf$pops,
-    if(inf$pop_adjust) inf$vacc
+    if(inf$pop_adjust) inf$rm
   )
   # keep only required variables
   data <- dplyr::select(data, tidyselect::all_of(unique(vars)))
