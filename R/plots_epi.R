@@ -294,6 +294,7 @@ plot_infections.epimodel <-
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
   cumulative=FALSE, 
+  by_100k = FALSE,
   levels = c(30, 60, 90), 
   log=FALSE,
   plotly = FALSE, 
@@ -310,6 +311,10 @@ plot_infections.epimodel <-
 
     if (cumulative) {
       inf <- cumul(inf)
+    }
+
+    if (by_100k) {
+
     }
 
     qtl <- get_quantiles(
@@ -501,9 +506,7 @@ spaghetti_infections <-
   if (plotly) {
       p <- plotly::ggplotly(p)
   }
-
   return(p)
-
 }
 
 #' @rdname plot_obs
@@ -588,7 +591,6 @@ spaghetti_obs <- function(
   p <- p + cols + ggplot2::ylab(type)
   
   if (plotly) p <- plotly::ggplotly(p)
-
   return(p)
 }
 

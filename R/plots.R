@@ -165,7 +165,7 @@ restrict_pars <- function(object, pars = NULL, par_models = NULL,
   autocor <- grep(pars, pattern = "\\|rw\\(", value = T)
   seeds <- grep(pars, pattern = "^seeds\\[", value = T)
   latent <- grep(pars, pattern = "^inf_noise\\[", value=T)
-  inf_aux <- grep(pars, pattern = "(^inf\\|)|(^tau$)", value = T)
+  inf_aux <- grep(pars, pattern = "(^inf\\|)|(^seeds_aux$)", value = T)
   obs_aux <- setdiff(grep(pars, pattern = aux_regex, value=T), inf_aux)
   fixed <- setdiff( # should be anything not yet captured
     grep(pars, pattern = "\\|", value=T),
