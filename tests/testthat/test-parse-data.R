@@ -52,7 +52,7 @@ test_that("group_date_col_data", {
 })
 
 test_that("select_cols_data", {
-  inf <- epiinf(gen=1, pop_adjust=TRUE, pops=E, vacc=E)
+  inf <- epiinf(gen=1, pop_adjust=TRUE, pops=E, rm=E)
   dat <- group_date_col_data(data, rt)
   dat$E <- 1
   res <- select_cols_data(dat, rt, inf, obs)

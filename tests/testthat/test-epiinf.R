@@ -28,8 +28,8 @@ test_that("Correct priors are enforced", {
   expect_error(inf <- epiinf(gen = rep(0.2,5), prior_aux = rstanarm::lasso()), regexp = "normal")
   expect_error(inf <- epiinf(gen = rep(0.2,5), prior_susc = "dummy"), regexp = "prior")
   expect_error(inf <- epiinf(gen = rep(0.2,5), prior_susc = rstanarm::lasso()), regexp = "normal")
-  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_vnoise = "dummy"), regexp = "prior")
-  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_vnoise = rstanarm::lasso()), regexp = "normal")
+  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_rm_noise = "dummy"), regexp = "prior")
+  expect_error(inf <- epiinf(gen = rep(0.2,5), prior_rm_noise = rstanarm::lasso()), regexp = "normal")
 })
 
 test_that("latent and pop_adjust are logical scalars", {

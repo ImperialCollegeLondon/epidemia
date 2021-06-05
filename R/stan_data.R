@@ -91,10 +91,10 @@ standata_inf <- function(inf, M) {
   out <- c(out, p_S0)
 
 
-  out$veps_fixed <- as.numeric(!is.list(inf$prior_vnoise))
+  out$veps_fixed <- as.numeric(!is.list(inf$prior_rm_noise))
 
   if (out$veps_fixed) p_veps <- list()
-  else p_veps <- inf$prior_vnoise
+  else p_veps <- inf$prior_rm_noise
 
   p_veps <- handle_glm_prior(
     p_veps,
