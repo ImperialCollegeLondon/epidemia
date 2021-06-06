@@ -54,7 +54,6 @@
 #' \donttest{
 #' library(EpiEstim)
 #' data("Flu1918")
-#' extrafont::loadfonts(quiet=TRUE)
 #'
 #' date <- as.Date("1918-01-01") + seq(0, along.with = c(NA, Flu1918$incidence))
 #' data <- data.frame(
@@ -89,7 +88,6 @@
 #'
 #' fm <- do.call(epim, args)
 #'
-#' plot_rt(fm)
 #' }
 #' @return An object of class \code{epimodel}.
 #' @export

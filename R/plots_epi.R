@@ -36,7 +36,6 @@
 #' @examples
 #' \donttest{
 #' data("EuropeCovid2")
-#' extrafont::loadfonts(quiet=TRUE)
 #' data <- EuropeCovid2$data
 #' data <- dplyr::filter(data, date > date[which(cumsum(deaths) > 10)[1] - 30])
 #' data <- dplyr::filter(data, date < as.Date("2020-05-05"))
@@ -69,21 +68,21 @@
 #' fm <- do.call(epim, args)
 #' 
 #' # different ways of using plot_rt
-#' plot_rt(fm) # default, plots all groups and dates
-#' plot_rt(fm, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
-#' plot_rt(fm, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
-#' plot_rt(fm, dates=c("2020-03-20", "2020-04-20"))
-#' plot_rt(fm,
+#' p <- plot_rt(fm) # default, plots all groups and dates
+#' p <- plot_rt(fm, dates=c("2020-03-21", NA)) # plot 21 March 2020 onwards
+#' p <- plot_rt(fm, dates=c(NA, "2020-03-20")) # plot up to  20 March 2020
+#' p <- plot_rt(fm, dates=c("2020-03-20", "2020-04-20"))
+#' p <- plot_rt(fm,
 #'          dates=c("2020-03-20", "2020-04-20"),
 #'         date_breaks="1 day") # ticks every day
-#' plot_rt(fm,
+#' p <- plot_rt(fm,
 #'        dates=c("2020-20-03", "2020-20-04"),
 #'        date_format="%Y-%d-%m") # (different date format)
 #' 
 #' # other plotting functions
-#' plot_obs(fm, type = "deaths")
-#' plot_infections(fm)
-#' plot_infectious(fm) 
+#' p <- plot_obs(fm, type = "deaths")
+#' p <- plot_infections(fm)
+#' p <- plot_infectious(fm) 
 #' }
 #' @seealso \code{\link{plot_obs}}, \code{\link{plot_infections}}, \code{\link{plot_infectious}}
 #' @export

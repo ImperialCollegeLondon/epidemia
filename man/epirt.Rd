@@ -63,9 +63,9 @@ The right hand side can consist of fixed effects, random effects, and autocorrel
 \examples{
 \donttest{
 library(epidemia)
+library(ggplot2)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
-extrafont::loadfonts(quiet=TRUE)
 
 data <- EuropeCovid$data
 data$week <- lubridate::week(data$date)
@@ -89,7 +89,7 @@ args$rt <- epirt(
 )
 
 fm1 <- do.call(epim, args)
-plot_rt(fm1)
+plot_rt(fm1) + theme_bw()
 
 # Modeling effects of NPIs
 args$rt <- epirt(
@@ -98,7 +98,7 @@ args$rt <- epirt(
 )
 
 fm2 <- do.call(epim, args)
-plot_rt(fm2)
+plot_rt(fm2) + theme_bw()
 
 
 # shifted gamma prior for NPI effects
@@ -111,6 +111,6 @@ args$rt <- epirt(
 # How does the implied prior look?
 args$prior_PD <- TRUE
 fm3 <- do.call(epim, args)
-plot_rt(fm3)
+plot_rt(fm3) + theme_bw()
 }
 }
