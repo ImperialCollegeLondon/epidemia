@@ -17,11 +17,12 @@ pkgdown:
 
 <div class = "article_container">
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(
   out.width = 6, fig.height = 6, out.width = "70%", fig.align = "center"
 )
 library(ggplot2)
+extrafont::loadfonts()
 ```
 
 

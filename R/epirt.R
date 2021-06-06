@@ -40,6 +40,7 @@
 #' library(epidemia)
 #' data("EuropeCovid")
 #' options(mc.cores = parallel::detectCores())
+#' extrafont::loadfonts(quiet=TRUE)
 #'
 #' data <- EuropeCovid$data
 #' data$week <- lubridate::week(data$date)

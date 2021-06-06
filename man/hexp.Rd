@@ -23,9 +23,6 @@ priors to hyperparameters is referred to as hierarchical modeling. A call
 to this function can be passed as the \code{prior_seeds} argument in
 \code{\link[epidemia]{epiinf}}.
 }
-\examples{
-
-}
 \references{
 \insertAllCited{}
 }

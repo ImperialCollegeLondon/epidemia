@@ -82,6 +82,7 @@ Nonetheless, fitting these models using HMC is often computationally demanding, 
 \donttest{
 library(EpiEstim)
 data("Flu1918")
+extrafont::loadfonts(quiet=TRUE)
 
 date <- as.Date("1918-01-01") + seq(0, along.with = c(NA, Flu1918$incidence))
 data <- data.frame(

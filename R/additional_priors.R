@@ -20,13 +20,6 @@
 #' 
 #' @return A named list to be parsed internally by \code{\link[epidemia]{epim}}.
 #' 
-#' @examples
-#' 
-#' library(epidemia)
-#' data(EuropeCovid)
-#' args <- EuropeCovid
-#' args$prior <- shifted_gamma(shape=1, scale=1, shift=-0.5)
-#' 
 #' @references
 #' \insertAllCited{}
 #' @export
@@ -51,8 +44,6 @@ shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
 #' or \code{\link[rstanarm]{exponential}}.
 #' 
 #' @return A named list to be parsed internally by \code{\link[epidemia]{epim}}.
-#' 
-#' @examples
 #' 
 #' @references
 #' \insertAllCited{}

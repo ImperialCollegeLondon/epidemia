@@ -132,6 +132,7 @@ check_rhats <- function(rhats, threshold = 1.1, check_lp = FALSE) {
 
 #' Get posterior sample size from a fitted model
 #'
+#' @param object An object of class \code{epimodel}
 #' @export
 posterior_sample_size <- function(object) {
   UseMethod("posterior_sample_size", object)
@@ -144,8 +145,9 @@ posterior_sample_size.epimodel <- function(object) {
          - object$stanfit@sim$warmup2))
 }
 
-#' Get posterior sample size from a fitted model
+#' Get a list of all observation types used in a model
 #'
+#' @param object An object of class \code{epimodel}.
 #' @export
 all_obs_types <- function(object) {
   UseMethod("all_obs_types", object)

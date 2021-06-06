@@ -32,14 +32,6 @@ to \code{epim}. This specified a shifted gamma prior on the negative of the
 regression parameters. i.e. if there is no shift, the support is on the
 negative half of the real line.
 }
-\examples{
-
-library(epidemia)
-data(EuropeCovid)
-args <- EuropeCovid
-args$prior <- shifted_gamma(shape=1, scale=1, shift=-0.5)
-
-}
 \references{
 \insertAllCited{}
 }

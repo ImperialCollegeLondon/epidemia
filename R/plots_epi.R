@@ -36,6 +36,7 @@
 #' @examples
 #' \donttest{
 #' data("EuropeCovid2")
+#' extrafont::loadfonts(quiet=TRUE)
 #' data <- EuropeCovid2$data
 #' data <- dplyr::filter(data, date > date[which(cumsum(deaths) > 10)[1] - 30])
 #' data <- dplyr::filter(data, date < as.Date("2020-05-05"))
@@ -182,6 +183,7 @@ plot_rt.epimodel <-
 #' @param type A string specifying the name of the observations to plot. This should match one
 #'  of the names of the response variables in the \code{obs} argument used int the call to \code{\link{epim}}.
 #' @param cumulative If \code{TRUE} then cumulative observations are plotted rather than daily. Defaults to \code{FALSE}.
+#' @param by_100k If \code{TRUE}, all quantities are plotted per 100k of population. Only possible if the model used a population adjustment.
 #' @param bar If \code{TRUE}, observations are plotted as a bar plot. Otherwise, a scatterplot is used. Defaults to \code{TRUE}.
 #' @param ... Additional arguments for
 #'  \code{\link{posterior_predict.epimodel}}. Examples include
@@ -196,7 +198,8 @@ plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 #' @export
 plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL, 
   date_breaks = "2 weeks", date_format = "%Y-%m-%d", cumulative = FALSE, 
-  bar = TRUE, levels = c(30, 60, 90), log = FALSE, plotly = FALSE, ...) {
+  by_100k = FALSE, bar = TRUE, levels = c(30, 60, 90), log = FALSE, 
+  plotly = FALSE, ...) {
 
   levels <- check_levels(levels)
   
@@ -366,6 +369,7 @@ plot_infectious.epimodel <-
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
   levels = c(30, 60, 90), 
+  by_100k = FALSE,
   log=FALSE,
   plotly = FALSE, 
   ...) {
@@ -405,6 +409,10 @@ plot_infectious.epimodel <-
   }
 
 #' @rdname plot_rt
+#'
+#' @param draws The number of sample paths to plot.
+#' @param alpha Sets transparency of sample paths.
+#'
 #' @export
 spaghetti_rt <- function(
   object, 
@@ -461,6 +469,10 @@ spaghetti_rt <- function(
 }
 
 #' @rdname plot_infections
+#'
+#' @param draws The number of sample paths to plot.
+#' @param alpha Sets transparency of sample paths.
+#'
 #' @export
 spaghetti_infections <- 
   function(object, 
@@ -510,6 +522,10 @@ spaghetti_infections <-
 }
 
 #' @rdname plot_obs
+#'
+#' @param draws The number of sample paths to plot.
+#' @param alpha Sets transparency of sample paths.
+#'
 #' @export
 spaghetti_obs <- function(
   object, 
@@ -613,13 +629,13 @@ spaghetti_base <- function(
 
   mat <- subset_for_dates(mat, dates, date_format)
   
-  p <- ggplot2::ggplot(mat, ggplot2::aes(x = date, y = rt, group = group))
+  p <- ggplot2::ggplot(mat, ggplot2::aes(x = .data$date, y = .data$rt, group = .data$group))
   
   if (step) {
-    p <- p + ggplot2::geom_step(ggplot2::aes(group=id), alpha=alpha, colour="deepskyblue4")
+    p <- p + ggplot2::geom_step(ggplot2::aes(group=.data$id), alpha=alpha, colour="deepskyblue4")
   }
   else {
-    p <- p + ggplot2::geom_line(ggplot2::aes(group=id), alpha=alpha, colour="deepskyblue4")
+    p <- p + ggplot2::geom_line(ggplot2::aes(group=.data$id), alpha=alpha, colour="deepskyblue4")
   }
 
   p <- p + hrbrthemes::theme_ipsum() +
@@ -648,7 +664,7 @@ spaghetti_base <- function(
     )
   
   if (length(unique(mat$group)) > 1) {
-    p <- p + ggplot2::facet_wrap(~group, scale = "free_y") + 
+    p <- p + ggplot2::facet_wrap(.data$group, scale = "free_y") + 
       ggplot2::theme(strip.background = ggplot2::element_blank(), 
                      strip.text = ggplot2::element_text(face = "bold"), 
                      axis.text.x = ggplot2::element_text(angle = 45, 

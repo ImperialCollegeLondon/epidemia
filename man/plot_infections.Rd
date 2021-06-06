@@ -15,6 +15,7 @@ plot_infections(object, ...)
   date_breaks = "2 weeks",
   date_format = "\%Y-\%m-\%d",
   cumulative = FALSE,
+  by_100k = FALSE,
   levels = c(30, 60, 90),
   log = FALSE,
   plotly = FALSE,
@@ -61,6 +62,8 @@ argument to \code{\link[base]{as.Date}}. Default is "\%Y-\%m-\%d".}
 
 \item{cumulative}{If \code{TRUE} then cumulative observations are plotted rather than daily. Defaults to \code{FALSE}.}
 
+\item{by_100k}{If \code{TRUE}, all quantities are plotted per 100k of population. Only possible if the model used a population adjustment.}
+
 \item{levels}{A numeric vector defining the levels of the plotted
 credible intervals.}
 
@@ -69,6 +72,10 @@ must be \code{logical}, and defaults to \code{FALSE}.}
 
 \item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
 useful for interactive graphing.}
+
+\item{draws}{The number of sample paths to plot.}
+
+\item{alpha}{Sets transparency of sample paths.}
 
 \item{smooth}{An integer specifying the window used to smooth the reproduction rates. The
 default is \code{1}, which corresponds to no smoothing.}
@@ -85,6 +92,7 @@ This is a generic function.
 \examples{
 \donttest{
 data("EuropeCovid2")
+extrafont::loadfonts(quiet=TRUE)
 data <- EuropeCovid2$data
 data <- dplyr::filter(data, date > date[which(cumsum(deaths) > 10)[1] - 30])
 data <- dplyr::filter(data, date < as.Date("2020-05-05"))

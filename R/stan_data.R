@@ -163,7 +163,7 @@ standata_data <- function(data, inf) {
   pops <- numeric(M)
   # get populations if population adjustment engaged
   if (inf$pop_adjust) {
-    df <- dplyr::summarise(data, pops = head(!!dplyr::sym(inf$pops),1))
+    df <- dplyr::summarise(data, pops = utils::head(!!dplyr::sym(inf$pops),1))
     pops <- df$pops
   }
 

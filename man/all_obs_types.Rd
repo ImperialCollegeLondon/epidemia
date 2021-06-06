@@ -2,10 +2,13 @@
 % Please edit documentation in R/misc.R
 \name{all_obs_types}
 \alias{all_obs_types}
-\title{Get posterior sample size from a fitted model}
+\title{Get a list of all observation types used in a model}
 \usage{
 all_obs_types(object)
 }
+\arguments{
+\item{object}{An object of class \code{epimodel}.}
+}
 \description{
-Get posterior sample size from a fitted model
+Get a list of all observation types used in a model
 }

@@ -132,6 +132,7 @@ Suggests:
     EpiEstim,
     lubridate,
     rstanarm,
-    kableExtra
+    kableExtra,
+    extrafont
 RdMacros:
     Rdpack

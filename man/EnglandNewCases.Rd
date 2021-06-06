@@ -7,7 +7,6 @@
 \format{
 A dataframe with three columns, \code{date}, \code{region} and \code{cases}. Each row gives case counts for a given date in England.
 }
-}
 \usage{
 EnglandNewCases
 }

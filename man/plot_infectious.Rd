@@ -14,6 +14,7 @@ plot_infectious(object, ...)
   date_breaks = "2 weeks",
   date_format = "\%Y-\%m-\%d",
   levels = c(30, 60, 90),
+  by_100k = FALSE,
   log = FALSE,
   plotly = FALSE,
   ...
@@ -46,6 +47,8 @@ argument to \code{\link[base]{as.Date}}. Default is "\%Y-\%m-\%d".}
 \item{levels}{A numeric vector defining the levels of the plotted
 credible intervals.}
 
+\item{by_100k}{If \code{TRUE}, all quantities are plotted per 100k of population. Only possible if the model used a population adjustment.}
+
 \item{log}{If \code{TRUE}, plot quantities on a log10-scale. This argument
 must be \code{logical}, and defaults to \code{FALSE}.}
 
@@ -66,6 +69,7 @@ This is a generic function.
 \examples{
 \donttest{
 data("EuropeCovid2")
+extrafont::loadfonts(quiet=TRUE)
 data <- EuropeCovid2$data
 data <- dplyr::filter(data, date > date[which(cumsum(deaths) > 10)[1] - 30])
 data <- dplyr::filter(data, date < as.Date("2020-05-05"))

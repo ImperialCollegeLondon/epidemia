@@ -6,6 +6,9 @@
 \usage{
 posterior_sample_size(object)
 }
+\arguments{
+\item{object}{An object of class \code{epimodel}}
+}
 \description{
 Get posterior sample size from a fitted model
 }

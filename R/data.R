@@ -43,7 +43,7 @@
 #' underreported as not all cases have been counted as of the download date.
 #'
 #' @format A dataframe with three columns, `date`, `region` and `cases`. Each row gives case counts for a given date in England.
-#' }
+#' 
 #' @references
 #' \insertAllCited{}
 "EnglandNewCases"

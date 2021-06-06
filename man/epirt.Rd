@@ -65,6 +65,7 @@ The right hand side can consist of fixed effects, random effects, and autocorrel
 library(epidemia)
 data("EuropeCovid")
 options(mc.cores = parallel::detectCores())
+extrafont::loadfonts(quiet=TRUE)
 
 data <- EuropeCovid$data
 data$week <- lubridate::week(data$date)

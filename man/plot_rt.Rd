@@ -75,6 +75,10 @@ default is \code{1}, which corresponds to no smoothing.}
 
 \item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
 useful for interactive graphing.}
+
+\item{draws}{The number of sample paths to plot.}
+
+\item{alpha}{Sets transparency of sample paths.}
 }
 \value{
 If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
@@ -88,6 +92,7 @@ which groups/regions to plot for. This is a generic function.
 \examples{
 \donttest{
 data("EuropeCovid2")
+extrafont::loadfonts(quiet=TRUE)
 data <- EuropeCovid2$data
 data <- dplyr::filter(data, date > date[which(cumsum(deaths) > 10)[1] - 30])
 data <- dplyr::filter(data, date < as.Date("2020-05-05"))

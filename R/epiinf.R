@@ -21,14 +21,14 @@
 #' distribution allows hierarchical modeling of seeded infections.
 #' @param latent If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.
 #' @param family 	Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{normal}.
-#' @param prior_aux Prior distribution for the auxiliary variable in the model for latent infections. Only used if \code{latent = TRUE}. If \code{fixed_vtm = TRUE}, then 
-#' the auxiliary variable refers to the coefficient of dispersion. If \code{fixed_vtm = FALSE}, this refers to 
-#' the coefficient of variation instead.
-#' @param fixed_vtm If \code{TRUE}, then the prior ratio of variance to mean for latent infections is fixed, i.e. the auxiliary 
+#' @param prior_aux Prior distribution for the auxiliary variable in the distribution for latent infections. Only used if \code{latent = TRUE}. If \code{fixed_vtm = TRUE}, then 
+#' this refers to the variance-to-mean ratio. If \code{fixed_vtm = FALSE}, it is instead the coefficient of variation. Can be a call to \code{\link[rstanarm]{exponential}}, 
+#' \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} or \code{\link[rstanarm]{cauchy}}. These result in half-normal, half-t and half-cauchy priors.
+#' @param fixed_vtm If \code{TRUE}, then the prior variance-to-mean ratio for latent infections is fixed, i.e. the auxiliary 
 #' variable refers to the coefficient of dispersion. If \code{FALSE}, then the prior ratio of standard deviation to mean is fixed instead,
 #' and the auxiliary variable refers to the coefficient of variation.
 #' @param pop_adjust If \code{TRUE}, applies a population adjustment to the infection process. Defaults to \code{FALSE}.
-#' @param pops A character vector giving the name of the column in the dataframe.
+#' @param pops A character vector giving the name of the column in the dataframe corresponding to the population of each group.
 #' @param rm A characted vector giving a column name in \code{data} (see \code{\link{epim}}). Each entry should be the proportion of the susceptible 
 #' population in that group that are removed at that point by some means other than infection; i.e. vaccination. Only used if \code{pop_adjust=TRUE}.
 #' @param prior_susc Prior distribution on the initial susceptible population at time 0, expressed as a proportion of the total population size.

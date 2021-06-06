@@ -20,10 +20,11 @@ pkgdown:
 # 1918 H1N1 Pandemic 
 <hr>
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(
   fig.width = 6, fig.height = 6
 )
+extrafont::loadfonts()
 ```
 
 Here we demonstrate basic usage of **epidemia**; in particular we infer time-varying
