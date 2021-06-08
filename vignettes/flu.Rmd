@@ -157,6 +157,7 @@ and show that both models are able to fit the data well.
 
 ```{r flu1918-plots, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 9, fig.height = 12, fig.cap = "Reproduction numbers, infections and posterior predictive for both fits. The basic model is shown in the left column, while the right column is for the extended version."}
 library(gridExtra)
+library(ggpubr)
 p1 <- plot_rt(fm1) + theme_pubr()
 p2 <- plot_rt(fm2) + theme_pubr()
 p3 <- plot_infections(fm1, levels = c(30,60,90)) + theme_pubr()
