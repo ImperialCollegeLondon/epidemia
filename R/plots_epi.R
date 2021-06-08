@@ -223,6 +223,14 @@ plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL,
       dplyr::mutate(obs = cumsum(obs))
     df <- as.data.frame(df)
   }
+
+  if (by_100k) {
+    obs <- by100k(obs, object)
+    pop_df <- summarise(object$data, pop = (!!as.symbol(object$inf$pops))[1])
+    df <- df %>%
+      dplyr::left_join(pop_df, by = "group") %>%
+      dplyr::mutate(obs = .data$obs * 1e5 / .data$pop)
+  }
   
   qtl <- get_quantiles(
     obs,
@@ -230,7 +238,7 @@ plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL,
     dates,
     date_format
   )
-
+  
   # only want to plot dates/groups that appear in qtl as it has been
   # subsetted
   df <- df %>%
@@ -265,10 +273,12 @@ plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL,
   }
   
   nme <- type
+  if (by_100k) nme <- paste(nme, "per 100k")
   cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
   
   p <- p + cols
-  
+  p <- p + ggplot2::ylab(nme)
+
   if (plotly) p <- plotly::ggplotly(p)
 
   return(p)
@@ -311,14 +321,9 @@ plot_infections.epimodel <-
     # transform data
     inf <- gr_subset(inf, groups)
 
-    if (cumulative) {
-      inf <- cumul(inf)
-    }
-
-    if (by_100k) {
-
-    }
-
+    if (cumulative) inf <- cumul(inf)
+    if (by_100k) inf <- by100k(inf, object)
+    
     qtl <- get_quantiles(
       inf,
       levels,
@@ -328,13 +333,16 @@ plot_infections.epimodel <-
 
     p <- base_plot(qtl, log, date_breaks)
 
+    p <- add_median(p, inf)
+
     nme <- "Infections"
+    if (by_100k) nme <- "Infections per 100k"
     p <- p + ggplot2::scale_fill_manual(
       name = nme,
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
-    p <- p + ggplot2::ylab("Infections")
+    p <- p + ggplot2::ylab(nme) 
 
     if (plotly) {
       p <- plotly::ggplotly(p)
@@ -382,6 +390,8 @@ plot_infectious.epimodel <-
     # transform data
     inf <- gr_subset(inf, groups)
 
+    if (by_100k) inf <- by100k(inf, object)
+
     qtl <- get_quantiles(
       inf,
       levels,
@@ -389,17 +399,18 @@ plot_infectious.epimodel <-
       date_format
     )
 
-
     p <- base_plot(qtl, log, date_breaks)
 
-    nme <- "Infectious"
+    p <- add_median(p, inf)
 
+    nme <- "Infectious"
+    if (by_100k) nme <- "Infectious per 100k"
     p <- p + ggplot2::scale_fill_manual(
       name = nme, 
       values = ggplot2::alpha("deepskyblue4", levels/100)
     )
 
-    p <- p + ggplot2::ylab("Infectious")
+    p <- p + ggplot2::ylab(nme)
 
     if (plotly) {
       p <- plotly::ggplotly(p)
@@ -482,6 +493,7 @@ spaghetti_infections <-
   date_breaks="2 weeks", 
   date_format="%Y-%m-%d",
   cumulative=FALSE, 
+  by_100k = FALSE,
   log=FALSE,
   smooth=1,
   plotly = FALSE, 
@@ -491,6 +503,8 @@ spaghetti_infections <-
   inf <- gr_subset(inf, groups)
   if (cumulative) inf <- cumul(inf)
   inf <- smooth_obs(inf, smooth)
+
+  if (by_100k) inf <- by100k(inf, object)
 
   check_draws(draws, object)
   check_alpha(alpha)
@@ -512,7 +526,9 @@ spaghetti_infections <-
       mapping = ggplot2::aes(x = .data$date, y = median), 
       data = df, size = 0.8)
 
-  p <- p + ggplot2::ylab("Infections")
+  nme <- "Infections"
+  if (by_100k) nme <- paste(nme, "per 100k")
+  p <- p + ggplot2::ylab(nme)
 
   if (plotly) {
       p <- plotly::ggplotly(p)
@@ -536,6 +552,7 @@ spaghetti_obs <- function(
   date_breaks = "2 weeks", 
   date_format = "%Y-%m-%d", 
   cumulative = FALSE, 
+  by_100k = FALSE,
   bar = TRUE, 
   log = FALSE, 
   smooth = 1,
@@ -565,6 +582,14 @@ spaghetti_obs <- function(
       dplyr::group_by(.data$group) %>%
       dplyr::mutate(obs = cumsum(obs))
     df <- as.data.frame(df)
+  }
+
+  if (by_100k) {
+    obs <- by100k(obs, object)
+    pop_df <- summarise(object$data, pop = (!!as.symbol(object$inf$pops))[1])
+    df <- df %>%
+      dplyr::left_join(pop_df, by = "group") %>%
+      dplyr::mutate(obs = .data$obs * 1e5 / .data$pop)
   }
 
   obs <- smooth_obs(obs, smooth)
@@ -601,9 +626,10 @@ spaghetti_obs <- function(
   }
   
   nme <- type
+  if (by_100k) nme <- paste(nme, "per 100k")
   cols <- ggplot2::scale_fill_manual(name = nme, values = cols)
   
-  p <- p + cols + ggplot2::ylab(type)
+  p <- p + cols + ggplot2::ylab(nme)
   
   if (plotly) p <- plotly::ggplotly(p)
   return(p)
@@ -618,17 +644,16 @@ spaghetti_base <- function(
   date_breaks, 
   step = FALSE) {
 
-  mat <- object$draws
+  mat <- as.data.frame(object$draws)
   ndraws <- nrow(mat)
   colnames(mat) <- as.character(object$time)
-  mat <- reshape2::melt(mat)
-  colnames(mat) <- c("id", "date", "rt")
+  mat <- tidyr::pivot_longer(mat, cols = dplyr::everything(), names_to = "date", values_to = 'value')
+  mat$id <- rep(seq(ndraws), each = length(object$time))
+  mat$group <- rep(object$group, ndraws)
   mat$date <- as.Date(mat$date)
-  mat$group <- as.vector(sapply(object$group, function(x) rep(x, ndraws)))
-
   mat <- subset_for_dates(mat, dates, date_format)
   
-  p <- ggplot2::ggplot(mat, ggplot2::aes(x = .data$date, y = .data$rt, group = .data$group))
+  p <- ggplot2::ggplot(mat, ggplot2::aes(x = .data$date, y = .data$value, group = .data$group))
   
   if (step) {
     p <- p + ggplot2::geom_step(ggplot2::aes(group=.data$id), alpha=alpha, colour="deepskyblue4")
@@ -663,7 +688,7 @@ spaghetti_base <- function(
     )
   
   if (length(unique(mat$group)) > 1) {
-    p <- p + ggplot2::facet_wrap(.data$group, scale = "free_y") + 
+    p <- p + ggplot2::facet_wrap(~group, scale = "free_y") + 
       ggplot2::theme(strip.background = ggplot2::element_blank(), 
                      strip.text = ggplot2::element_text(face = "bold"), 
                      axis.text.x = ggplot2::element_text(angle = 45, 
@@ -733,7 +758,7 @@ add_median <- function(p, object) {
     median = apply(object$draws, 2, function(x) quantile(x, 0.5)),
     group = object$group
   )
-  
+
   df <- df %>%
     dplyr::right_join(p$data %>%
                         dplyr::select(.data$date, .data$group) %>%
@@ -761,6 +786,19 @@ cumul <- function(object) {
   return(object)
 }
 
+
+# transform data to be per 100k
+# @param object Result of posterior_ function
+# @param fm An epimodel object
+by100k <- function(object, fm) {
+  if (!fm$inf$pop_adjust) {
+    stop("by_100k requires that the model used a population adjustment", call. = FALSE)
+  }
+  temp <- dplyr::summarise(fm$data, pop = (!!as.symbol(fm$inf$pops))[1])
+  pops <- dplyr::left_join(data.frame(group = object$group), temp, by = "group")
+  object$draws <- t(apply(object$draws, 1, function(x) x * 1e5 / pops$pop))
+  return(object)
+}
 
 # Compute quantiles for all levels
 #

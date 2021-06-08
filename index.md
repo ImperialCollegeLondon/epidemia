@@ -2,13 +2,9 @@
 <img src="man/figures/logo_big.png" class="mainimg" />
 
 <div class="subtext">
-Flexibly specify and fit Bayesian statistical models for epidemics.
-epidemia leverages R’s formula interface to parameterize the time-varying
-reproduction rate as a function of covariates. Multiple regions can
-be modeled simultaneously with multilevel models. The design of the
-package has been inspired by, and has borrowed from,
-[rstanarm](https://mc-stan.org/rstanarm/).
-epidemia uses [rstan](https://mc-stan.org/rstan/) as the backend for fitting models.
+Flexibly specify and fit Bayesian, regression-oriented models for infectious diseases.
+The implemented models define a likelihood for all observed data while also explicitly modeling transmission dynamics: an approach often termed as *semi-mechanistic*. Multiple regions can
+be modeled simultaneously with multilevel models. Key epidemiological quantities, including reproduction numbers and latent infections, may be estimated within the framework. The models may be used to  evaluate the determinants of changes in transmission rates, including the effects  of control measures. Epidemic dynamics may be simulated either from a fitted model or a "prior" model; allowing for prior/posterior predictive checks, experimentation, and forecasting.
 </div>
 
 <div class="row">

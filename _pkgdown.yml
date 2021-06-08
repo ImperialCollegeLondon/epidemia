@@ -17,21 +17,25 @@ navbar:
     model:
       text: Model
       menu: 
+      - text: Introduction
+        href: articles/model-introduction.html
       - text: Description
-        href: articles/model-description.html
+        href: articles/model-description-new.html
       - text: Implementation
-        href: articles/model-implementation.html
+        href: articles/model-implementation-new.html
       - text: Partial Pooling
-        href: articles/partial-pooling.html
+        href: articles/partial-pooling-new.html
       - text: Priors
-        href: articles/priors.html
+        href: articles/priors-new.html
     articles:
       text: Tutorials
       menu:
       - text: A Basic Example
-        href: articles/flu.html
+        href: articles/flu-new.html
       - text: A Multilevel Model 
-        href: articles/europe-covid.html
+        href: articles/europe-covid-new.html
+      - text: Multiple Observations
+        href: articles/multiple-obs.html
     news:
       text: News
       href: news/index.html
