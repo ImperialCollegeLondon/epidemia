@@ -23,7 +23,7 @@
 #' @importFrom rstan vb
 #' @importFrom Rdpack reprompt
 #' @importFrom utils tail
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @references
 #' \insertAllCited()

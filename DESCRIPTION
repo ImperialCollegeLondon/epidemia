@@ -95,27 +95,20 @@ Depends:
     R (>= 3.5.0)
 Imports: 
     dplyr (>= 0.8.5),
-    loo (>= 2.2.0),
     methods,
     Rcpp (>= 0.12.0),
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0),
     lme4,
     ggplot2,
-    ggpubr,
     Matrix,
     scales,
     Rdpack,
     stats,
     zoo,
-    magrittr,
-    plotly,
-    scoringRules,
     tidyr,
     rlang,
-    tidyselect,
     bayesplot,
-    reshape2,
     hrbrthemes
 LinkingTo: 
     BH (>= 1.66.0),

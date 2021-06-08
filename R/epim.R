@@ -125,7 +125,7 @@ epim <- function(
   obs <- lapply(obs_orig, epiobs_, data)
 
   # collect arguments for standata function
-  args <- loo::nlist(rt, inf, obs, data, prior_PD)
+  args <- nlist(rt, inf, obs, data, prior_PD)
 
   # compute standata
   sdat <- do.call(standata_all, args)
@@ -165,7 +165,7 @@ epim <- function(
   fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit, data)
 
 
-  out <- loo::nlist(
+  out <- nlist(
     rt_orig,
     obs_orig,
     call,

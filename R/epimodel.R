@@ -64,7 +64,7 @@ epimodel <- function(object) {
   names(y) <- obs_nms
   names(x) <- names(mf) <- names(coefs) <- names(covmat) <- nms
 
-  out <- loo::nlist(
+  out <- nlist(
     rt = object$rt_orig,
     inf = object$inf,
     obs = object$obs_orig,

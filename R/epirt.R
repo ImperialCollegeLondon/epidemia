@@ -122,7 +122,7 @@ epirt <- function(formula,
   }
 
   class(formula) <- c("epiformula", "formula")
-  out <- loo::nlist(
+  out <- nlist(
     call,
     formula,
     link,

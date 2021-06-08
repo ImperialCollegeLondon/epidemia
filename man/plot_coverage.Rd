@@ -12,8 +12,7 @@ plot_coverage(
   levels = c(50, 95),
   period = NULL,
   by_group = FALSE,
-  by_unseen = FALSE,
-  plotly = FALSE
+  by_unseen = FALSE
 )
 }
 \arguments{
@@ -39,13 +38,9 @@ if specified.}
 
 \item{by_unseen}{Plot coverage separately for seen and unseen observations.
 Observations are 'seen' if they were used for fitting.}
-
-\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
-useful for interactive graphing.}
 }
 \value{
-If \code{plotly = FALSE} then a \code{ggplot} object. Otherwise a
-\code{plotly} object.
+A \code{ggplot} object.
 }
 \description{
 Plots histograms showing empirical coverage of credible intervals

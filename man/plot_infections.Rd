@@ -18,7 +18,6 @@ plot_infections(object, ...)
   by_100k = FALSE,
   levels = c(30, 60, 90),
   log = FALSE,
-  plotly = FALSE,
   ...
 )
 
@@ -31,9 +30,9 @@ spaghetti_infections(
   date_breaks = "2 weeks",
   date_format = "\%Y-\%m-\%d",
   cumulative = FALSE,
+  by_100k = FALSE,
   log = FALSE,
   smooth = 1,
-  plotly = FALSE,
   ...
 )
 }
@@ -70,9 +69,6 @@ credible intervals.}
 \item{log}{If \code{TRUE}, plot quantities on a log10-scale. This argument
 must be \code{logical}, and defaults to \code{FALSE}.}
 
-\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
-useful for interactive graphing.}
-
 \item{draws}{The number of sample paths to plot.}
 
 \item{alpha}{Sets transparency of sample paths.}
@@ -81,8 +77,7 @@ useful for interactive graphing.}
 default is \code{1}, which corresponds to no smoothing.}
 }
 \value{
-If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
-a \code{plotly} object.
+A \code{ggplot} object which can be further modified.
 }
 \description{
 Plots posterior credible intervals and median for latent infections over time.

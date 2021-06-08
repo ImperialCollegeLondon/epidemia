@@ -118,7 +118,7 @@ epiinf <- function(
 
   if (s == "NULL") s <- NULL
 
-  out <- loo::nlist(
+  out <- nlist(
     call,
     seed_days,
     gen,

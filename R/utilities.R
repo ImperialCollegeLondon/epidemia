@@ -547,7 +547,7 @@ select_cols_data <- function(data, rt, inf, obs) {
     if(inf$pop_adjust) inf$rm
   )
   # keep only required variables
-  data <- dplyr::select(data, tidyselect::all_of(unique(vars)))
+  data <- dplyr::select(data, dplyr::all_of(unique(vars)))
   return(data)
 }
 
@@ -600,7 +600,7 @@ is.mixed.formula <- function(object) {
   !is.null(lme4::findbars(norws(object)))
 }
 
-ok_dists <- loo::nlist(
+ok_dists <- nlist(
   "gamma", 
   "normal", 
   student_t = "t", 
@@ -613,20 +613,20 @@ ok_dists <- loo::nlist(
   "hexp"
 )
 
-ok_int_dists <- loo::nlist(
+ok_int_dists <- nlist(
   "normal", 
   student_t = "t", 
   "cauchy"
 )
 
-ok_aux_dists <- loo::nlist(
+ok_aux_dists <- nlist(
   "normal", 
   student_t = "t", 
   "cauchy", 
   "exponential"
 )
 
-ok_cov_dists <- loo::nlist(
+ok_cov_dists <- nlist(
  "decov", 
  "lkj"
 )

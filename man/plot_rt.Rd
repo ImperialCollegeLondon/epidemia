@@ -18,7 +18,6 @@ plot_rt(object, ...)
   levels = c(30, 60, 90),
   log = FALSE,
   smooth = 1,
-  plotly = FALSE,
   ...
 )
 
@@ -33,7 +32,6 @@ spaghetti_rt(
   date_format = "\%Y-\%m-\%d",
   log = FALSE,
   smooth = 1,
-  plotly = FALSE,
   ...
 )
 }
@@ -73,16 +71,12 @@ must be \code{logical}, and defaults to \code{FALSE}.}
 \item{smooth}{An integer specifying the window used to smooth the reproduction rates. The
 default is \code{1}, which corresponds to no smoothing.}
 
-\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
-useful for interactive graphing.}
-
 \item{draws}{The number of sample paths to plot.}
 
 \item{alpha}{Sets transparency of sample paths.}
 }
 \value{
-If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
-a \code{plotly} object.
+A \code{ggplot} object which can be further modified.
 }
 \description{
 Plots credible intervals and the median from the posterior distribution for

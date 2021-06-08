@@ -436,7 +436,7 @@ pad_reTrms <- function(Ztlist, cnms, flist) {
     Matrix::Matrix(0, nrow = p[i], ncol = n, sparse = TRUE))
   }
   Z <- Matrix::t(do.call(rbind, args = Ztlist))
-  return(loo::nlist(Z, cnms, flist))
+  return(nlist(Z, cnms, flist))
 }
 
 
@@ -652,7 +652,7 @@ process_x <- function(x, center) {
     xtemp <- xtemp[, !sel, drop = FALSE]
     xbar <- xbar[!sel]
   }
-  return(loo::nlist(xtemp, xbar, has_intercept))
+  return(nlist(xtemp, xbar, has_intercept))
 }
 
 
@@ -666,7 +666,7 @@ process_x <- function(x, center) {
 # @param § String naming the link function.
 # @param ok_dists A list of admissible distributions.
 handle_glm_prior <- function(prior, nvars, default_scale, link,
-                             ok_dists = loo::nlist("gamma", "normal", student_t = "t", 
+                             ok_dists = nlist("gamma", "normal", student_t = "t", 
                                               "cauchy", "hs", "hs_plus", 
                                               "laplace", "lasso", "product_normal", "hexp")) {
 
@@ -735,7 +735,7 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
   prior_shift <- maybe_broadcast(prior_shift, nvars)
   prior_shift <- as.array(prior_shift)
 
-  loo::nlist(prior_dist,
+  nlist(prior_dist,
     prior_mean,
     prior_scale,
     prior_shape,

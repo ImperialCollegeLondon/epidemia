@@ -21,7 +21,6 @@ plot_linpred(object, ...)
   date_breaks = "2 weeks",
   date_format = "\%Y-\%m-\%d",
   levels = c(30, 60, 90),
-  plotly = FALSE,
   ...
 )
 }
@@ -55,13 +54,9 @@ argument to \code{\link[base]{as.Date}}. Default is "\%Y-\%m-\%d".}
 
 \item{levels}{A numeric vector defining the levels of the plotted
 credible intervals.}
-
-\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
-useful for interactive graphing.}
 }
 \value{
-If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
-a \code{plotly} object.
+A \code{ggplot} object which can be further modified.
 }
 \description{
 Plots credible intervals for the observed data under the posterior

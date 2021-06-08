@@ -14,9 +14,9 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{lme4}{\code{\link[lme4]{ngrps}}}
+  \item{dplyr}{\code{\link[dplyr:reexports]{\%>\%}}}
 
-  \item{magrittr}{\code{\link[magrittr:pipe]{\%>\%}}}
+  \item{lme4}{\code{\link[lme4]{ngrps}}}
 
   \item{rstantools}{\code{\link[rstantools]{posterior_predict}}, \code{\link[rstantools]{prior_summary}}}
 }}

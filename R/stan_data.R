@@ -85,7 +85,7 @@ standata_inf <- function(inf, M) {
     M * inf$pop_adjust * (1 - out$S0_fixed),
     link = NULL,
     default_scale = 0.1,
-    ok_dists = loo::nlist("normal")
+    ok_dists = nlist("normal")
   )
   names(p_S0) <- paste0(names(p_S0), "_for_S0")
   out <- c(out, p_S0)
@@ -101,7 +101,7 @@ standata_inf <- function(inf, M) {
     M * inf$pop_adjust * (1 - out$veps_fixed),
     link = NULL,
     default_scale = 0.1,
-    ok_dists = loo::nlist("normal")
+    ok_dists = nlist("normal")
   )
   names(p_veps) <- paste0(names(p_veps), "_for_veps")
   out <- c(out, p_veps)
@@ -383,7 +383,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
   names(autocor) <- paste0("obs_", names(autocor))
   out <- c(out, autocor)
 
-  out <- c(out, loo::nlist(
+  out <- c(out, nlist(
     obs_prior_info,
     N_obs = sum(oN),
     R = types,

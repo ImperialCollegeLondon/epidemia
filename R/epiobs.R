@@ -104,7 +104,7 @@ epiobs <- function(
   check_in_set(prior_intercept$dist, "normal")
   check_in_set(prior_aux$dist, ok_aux_dists)
 
-  out <- loo::nlist(
+  out <- nlist(
     call,
     formula,
     i2o,

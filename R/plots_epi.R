@@ -25,14 +25,11 @@
 #' must be \code{logical}, and defaults to \code{FALSE}.
 #' @param smooth An integer specifying the window used to smooth the reproduction rates. The 
 #' default is \code{1}, which corresponds to no smoothing.
-#' @param plotly If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is 
-#'  useful for interactive graphing.
 #' @param ... Additional unnamed arguments to be passed to \code{\link{posterior_rt}}.
 #'  Examples include \code{newdata}, which allows predictions or
 #'  counterfactuals. \code{adjusted=FALSE} prevents application of
 #'  the population adjustment to the reproduction number.
-#' @return If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise 
-#'  a \code{plotly} object.
+#' @return A \code{ggplot} object which can be further modified.
 #' @examples
 #' \donttest{
 #' data("EuropeCovid2")
@@ -100,7 +97,6 @@ plot_rt.epimodel <-
            levels = c(30, 60, 90),
            log = FALSE,
            smooth = 1,
-           plotly = FALSE,
            ...) {
     levels <- check_levels(levels)
 
@@ -161,12 +157,6 @@ plot_rt.epimodel <-
       linetype = "dotted"
     )
 
-    if (plotly) {
-      p <- p + ggplot2::ylab(plotly::TeX("$R_t$"))
-      p <- plotly::ggplotly(p) %>% plotly::config(mathjax = "cdn")
-    } else {
-      p <- p + ggplot2::ylab(expression(R[t]))
-    }
     return(p)
 }
 
@@ -197,8 +187,7 @@ plot_obs <- function(object, ...) UseMethod("plot_obs", object)
 #' @export
 plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL, 
   date_breaks = "2 weeks", date_format = "%Y-%m-%d", cumulative = FALSE, 
-  by_100k = FALSE, bar = TRUE, levels = c(30, 60, 90), log = FALSE, 
-  plotly = FALSE, ...) {
+  by_100k = FALSE, bar = TRUE, levels = c(30, 60, 90), log = FALSE, ...) {
 
   levels <- check_levels(levels)
   
@@ -279,8 +268,6 @@ plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL,
   p <- p + cols
   p <- p + ggplot2::ylab(nme)
 
-  if (plotly) p <- plotly::ggplotly(p)
-
   return(p)
 }
 
@@ -309,7 +296,6 @@ plot_infections.epimodel <-
   by_100k = FALSE,
   levels = c(30, 60, 90), 
   log=FALSE,
-  plotly = FALSE, 
   ...) {
     levels <- check_levels(levels)
 
@@ -344,9 +330,6 @@ plot_infections.epimodel <-
 
     p <- p + ggplot2::ylab(nme) 
 
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
     return(p)
   }
 
@@ -378,7 +361,6 @@ plot_infectious.epimodel <-
   levels = c(30, 60, 90), 
   by_100k = FALSE,
   log=FALSE,
-  plotly = FALSE, 
   ...) {
     levels <- check_levels(levels)
 
@@ -412,9 +394,6 @@ plot_infectious.epimodel <-
 
     p <- p + ggplot2::ylab(nme)
 
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
     return(p)
   }
 
@@ -435,7 +414,6 @@ spaghetti_rt <- function(
   date_format = "%Y-%m-%d", 
   log = FALSE, 
   smooth = 1, 
-  plotly = FALSE, 
   ...) {
 
   rt <- posterior_rt(object = object, ...)
@@ -467,13 +445,6 @@ spaghetti_rt <- function(
       mapping = ggplot2::aes(x = .data$date, y = median), 
       data = df,  size = 0.8)
   }
-
-  if (plotly) {
-      p <- p + ggplot2::ylab(plotly::TeX("$R_t$"))
-      p <- plotly::ggplotly(p) %>% plotly::config(mathjax = "cdn")
-    } else {
-      p <- p + ggplot2::ylab(expression(R[t]))
-  }
   
   return(p)
 }
@@ -496,7 +467,6 @@ spaghetti_infections <-
   by_100k = FALSE,
   log=FALSE,
   smooth=1,
-  plotly = FALSE, 
   ...) {
 
   inf <- posterior_infections(object = object, ...)
@@ -530,9 +500,6 @@ spaghetti_infections <-
   if (by_100k) nme <- paste(nme, "per 100k")
   p <- p + ggplot2::ylab(nme)
 
-  if (plotly) {
-      p <- plotly::ggplotly(p)
-  }
   return(p)
 }
 
@@ -556,7 +523,6 @@ spaghetti_obs <- function(
   bar = TRUE, 
   log = FALSE, 
   smooth = 1,
-  plotly = FALSE, 
   ...) {
   
   if (is.null(type)) stop("must specify an observation type", call.=FALSE)
@@ -631,7 +597,6 @@ spaghetti_obs <- function(
   
   p <- p + cols + ggplot2::ylab(nme)
   
-  if (plotly) p <- plotly::ggplotly(p)
   return(p)
 }
 
@@ -1072,9 +1037,9 @@ base_plot <- function(qtl, log, date_breaks, step=FALSE) {
   return(p)
 }
 
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @export
-magrittr::`%>%`
+dplyr::`%>%`
 
 
 fancy_scientific <- function(l) {
@@ -1120,7 +1085,6 @@ plot_linpred.epimodel <-
            date_breaks = "2 weeks",
            date_format = "%Y-%m-%d",
            levels = c(30, 60, 90),
-           plotly = FALSE,
            ...) {
 
     levels <- check_levels(levels)
@@ -1205,8 +1169,5 @@ plot_linpred.epimodel <-
 
     p <- p + cols
 
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
     return(p)
   }

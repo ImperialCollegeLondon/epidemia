@@ -23,7 +23,7 @@ rw <- function(time, gr, prior_scale = 0.2) {
   label <- deparse(match.call())
   time <- if(missing(time)) NULL else deparse(substitute(time))
   gr <- if(missing(gr)) NULL else deparse(substitute(gr))
-  out <- loo::nlist(time, gr, label, prior_scale)
+  out <- nlist(time, gr, label, prior_scale)
   class(out) <- c("rw_term")
   return(out)
 }
@@ -70,7 +70,7 @@ parse_term <- function(trm, data) {
   f <- ordered(f, levels=unique(f))
   Z <- Matrix::t(as(f, Class="sparseMatrix"))
 
-  return(loo::nlist(nproc, ntime, Z, prior_scale))
+  return(nlist(nproc, ntime, Z, prior_scale))
 }
 
 get_autocor_gr <- function(trm, data) {
@@ -131,6 +131,6 @@ parse_all_terms <- function(trms, data) {
   new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
   Z <- Z[, new_idx]
   prior_scale <- do.call(c, args=lapply(out, function(x) x$prior_scale))
-  return(loo::nlist(nproc, ntime, Z, prior_scale))
+  return(nlist(nproc, ntime, Z, prior_scale))
 }
 

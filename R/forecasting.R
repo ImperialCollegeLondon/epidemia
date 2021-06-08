@@ -125,8 +125,7 @@ posterior_metrics <-
 #' @param by_unseen Plot coverage separately for seen and unseen observations.
 #' Observations are 'seen' if they were used for fitting.
 #' @export
-#' @return If \code{plotly = FALSE} then a \code{ggplot} object. Otherwise a 
-#' \code{plotly} object.
+#' @return A \code{ggplot} object. 
 plot_coverage <-
   function(object,
            type,
@@ -135,8 +134,7 @@ plot_coverage <-
            levels = c(50, 95),
            period = NULL,
            by_group = FALSE,
-           by_unseen = FALSE,
-           plotly = FALSE) {
+           by_unseen = FALSE) {
     
     groups <- groups %ORifNULL% object$groups
     cov <- posterior_coverage(
@@ -203,7 +201,7 @@ plot_coverage <-
         minor_breaks = seq(0, 1, 0.05),
         breaks = seq(0, 1, 0.1)
       ) +
-      ggpubr::theme_pubr() +
+      hrbrthemes::theme_ipsum() +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(angle = 50, vjust = 0.5)
       )
@@ -225,9 +223,6 @@ plot_coverage <-
         )
       )
     
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
     return(p)
   }
 
@@ -238,15 +233,13 @@ plot_coverage <-
 #'
 #' @inherit evaluate_forecast params
 #' @inherit plot_rt return
-#' @param plotly Convert ggplot into plotly
 #' @export
 plot_metrics <-
   function(object,
            groups = NULL,
            type,
            metrics = NULL,
-           newdata = NULL,
-           plotly = FALSE) {
+           newdata = NULL) {
     groups <- groups %ORifNULL% object$groups
     
     df <- posterior_metrics(
@@ -260,7 +253,7 @@ plot_metrics <-
     
     df <- df %>%
       tidyr::pivot_longer(
-        c(tidyselect::all_of(metrics)),
+        c(dplyr::all_of(metrics)),
         names_to = "metric",
         values_to = "value"
       )
@@ -293,16 +286,12 @@ plot_metrics <-
         x = "Date",
         linetype = "Metric"
       ) +
-      ggpubr::theme_pubr() +
+      hrbrthemes::theme_ipsum() +
       ggplot2::theme(legend.position = "right")
     
     p <- p + ggplot2::scale_color_manual(
       values = c("coral4", "darkslategray4")
     )
-    
-    if (plotly) {
-      p <- plotly::ggplotly(p)
-    }
     
     return(p)
   }
@@ -315,7 +304,7 @@ daily_error <- function(obs, metrics, y) {
     date = obs$time
   )
   if ("crps" %in% metrics)
-    out$crps <- scoringRules::crps_sample(y, t(draws))
+    out$crps <- crps(y, t(draws))
 
   if ("mean_abs_error" %in% metrics)
     out$mean_abs_error <- rowMeans(mat)
@@ -339,4 +328,12 @@ daily_coverage <- function(obs, levels, y) {
   }
   dfs <- lapply(levels, f)
   return(do.call(rbind, dfs))
+}
+
+crps <- function(y, dat) {
+  c_1n <- 1/length(dat)
+  x <- sort(dat)
+  a <- seq.int(0.5 * c_1n, 1 - 0.5 * c_1n, length.out = length(dat))
+  f <- function(s) 2 * c_1n * sum(((s < x) - a) * (x - s))
+  sapply(y, f)
 }

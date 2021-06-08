@@ -4,14 +4,7 @@
 \alias{plot_metrics}
 \title{Plot CRPS, Median/Mean Absolute Error}
 \usage{
-plot_metrics(
-  object,
-  groups = NULL,
-  type,
-  metrics = NULL,
-  newdata = NULL,
-  plotly = FALSE
-)
+plot_metrics(object, groups = NULL, type, metrics = NULL, newdata = NULL)
 }
 \arguments{
 \item{object}{A fitted model object returned by \code{\link{epim}}.
@@ -29,12 +22,9 @@ forecast error metrics. One of \code{NULL}, \code{"crps"},
 
 \item{newdata}{If provided, the original \code{data} used
 in \code{object} is overridden. Useful for forecasting}
-
-\item{plotly}{Convert ggplot into plotly}
 }
 \value{
-If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
-a \code{plotly} object.
+A \code{ggplot} object which can be further modified.
 }
 \description{
 Plots various metrics for evaluating probabilistic forecasts by group.

@@ -79,7 +79,7 @@ parse_mm <- function(formula, data, ...) {
   fe <- x
   x <- cbind(x, group$Z, autocor$Z)
 
-  return(loo::nlist(
+  return(nlist(
     y,
     fe,
     x,

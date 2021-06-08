@@ -16,7 +16,6 @@ plot_infectious(object, ...)
   levels = c(30, 60, 90),
   by_100k = FALSE,
   log = FALSE,
-  plotly = FALSE,
   ...
 )
 }
@@ -51,13 +50,9 @@ credible intervals.}
 
 \item{log}{If \code{TRUE}, plot quantities on a log10-scale. This argument
 must be \code{logical}, and defaults to \code{FALSE}.}
-
-\item{plotly}{If \code{TRUE}, wraps the \code{ggplot} object into a \code{plotly} object. This is
-useful for interactive graphing.}
 }
 \value{
-If \code{plotly = FALSE}, a \code{ggplot} object which can be further modified. Otherwise
-a \code{plotly} object.
+A \code{ggplot} object which can be further modified.
 }
 \description{
 Plots credible intervals and the median for total infectiousness over time. This is

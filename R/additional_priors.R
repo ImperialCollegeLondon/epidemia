@@ -25,7 +25,7 @@
 #' @export
 shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
   validate_parameter_value(scale)
-  loo::nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)
+  nlist(dist = "gamma", df = NA, shape, scale, shift, autoscale)
 }
 
 
@@ -51,7 +51,7 @@ shifted_gamma <- function(shape = 1, scale = 1, shift = 0, autoscale = TRUE) {
 hexp <- function(prior_aux = rstanarm::exponential(0.03)) {
   check_prior(prior_aux)
   check_in_set(prior_aux$dist, ok_aux_dists)
-  out <- loo::nlist(dist = "hexp", prior_aux)
+  out <- nlist(dist = "hexp", prior_aux)
   out$df <- NA
   out$location <- NA
   out$scale <- 1

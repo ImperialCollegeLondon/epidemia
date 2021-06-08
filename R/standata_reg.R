@@ -30,7 +30,7 @@ standata_reg <- function(object, ...) {
     x_stuff$has_intercept,
     link = NULL,
     default_scale = 0.25,
-    ok_dists = loo::nlist("normal", student_t = "t", "cauchy")
+    ok_dists = nlist("normal", student_t = "t", "cauchy")
   )
 
   names(p_int) <- paste0(names(p_int), "_for_intercept")
@@ -78,7 +78,7 @@ standata_reg <- function(object, ...) {
       family > 1L,
       link = NULL,
       default_scale = 0.25,
-      ok_dists = loo::nlist("normal", student_t = "t", "cauchy", "exponential")
+      ok_dists = nlist("normal", student_t = "t", "cauchy", "exponential")
     )
     
     names(p_aux) <- paste0(names(p_aux), "_for_oaux")
