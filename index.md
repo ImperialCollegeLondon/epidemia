@@ -25,16 +25,10 @@ be modeled simultaneously with multilevel models. Key epidemiological quantities
 <div class="getting_started">
 <h4> Getting Started </h4>
 <hr>
-After [installing](articles/install.html) the software, the best way to get started is to read the articles.
 
-- [Model Description](articles/model-description.html) introduces the class of models that can be fit in **epidemia**.
-- [Model Implementation](articles/model-implementation.html) shows how these models are implemented; considering the three main modeling functions, and the fitting function `epim()`.
-- [Partial Pooling](articles/partial-pooling.html) presents the user with a number of example of how to leverage partial pooling.
-- [Priors](articles/priors.html) details which prior families are available for different model parameters, including intercepts, auxiliary parameters and covariance matrices.
-- [A Basic Example](articles/flu.html) infers reproduction numbers in Baltimore during the 1918 Spanish Flu epidemic.
-- [A Multilevel Example](articles/europe-covid.html) infers the effects of NPIs in European countries during the first wave of Covid-19. 
+After [installing](articles/install.html) the software, the best way to get started is to become familiar with the [model](articles/model-description.html) and its [implementation](articles/model-implementation.html). Once familiar with the model, there are a few articles showcasing the main features of the package using real example data. The simplest such article is [here](articles/flu.html).
+
 <hr>
-
 </div>
 
 

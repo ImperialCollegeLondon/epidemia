@@ -1,0 +1,266 @@
+---
+title: "Model Description"
+output:
+  bookdown::html_document2:
+    theme: flatly
+link-citations: yes
+bibliography: ../inst/REFERENCES.bib
+pkgdown:
+  as_is: true
+---
+
+<style>
+.contents .page-header {
+    display: none;
+}
+</style>
+
+<div class = "article_container">
+
+# Model Schematic {#sec:modelschematic}
+
+We provide schematics for different parts of the model outlined [here](model-description.html). These are useful because they clarify how different 
+model objects, including data and parameters, are related to one another. 
+
+
+Figures \@ref(fig:schem-obs) illustrates a complete observational model, and in particular details the model for multipliers $\alpha_t$. Figure \@ref(fig:schem-inf) presents 
+the basic infection model, and also shows the GLM-style model for reproduction 
+numbers $R_t$. Finally Figures \@ref(fig:schem-latent) and \@ref(fig:schem-pop) shows extensions of the basic 
+infection model, including treating latent infections as parameters and 
+including population adjustments. 
+
+All mathematical notation shown in the figures corresponds to that used in the model description article. Each node is outlined in a color corresponding to the type of object considered. These are interpreted as follows.
+
+ - **Grey**: A user provided object or quantity that is assumed to be known.
+ - **Green**: A model parameter that is, generally speaking, directly sampled. Occasionally **epidemia** will sample a transformation of this parameter for efficiency 
+ purposes.
+ - **Red**: A transformed parameter. This is a quantity that is a deterministic 
+ function of other model parameters.
+  - **Orange**: A quantity that is either a parameter or transformed parameter, depending on the context.
+ - **Blue**: An observation. 
+ 
+# Observational Model
+<hr>
+
+```{tikz schem-obs, fig.cap = "A schematic for observational models. Only one observational model is shown here, however the figure makes clear that additional models may be included. The model for the multiplier $\\alpha_t$ is shown in the shaded green region. This is very similar in form to the transmission model shown in Figure \\@ref(fig:schem-inf). Infections shown at the bottom may be directly from either the basic infection model, or from an extended model (as described in the model description).", fig.ext = 'png', echo = FALSE, fig.align="center", out.width = "60%"}
+\usetikzlibrary{shapes,arrows}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{amaranth}{rgb}{0.9, 0.17, 0.31}
+\definecolor{ao(english)}{rgb}{0.0, 0.5, 0.0}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{anti-flashwhite}{rgb}{0.95, 0.95, 0.96}
+\definecolor{arsenic}{rgb}{0.23, 0.27, 0.29}
+\definecolor{amber}{rgb}{1.0, 0.49, 0.0}
+\tikzstyle{tparam} = [rectangle, draw = amaranth, line width = 0.5mm, minimum size = 20pt, inner sep=5pt, align = center, rounded corners=.2cm, 
+minimum width=2.4cm, fill=white]
+\tikzstyle{dummy} = [minimum size = 20pt, minimum height=30pt, minimum width=2.4cm]
+\tikzstyle{param} = [tparam, draw = ao(english)]
+\tikzstyle{quant} = [tparam, draw = gray, fill = gray!20]
+\tikzstyle{obs} = [tparam, draw = airforceblue]
+\tikzstyle{line} = [draw, -latex', ultra thick, color=gray!80]
+\begin{tikzpicture}
+    \foreach \x in {0,...,5}
+        \foreach \y in {0,...,9}
+        {
+            \node[dummy] (\x\y) at (1.8*\x,1.8*\y) {};
+        }
+        
+    \node[ minimum height = 16.4cm, minimum width=6.8cm, fill = anti-flashwhite!50] at (1.8, 8.8) (obsmodel1) {};
+    \node[above of = obsmodel1, node distance=8.4cm, minimum width = 6.8cm, minimum height = 0.6cm, fill=arsenic, text=white] (obs1lab) {First Observation Model};
+    \node[rectangle, rounded corners=0.2cm, minimum height = 9cm, minimum width = 6.4cm, fill=aquamarine!50] (multmodel) at (1.8,5.25) {};
+    \node[] (multmodel) at (3.4,10) {\textbf{Multiplier Model}};
+
+    \node[tparam, draw=amber] (infections) at (30) {Infections \\ $\{i_s, s <t\}$};
+    \node[tparam] (ascertainment1) at (15) {Multiplier \\ $\alpha^{(1)}_t$};
+    \node[quant] (link1) at (04) {Link \\ $g_1$};
+    \node[tparam] (predictor1) at (13) {Predictor \\ $\eta^{(1)}_t$};
+    \node[minimum height = 1.7cm, minimum width = 2.6cm] (data1) at (01) {};
+    \node[quant, minimum height = 0.6cm, minimum width = 2.4cm] (fixed_data1) at (0,2.2) {Fixed: \small $x^{(1)}_t$};
+    \node[quant, minimum height = 0.6cm, minimum width = 2.4cm]
+    (autocor_data1) at (0,1.4) {Autocor: \small $q^{(1)}_t$};
+    \node[minimum height = 1.7cm, minimum width = 2.6cm] (param1) at (21) {};
+    \node[param, minimum height = 0.6cm, minimum width = 2.4cm] (fixed_param1) at (3.6,2.2) {Fixed: $\beta_1$};
+    \node[param, minimum height = 0.6cm, minimum width = 2.4cm](autocor_param1) at (3.6,1.4) {Autocor: $\gamma_1$};
+    \node[circle, inner sep=2pt, align=center] (addmodels) at (56) {More Observation \\ Models};
+    \node[quant] (offset1) at (02) {Offset: $o_t$};
+    \node (label) at (3.6, 2.9) {\textbf{Effects}};
+    \node (label) at (0, 2.9) {\textbf{Data}};
+
+\node[quant] (i2o1) at (06) {Inf $\Rightarrow$ Obs \\ $\{\pi^{(1)}_k\}$};
+\node[tparam] (eobs1) at (17) {Expected Obs  \\ $y^{(1)}_t$};
+\node[param] (aux1) at (28) {Auxiliary \\ $\phi_1$};
+\node[quant] (dist1) at (08) {Family \\ $p_1(\cdot, y^{(1)}_t, \phi_1)$};
+\node[obs] (obs1) at (19) {Observations \\ $Y^{(1)}_t$};
+\path[line,-] (infections.north) to (36.south);
+\path[line,-] (36.south) to[bend right=45] (26.east);
+\path[line,-] (36.south) to[bend left=45] (46.west);
+\path[line,-] (26.east) to (26.west);
+\path[line,-] (26.west) to[bend left=45] (16.north);
+\path[line,-] (i2o1.east) to[bend right=45] (16.north);
+\path[line,-] (aux1.west) to[bend left=45] (18.north);
+\path[line,-] (dist1.east) to[bend right=45] (18.north);
+\path[line] (ascertainment1.north) to (eobs1.south);
+\path[line] (eobs1.north) to (obs1.south);
+\path[line,-] (data1.east) to[bend right=45] (11.north);
+\path[line,-] (param1.west) to[bend left=45] (11.north);
+\path[line] (11.north) to (predictor1.south);
+\path[line,-] (link1.east) to[bend right=45] (14.north);
+\path[line] (predictor1.north) to (ascertainment1.south);
+\path[line, dotted, -] (46.west) to (addmodels.west);
+\path[line,-] (offset1.east) to[bend right=45] (12.north);
+\end{tikzpicture}
+
+```
+
+
+# Basic Infection Model
+<hr>
+
+```{tikz schem-inf, fig.cap = "A schematic showing both the basic infection model and the transmission model (the green region). Here infections are a transformed parameter, and are recursively linked to previous infections. The model for $R_t$ is similar to a GLM, however autocorrelation terms can be included. $\\eta_t$ is the predictor for the reproduction number at time $t$, and is one element of the predictor $\\eta$ introduced in the model description.", fig.ext = 'png', echo = FALSE, fig.align="center", out.width = "60%"}
+\usetikzlibrary{shapes,arrows}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{amaranth}{rgb}{0.9, 0.17, 0.31}
+\definecolor{ao(english)}{rgb}{0.0, 0.5, 0.0}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{anti-flashwhite}{rgb}{0.95, 0.95, 0.96}
+\definecolor{arsenic}{rgb}{0.23, 0.27, 0.29}
+\definecolor{amber}{rgb}{1.0, 0.49, 0.0}
+\tikzstyle{tparam} = [rectangle, draw = amaranth, line width = 0.5mm, minimum size = 20pt, inner sep=5pt, align = center, rounded corners=.2cm, 
+minimum width=2.4cm, fill=white]
+\tikzstyle{dummy} = [minimum size = 20pt, minimum height=30pt, minimum width=2.4cm]
+\tikzstyle{param} = [tparam, draw = ao(english)]
+\tikzstyle{quant} = [tparam, draw = gray, fill = gray!20]
+\tikzstyle{obs} = [tparam, draw = airforceblue]
+\tikzstyle{line} = [draw, -latex', ultra thick, color=gray!80]
+\begin{tikzpicture}
+        \foreach \x in {0,...,6}
+            \foreach \y in {0,...,5}
+            {
+                \node[dummy] (\x\y) at (1.8*\x,1.8*\y) {};
+            }
+            \node[rectangle, rounded corners=.2cm,fill=aquamarine!50, minimum height = 10.4cm, minimum width = 6.6cm] (transmodel) at (9,2.84) {};
+            \node (transmodellabel) at (9, 8.3) {\textbf{Transmission Model}};
+            \node[tparam, draw=amber] (pastinf) at (02) {Infections \\ $\{i_s: 0 < s <t\}$};
+            \node[quant] (gen) at (03) {Gen time \\ $\{g_k\}$};
+            \node[param] (seeds) at (22) {Seeds \\ $i_{v:0}$};
+            \node[tparam] (load) at (14) {Case Load \\ $L_t$};
+            \node[tparam] (inf) at (35) {Infections \\ $i_t$};
+            \node[tparam] (transmission) at (54) {Transmission \\ $R_t$};
+            \node[tparam] (predictor) at (52) {Predictor \\ $\eta_t$};
+            \node[quant] (link) at (63) {Link \\ $g$};
+            \node[minimum height = 2.6cm, minimum width = 2.6cm] (effects) at (7.2, -0.8) {};
+            \node (label) at (7.2, 0.8) {\textbf{Effects}};
+             \node (label) at (10.8, 0.8) {\textbf{Data}};
+            \node[param] (fixed) at (7.2,0) {Fixed: $\beta$};
+            \node[param] (random) at (7.2,-0.8) {Random: $b$};
+            \node[param] (autocor) at (7.2,-1.6) {Autocor: $\gamma$};
+            \node[minimum height = 2.6cm, minimum width = 2.6cm] (data) at (10.8, -0.8) {};
+            \node[quant] (fixed) at (10.8,0) {Fixed: $x_t$};
+            \node[quant] (random) at (10.8,-0.8) {Random: $z_t$};
+            \node[quant] (autocor) at (10.8,-1.6) {Autocor: $q_t$};
+            \node[quant] (offset) at (41) {Offset: $o_t$};
+            \path[line,-] (pastinf.east) to[bend right=45] (12.north);
+            \path[line] (12.north) to (load.south);
+            \path[line,-] (seeds.west) to[bend left=45] (12.north);
+            \path[line,-] (gen.east) to[bend right=45] (13.north);
+            \path[line,-] (effects.east) to[bend right=45] (9, -0.3);
+            \path[line,-] (data.west) to[bend left=45] (9, -0.3);
+            \path[line] (9,-0.3) to (predictor.south);
+            \path[line,-] (offset.east) to[bend right=45] (51.north);
+            \path[line,-] (link.west) to[bend left=45] (53.north);
+            \path[line] (predictor.north) to (transmission.south);
+            \path[line,-] (transmission.west) to (44.west);
+            \path[line,-] (load.east) to (24.east);
+            \path[line,-] (44.west) to[bend left=45] (34.north);
+            \path[line,-] (24.east) to[bend right=45] (34.north);
+            \path[line] (34.north) to (inf.south);
+    \end{tikzpicture}
+```
+
+
+# Latent Infections
+<hr>
+
+```{tikz schem-latent, fig.cap = "Shows schematic for adding variation to the infection process.", fig.ext = 'png', echo = FALSE, fig.align="center", out.width = "40%"}
+\usetikzlibrary{shapes,arrows}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{amaranth}{rgb}{0.9, 0.17, 0.31}
+\definecolor{ao(english)}{rgb}{0.0, 0.5, 0.0}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{anti-flashwhite}{rgb}{0.95, 0.95, 0.96}
+\definecolor{arsenic}{rgb}{0.23, 0.27, 0.29}
+\definecolor{amber}{rgb}{1.0, 0.49, 0.0}
+\tikzstyle{tparam} = [rectangle, draw = amaranth, line width = 0.5mm, minimum size = 20pt, inner sep=5pt, align = center, rounded corners=.2cm, 
+minimum width=2.4cm, fill=white]
+\tikzstyle{dummy} = [minimum size = 20pt, minimum height=30pt, minimum width=2.4cm]
+\tikzstyle{param} = [tparam, draw = ao(english)]
+\tikzstyle{quant} = [tparam, draw = gray, fill = gray!20]
+\tikzstyle{obs} = [tparam, draw = airforceblue]
+\tikzstyle{line} = [draw, -latex', ultra thick, color=gray!80]
+\begin{tikzpicture}
+        \foreach \x in {0,...,2}
+            \foreach \y in {0,...,2}
+            {
+                \node[dummy] (\x\y) at (1.8*\x,1.8*\y) {};
+            }
+            \node[tparam] (inf) at (10) {Infections \\ $i_t$};
+            \node[param] (cov) at (01) {CoV \\ $d$};
+            \node[quant] (dist) at (21) {Distribution \\ $p(\cdot; d)$};
+            \node[param] (infparam) at (12) {Infections \\ $i_t$};
+            \path[line,-] (cov.east) to[bend right=45] (11.north);
+            \path[line,-] (dist.west) to[bend left=45] (11.north);
+            \path[line] (inf.north) to (infparam.south);
+\end{tikzpicture}
+```
+
+# Population Adjustments
+<hr>
+
+```{tikz schem-pop, fig.cap = "Population adjustment to infection Process. The population adjustment may be applied to either the infections shown at the bottom of Figure \\@ref(fig:schem-latent), or those at the top.", fig.ext = 'png', echo = FALSE, fig.align="center", out.width = "40%"}
+\usetikzlibrary{shapes,arrows}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{amaranth}{rgb}{0.9, 0.17, 0.31}
+\definecolor{ao(english)}{rgb}{0.0, 0.5, 0.0}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{anti-flashwhite}{rgb}{0.95, 0.95, 0.96}
+\definecolor{arsenic}{rgb}{0.23, 0.27, 0.29}
+\definecolor{amber}{rgb}{1.0, 0.49, 0.0}
+\tikzstyle{tparam} = [rectangle, draw = amaranth, line width = 0.5mm, minimum size = 20pt, inner sep=5pt, align = center, rounded corners=.2cm, 
+minimum width=2.4cm, fill=white]
+\tikzstyle{dummy} = [minimum size = 20pt, minimum height=30pt, minimum width=2.4cm]
+\tikzstyle{param} = [tparam, draw = ao(english)]
+\tikzstyle{quant} = [tparam, draw = gray, fill = gray!20]
+\tikzstyle{obs} = [tparam, draw = airforceblue]
+\tikzstyle{line} = [draw, -latex', ultra thick, color=gray!80]
+\begin{tikzpicture}
+\foreach \x in {0,...,4}
+    \foreach \y in {0,...,3}
+    {
+        \node[dummy] (\x\y) at (1.8*\x, 1.8*\y) {};
+    }
+    \node[quant] (vacc) at (00) {Vaccinations \\ $V_t-V_{t-1}$};
+    \node[tparam] (immunepast) at (20) {Immune \\ $Q_{t-1}$};
+    \node[tparam, draw=amber] (infunadj) at (40) {Infections \\ $i_{t}$};
+    \node[tparam] (effvacc) at (02) {Effective \\ $v_t$};
+    \node[tparam] (immune) at (22) {Immune \\ $Q_{t}$};
+    \node[tparam] (inf) at (42) {Infections \\ $i_{t}$};
+    \node[quant] (pop) at (23) {Population \\ $P$};
+    \path[line,-] (41.south) to[bend right=45] (31.east);
+    \path[line,-] (21.south) to[bend right=45] (11.east);
+    \path[line,-] (21.north) to[bend right=45] (31.west);
+    \path[line,-] (01.north) to[bend right=45] (11.west);
+    \path[line,-] (11.west) to (31.east);
+    \path[line] (vacc.north) to (effvacc.south);
+    \path[line] (immunepast.north) to (immune.south);
+    \path[line] (infunadj.north) to (inf.south);
+    \path[line] (effvacc.east) to (immune.west);
+    \path[line] (immune.east) to (inf.west);
+    \path[line,-] (pop.west) to (13.west);
+    \path[line,-] (13.west) to[bend right=45] (03.south);
+    \path[line,-] (pop.east) to (33.east);
+    \path[line,-] (33.east) to[bend left=45] (43.south);
+    \path[line] (03.south) to (effvacc.north);
+    \path[line] (43.south) to (inf.north);
+\end{tikzpicture}
+```
+</div>

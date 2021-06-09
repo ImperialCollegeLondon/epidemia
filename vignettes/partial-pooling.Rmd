@@ -21,21 +21,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <div class="article_container">
 
-# Partial Pooling in epidemia
+# Partial Pooling in epidemia {#sec:partial_pooling}
 <hr>
 
-Here we describe how to partially pool parameters underlying the reproduction 
-numbers in **epidemia**. This is done using a special operator in the formula passed to 
+We describe how to partially pool parameters underlying the reproduction 
+numbers. This is done using a special operator in the formula passed to 
 `epirt()`. If you have previously used any of the **lme4**, 
 **nlmer**, **gamm4**, **glmer** or **rstanarm** packages then this 
 syntax will be familiar.
 
-A general R formula is written as `y ~ model`, where `y` is the response that 
+A general **R** formula is written as `y ~ model`, where `y` is the response that 
 is modeled as some function of the linear predictor which is symbolically 
 represented by `model`. `model` is made up of a series of terms separated by 
 `+`. In **epidemia**, as in many other packages, parameters can be partially pooled 
 by using terms of the form `(expr | factor)`, where both `expr` and `factor` are 
-R expressions. `expr` is a standard linear model (i.e. treated the same as 
+**R** expressions. `expr` is a standard linear model (i.e. treated the same as 
 `model`), and is parsed to produce a model matrix. The syntax `(expr | factor)` 
 makes explicit that columns in this model matrix have separate effects for 
 different levels of the factor variable. 
@@ -44,10 +44,10 @@ different levels of the factor variable.
 Of course, separate effects can also be specified using the standard interaction 
 operator `:`. This however corresponds to *no pooling*, in that parameters 
 at different levels are given separate priors. The `|` operator, on the other 
-hand, ensures that parameters at different levels are given a common prior, which 
-is itself parameterised by parameters which are given hyperpriors. This allows 
-information to be shared between levels of the factor. To be concrete, suppose 
-that the model matrix parse from `expr` has $p$ columns, 
+hand, ensures that effects for different levels are given a common prior. This 
+common prior itself has parameters which are given hyperpriors. This allows 
+information to be shared between different levels of the factor. To be concrete, suppose 
+that the model matrix parsed from `expr` has $p$ columns, 
 and that `factor` has $L$ levels. The $p$-dimensional parameter vector for 
 the $l$^th^ group can be denoted by $\theta_l$. In **epidemia**, this vector 
 is modeled as multivariate normal with an unknown covariance matrix. Specifically,
@@ -55,10 +55,8 @@ is modeled as multivariate normal with an unknown covariance matrix. Specificall
   \theta_{l} \sim N(0, \Sigma),
 \end{equation}
 where the covariance $\Sigma$ is given a prior. **epidemia** offers the same 
-priors for covariance matrices as **rstanarm**; in particular the `rstanarm::decov` and 
-`rstanarm::lkj` priors can be used. Note that $\Sigma$ is not assumed diagonal, i.e. 
-the effects within each level may be correlated. For more information on priors 
-for covariance matrices, please see this [article](#).
+priors for covariance matrices as **rstanarm**; in particular the `decov()` and `lkj()` priors from **rstanarm** can be used. Note that $\Sigma$ is not assumed diagonal, i.e. 
+the effects within each level may be correlated.
 
 If independence is desired for parameters in $\theta_l$, we can simply replace 
 `(expr | factor)` with `(expr || factor)`. This latter term effectively 
@@ -69,49 +67,87 @@ and essentially $\Sigma$ is replaced by $p$ one-dimensional covariance matrices
 (i.e. variances).
 
 
-## Example Formulas.
+## Example Formulas
+<hr>
 
 The easiest way to become familiar with how the `|` operator works is to 
 see a multitude of examples. Here, we give many examples, their interpretations, 
 and where possible we compare the models to the no pooling and full pooling equivalents.
-For a comprehensive reference on mixed model formulas, please see the 
-[lme4 vignette](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf).
+For a comprehensive reference on mixed model formulas, please see @Bates_2015.
 
-There are many possible ways to specify intercepts.
+There are many possible ways to specify intercepts. Table \@ref(tab:intercept-specs) demonstrates some of these, including fully pooled, partially pooled and unpooled. 
+Effects may also be partially pooled. This is shown in Table \@ref(tab:cov-specs).
 
-* `R(region, date) ~ 1 + ...` : Full pooling, common intercept for all regions
-* `R(region, date) ~ region + ...`: Separate intercepts for each region, not pooled.
-* `R(region, date) ~ (1 | region) + ...` Separate intercepts for each region which are partially pooled.
-* `R(region, date) ~   (1 | continent) + ...` Separate intercepts based on a factor other than `region`, partially pooled.
+<div class="table">
+```{r intercept-specs, echo=FALSE, warning = FALSE, message = FALSE}
+library(dplyr)
+library(kableExtra)
 
-We can also partially pool effects of covariates. Let `npi` be some indicator 
-of a non-pharmaceutical intervention.
+arguments <- c(
+  "`1 + ...`",
+  "`region + ...`",
+  "`(1 | region) + ...`",
+  "`(1 | continent) + ...`"
+)
 
-* `R(region, date) ~ 1 + npi + ...`: Full pooling. Effect of NPI the same across all regions.
-* `R(region, date) ~ 1 + npi:region + ...`: No pooling. Separate effect in each region
-* `R(region, date) ~ 1 + (0 + npi|region) + ...`: Partial pooling. Separate effects in each region.
-* `R(region, date) ~ 1 + (npi|region) + ...`: Right hand side expands to `1 + (1 + npi|region)`, and so 
-both the intercept and effect are partially pooled.
+description <- c(
+  "Full pooling, common intercept for all regions.",
+  "Separate intercepts for each region, not pooled.",
+  "Separate intercepts for each region which are partially pooled.",
+  "Separate intercepts based on a factor other than `region`, partially pooled."
+)
 
-The final example above shows that it is important to remember that to parse the 
-term `(expr | factor)`, `epim()`first parses `expr` into a model matrix 
-in the same way as functions like `lm` and `glm` parse models. In this case, 
-the intercept term is implicit. Therefore, if this is to be avoided, we must 
-explicitly use `0 +` or `-1 +`. 
+df <- data.frame(Argument = arguments, Description = description)
+colnames(df) <- c("Formula R.H.S.", "Interpretation")
+knitr::kable(df, caption = "Different intercept specifications. The intercept often has an interpretation as setting $R_0$ in each region. The left hand side of each formula is assumed to take the form `R(region, date)`.", booktabs=TRUE, escape=FALSE) %>%
+  kable_paper("hover") %>%
+  column_spec(1, bold = T, width = "25em") %>%
+  column_spec(2, width = "40em") 
+```
+</div>
+
+<div class="table">
+```{r cov-specs, echo=FALSE}
+arguments <- c(
+  "`1 + npi + ...`",
+  "`1 + npi:region + ...`",
+  "`1 + (0 + npi|region) + ...`",
+  "`1 + (npi|region) + ...`"
+)
+
+description <- c(
+  "Full pooling. Effect of NPI the same across all regions.",
+  "No pooling. Separate effect in each region.",
+  "Partial pooling. Separate effects in each region.",
+  "Right hand side expands to `1 + (1 + npi|region)`, and so both the intercept and effect are partially pooled."
+)
+
+df <- data.frame(Argument = arguments, Description = description)
+colnames(df) <- c("Formula R.H.S.", "Interpretation")
+knitr::kable(df, caption = "Different covariate specifications. Here NPI refers to some non-pharamceutical intervention. The left hand side of each formula is assumed to take the form `R(region, date)`.", booktabs=TRUE, escape=FALSE) %>%
+  kable_paper("hover") %>%
+  column_spec(1, bold = T, width = "25em") %>%
+  column_spec(2, width = "40em") 
+```
+</div>
+
+The final example in Table \@ref(tab:cov-specs) shows that it is important to remember that to parse the term `(expr | factor)`, `epim()` first parses `expr` into a model matrix in the same way as functions like `lm()` and `glm()` parse models. In this case, the intercept term is implicit. Therefore, if this is to be avoided, we must 
+explicitly use either `(0 + npi | region)` or `(-1 + npi | region)`.
 
 ### Independent Effects
 
 By default, the vector of partially pooled intercepts and slopes for each region 
-are correlated. The `||` operator can be used to specify independence. An example:
-
-* `R(region, date) ~ npi + (npi || region) + ...`: Right hand side expands to 
-`1 + npi + (1 | region) + (npi | region) + ...`. Separate intercepts and 
-effects for each region which are partially pooled. The intercept and NPI effect 
+are correlated. The `||` operator can be used to specify independence. For 
+example, consider a formula of the form
+```{r eval = FALSE}
+R(region, date) ~ npi + (npi || region) + ...
+```
+The right hand side expands to `1 + npi + (1 | region) + (npi | region) + ...`. Separate intercepts and effects for each region which are partially pooled. The intercept and NPI effect 
 are assumed independent within regions.
 
 ### Nested Groupings
 
-Often we have groupings that are nested. For example, suppose we are modeling an 
+Often groupings that are nested. For example, suppose we wish to model an 
 epidemic at quite a fine scale, say at the level of local districts.
 Often there will be little data for 
 any given district, and so no pooling will give highly variable estimates of 
@@ -128,5 +164,7 @@ There is a county level intercept, which is partially
 pooled across different counties. There are also district intercepts 
 which are partially pooled *within* each county.
 
-</div>
+# References
+<hr>
 
+</div>

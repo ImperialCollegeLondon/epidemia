@@ -1,0 +1,119 @@
+---
+title: "Introduction"
+output:
+  bookdown::html_document2:
+    theme: flatly
+link-citations: yes
+bibliography: ../inst/REFERENCES.bib
+pkgdown:
+  as_is: true
+---
+
+<style>
+.contents .page-header {
+    display: none;
+}
+</style>
+
+<div class = "article_container">
+
+
+# Introduction
+<hr>
+
+The open-source R [@rcore_2011] package **epidemia** provides a framework for 
+Bayesian, regression-oriented modeling of the temporal dynamics of infectious diseases. Typically, but not exclusively, these models are fit to areal time-series; i.e. aggregated event counts for a given population and period. Disease dynamics are described explicitly; observed data are linked to latent infections, which are in turn modeled as a self-exciting process tempered by time-varying reproduction numbers. Regression models are specified for several objects in the model. For example, 
+reproduction numbers are expressed as a transformed predictor, which may include 
+both covariates and autoregressive terms. A range of prior distributions 
+can be specified for unknown parameters by leveraging the functionality of **rstanarm**
+[@goodrich_2020]. Multilevel models are supported by partially pooling covariate effects
+appearing in the predictor for reproduction numbers between multiple populations.
+
+The mathematical framework motivating the implemented models has been described in @Bhatt2020.
+Specific analyses using such models have appeared during the 
+COVID-19 pandemic, and have been used to estimate the effect of control measures 
+[@Flaxman2020; @Mellan_2020; @Olney_2021], and to forecast disease dynamics under assumed 
+epidemiological parameters and mitigation scenarios [@Vollmer_2020; @Hawryluk_2020]. 
+The modeling approach has been extended to estimate differences in transmissibility 
+between COVID-19 lineages [@Faria_2021; @Volz_2021].
+
+Models of infectious disease dynamics are commonly classified as either mechanistic or statistical [@Myers2000]. Mechanistic models derive infection dynamics from theoretical considerations over how diseases spread within and between communities. An example of this are deterministic compartmental models (DCMs) [@kermack_1927; @kermack_1932; @kermack_1933], which propose differential equations that govern the change in infections over time. These equations are motivated by contacts between individuals in susceptible and infected classes. Purely statistical models, on the other hand, make 
+few assumptions over the transmission mechanism, and instead infer future 
+dynamics from the history of the process and related covariates. Examples include Generalized 
+Linear Models (GLMs), time series approaches including Auto Regressive Integrated Moving Average (ARIMA) [@box_1962], and more modern forecasting methods based on machine learning. 
+
+**epidemia** provides models which are *semi-mechanistic*. These are 
+statistical models that explicitly describe infection dynamics. Self-exciting 
+processes are used to propagate infections in discrete time. Previous infections 
+directly precipitate new infections. Moreover, the memory kernel of the process allows an individual’s infectiousness to depend explicitly on the time since infection. This approach has been used in multiple previous works [@fraser_2007;@Cori2013; @nouvellet_2018; @cauchemez_2008] 
+and has been shown to correspond to
+a Susceptible-Exposed-Infected-Recovered (SEIR) model when a particular form for the generation distribution is used [@champredon_2018]. In addition, population adjustments may be applied to account for depletion of the susceptible population. The models are *statistical* in the sense that they define a likelihood function for the observed data. After also specifying prior distributions for model parameters, samples from the posterior can then be obtained using either Hamiltonian Monte Carlo or Variational Bayes methods.
+
+The Bayesian approach has certain advantages in this context. Several aspects of these models are fundamentally unidentified [@Roosa_2019]. For most diseases, infection counts are not fully observable and suffer from under-reporting [@Gibbons_2014]. Recorded counts could be explained by a high infection and low ascertainment regime, or alternatively by low infections and high ascertainment. If a series of mitigation efforts are applied in sequence to control an epidemic, then the effects may be confounded and difficult to disentangle [@Bhatt2020]. Bayesian approaches using MCMC allow full exploration of posterior correlations between such coupled parameters. Informative, or weakly informative, priors may be incorporated to regularize, and help to mitigate identifiability problems, which may otherwise pose 
+difficulties for sampling [@Gelman_2008; @Gelman_2013].
+
+**epidemia**’s functionality can be used for a number of purposes. A researcher 
+can simulate infection dynamics under assumed parameters by setting tight priors 
+around the assumed values. It is then possible to sample directly from the 
+prior distribution without conditioning on data. This allows *in-silico* 
+experimentation; for example, to assess the effect of varying a single parameter 
+(reproduction numbers, seeded infections, incubation period). Another goal of modeling is to assess whether a simple and parsimonious model of reality can replicate observed phenomena. This helps to isolate processes helpful for explaining the data. Models of varying complexity can be specified within **epidemia**, largely as a result of its regression-oriented framework. Posterior predictive checks can be used to assess model fit. If the model is deemed misspecified, additional features may be considered. This could be modeling population adjustments, explicit modeling of super-spreader events [@Wong_2020], alternative and over-dispersed models for the data, or more flexible functional forms for reproduction numbers or ascertainment rates. This can be done rapidly within **epidemia**’s framework.
+
+
+Forecasting models are critical during an ongoing epidemic 
+as they are used to inform policy decisions under uncertainty. 
+As a sign of their importance, the United 
+States Centers for Disease Control and Prevention (CDC) has run a series of 
+forecasting challenges, including the FluSight seasonal forecasting challenges 
+since 2015 (https://www.cdc.gov/flu/weekly/flusight/) and more recently the Covid-19 Forecast hub (https://covid19forecasthub.org/). 
+Similar challenges have been run by the European Center for Disease Prevention and 
+Control (ECDC) (https://covid19forecasthub.eu/). Long-term forecasts quantify the cost of an unmitigated epidemic, and provide a baseline from which to infer the effects of control measures. Short-term forecasts are crucial in informing decisions on how to distribute resources such as PPE or respirators, or whether hospitals should increase capacity and cancel less urgent procedures. Traditional statistical approaches often give unrealistic long-term forecasts as they do not explicitly account for population effects. 
+The semi-mechanistic approach of **epidemia** combines the strengths of statistical approaches with plausible infection dynamics, and can thus be used for forecasting at different tenures.
+
+## Related packages {#sec:relatedpackages}
+
+The Comprehensive R Archive Network (CRAN) (https://cran.r-project.org/) provides a rich ecosystem of **R** packages dedicated to epidemiological analysis. The R Epidemics Consortium website (https://www.repidemicsconsortium.org/) lists a number of these. Packages that model infectious disease dynamics vary significantly by the methods 
+used to model transmission. **RLadyBug** [@hohle_2007] is a **R** package for parameter estimation and simulation for 
+stochastic compartmental models, including SEIR-type models. Both likelihood-based and Bayesian inference are supported. **amei** [@merl_2010] provides online inference for a stochastic SIR model with a negative-binomial transmission function, however the primary focus is on identifying optimal intervention strategies. See @Anderson_2000 for an introduction to stochastic epidemic modeling.
+
+**epinet** [@Groendyke_2018] and **epimodel** [@Jenness_2018] provide functionality to simulate compartmental models over contact networks. **epinet** uses the class of dyadic-independent exponential random graph models (ERGMs) to model the network, and perform full Bayesian inference over model parameters. **epimodel** considers instead dynamic networks, inferring only network parameters and assuming epidemic parameters to be known.
+
+Epidemic data often presents in the form of areal data, recording event counts over disjoint groups during discrete time intervals. This is the prototypical 
+data type supported within **epidemia**. Areal data can be modeled 
+using purely statistical methods. The `glm()` function in **stats** can be used to 
+fit simple time-series models to count data. The package **acp** [@Vasileios_2015] allows for fitting autoregressive Poisson regression (ACP) models to count data, with potentially additional covariates. **tscount** [@Liboschik_2017] expands on **acp**, in particularly 
+providing more flexible link functions and over-dispersed distributions.
+
+Like **epidemia**, the **R** package **Surveillance** [@Meyer_2017] implements 
+regression-oriented modeling of epidemic dynamics. The package offers models for 
+three different spatial and temporal resolutions of epidemic data. For areal data, which is the focus of **epidemia**, the authors implement a multivariate time-series 
+approach [@Held_2005; @Paul_2008; @Paul_2011; @Held_2012]. This model differs from the semi-mechanistic approach used here in several ways. First, the model has no mechanistic component: neither infections and transmission are explicitly described. The model is similar in form to a vector autoregressive model of order 1 ($\text{VAR}(1)$). The lag 1 assumption implies that each count series is Markovian. In **epidemia**, the infection process has an interpretation as an AR process with both order and coefficients determined by the generation distribution. This can therefore model more flexible temporal dependence in observed data.
+
+
+**EpiEstim** [@Cori2013; @Cori2020] infers time-varying reproduction numbers $R_t$ using 
+case counts over time and an approximation of the disease's generation distribution.
+Infection incidence is assumed to follow a Poisson process with expectation 
+given by a renewal equation. **R0** [@obadia_2012] implements techniques for estimating both 
+initial and time-varying transmission rates. In particular, the package implements
+the method of @Wallinga_2004, which bases estimates off a probabilistic reconstruction 
+of transmission trees. **epidemia** differs from these packages in several ways. First, if 
+infection counts are low then the Poisson assumption may be too restrictive, as 
+super-spreader events can lead to over-dispersion in the infection process. 
+Our framework permits over-dispersed distributions for modeling latent infections.
+Second, **epidemia** allows flexible prior models for $R_t$, including the 
+ability to use time-series methods. For example, $R_t$ can be parameterized as a random walk. Finally, infections over time are often unobserved, and subject to under-reporting that is both space and time dependent. We account for this by providing flexible observation models motivated by survival processes. Several count data series may be used 
+simultaneously within the model in order to leverage additional information on $R_t$.
+
+The probabilistic programming language **Stan** [@stan_2020] has been 
+used extensively to specify and fit Bayesian models for disease transmission 
+during the Covid-19 pandemic. Examples analyses include @Flaxman2020, @Hauser_2020 and 
+@Doremalen_2020. For tutorials on implementing such models, see for example 
+@Grinsztajn_2021 or @Chatzilena_2019. **epidemia** uses the framework offered by **Stan** to 
+both specify and fit models. User-specified models are internally translated into data 
+that is passed to a precompiled **Stan** program. The models are fit using 
+sampling methods from **rstan** [@rstan_2020].
+
+# References
+<hr>
+
+</div>

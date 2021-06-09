@@ -6,8 +6,8 @@
 #'      package leverages R's formula interface to parameterize the reproduction rate 
 #'      in terms of covariates, and allows pooling of parameters. 
 #'      The design of the package has been inspired by, and borrowed from, the \pkg{rstanarm} 
-#'      package \insertCite{rstanarm}{epidemia}.
-#'      \pkg{epidemia} uses \pkg{rstan} \insertCite{rstan}{epidemia} as the backend for fitting the models.
+#'      package \insertCite{goodrich_2020}{epidemia}.
+#'      \pkg{epidemia} uses \pkg{rstan} \insertCite{rstan_2020}{epidemia} as the backend for fitting the models.
 #'      The primary model fitting function in \pkg{epidemia} is \code{\link[epidemia]{epim}}.
 #'
 #' @docType package
