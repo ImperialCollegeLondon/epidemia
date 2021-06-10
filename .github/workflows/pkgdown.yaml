@@ -39,6 +39,8 @@ jobs:
           install.packages("EpiEstim", type="binary")
           install.packages("magick", type = "binary")
           install.packages("pdftools", type = "binary")
+          install.packages('tinytex')
+          tinytex::install_tinytex()
           devtools::install_github("jscott6/pkgdown", ref = "v5")
         shell: Rscript {0}
 

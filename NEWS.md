@@ -6,6 +6,7 @@
 * latent infections switched to normal, from log-normal
 * Additional vignettes and model description
 * Additional noise options for infection process 
+* Significantly more flexible modeling of seeding process
 * Many small bug fixes
 
 ## epidemia 0.7.0
