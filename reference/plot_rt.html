@@ -110,10 +110,16 @@ which groups/regions to plot for. This is a generic function." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -135,6 +141,9 @@ which groups/regions to plot for. This is a generic function." />
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -189,7 +198,20 @@ which groups/regions to plot for. This is a generic function.</p>
   <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>30</span>, <span class='fl'>60</span>, <span class='fl'>90</span>),
   <span class='kw'>log</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>smooth</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>plotly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='no'>...</span>
+)
+
+<span class='fu'>spaghetti_rt</span>(
+  <span class='no'>object</span>,
+  <span class='kw'>draws</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span>(<span class='fl'>500</span>, <span class='fu'><a href='posterior_sample_size.html'>posterior_sample_size</a></span>(<span class='no'>object</span>)),
+  <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>1</span>/<span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='no'>draws</span>),
+  <span class='kw'>groups</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>step</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>dates</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>date_breaks</span> <span class='kw'>=</span> <span class='st'>"2 weeks"</span>,
+  <span class='kw'>date_format</span> <span class='kw'>=</span> <span class='st'>"%Y-%m-%d"</span>,
+  <span class='kw'>log</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>smooth</span> <span class='kw'>=</span> <span class='fl'>1</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -252,16 +274,18 @@ must be <code>logical</code>, and defaults to <code>FALSE</code>.</p></td>
 default is <code>1</code>, which corresponds to no smoothing.</p></td>
     </tr>
     <tr>
-      <th>plotly</th>
-      <td><p>If <code>TRUE</code>, wraps the <code>ggplot</code> object into a <code>plotly</code> object. This is
-useful for interactive graphing.</p></td>
+      <th>draws</th>
+      <td><p>The number of sample paths to plot.</p></td>
+    </tr>
+    <tr>
+      <th>alpha</th>
+      <td><p>Sets transparency of sample paths.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If <code>plotly = FALSE</code>, a <code>ggplot</code> object which can be further modified. Otherwise
-a <code>plotly</code> object.</p>
+    <p>A <code>ggplot</code> object which can be further modified.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='plot_obs.html'>plot_obs</a></code>, <code><a href='plot_infections.html'>plot_infections</a></code>, <code><a href='plot_infectious.html'>plot_infectious</a></code></p></div>
@@ -306,8 +330,8 @@ a <code>plotly</code> object.</p>
 #&gt; Chain 1: 
 #&gt; Chain 1: 
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 0.000529 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 5.29 seconds.
+#&gt; Chain 1: Gradient evaluation took 0.000745 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 7.45 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -322,120 +346,128 @@ a <code>plotly</code> object.</p>
 #&gt; Chain 1: 
 #&gt; Chain 1: Begin stochastic gradient ascent.
 #&gt; Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-#&gt; Chain 1:    100       -15498.854             1.000            1.000
-#&gt; Chain 1:    200        -7409.437             1.046            1.092
-#&gt; Chain 1:    300        -5098.258             0.848            1.000
-#&gt; Chain 1:    400        -4438.630             0.673            1.000
-#&gt; Chain 1:    500        -3563.464             0.588            0.453
-#&gt; Chain 1:    600        -2847.222             0.532            0.453
-#&gt; Chain 1:    700        -2828.410             0.457            0.252
-#&gt; Chain 1:    800        -2567.207             0.412            0.252
-#&gt; Chain 1:    900        -2615.583             0.369            0.246
-#&gt; Chain 1:   1000        -2316.989             0.345            0.246
-#&gt; Chain 1:   1100        -2025.114             0.259            0.149
-#&gt; Chain 1:   1200        -2050.223             0.151            0.144
-#&gt; Chain 1:   1300        -1897.996             0.114            0.129
-#&gt; Chain 1:   1400        -1897.654             0.099            0.102
-#&gt; Chain 1:   1500        -1703.371             0.086            0.102
-#&gt; Chain 1:   1600        -1524.389             0.072            0.102
-#&gt; Chain 1:   1700        -1593.692             0.076            0.102
-#&gt; Chain 1:   1800        -1382.811             0.081            0.114
-#&gt; Chain 1:   1900        -1356.087             0.081            0.114
-#&gt; Chain 1:   2000        -1287.613             0.074            0.080
-#&gt; Chain 1:   2100        -1242.744             0.063            0.053
-#&gt; Chain 1:   2200        -1298.518             0.066            0.053
-#&gt; Chain 1:   2300        -1158.171             0.070            0.053
-#&gt; Chain 1:   2400        -1148.673             0.071            0.053
-#&gt; Chain 1:   2500        -1112.960             0.063            0.043
-#&gt; Chain 1:   2600        -1063.253             0.056            0.043
-#&gt; Chain 1:   2700        -1037.914             0.054            0.043
-#&gt; Chain 1:   2800        -1062.149             0.041            0.036
-#&gt; Chain 1:   2900        -1025.294             0.042            0.036
-#&gt; Chain 1:   3000        -1028.503             0.037            0.036
-#&gt; Chain 1:   3100        -1008.079             0.036            0.032
-#&gt; Chain 1:   3200        -1003.260             0.032            0.024
-#&gt; Chain 1:   3300         -973.994             0.023            0.024
-#&gt; Chain 1:   3400         -998.511             0.024            0.025
-#&gt; Chain 1:   3500         -961.686             0.025            0.025
-#&gt; Chain 1:   3600         -973.330             0.022            0.024
-#&gt; Chain 1:   3700         -948.012             0.022            0.025
-#&gt; Chain 1:   3800         -957.482             0.021            0.025
-#&gt; Chain 1:   3900         -942.377             0.019            0.020
-#&gt; Chain 1:   4000         -957.282             0.020            0.020
-#&gt; Chain 1:   4100         -960.648             0.018            0.016
-#&gt; Chain 1:   4200         -950.738             0.019            0.016
-#&gt; Chain 1:   4300         -948.464             0.016            0.016
-#&gt; Chain 1:   4400         -954.030             0.014            0.012
-#&gt; Chain 1:   4500         -947.623             0.011            0.010
-#&gt; Chain 1:   4600         -939.038             0.011            0.010
-#&gt; Chain 1:   4700         -942.188             0.008            0.009
-#&gt; Chain 1:   4800         -936.880             0.008            0.007
-#&gt; Chain 1:   4900         -938.273             0.006            0.006
-#&gt; Chain 1:   5000         -933.556             0.005            0.006
-#&gt; Chain 1:   5100         -929.439             0.005            0.006
-#&gt; Chain 1:   5200         -929.740             0.004            0.005
-#&gt; Chain 1:   5300         -936.469             0.005            0.006
-#&gt; Chain 1:   5400         -934.142             0.005            0.005
-#&gt; Chain 1:   5500         -924.523             0.005            0.005
-#&gt; Chain 1:   5600         -929.735             0.005            0.005
-#&gt; Chain 1:   5700         -929.857             0.004            0.005
-#&gt; Chain 1:   5800         -919.809             0.005            0.005
-#&gt; Chain 1:   5900         -936.527             0.006            0.006
-#&gt; Chain 1:   6000         -993.485             0.012            0.007
-#&gt; Chain 1:   6100         -925.833             0.019            0.010
-#&gt; Chain 1:   6200         -921.205             0.019            0.010
-#&gt; Chain 1:   6300         -923.194             0.018            0.010
-#&gt; Chain 1:   6400         -928.790             0.019            0.010
-#&gt; Chain 1:   6500         -919.124             0.019            0.011
-#&gt; Chain 1:   6600         -921.084             0.019            0.011
-#&gt; Chain 1:   6700         -917.565             0.019            0.011
-#&gt; Chain 1:   6800         -921.111             0.018            0.006
-#&gt; Chain 1:   6900         -918.001             0.017            0.005
-#&gt; Chain 1:   7000         -913.075             0.012            0.005
-#&gt; Chain 1:   7100         -921.793             0.005            0.005
-#&gt; Chain 1:   7200         -927.539             0.005            0.005
-#&gt; Chain 1:   7300         -915.573             0.006            0.006
-#&gt; Chain 1:   7400         -914.450             0.006            0.005
-#&gt; Chain 1:   7500         -919.167             0.005            0.005
-#&gt; Chain 1:   7600         -920.140             0.005            0.005
-#&gt; Chain 1:   7700         -914.457             0.005            0.005
-#&gt; Chain 1:   7800         -915.387             0.005            0.005
-#&gt; Chain 1:   7900         -916.610             0.005            0.005
-#&gt; Chain 1:   8000         -911.921             0.005            0.005
-#&gt; Chain 1:   8100         -910.984             0.004            0.005
-#&gt; Chain 1:   8200         -915.187             0.004            0.005
-#&gt; Chain 1:   8300         -910.686             0.003            0.005
-#&gt; Chain 1:   8400         -917.383             0.004            0.005
-#&gt; Chain 1:   8500         -908.228             0.004            0.005
-#&gt; Chain 1:   8600         -914.883             0.005            0.005
-#&gt; Chain 1:   8700         -911.800             0.005            0.005
-#&gt; Chain 1:   8800         -910.920             0.005            0.005
-#&gt; Chain 1:   8900         -907.848             0.005            0.005
-#&gt; Chain 1:   9000         -914.024             0.005            0.005
-#&gt; Chain 1:   9100         -907.792             0.006            0.007
-#&gt; Chain 1:   9200         -908.857             0.005            0.007
-#&gt; Chain 1:   9300         -909.113             0.005            0.007
-#&gt; Chain 1:   9400         -907.337             0.004            0.003
-#&gt; Chain 1:   9500         -909.013             0.003            0.003
-#&gt; Chain 1:   9600         -909.910             0.003            0.002
-#&gt; Chain 1:   9700         -906.587             0.003            0.002
-#&gt; Chain 1:   9800         -905.629             0.003            0.002
-#&gt; Chain 1:   9900         -905.946             0.002            0.002
-#&gt; Chain 1:   10000         -908.949             0.002            0.002
+#&gt; Chain 1:    100       -13688.867             1.000            1.000
+#&gt; Chain 1:    200        -5751.465             1.190            1.380
+#&gt; Chain 1:    300        -4595.706             0.877            1.000
+#&gt; Chain 1:    400        -3865.385             0.705            1.000
+#&gt; Chain 1:    500        -3424.722             0.590            0.251
+#&gt; Chain 1:    600        -2755.889             0.532            0.251
+#&gt; Chain 1:    700        -2586.841             0.465            0.243
+#&gt; Chain 1:    800        -2307.851             0.422            0.243
+#&gt; Chain 1:    900        -2066.580             0.388            0.189
+#&gt; Chain 1:   1000        -2010.719             0.352            0.189
+#&gt; Chain 1:   1100        -1692.408             0.271            0.188
+#&gt; Chain 1:   1200        -1708.032             0.134            0.129
+#&gt; Chain 1:   1300        -1580.999             0.117            0.121
+#&gt; Chain 1:   1400        -1432.244             0.108            0.117
+#&gt; Chain 1:   1500        -1299.048             0.106            0.104
+#&gt; Chain 1:   1600        -1237.094             0.086            0.103
+#&gt; Chain 1:   1700        -1151.716             0.087            0.103
+#&gt; Chain 1:   1800        -1118.903             0.078            0.080
+#&gt; Chain 1:   1900        -1162.818             0.070            0.074
+#&gt; Chain 1:   2000        -1056.263             0.078            0.080
+#&gt; Chain 1:   2100        -1060.052             0.059            0.074
+#&gt; Chain 1:   2200        -1028.301             0.061            0.074
+#&gt; Chain 1:   2300        -1046.946             0.055            0.050
+#&gt; Chain 1:   2400        -1010.439             0.048            0.038
+#&gt; Chain 1:   2500         -994.414             0.040            0.036
+#&gt; Chain 1:   2600         -968.220             0.037            0.031
+#&gt; Chain 1:   2700         -985.944             0.032            0.029
+#&gt; Chain 1:   2800         -968.507             0.031            0.027
+#&gt; Chain 1:   2900         -962.022             0.028            0.018
+#&gt; Chain 1:   3000         -971.286             0.018            0.018
+#&gt; Chain 1:   3100         -955.881             0.020            0.018
+#&gt; Chain 1:   3200         -942.191             0.018            0.018
+#&gt; Chain 1:   3300         -945.570             0.017            0.016
+#&gt; Chain 1:   3400         -946.000             0.013            0.016
+#&gt; Chain 1:   3500         -939.521             0.012            0.015
+#&gt; Chain 1:   3600         -939.380             0.009            0.010
+#&gt; Chain 1:   3700         -934.574             0.008            0.007
+#&gt; Chain 1:   3800         -931.710             0.007            0.007
+#&gt; Chain 1:   3900         -931.896             0.006            0.005
+#&gt; Chain 1:   4000         -935.988             0.005            0.004
+#&gt; Chain 1:   4100         -931.628             0.004            0.004
+#&gt; Chain 1:   4200         -933.590             0.003            0.004
+#&gt; Chain 1:   4300         -929.327             0.003            0.004
+#&gt; Chain 1:   4400         -931.544             0.003            0.004
+#&gt; Chain 1:   4500         -927.411             0.003            0.004
+#&gt; Chain 1:   4600         -937.806             0.004            0.004
+#&gt; Chain 1:   4700         -930.599             0.004            0.004
+#&gt; Chain 1:   4800         -923.500             0.005            0.005
+#&gt; Chain 1:   4900         -922.723             0.005            0.005
+#&gt; Chain 1:   5000         -925.086             0.005            0.005
+#&gt; Chain 1:   5100         -919.915             0.005            0.005
+#&gt; Chain 1:   5200         -927.492             0.006            0.006
+#&gt; Chain 1:   5300         -918.643             0.006            0.008
+#&gt; Chain 1:   5400         -923.476             0.006            0.008
+#&gt; Chain 1:   5500         -913.747             0.007            0.008
+#&gt; Chain 1:   5600         -919.763             0.006            0.008
+#&gt; Chain 1:   5700         -925.350             0.006            0.007
+#&gt; Chain 1:   5800         -914.064             0.007            0.007
+#&gt; Chain 1:   5900         -918.877             0.007            0.007
+#&gt; Chain 1:   6000         -919.968             0.007            0.007
+#&gt; Chain 1:   6100         -924.044             0.007            0.007
+#&gt; Chain 1:   6200         -918.862             0.007            0.006
+#&gt; Chain 1:   6300         -913.823             0.006            0.006
+#&gt; Chain 1:   6400         -913.453             0.006            0.006
+#&gt; Chain 1:   6500         -911.831             0.005            0.006
+#&gt; Chain 1:   6600         -913.527             0.004            0.005
+#&gt; Chain 1:   6700         -913.369             0.004            0.004
+#&gt; Chain 1:   6800         -918.911             0.003            0.004
+#&gt; Chain 1:   6900         -919.172             0.003            0.002
+#&gt; Chain 1:   7000         -911.534             0.003            0.004
+#&gt; Chain 1:   7100         -907.337             0.003            0.005
+#&gt; Chain 1:   7200         -915.610             0.004            0.005
+#&gt; Chain 1:   7300         -906.436             0.004            0.005
+#&gt; Chain 1:   7400         -910.459             0.005            0.005
+#&gt; Chain 1:   7500         -910.673             0.005            0.005
+#&gt; Chain 1:   7600         -911.118             0.004            0.005
+#&gt; Chain 1:   7700         -909.753             0.005            0.005
+#&gt; Chain 1:   7800         -910.293             0.004            0.004
+#&gt; Chain 1:   7900         -908.857             0.004            0.004
+#&gt; Chain 1:   8000         -909.975             0.003            0.002
+#&gt; Chain 1:   8100         -907.878             0.003            0.002
+#&gt; Chain 1:   8200         -908.813             0.002            0.002
+#&gt; Chain 1:   8300         -906.957             0.002            0.002
+#&gt; Chain 1:   8400         -909.405             0.001            0.002
+#&gt; Chain 1:   8500         -906.035             0.002            0.002
+#&gt; Chain 1:   8600         -916.867             0.003            0.002
+#&gt; Chain 1:   8700         -908.479             0.004            0.002
+#&gt; Chain 1:   8800         -907.653             0.004            0.002
+#&gt; Chain 1:   8900         -903.013             0.004            0.003
+#&gt; Chain 1:   9000         -911.091             0.005            0.004
+#&gt; Chain 1:   9100         -904.717             0.005            0.005
+#&gt; Chain 1:   9200         -906.106             0.005            0.005
+#&gt; Chain 1:   9300         -903.341             0.005            0.005
+#&gt; Chain 1:   9400         -906.727             0.006            0.005
+#&gt; Chain 1:   9500         -906.461             0.005            0.005
+#&gt; Chain 1:   9600         -903.935             0.004            0.004
+#&gt; Chain 1:   9700         -900.322             0.004            0.004
+#&gt; Chain 1:   9800         -906.898             0.004            0.004
+#&gt; Chain 1:   9900         -902.999             0.004            0.004
+#&gt; Chain 1:   10000         -907.005             0.004            0.004
 #&gt; Chain 1: Informational Message: The maximum number of iterations is reached! The algorithm may not have converged.
 #&gt; Chain 1: This variational approximation is not guaranteed to be meaningful.
 #&gt; Chain 1: 
 #&gt; Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
-#&gt; Chain 1: COMPLETED.</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 2.4. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'>
+#&gt; Chain 1: COMPLETED.</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 2.28. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'>
 <span class='co'># different ways of using plot_rt</span>
-<span class='fu'>plot_rt</span>(<span class='no'>fm</span>) <span class='co'># default, plots all groups and dates</span></div><div class='img'><img src='plot_rt-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>plot_rt</span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span></div><div class='img'><img src='plot_rt-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>plot_rt</span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span></div><div class='img'><img src='plot_rt-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>plot_rt</span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>))</div><div class='img'><img src='plot_rt-4.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>plot_rt</span>(<span class='no'>fm</span>,
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>plot_rt</span>(<span class='no'>fm</span>) <span class='co'># default, plots all groups and dates</span>
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>plot_rt</span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-21"</span>, <span class='fl'>NA</span>)) <span class='co'># plot 21 March 2020 onwards</span>
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>plot_rt</span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>, <span class='st'>"2020-03-20"</span>)) <span class='co'># plot up to  20 March 2020</span>
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>plot_rt</span>(<span class='no'>fm</span>, <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>))
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>plot_rt</span>(<span class='no'>fm</span>,
          <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-03-20"</span>, <span class='st'>"2020-04-20"</span>),
-        <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 day"</span>) <span class='co'># ticks every day</span></div><div class='img'><img src='plot_rt-5.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>plot_rt</span>(<span class='no'>fm</span>,
+        <span class='kw'>date_breaks</span><span class='kw'>=</span><span class='st'>"1 day"</span>) <span class='co'># ticks every day</span>
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'>plot_rt</span>(<span class='no'>fm</span>,
        <span class='kw'>dates</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"2020-20-03"</span>, <span class='st'>"2020-20-04"</span>),
-       <span class='kw'>date_format</span><span class='kw'>=</span><span class='st'>"%Y-%d-%m"</span>) <span class='co'># (different date format)</span></div><div class='img'><img src='plot_rt-6.png' alt='' width='700' height='433' /></div><div class='input'>
+       <span class='kw'>date_format</span><span class='kw'>=</span><span class='st'>"%Y-%d-%m"</span>) <span class='co'># (different date format)</span>
+
 <span class='co'># other plotting functions</span>
-<span class='fu'><a href='plot_obs.html'>plot_obs</a></span>(<span class='no'>fm</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"deaths"</span>)</div><div class='img'><img src='plot_rt-7.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_infections.html'>plot_infections</a></span>(<span class='no'>fm</span>)</div><div class='img'><img src='plot_rt-8.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='plot_infectious.html'>plot_infectious</a></span>(<span class='no'>fm</span>)</div><div class='img'><img src='plot_rt-9.png' alt='' width='700' height='433' /></div><div class='input'># }
-</div></pre>
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='plot_obs.html'>plot_obs</a></span>(<span class='no'>fm</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"deaths"</span>)
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='plot_infections.html'>plot_infections</a></span>(<span class='no'>fm</span>)
+<span class='no'>p</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='plot_infectious.html'>plot_infectious</a></span>(<span class='no'>fm</span>)
+<span class='co'># }</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

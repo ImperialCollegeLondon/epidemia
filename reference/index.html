@@ -107,10 +107,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -132,6 +138,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -188,6 +197,12 @@
       <tr>
         
         <td>
+          <p><code><a href="EnglandNewCases.html">EnglandNewCases</a></code> </p>
+        </td>
+        <td><p>Covid-19 Case Counts for England</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="EuropeCovid.html">EuropeCovid</a></code> </p>
         </td>
         <td><p>Covid-19 data for European countries</p></td>
@@ -197,6 +212,12 @@
           <p><code><a href="EuropeCovid2.html">EuropeCovid2</a></code> </p>
         </td>
         <td><p>Covid-19 data for European countries</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="all_obs_types.html">all_obs_types()</a></code> </p>
+        </td>
+        <td><p>Get a list of all observation types used in a model</p></td>
       </tr><tr>
         
         <td>
@@ -266,6 +287,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="hexp.html">hexp()</a></code> </p>
+        </td>
+        <td><p>A hierarchical model for seeded infections</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="model.frame.epimodel.html">model.frame(<i>&lt;epimodel&gt;</i>)</a></code> </p>
         </td>
         <td><p>model.frame method for epimodel objects. Please see  <code><a href='https://rdrr.io/r/stats/model.frame.html'>model.frame</a></code>
@@ -297,7 +324,7 @@ for more details.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_infections.html">plot_infections()</a></code> </p>
+          <p><code><a href="plot_infections.html">plot_infections()</a></code> <code><a href="plot_infections.html">spaghetti_infections()</a></code> </p>
         </td>
         <td><p>Plot latent infections</p></td>
       </tr><tr>
@@ -309,7 +336,7 @@ for more details.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_linpred.html">plot_linpred()</a></code> </p>
+          <p><code><a href="plot_linpred.html">posterior_sample_size(<i>&lt;epimodel&gt;</i>)</a></code> <code><a href="plot_linpred.html">all_obs_types(<i>&lt;epimodel&gt;</i>)</a></code> <code><a href="plot_linpred.html">plot_linpred()</a></code> </p>
         </td>
         <td><p>Plotting the posterior linear predictor for R or ascertainment rates</p></td>
       </tr><tr>
@@ -321,13 +348,13 @@ for more details.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_obs.html">plot_obs()</a></code> </p>
+          <p><code><a href="plot_obs.html">plot_obs()</a></code> <code><a href="plot_obs.html">spaghetti_obs()</a></code> </p>
         </td>
         <td><p>Plot posterior predictive distributions</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_rt.html">plot_rt()</a></code> </p>
+          <p><code><a href="plot_rt.html">plot_rt()</a></code> <code><a href="plot_rt.html">spaghetti_rt()</a></code> </p>
         </td>
         <td><p>Plot time-varying reproduction rates</p></td>
       </tr><tr>
@@ -382,6 +409,12 @@ Will be extended for observations in future versions</p></td>
         </td>
         <td><p>Generic function for getting posterior draws of the time-varying
 reproduction rates</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="posterior_sample_size.html">posterior_sample_size()</a></code> </p>
+        </td>
+        <td><p>Get posterior sample size from a fitted model</p></td>
       </tr><tr>
         
         <td>

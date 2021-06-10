@@ -108,10 +108,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -133,6 +139,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -172,14 +181,7 @@
     <p>Plots various metrics for evaluating probabilistic forecasts by group.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_metrics</span>(
-  <span class='no'>object</span>,
-  <span class='kw'>groups</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='no'>type</span>,
-  <span class='kw'>metrics</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>newdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>plotly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>plot_metrics</span>(<span class='no'>object</span>, <span class='kw'>groups</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>type</span>, <span class='kw'>metrics</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>newdata</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -210,16 +212,11 @@ forecast error metrics. One of <code>NULL</code>, <code>"crps"</code>,
       <td><p>If provided, the original <code>data</code> used
 in <code>object</code> is overridden. Useful for forecasting</p></td>
     </tr>
-    <tr>
-      <th>plotly</th>
-      <td><p>Convert ggplot into plotly</p></td>
-    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If <code>plotly = FALSE</code>, a <code>ggplot</code> object which can be further modified. Otherwise
-a <code>plotly</code> object.</p>
+    <p>A <code>ggplot</code> object which can be further modified.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -113,10 +113,16 @@ each time epim is called." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -138,6 +144,9 @@ each time epim is called." />
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -311,11 +320,11 @@ Nonetheless, fitting these models using HMC is often computationally demanding, 
 #&gt; Chain 1: 
 #&gt; Chain 1: Rejecting initial value:
 #&gt; Chain 1:   Error evaluating the log probability at the initial value.
-#&gt; Chain 1: Exception: neg_binomial_2_lpmf: Location parameter[1] is -7.96211e-06, but must be &gt; 0!  (in 'model_epidemia_base' at line 132)
+#&gt; Chain 1: Exception: neg_binomial_2_lpmf: Location parameter[1] is -7.96211e-06, but must be &gt; 0!  (in 'model_epidemia_base' at line 154)
 #&gt; 
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 0.000289 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.89 seconds.
+#&gt; Chain 1: Gradient evaluation took 0.000291 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.91 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -330,112 +339,112 @@ Nonetheless, fitting these models using HMC is often computationally demanding, 
 #&gt; Chain 1: 
 #&gt; Chain 1: Begin stochastic gradient ascent.
 #&gt; Chain 1:   iter             ELBO   delta_ELBO_mean   delta_ELBO_med   notes 
-#&gt; Chain 1:    100       -10224.766             1.000            1.000
-#&gt; Chain 1:    200        -6242.872             0.819            1.000
-#&gt; Chain 1:    300        -4460.624             0.679            0.638
-#&gt; Chain 1:    400        -3018.208             0.629            0.638
-#&gt; Chain 1:    500        -1929.581             0.616            0.564
-#&gt; Chain 1:    600        -1509.661             0.560            0.564
-#&gt; Chain 1:    700        -1172.784             0.521            0.478
-#&gt; Chain 1:    800        -1042.063             0.471            0.478
-#&gt; Chain 1:    900         -943.309             0.431            0.400
-#&gt; Chain 1:   1000        -1118.005             0.403            0.400
-#&gt; Chain 1:   1100         -879.886             0.330            0.287
-#&gt; Chain 1:   1200         -838.614             0.271            0.278
-#&gt; Chain 1:   1300         -821.186             0.233            0.271
-#&gt; Chain 1:   1400         -770.641             0.192            0.156
-#&gt; Chain 1:   1500         -863.898             0.147            0.125
-#&gt; Chain 1:   1600         -810.893             0.125            0.108
-#&gt; Chain 1:   1700         -735.930             0.107            0.105
-#&gt; Chain 1:   1800         -680.682             0.102            0.102
-#&gt; Chain 1:   1900         -705.569             0.095            0.081
-#&gt; Chain 1:   2000         -699.094             0.081            0.066
-#&gt; Chain 1:   2100         -613.973             0.068            0.066
-#&gt; Chain 1:   2200         -660.284             0.070            0.070
-#&gt; Chain 1:   2300         -691.698             0.072            0.070
-#&gt; Chain 1:   2400         -650.282             0.072            0.070
-#&gt; Chain 1:   2500         -655.797             0.062            0.065
-#&gt; Chain 1:   2600         -661.337             0.056            0.064
-#&gt; Chain 1:   2700         -601.600             0.056            0.064
-#&gt; Chain 1:   2800         -590.878             0.050            0.045
-#&gt; Chain 1:   2900         -598.213             0.047            0.045
-#&gt; Chain 1:   3000         -654.266             0.055            0.064
-#&gt; Chain 1:   3100         -550.376             0.060            0.064
-#&gt; Chain 1:   3200         -561.904             0.055            0.045
-#&gt; Chain 1:   3300         -559.239             0.051            0.021
-#&gt; Chain 1:   3400         -595.660             0.051            0.021
-#&gt; Chain 1:   3500         -595.639             0.050            0.021
-#&gt; Chain 1:   3600         -570.589             0.053            0.044
-#&gt; Chain 1:   3700         -581.496             0.045            0.021
-#&gt; Chain 1:   3800         -590.731             0.045            0.021
-#&gt; Chain 1:   3900         -568.836             0.048            0.038
-#&gt; Chain 1:   4000         -557.317             0.041            0.021
-#&gt; Chain 1:   4100         -506.965             0.032            0.021
-#&gt; Chain 1:   4200         -519.702             0.033            0.025
-#&gt; Chain 1:   4300         -504.915             0.035            0.029
-#&gt; Chain 1:   4400         -531.954             0.034            0.029
-#&gt; Chain 1:   4500         -598.248             0.045            0.038
-#&gt; Chain 1:   4600         -496.190             0.061            0.038
-#&gt; Chain 1:   4700         -527.987             0.066            0.051
-#&gt; Chain 1:   4800         -521.152             0.065            0.051
-#&gt; Chain 1:   4900         -528.863             0.063            0.051
-#&gt; Chain 1:   5000         -526.002             0.061            0.051
-#&gt; Chain 1:   5100         -542.573             0.055            0.031
-#&gt; Chain 1:   5200         -528.794             0.055            0.031
-#&gt; Chain 1:   5300         -469.201             0.064            0.051
-#&gt; Chain 1:   5400         -489.398             0.063            0.041
-#&gt; Chain 1:   5500         -523.486             0.059            0.041
-#&gt; Chain 1:   5600         -480.915             0.047            0.041
-#&gt; Chain 1:   5700         -476.770             0.042            0.031
-#&gt; Chain 1:   5800         -522.249             0.049            0.041
-#&gt; Chain 1:   5900         -507.258             0.051            0.041
-#&gt; Chain 1:   6000         -518.603             0.053            0.041
-#&gt; Chain 1:   6100         -474.961             0.059            0.065
-#&gt; Chain 1:   6200         -494.737             0.060            0.065
-#&gt; Chain 1:   6300         -514.214             0.051            0.041
-#&gt; Chain 1:   6400         -510.252             0.048            0.040
-#&gt; Chain 1:   6500         -476.462             0.048            0.040
-#&gt; Chain 1:   6600         -517.731             0.048            0.040
-#&gt; Chain 1:   6700         -485.916             0.053            0.065
-#&gt; Chain 1:   6800         -489.885             0.045            0.040
-#&gt; Chain 1:   6900         -465.209             0.048            0.053
-#&gt; Chain 1:   7000         -472.794             0.047            0.053
-#&gt; Chain 1:   7100         -475.276             0.038            0.040
-#&gt; Chain 1:   7200         -505.793             0.040            0.053
-#&gt; Chain 1:   7300         -463.735             0.046            0.060
-#&gt; Chain 1:   7400         -468.833             0.046            0.060
-#&gt; Chain 1:   7500         -504.262             0.046            0.060
-#&gt; Chain 1:   7600         -496.296             0.040            0.053
-#&gt; Chain 1:   7700         -496.305             0.033            0.016
-#&gt; Chain 1:   7800         -453.705             0.042            0.053
-#&gt; Chain 1:   7900         -494.136             0.045            0.060
-#&gt; Chain 1:   8000         -500.360             0.044            0.060
-#&gt; Chain 1:   8100         -464.209             0.051            0.070
-#&gt; Chain 1:   8200         -469.179             0.046            0.070
-#&gt; Chain 1:   8300         -479.486             0.040            0.021
-#&gt; Chain 1:   8400         -457.231             0.043            0.049
-#&gt; Chain 1:   8500         -460.266             0.037            0.021
-#&gt; Chain 1:   8600         -473.518             0.038            0.028
-#&gt; Chain 1:   8700         -443.380             0.045            0.049
-#&gt; Chain 1:   8800         -458.211             0.039            0.032
-#&gt; Chain 1:   8900         -463.556             0.032            0.028
-#&gt; Chain 1:   9000         -468.748             0.032            0.028
-#&gt; Chain 1:   9100         -458.397             0.026            0.023
-#&gt; Chain 1:   9200         -450.545             0.027            0.023
-#&gt; Chain 1:   9300         -448.172             0.025            0.023
-#&gt; Chain 1:   9400         -457.934             0.022            0.021
-#&gt; Chain 1:   9500         -458.506             0.022            0.021
-#&gt; Chain 1:   9600         -444.452             0.022            0.021
-#&gt; Chain 1:   9700         -456.377             0.018            0.021
-#&gt; Chain 1:   9800         -456.189             0.015            0.017
-#&gt; Chain 1:   9900         -441.026             0.017            0.021
-#&gt; Chain 1:   10000         -470.592             0.022            0.023
+#&gt; Chain 1:    100        -5860.749             1.000            1.000
+#&gt; Chain 1:    200        -4207.575             0.696            1.000
+#&gt; Chain 1:    300        -2650.502             0.660            0.587
+#&gt; Chain 1:    400        -1441.156             0.705            0.839
+#&gt; Chain 1:    500        -1216.215             0.601            0.587
+#&gt; Chain 1:    600        -1209.856             0.502            0.587
+#&gt; Chain 1:    700        -1127.632             0.440            0.393
+#&gt; Chain 1:    800         -910.625             0.415            0.393
+#&gt; Chain 1:    900         -974.331             0.376            0.238
+#&gt; Chain 1:   1000         -813.998             0.358            0.238
+#&gt; Chain 1:   1100         -906.963             0.269            0.197
+#&gt; Chain 1:   1200         -811.175             0.241            0.185
+#&gt; Chain 1:   1300         -704.472             0.197            0.151
+#&gt; Chain 1:   1400         -912.199             0.136            0.151
+#&gt; Chain 1:   1500         -638.591             0.161            0.151
+#&gt; Chain 1:   1600         -689.650             0.168            0.151
+#&gt; Chain 1:   1700         -624.428             0.171            0.151
+#&gt; Chain 1:   1800         -670.520             0.154            0.118
+#&gt; Chain 1:   1900         -677.843             0.148            0.118
+#&gt; Chain 1:   2000         -626.944             0.137            0.104
+#&gt; Chain 1:   2100         -546.190             0.141            0.118
+#&gt; Chain 1:   2200         -548.548             0.130            0.104
+#&gt; Chain 1:   2300         -586.539             0.121            0.081
+#&gt; Chain 1:   2400         -569.394             0.101            0.074
+#&gt; Chain 1:   2500         -586.787             0.062            0.069
+#&gt; Chain 1:   2600         -578.063             0.056            0.065
+#&gt; Chain 1:   2700         -566.092             0.047            0.030
+#&gt; Chain 1:   2800         -553.299             0.043            0.030
+#&gt; Chain 1:   2900         -587.195             0.047            0.030
+#&gt; Chain 1:   3000         -536.875             0.049            0.030
+#&gt; Chain 1:   3100         -603.497             0.045            0.030
+#&gt; Chain 1:   3200         -550.315             0.054            0.058
+#&gt; Chain 1:   3300         -538.754             0.050            0.030
+#&gt; Chain 1:   3400         -552.282             0.049            0.030
+#&gt; Chain 1:   3500         -530.377             0.051            0.041
+#&gt; Chain 1:   3600         -518.013             0.051            0.041
+#&gt; Chain 1:   3700         -519.449             0.050            0.041
+#&gt; Chain 1:   3800         -618.422             0.063            0.058
+#&gt; Chain 1:   3900         -533.789             0.073            0.094
+#&gt; Chain 1:   4000         -486.536             0.074            0.097
+#&gt; Chain 1:   4100         -526.909             0.070            0.077
+#&gt; Chain 1:   4200         -550.408             0.065            0.043
+#&gt; Chain 1:   4300         -517.502             0.069            0.064
+#&gt; Chain 1:   4400         -488.755             0.073            0.064
+#&gt; Chain 1:   4500         -580.766             0.084            0.077
+#&gt; Chain 1:   4600         -503.138             0.097            0.097
+#&gt; Chain 1:   4700         -535.972             0.103            0.097
+#&gt; Chain 1:   4800         -507.943             0.093            0.077
+#&gt; Chain 1:   4900         -485.150             0.081            0.064
+#&gt; Chain 1:   5000         -493.939             0.074            0.061
+#&gt; Chain 1:   5100         -469.627             0.071            0.059
+#&gt; Chain 1:   5200         -577.918             0.086            0.061
+#&gt; Chain 1:   5300         -469.447             0.102            0.061
+#&gt; Chain 1:   5400         -468.974             0.097            0.061
+#&gt; Chain 1:   5500         -500.700             0.087            0.061
+#&gt; Chain 1:   5600         -493.748             0.073            0.055
+#&gt; Chain 1:   5700         -492.404             0.067            0.052
+#&gt; Chain 1:   5800         -488.857             0.062            0.047
+#&gt; Chain 1:   5900         -471.381             0.061            0.037
+#&gt; Chain 1:   6000         -469.551             0.060            0.037
+#&gt; Chain 1:   6100         -442.325             0.061            0.037
+#&gt; Chain 1:   6200         -477.826             0.050            0.037
+#&gt; Chain 1:   6300         -485.489             0.028            0.016
+#&gt; Chain 1:   6400         -478.790             0.029            0.016
+#&gt; Chain 1:   6500         -461.772             0.027            0.016
+#&gt; Chain 1:   6600         -472.519             0.028            0.023
+#&gt; Chain 1:   6700         -455.661             0.031            0.037
+#&gt; Chain 1:   6800         -491.113             0.038            0.037
+#&gt; Chain 1:   6900         -441.741             0.045            0.037
+#&gt; Chain 1:   7000         -447.105             0.046            0.037
+#&gt; Chain 1:   7100         -458.586             0.042            0.037
+#&gt; Chain 1:   7200         -454.954             0.036            0.025
+#&gt; Chain 1:   7300         -457.807             0.035            0.025
+#&gt; Chain 1:   7400         -469.904             0.036            0.026
+#&gt; Chain 1:   7500         -436.675             0.040            0.026
+#&gt; Chain 1:   7600         -474.067             0.045            0.037
+#&gt; Chain 1:   7700         -440.314             0.049            0.072
+#&gt; Chain 1:   7800         -470.366             0.048            0.064
+#&gt; Chain 1:   7900         -458.155             0.040            0.027
+#&gt; Chain 1:   8000         -440.942             0.043            0.039
+#&gt; Chain 1:   8100         -467.038             0.046            0.056
+#&gt; Chain 1:   8200         -451.515             0.048            0.056
+#&gt; Chain 1:   8300         -434.668             0.052            0.056
+#&gt; Chain 1:   8400         -447.735             0.052            0.056
+#&gt; Chain 1:   8500         -435.657             0.047            0.039
+#&gt; Chain 1:   8600         -450.502             0.043            0.039
+#&gt; Chain 1:   8700         -438.568             0.038            0.034
+#&gt; Chain 1:   8800         -467.144             0.037            0.034
+#&gt; Chain 1:   8900         -482.755             0.038            0.034
+#&gt; Chain 1:   9000         -425.383             0.047            0.034
+#&gt; Chain 1:   9100         -447.279             0.047            0.034
+#&gt; Chain 1:   9200         -426.487             0.048            0.039
+#&gt; Chain 1:   9300         -436.099             0.047            0.033
+#&gt; Chain 1:   9400         -436.387             0.044            0.033
+#&gt; Chain 1:   9500         -469.269             0.048            0.049
+#&gt; Chain 1:   9600         -441.920             0.051            0.049
+#&gt; Chain 1:   9700         -440.928             0.048            0.049
+#&gt; Chain 1:   9800         -460.802             0.046            0.049
+#&gt; Chain 1:   9900         -454.914             0.045            0.049
+#&gt; Chain 1:   10000         -439.420             0.035            0.043
 #&gt; Chain 1: Informational Message: The maximum number of iterations is reached! The algorithm may not have converged.
 #&gt; Chain 1: This variational approximation is not guaranteed to be meaningful.
 #&gt; Chain 1: 
 #&gt; Chain 1: Drawing a sample of size 1000 from the approximate posterior... 
-#&gt; Chain 1: COMPLETED.</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 4.8. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'>
-<span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm</span>)</div><div class='img'><img src='epim-1.png' alt='' width='700' height='433' /></div><div class='input'># }
+#&gt; Chain 1: COMPLETED.</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 2.81. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'>
+# }
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -62,10 +62,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -87,6 +93,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -134,19 +143,19 @@
 </style>
 <div class="article_container">
 
-<div id="priors-on-model-parameters" class="section level1">
+<div id="sec:priors" class="section level1">
 <h1 class="hasAnchor">
-<a href="#priors-on-model-parameters" class="anchor"></a><span class="header-section-number">1</span> Priors on Model Parameters</h1>
+<a href="#sec:priors" class="anchor"></a><span class="header-section-number">1</span> Priors on Model Parameters</h1>
 <hr>
 <p><strong>epidemia</strong> aims to
 give the user a high degree of control over setting prior distributions. It does this
-by leveraging the functionality provided by <strong>rstanarm</strong>, which defines functions
-representing a number of different prior families. These include for example student-t, laplace,
+by leveraging the functionality provided by <strong>rstanarm</strong>, which provides functions
+representing a number of different prior families. These include for example student-t, Laplace,
 and hierarchical shrinkage families. In this article, we provide
 a brief introduction to the available families, and discuss some important quirks
 to be aware of when defining priors. We use the same mathematical notation as in the
-<a href="model-description.html">model description article</a>.</p>
-<p><em>Please do not rely on the default priors in epidemia. Although these have been
+model description <a href="model-description.html">article</a>.</p>
+<p><em>Please do not rely on the default priors in <strong>epidemia</strong>. Although these have been
 designed to be weakly informative, they are not guaranteed to be appropriate
 for your particular model. Please adjust prior distributions as required.</em></p>
 <p>Priors must be defined for all parameters in each of the three model components:
@@ -154,24 +163,25 @@ transmission, infection, and observations. In the transmission model, priors mus
 be set for all effects appearing in the linear predictor <span class="math inline">\(\eta\)</span>. In the
 infection model, a prior must be set on <span class="math inline">\(\tau\)</span>, but also on the dispersion
 parameter <span class="math inline">\(d\)</span> in the extended version of the model. In each observational
-model, priors must be set for effects defining the ascertainment rates, but also
+model, priors must be set for effects defining the multipliers <span class="math inline">\(\alpha_t\)</span>, but also
 for the auxiliary parameter for the sampling distribution, <span class="math inline">\(\phi\)</span>.</p>
-<p>In general, primitive model parameters are either intercepts,
+<p>In general, primitive model parameters can be classified as are either intercepts,
 fixed effects, a covariance matrix, an auxiliary parameter, or the error term
 in a random walk. We discuss each in turn, in particular highlighting where they
 appear in the model, and what distributions are available for them.</p>
 <div id="priors-on-intercepts" class="section level2">
 <h2 class="hasAnchor">
 <a href="#priors-on-intercepts" class="anchor"></a><span class="header-section-number">1.1</span> Priors on Intercepts</h2>
+<hr>
 <p>Intercepts can appear in the linear predictor <span class="math inline">\(\eta\)</span> for the reproduction numbers
-<span class="math inline">\(R\)</span> and in the linear predictors for ascertainment rates <span class="math inline">\(\alpha\)</span>. The prior
+<span class="math inline">\(R\)</span> and in the linear predictors for multipliers <span class="math inline">\(\alpha\)</span>. The prior
 distribution is specified using an argument <code>prior_intercept</code>. This appears in
 both <code><a href="../reference/epirt.html">epirt()</a></code> and <code><a href="../reference/epiobs.html">epiobs()</a></code>. <code>prior_intercept</code> must be a call to an
 <strong>rstanarm</strong> function that represents a student-t family: i.e. one of
-<code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::normal</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::student_t</a></code> or <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::cauchy</a></code>. <code>prior_intercept</code>
+<code><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">student_t()</a></code> or <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">cauchy()</a></code> from <strong>rstanarm</strong>. <code>prior_intercept</code>
 is of course only used if the formula specifies an intercept. Please note that
 the interpretation of <code>prior_intercept</code> depends on the <code>center</code> argument to
-<code><a href="../reference/epirt.html">epirt()</a></code> and <code><a href="../reference/epiobs.html">epiobs()</a></code>. Please see Section <a href="#sec:centering">2.1</a> for more details.</p>
+<code><a href="../reference/epirt.html">epirt()</a></code> and <code><a href="../reference/epiobs.html">epiobs()</a></code>. Please see Section <a href="#sec:centering">1.6.1</a> for more details.</p>
 </div>
 <div id="priors-on-regression-coefficients" class="section level2">
 <h2 class="hasAnchor">
@@ -182,8 +192,8 @@ prior distribution is set using the <code>prior</code> argument, which, similarl
 <code>prior_intercept</code>, appears in both <code><a href="../reference/epirt.html">epirt()</a></code> and <code><a href="../reference/epiobs.html">epiobs()</a></code>. Note that
 this <em>does not</em> set the prior for the group-specific effects <span class="math inline">\(b\)</span>, which
 are instead controlled by <code>prior_covariance</code>.</p>
-<p><code>prior</code> can be a call to one of rstanarm’s prior functions. These can be broadly
-grouped into four families: student-t, hierarchical shrinkage, laplace and
+<p><code>prior</code> can be a call to one of <strong>rstanarm</strong>’s prior functions. These can be broadly
+grouped into four families: student-t, hierarchical shrinkage, Laplace and
 the product normal family. Note that <em>all effects must follow the same
 family</em>; for example, it is not possible for <span class="math inline">\(\beta_1\)</span> to have
 a normal prior while <span class="math inline">\(\beta_2\)</span> has a Cauchy prior. Nonetheless, different
@@ -191,79 +201,78 @@ hyperparameters can be set for each effect.</p>
 <p>As an example, suppose the following formula is used to model <span class="math inline">\(R\)</span>, where
 <code>cov1</code> and <code>cov2</code> are some covariates.</p>
 <div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu">R</span>(<span class="no">group</span>, <span class="no">date</span>) ~ <span class="fl">1</span> + <span class="no">cov1</span> + <span class="no">cov2</span></pre></body></html></div>
-<p>Using <code>prior = rstanarm::normal(location=0,scale=1)</code> in the call to <code><a href="../reference/epirt.html">epirt()</a></code> would
-give a standard normal prior to both covariate effects.
-To give different prior locations and or scales for each covariate,
-we simply pass numeric vectors instead of scalars.
-For example, <code>prior = rstanarm::normal(location=c(0,1),scale=c(1,2))</code> would
-set priors <span class="math inline">\(\beta_1 \sim N(0,1)\)</span> and <span class="math inline">\(\beta_2 \sim N(1,2)\)</span>, where <span class="math inline">\(\beta_1\)</span>
-and <span class="math inline">\(\beta_2\)</span> are the effects for <code>cov1</code> and <code>cov2</code> respectively.</p>
+<p>Consider the following two prior specifications in the call to <code><a href="../reference/epirt.html">epirt()</a></code>.</p>
+<ul>
+<li>
+<code>prior = rstanarm::normal(location=0,scale=1)</code> gives a standard normal prior
+to both covariate effects.</li>
+<li>
+<code>prior = rstanarm::normal(location=c(0,1),scale=c(1,2))</code> sets priors
+<span class="math inline">\(\beta_1 \sim N(0,1)\)</span> and <span class="math inline">\(\beta_2 \sim N(1,2)\)</span>, where <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> are the effects for <code>cov1</code> and <code>cov2</code> respectively. To give different prior locations and or scales for each covariate, we simply pass numeric vectors instead of scalars.</li>
+</ul>
 <p>The interpretation of <code>prior</code> depends on whether covariates are being centered,
-and whether automatic scale adjustments are occurring. Please see <a href="#sec:caveats">2</a>
-for more details.</p>
+and whether automatic scale adjustments are occurring. Please see Section
+<a href="#sec:caveats">1.6</a> for more details.</p>
 <div id="additional-priors" class="section level3">
 <h3 class="hasAnchor">
 <a href="#additional-priors" class="anchor"></a><span class="header-section-number">1.2.1</span> Additional Priors</h3>
 <p>In addition to <strong>rstanarm</strong>’s prior functions, <strong>epidemia</strong> offers additional
-priors for regression coefficients. Currently, there is just one, <code>shifted_gamma</code>.
-This represents a gamma distribution that can be shifted so that it has support
+prior families for regression coefficients. Currently the only additional
+prior available is <code>shifted_gamma</code>.
+This represents a gamma distribution that can be shifted to have support
 other than on <span class="math inline">\([0, \infty)\)</span>. Specifically,
 <span class="math display">\[\begin{equation}
 \beta_i \sim \text{Gamma}(\alpha_i, \theta_i) - a_i,
 \end{equation}\]</span>
 where <span class="math inline">\(\alpha_i\)</span> and <span class="math inline">\(\theta_i\)</span> are shape and scale parameters, and <span class="math inline">\(a_i\)</span> is a
 shift. This prior is used in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span> to model
-the prior effect of non-pharmaceutical interventions (NPIs). Intuitively, it
-is unlikely that an NPI designed to reduce transmission rates ends up increasing
+the prior effect of control measures on Covid-19 transmission. Intuitively, it
+is unlikely that a measure designed to reduce transmission rates ends up increasing
 transmission significantly. This implies that a symmetric prior may not be
 appropriate for these effects: it makes sense to put low mass on large positive
 effect sizes. In addition, this prior can help to improve identifiability when multiple
-NPIs occur in quick succession - as is often the case during the early stages of
+measures occur in quick succession - as is often the case during the early stages of
 an epidemic.</p>
 </div>
 </div>
 <div id="priors-on-auxiliary-parameters" class="section level2">
 <h2 class="hasAnchor">
 <a href="#priors-on-auxiliary-parameters" class="anchor"></a><span class="header-section-number">1.3</span> Priors on Auxiliary Parameters</h2>
+<hr>
 <p>Auxiliary parameters can appear in the sampling distributions for observations.
-This corresponds to the parameter <span class="math inline">\(\phi\)</span> in the model-description vignette. The
-interpretation of this parameter depends on the chosen distribution: Poisson
-has no auxiliary parameter as it is fully defined by its mean. For the
+This corresponds to the parameter <span class="math inline">\(\phi\)</span> introduced in Section 1.1 of the model description article. The
+interpretation of this parameter depends on the chosen distribution. The Poisson
+distribution has no auxiliary parameter as it is fully defined by its mean. For the
 negative binomial distribution (specified by using <code>family = "neg_binom"</code> in the
 call to <code><a href="../reference/epiobs.html">epiobs()</a></code>), <span class="math inline">\(\phi\)</span> represents the reciprocal dispersion. An auxiliary parameter <span class="math inline">\(d\)</span>
 also exists in the extended version of the infection model (when using <code>latent = TRUE</code> in
-the call to <code><a href="../reference/epiinf.html">epiinf()</a></code>). This represents the <em>coefficient of variation</em> of the
-offspring distribution. Auxiliary parameters are always non-negative in <strong>epidemia</strong>.</p>
+the call to <code><a href="../reference/epiinf.html">epiinf()</a></code>). Auxiliary parameters are always non-negative in <strong>epidemia</strong>.</p>
 <p>Priors for auxiliary parameters are set using the <code>prior_aux</code> argument in the
 <code><a href="../reference/epiobs.html">epiobs()</a></code> and <code><a href="../reference/epiinf.html">epiinf()</a></code> modeling functions. It is not used when
-<code>family = "poisson</code> in the call to <code><a href="../reference/epiobs.html">epiobs()</a></code> or when <code>latent = FALSE</code> in the
-call to <code><a href="../reference/epiinf.html">epiinf()</a></code>. <code>prior_aux</code> can be a call to one of <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::normal()</a></code>,
-<code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::student_t()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::cauchy()</a></code> or <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::exponential()</a></code>.</p>
+<code>family = "poisson"</code> in the call to <code><a href="../reference/epiobs.html">epiobs()</a></code> or when <code>latent = FALSE</code> in the call to <code><a href="../reference/epiinf.html">epiinf()</a></code>. <code>prior_aux</code> can be a call to one of <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal()</a></code>,
+<code><a href="https://mc-stan.org/rstanarm/reference/priors.html">student_t()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">cauchy()</a></code> or <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">exponential()</a></code> from <strong>rstanarm</strong>.</p>
 </div>
-<div id="priors-on-covariance-matrices" class="section level2">
+<div id="sec:priorscov" class="section level2">
 <h2 class="hasAnchor">
-<a href="#priors-on-covariance-matrices" class="anchor"></a><span class="header-section-number">1.4</span> Priors on Covariance Matrices</h2>
-<p>Recall that partial pooling can be used in the regression for <span class="math inline">\(R\)</span>. The
+<a href="#sec:priorscov" class="anchor"></a><span class="header-section-number">1.4</span> Priors on Covariance Matrices</h2>
+<hr>
+<p>Recall that partial pooling can be used in the regression for <span class="math inline">\(R_t\)</span>. The
 partially pooled parameters <span class="math inline">\(b\)</span> are characterized as zero mean multivariate
 normal with an unknown covariance matrix, which must itself be assigned a prior.
-The precise model for these parameters is described in detail in the
-<a href="partial-pooling.html">partial pooling article</a>. The prior on the covariance
+The precise model for these parameters is described in detail in <a href="partial-pooling.html">partial pooling</a>. The prior on the covariance
 matrix can be set using the <code>prior_covariance</code> argument in <code><a href="../reference/epirt.html">epirt()</a></code>.</p>
 <p>Although the Inverse-Wishart prior is a popular prior for covariance matrices,
 it does not cleanly separate shape and scale <span class="citation">(Tokuda et al. <a href="#ref-tokuda2011" role="doc-biblioref">2011</a>)</span>. A general approach
 is to decompose the prior on the covariance matrix into a prior on
 the correlation matrix and a vector of variances. This is the approach taken
-by <strong>rstanarm</strong>, which has functions <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::decov</a></code> and <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::lkj</a></code> which
+by <strong>rstanarm</strong>, which has functions <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">decov()</a></code> and <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">lkj()</a></code> which
 represent priors for covariance matrices. These are also used by <strong>epidemia</strong>
 for the same purpose.</p>
 <p>We briefly describe <strong>rstanarm</strong>’s decov prior, as it applies to partially
-pooled parameters in the regression for <span class="math inline">\(R\)</span>. For a comprehensive account,
-please refer to this <a href="http://mc-stan.org/rstanarm/articles/glmer.html">article</a>.</p>
-<p>Before reading on, it helps to review the <a href="partial-pooling.html">partial pooling vignette</a>.
-Suppose the formula for <span class="math inline">\(R\)</span> contains a term of the form <code>(expr | factor)</code>, and
-that <code>expr</code> evaluated to a model matrix with <span class="math inline">\(p\)</span> columns, and <code>factor</code> has <span class="math inline">\(L\)</span>
-levels. Letting <span class="math inline">\(\theta_l\)</span> denote the <span class="math inline">\(p\)</span>-vector of paramaters for the <span class="math inline">\(l\)</span><sup>th</sup>
-group, recall from the partial pooling vignette that this is modeled as
+pooled parameters in the regression for <span class="math inline">\(R_t\)</span>. Suppose the formula for <span class="math inline">\(R_t\)</span> contains a term of the form <code>(expr | factor)</code>, and
+that <code>expr</code> evaluates to a model matrix with <span class="math inline">\(p\)</span> columns, and <code>factor</code> has <span class="math inline">\(L\)</span>
+levels. Let <span class="math inline">\(\theta_l\)</span> denote the <span class="math inline">\(p\)</span>-vector of parameters for the <span class="math inline">\(l\)</span><sup>th</sup>
+group. From <a href="partial-pooling.html">here</a>, this is modeled as
 <span class="math display">\[\begin{equation}
   \theta_{l} \sim N(0, \Sigma),
 \end{equation}\]</span>
@@ -275,7 +284,7 @@ vector is decomposed into the product of a simplex vector <span class="math inli
 <span class="math display">\[\begin{equation}
 \sigma^2_i = s_i \text{tr}\left(\Sigma\right).
 \end{equation}\]</span>
-The simplex vector is given a symmetric dirichlet prior, while the trace is
+The simplex vector is given a symmetric Dirichlet prior, while the trace is
 decomposed into <span class="math inline">\(tr(\Sigma) = p \kappa^2\)</span>, where <span class="math inline">\(p\)</span> is the order of the matrix
 (i.e. the number of correlated effects), and <span class="math inline">\(\kappa\)</span> is a parameter which is
 assigned a scale invariant prior; specifically a Gamma with given shape and
@@ -286,29 +295,43 @@ has a Gamma prior.</p>
 <div id="priors-on-random-walks" class="section level2">
 <h2 class="hasAnchor">
 <a href="#priors-on-random-walks" class="anchor"></a><span class="header-section-number">1.5</span> Priors on Random Walks</h2>
+<hr>
+<p>The model description article described how the linear predictor for <span class="math inline">\(R_t\)</span> can
+include autocorrelation terms. Currently, <strong>epidemia</strong> supports random walk
+terms. The random walk errors are given a zero-mean normal prior, with an
+unknown scale. This scale is itself assigned a half-normal hyperprior with a
+known scale.</p>
+<p>Consider a very simple random walk parameterization of <span class="math inline">\(R_t\)</span>, whereby <code>formula = R(country, date) ~ rw(prior_scale=0.05)</code> is used in the call to <code><a href="../reference/epirt.html">epirt()</a></code>.
+Assuming only one population is being considered, this implies a functional form of
+<span class="math display">\[\begin{equation*}
+R_t = g^{-1}\left(\beta_0 + W_t \right)
+\end{equation*}\]</span>
+for reproduction numbers. Here <span class="math inline">\(W_t\)</span> is a random walk satisfying <span class="math inline">\(W_t = W_{t-1} + \gamma_t\)</span> for <span class="math inline">\(t&gt;0\)</span> and with initial condition <span class="math inline">\(W_0=0\)</span>. Under the prior, the error terms <span class="math inline">\(\gamma_t\)</span>
+follow <span class="math inline">\(\gamma_t \sim \mathcal{N}(0,\sigma)\)</span> with <span class="math inline">\(\sigma \sim \mathcal{N}^{+}(0, 0.05)\)</span>.</p>
 </div>
-</div>
-<div id="sec:caveats" class="section level1">
-<h1 class="hasAnchor">
-<a href="#sec:caveats" class="anchor"></a><span class="header-section-number">2</span> Caveats</h1>
+<div id="sec:caveats" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:caveats" class="anchor"></a><span class="header-section-number">1.6</span> Caveats</h2>
+<hr>
 <p>There are several important caveats to be aware of when using prior distributions
 in <strong>epidemia</strong>.</p>
-<div id="sec:centering" class="section level2">
-<h2 class="hasAnchor">
-<a href="#sec:centering" class="anchor"></a><span class="header-section-number">2.1</span> Covariate Centering</h2>
-<p>By default, covariates in the regressions for <span class="math inline">\(R\)</span> and <span class="math inline">\(\alpha\)</span> are not centered
+<div id="sec:centering" class="section level3">
+<h3 class="hasAnchor">
+<a href="#sec:centering" class="anchor"></a><span class="header-section-number">1.6.1</span> Covariate Centering</h3>
+<p>By default, covariates in the regressions for <span class="math inline">\(R_t\)</span> and <span class="math inline">\(\alpha_t\)</span> are not centered
 automatically by <strong>epidemia</strong>. This can, however, be done by using <code>center = TRUE</code>
 in the call to <code><a href="../reference/epirt.html">epirt()</a></code> and <code><a href="../reference/epiobs.html">epiobs()</a></code> respectively. It is important to
-note that if <code>center = TRUE</code>, the <code>prior_intercept</code> and <code>prior</code> set the priors
+note that if <code>center = TRUE</code>, the arguments <code>prior_intercept</code> and <code>prior</code> set the priors
 on the intercept and coefficients <em>after centering the covariates</em>.</p>
 <p>Covariates are not centered automatically because often the intercept has an
 intuitive interpretation in the model. For example, if all covariates are
 zero at the beginning of the epidemic, then the intercept can be seen as
-specifying the <span class="math inline">\(R_0\)</span> of the disease. If <code>center = TRUE</code>, then the intercept
+specifying the initial reproduction number <span class="math inline">\(R_0\)</span> of the disease. If <code>center = TRUE</code>, then the intercept
 no longer has an easily intuited interpretation.</p>
+</div>
 <div id="sec:autoscale" class="section level3">
 <h3 class="hasAnchor">
-<a href="#sec:autoscale" class="anchor"></a><span class="header-section-number">2.1.1</span> Autoscaling</h3>
+<a href="#sec:autoscale" class="anchor"></a><span class="header-section-number">1.6.2</span> Autoscaling</h3>
 <p><strong>rstanarm</strong>’s prior functions have an argument called <code>autoscale</code>.
 If <code>autoscale = TRUE</code>, then <strong>epidemia</strong> automatically adjusts the prior scale to
 account for the scale of the covariates. This only applies to priors on
@@ -327,14 +350,15 @@ the priors that were actually used after rescaling.</p>
 </div>
 <div id="references" class="section level1">
 <h1 class="hasAnchor">
-<a href="#references" class="anchor"></a><span class="header-section-number">3</span> References</h1>
+<a href="#references" class="anchor"></a><span class="header-section-number">2</span> References</h1>
+<hr>
 </div>
 <div id="refs" class="references">
 <div id="ref-Flaxman2020">
 <p>Flaxman, Seth, Swapnil Mishra, Axel Gandy, H Juliette T Unwin, Thomas A Mellan, Helen Coupland, Charles Whittaker, et al. 2020. “Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.” <em>Nature</em>. <a href="https://doi.org/10.1038/s41586-020-2405-7">https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
 </div>
 <div id="ref-tokuda2011">
-<p>Tokuda, Tomoki, Ben Goodrich, I Van Mechelen, Andrew Gelman, and F Tuerlinckx. 2011. “Visualizing Distributions of Covariance Matrices.” <em>Columbia Univ., New York, USA, Tech. Rep</em>, 18–18.</p>
+<p>Tokuda, Tomoki, Ben Goodrich, I Van Mechelen, Andrew Gelman, and F Tuerlinckx. 2011. “Visualizing distributions of covariance matrices.” <em>Columbia Univ., New York, USA, Tech. Rep</em>, 18.</p>
 </div>
 </div>
 </div>

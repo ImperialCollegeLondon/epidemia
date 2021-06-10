@@ -51,7 +51,7 @@
 <meta property="og:title" content="Model Latent Infections — epiinf" />
 <meta property="og:description" content="epiinf defines a model for latent infections.
 For the basic version of the model, this defines the generation distribution of the disease, the number of days for which to seed infections, and the prior distribution on the parameter \(\tau\),
-as described in the model description vignette. Recall that \(\tau\) is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_tau respectively." />
+as described in the model description vignette. Recall that \(\tau\) is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_seeds respectively." />
 <meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png" />
 
 
@@ -110,10 +110,16 @@ as described in the model description vignette. Recall that \(\tau\) is the prio
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -135,6 +141,9 @@ as described in the model description vignette. Recall that \(\tau\) is the prio
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -173,18 +182,22 @@ as described in the model description vignette. Recall that \(\tau\) is the prio
     <div class="ref-description">
     <p><code>epiinf</code> defines a model for latent infections.
 For the basic version of the model, this defines the generation distribution of the disease, the number of days for which to seed infections, and the prior distribution on the parameter \(\tau\),
-as described in the <a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>model description</a> vignette. Recall that \(\tau\) is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_tau respectively.</p>
+as described in the <a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>model description</a> vignette. Recall that \(\tau\) is the prior mean on daily seeded infections. These three parameters are controlled by the arguments gen, seed_days and prior_seeds respectively.</p>
     </div>
 
     <pre class="usage"><span class='fu'>epiinf</span>(
   <span class='no'>gen</span>,
   <span class='kw'>seed_days</span> <span class='kw'>=</span> <span class='fl'>6L</span>,
+  <span class='kw'>prior_seeds</span> <span class='kw'>=</span> <span class='fu'><a href='hexp.html'>hexp</a></span>(<span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='fl'>0.03</span>)),
   <span class='kw'>latent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"log-normal"</span>,
+  <span class='kw'>family</span> <span class='kw'>=</span> <span class='st'>"normal"</span>,
   <span class='kw'>prior_aux</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></span>(<span class='fl'>10</span>, <span class='fl'>5</span>),
-  <span class='kw'>prior_tau</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='fl'>0.03</span>),
+  <span class='kw'>fixed_vtm</span> <span class='kw'>=</span> <span class='fl'>1</span>,
   <span class='kw'>pop_adjust</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>susceptibles</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
+  <span class='kw'>pops</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>rm</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>prior_susc</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>prior_rm_noise</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -200,38 +213,54 @@ probability vector).</p></td>
       <td><p>An integer giving the number of days for which to seed infections. Defaults to <code>6L</code>.</p></td>
     </tr>
     <tr>
+      <th>prior_seeds</th>
+      <td><p>The prior distribution on seeded infections. This may be a call to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></code>, <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>student_t</a></code>, <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>, or to <code><a href='hexp.html'>hexp</a></code>. The latter
+distribution allows hierarchical modeling of seeded infections.</p></td>
+    </tr>
+    <tr>
       <th>latent</th>
       <td><p>If <code>TRUE</code>, treat infections as latent parameters using the extensions described in Section 5.2 <a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>here</a>.</p></td>
     </tr>
     <tr>
       <th>family</th>
-      <td><p>Specifies the family for the prior distribution on daily infections. Only used if <code>latent = TRUE</code>, and currently restricted to <code>log-normal</code>.</p></td>
+      <td><p>Specifies the family for the prior distribution on daily infections. Only used if <code>latent = TRUE</code>, and currently restricted to <code>normal</code>.</p></td>
     </tr>
     <tr>
       <th>prior_aux</th>
-      <td><p>Prior distribution for the coefficient of dispersion \(d\) for
-the offspring distribution. Only used if <code>latent = TRUE</code>. The number of
-offspring of a given infection is assumed to have mean \(\mu\) and variance \(d \mu\).
-This argument specifies prior on \(d\). Higher values of \(d\) imply more
-super-spreading events.</p></td>
+      <td><p>Prior distribution for the auxiliary variable in the distribution for latent infections. Only used if <code>latent = TRUE</code>. If <code>fixed_vtm = TRUE</code>, then
+this refers to the variance-to-mean ratio. If <code>fixed_vtm = FALSE</code>, it is instead the coefficient of variation. Can be a call to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>,
+<code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></code>, <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>student_t</a></code> or <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>cauchy</a></code>. These result in half-normal, half-t and half-cauchy priors.</p></td>
     </tr>
     <tr>
-      <th>prior_tau</th>
-      <td><p>The prior distribution for the hyperparameter \(\tau\), which is the mean of the
-prior distribution for infection seeding. Must be a call to
-<code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>. Defaults to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>rstanarm::exponential(0.03)</a></code>. See the
-<a href='https://imperialcollegelondon.github.io/epidemia/articles/model-description.html'>model description</a> for
-more details on this parameter.</p></td>
+      <th>fixed_vtm</th>
+      <td><p>If <code>TRUE</code>, then the prior variance-to-mean ratio for latent infections is fixed, i.e. the auxiliary
+variable refers to the coefficient of dispersion. If <code>FALSE</code>, then the prior ratio of standard deviation to mean is fixed instead,
+and the auxiliary variable refers to the coefficient of variation.</p></td>
     </tr>
     <tr>
       <th>pop_adjust</th>
       <td><p>If <code>TRUE</code>, applies a population adjustment to the infection process. Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
-      <th>susceptibles</th>
-      <td><p>A character vector giving the name of the column in the dataframe
-passed as the <code>data</code> argument of <code><a href='epim.html'>epim</a></code>, that corresponds to the susceptible population over time.
-Only used if <code>pop_adjust=TRUE</code>.</p></td>
+      <th>pops</th>
+      <td><p>A character vector giving the name of the column in the dataframe corresponding to the population of each group.</p></td>
+    </tr>
+    <tr>
+      <th>rm</th>
+      <td><p>A characted vector giving a column name in <code>data</code> (see <code><a href='epim.html'>epim</a></code>). Each entry should be the proportion of the susceptible
+population in that group that are removed at that point by some means other than infection; i.e. vaccination. Only used if <code>pop_adjust=TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>prior_susc</th>
+      <td><p>Prior distribution on the initial susceptible population at time 0, expressed as a proportion of the total population size.
+This quantity lies between 0 and 1, and is useful when the first modeled date is after the true beginning of an epidemic. Only used when <code>pop_adjust = TRUE</code>.
+If unspecified, then the entire population is assumed to be susceptible at time 0.  If specified, should be a call to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>prior_rm_noise</th>
+      <td><p>Removal from the susceptible population (to account for vaccinations) can be applied using the <code>rm</code> argument. However, in practice, it
+is difficult to specify the proportion of the susceptible class removed at any point in time. <code>prior_rm_noise</code>
+helps to model noise around this. If specified, should be a call to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></code>.</p></td>
     </tr>
     </table>
 
@@ -253,7 +282,7 @@ It can be employed by setting <code>pop_adjust = TRUE</code> and using the <code
 <span class='no'>inf</span> <span class='kw'>&lt;-</span> <span class='fu'>epiinf</span>(
  <span class='kw'>gen</span> <span class='kw'>=</span> <span class='no'>EuropeCovid</span>$<span class='no'>si</span>,
  <span class='kw'>seed_days</span> <span class='kw'>=</span> <span class='fl'>6L</span>,
- <span class='kw'>prior_tau</span> <span class='kw'>=</span> <span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='fl'>0.02</span>)
+ <span class='kw'>prior_seeds</span> <span class='kw'>=</span> <span class='fu'><a href='hexp.html'>hexp</a></span>(<span class='kw pkg'>rstanarm</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></span>(<span class='fl'>0.02</span>))
 )</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

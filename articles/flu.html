@@ -62,10 +62,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -87,6 +93,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -135,25 +144,29 @@
 <div class="article_container">
 
 
-<div id="h1n1-pandemic" class="section level1">
+
+<div id="sec:flu" class="section level1">
 <h1 class="hasAnchor">
-<a href="#h1n1-pandemic" class="anchor"></a>1918 H1N1 Pandemic</h1>
+<a href="#sec:flu" class="anchor"></a>Spanish Flu in Baltimore</h1>
 <hr>
-<p>Here we demonstrate basic usage of <strong>epidemia</strong>; in particular we infer time-varying
-reproduction numbers during the 1918 H1N1 Influenza pandemic in Baltimore using
-only daily case data and a discrete serial interval. <span class="math inline">\(R_t\)</span> is modeled as
-following a weekly random walk. Of course <strong>epidemia</strong> is capable of much more
-complex modeling, and such cases are considered in future sections.</p>
+<p>Our first example infers <span class="math inline">\(R_t\)</span> during the H1N1 pandemic in Baltimore in 1918, using only case counts and a serial interval. This is, relatively speaking, a simple setting
+for several reasons. Only a single population (that of Baltimore) and
+observational model (case data) are considered. <span class="math inline">\(R_t\)</span> will
+follow a daily random walk with no additional covariates. Of course, <strong>epidemia</strong>
+is capable of more complex modeling, and other articles take a
+step in this direction.</p>
 <div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">epidemia</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">lubridate</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">rstanarm</span>)</pre></body></html></div>
-<p>In addition to inferring reproduction numbers and seeded infections, we show
-how to do posterior predictive checks and how to extend the model to treats latent infections as
-parameters.</p>
-<p>First use the following command.</p>
+<p>In addition to inferring <span class="math inline">\(R_t\)</span>, this example demonstrates how to
+undertake posterior predictive checks to graphically assess model fit. The basic model
+outlined above is then extended to add variation to the infection process,
+as was outlined in the model <a href="model-description.html">description</a>. This
+is particularly useful for this example because infection counts are low. We will also see that the extended model appears to have a computational advantage in this setting.</p>
+<p>First use the following command, which ensures parallel execution if multiple cores
+are available.</p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())</pre></body></html></div>
-<p>This ensure that chains are run in parallel rather than sequentially. The data
-for this example is provided by the R package EpiEstim.</p>
+<p>The case data is provided by the <strong>R</strong> package <strong>EpiEstim</strong>.</p>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">EpiEstim</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"Flu1918"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">Flu1918</span>)</pre></body></html></div>
@@ -166,89 +179,125 @@ for this example is provided by the R package EpiEstim.</p>
 ## 
 ## $si_distr
 ##  [1] 0.000 0.233 0.359 0.198 0.103 0.053 0.027 0.014 0.007 0.003 0.002 0.001</code></pre>
-<p>First we form the <code>data</code> argument for the model fitting function
-<code><a href="../reference/epim.html">epim()</a></code>. Recall that this must contain all observations (case data), and
-covariates to fit the model. Since <span class="math inline">\(R_t\)</span> will follow a weekly random walk, the
-only covariate required is a <code>week</code> column.</p>
+<div id="data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#data" class="anchor"></a>Data</h2>
+<hr>
+<p>First form the <code>data</code>argument, which will eventually be passed to the
+model fitting function <code><a href="../reference/epim.html">epim()</a></code>. Recall that this must be a data frame
+containing all observations and covariates used to fit the model. Therefore,
+we require a column giving cases over time. In this
+example, no covariates are required. <span class="math inline">\(R_t\)</span> follows a daily random walk,
+with no additional covariates. In addition, the case ascertainment rate
+will be assumed at 100%, and so no covariates are used for this model either.</p>
 <div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">date</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"1918-01-01"</span>) + <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span>(<span class="fl">0</span>, <span class="kw">along.with</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">NA</span>, <span class="no">Flu1918</span>$<span class="no">incidence</span>))
-<span class="no">data</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(
-  <span class="kw">city</span> <span class="kw">=</span> <span class="st">"Baltimore"</span>,
-  <span class="kw">cases</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">NA</span>, <span class="no">Flu1918</span>$<span class="no">incidence</span>),
-  <span class="kw">date</span> <span class="kw">=</span> <span class="no">date</span>,
-  <span class="kw">week</span> <span class="kw">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/week.html">week</a></span>(<span class="no">date</span>)
-)</pre></body></html></div>
-<p><code>date</code> is constructed so that the first observations are seen on the second
-day of the epidemic rather than the first. This is so that the first observation
-can be explained by seeded infections on the previous day.</p>
-<p>We need to specify models for <span class="math inline">\(R_t\)</span> and the case data. <span class="math inline">\(R_t\)</span> is modeled through
-a call to <code><a href="../reference/epirt.html">epirt()</a></code>. The parameterisation of <span class="math inline">\(R_t\)</span> is defined by the
-<code>formula</code> argument. A random walk can be specified using the <code><a href="../reference/rw.html">rw()</a></code>
-function. This has an optional <code>time</code> argument which tells <strong>epidemia</strong> which
-column in <code>data</code> to use to define the random walk increments. If unspecified it
-occurs at the same frequency as <span class="math inline">\(R_t\)</span>, i.e. a daily random walk is used. The random
-walk error is modeled as half-normal with a scale hyperparameter. The value of
-this is set using the <code>prior_scale</code> argument. This is used in the snippet
-below.</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
-  <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">city</span>, <span class="no">date</span>) ~ <span class="fu"><a href="../reference/rw.html">rw</a></span>(<span class="kw">time</span> <span class="kw">=</span> <span class="no">week</span>, <span class="kw">prior_scale</span> <span class="kw">=</span> <span class="fl">0.1</span>),
-  <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">2</span>), <span class="fl">0.2</span>),
-  <span class="kw">link</span> <span class="kw">=</span> <span class="st">'log'</span>
-)</pre></body></html></div>
-<p>In this case the prior on the intercept specifies the prior on <span class="math inline">\(R_0\)</span>. Since a
-log link is being used, the prior above gives <span class="math inline">\(R_0\)</span> a prior mean of around 2.</p>
-<p>Each observation vector is modeled through a call to <code><a href="../reference/epiobs.html">epiobs()</a></code>. These are
-then collected into a list and passed to <code><a href="../reference/epim.html">epim()</a></code> as the <code>obs</code>
-argument. In this case only case data is used and so their is only one call
-to <code><a href="../reference/epiobs.html">epiobs()</a></code> in the list.</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">obs</span> <span class="kw">&lt;-</span>  <span class="fu"><a href="../reference/epiobs.html">epiobs</a></span>(
-    <span class="kw">formula</span> <span class="kw">=</span> <span class="no">cases</span> ~ <span class="fl">1</span>,
-    <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="kw">location</span><span class="kw">=</span><span class="fl">1</span>, <span class="kw">scale</span><span class="kw">=</span><span class="fl">0.01</span>),
-    <span class="kw">link</span> <span class="kw">=</span> <span class="st">"identity"</span>,
-    <span class="kw">i2o</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">.25</span>,<span class="fl">4</span>)
-)</pre></body></html></div>
-<p>For the purposes of this exercise we have assumed that roughly all infections
-manifest as a case. There is a small symmetric error around this to account for
-possible over/under-reporting. The <code>i2o</code> argument implies that cases are
-recorded with equal probability in any of the four days post infection.</p>
-<p>Finally, we collect all remaining arguments required for <code><a href="../reference/epim.html">epim()</a></code>.</p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-  <span class="kw">rt</span> <span class="kw">=</span> <span class="no">rt</span>,
-  <span class="kw">inf</span> <span class="kw">=</span> <span class="fu"><a href="../reference/epiinf.html">epiinf</a></span>(<span class="kw">gen</span> <span class="kw">=</span> <span class="no">Flu1918</span>$<span class="no">si_distr</span>),
-  <span class="kw">obs</span> <span class="kw">=</span> <span class="no">obs</span>,
-  <span class="kw">data</span> <span class="kw">=</span> <span class="no">data</span>,
-  <span class="kw">iter</span> <span class="kw">=</span> <span class="fl">1e3</span>,
-  <span class="kw">seed</span> <span class="kw">=</span> <span class="fl">12345</span>
-)</pre></body></html></div>
+<span class="no">data</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">city</span> <span class="kw">=</span> <span class="st">"Baltimore"</span>, <span class="kw">cases</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">NA</span>, <span class="no">Flu1918</span>$<span class="no">incidence</span>),
+                   <span class="kw">date</span> <span class="kw">=</span> <span class="no">date</span>)</pre></body></html></div>
+<p>The variable <code>date</code>has been constructed so that the first cases
+are seen on the second day of the epidemic rather than the first.
+This ensures that the first observation can be explained by past infections.</p>
+</div>
+<div id="transmission" class="section level2">
+<h2 class="hasAnchor">
+<a href="#transmission" class="anchor"></a>Transmission</h2>
+<hr>
+<p>Recall that we wish to model <span class="math inline">\(R_t\)</span> by a daily random walk. This is
+specified by a call to <code><a href="../reference/epirt.html">epirt()</a></code>. The
+<code>formula</code>argument defines the linear predictor which
+is then transformed by the link function. A random walk can be
+added to the predictor using the <code><a href="../reference/rw.html">rw()</a></code> function. This has an optional
+<code>time</code> argument which allows the random walk increments to occur at
+a different frequency to the <code>date</code> column. This can be employed, for
+example, to define a weekly random walk. If unspecified, the increments are
+daily. The increments are modeled as half-normal with a scale hyperparameter.
+The value of this is set using the <code>prior_scale</code> argument. This is used
+in the snippet below.</p>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(<span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">city</span>, <span class="no">date</span>) ~ <span class="fl">1</span> + <span class="fu"><a href="../reference/rw.html">rw</a></span>(<span class="kw">prior_scale</span> <span class="kw">=</span> <span class="fl">0.01</span>),
+            <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">2</span>), <span class="fl">0.2</span>), <span class="kw">link</span> <span class="kw">=</span> <span class="st">'log'</span>)</pre></body></html></div>
+<p>The prior on the intercept gives the initial reproduction number <span class="math inline">\(R_0\)</span> a prior mean of roughly 2.</p>
+</div>
+<div id="observations" class="section level2">
+<h2 class="hasAnchor">
+<a href="#observations" class="anchor"></a>Observations</h2>
+<hr>
+<p>Multiple observational models can
+be collected into a list and passed to <code><a href="../reference/epim.html">epim()</a></code> as the <code>obs</code>
+argument. In this case, only case data is used and so there is only one
+such model.</p>
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">obs</span> <span class="kw">&lt;-</span>  <span class="fu"><a href="../reference/epiobs.html">epiobs</a></span>(<span class="kw">formula</span> <span class="kw">=</span> <span class="no">cases</span> ~ <span class="fl">0</span> + <span class="fu"><a href="https://rdrr.io/r/stats/offset.html">offset</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">1</span>,<span class="fl">93</span>)), <span class="kw">link</span> <span class="kw">=</span> <span class="st">"identity"</span>,
+               <span class="kw">i2o</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">.25</span>,<span class="fl">4</span>))</pre></body></html></div>
+<p>For the purpose of this exercise, we have assumed that all infections will
+eventually manifest as a case. The above snippet implies 
+ascertainment, i.e. <span class="math inline">\(\alpha_t = 1\)</span> for all <span class="math inline">\(t\)</span>. This is achieved using
+<code><a href="https://rdrr.io/r/stats/offset.html">offset()</a></code>, which allows vectors to be added to the linear predictor
+without multiplication by an unknown parameter.</p>
+<p>The <code>i2o</code> argument implies
+that cases are recorded with equal probability in any of the four days after
+infection.</p>
+</div>
+<div id="infections" class="section level2">
+<h2 class="hasAnchor">
+<a href="#infections" class="anchor"></a>Infections</h2>
+<hr>
+<p>Two infection models are considered. The first uses the renewal equation to propagate infections. The extended model
+adds variance to this process, and can be applied by using <code>latent = TRUE</code>
+in the call to <code><a href="../reference/epiinf.html">epiinf()</a></code>.</p>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">inf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiinf.html">epiinf</a></span>(<span class="kw">gen</span> <span class="kw">=</span> <span class="no">Flu1918</span>$<span class="no">si_distr</span>)
+<span class="no">inf_ext</span> <span class="kw">&lt;-</span>  <span class="fu"><a href="../reference/epiinf.html">epiinf</a></span>(<span class="kw">gen</span> <span class="kw">=</span> <span class="no">Flu1918</span>$<span class="no">si_distr</span>, <span class="kw">latent</span> <span class="kw">=</span> <span class="fl">TRUE</span>,
+                   <span class="kw">prior_aux</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="fl">10</span>,<span class="fl">2</span>))</pre></body></html></div>
 <p>The argument <code>gen</code> takes a discrete generation distribution. Here we have
-used the serial interval provided by EpiEstim. <code>algorithm = "sampling"</code>
-ensures that the model is fit using Stan’s adaptive HMC sampler. <code>iter</code> and
-<code>seed</code> set the number of MCMC iterations and seeds respectively, and are passed
-directly on to <code><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html">rstan::sampling</a></code>.</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">fm1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)</pre></body></html></div>
-<p>The fitted model <code>fm1</code> does not treat infections as latent parameters, and
-propagates infections using the renewal process. To extend
-the model as described in Section 5.2 of the
-<a href="model-description.html">model description</a>, we simply use <code>latent = TRUE</code> in
-the call to <code><a href="../reference/epiinf.html">epiinf()</a></code>.</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">args</span>$<span class="no">inf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiinf.html">epiinf</a></span>(<span class="kw">gen</span> <span class="kw">=</span> <span class="no">Flu1918</span>$<span class="no">si_distr</span>, <span class="kw">latent</span><span class="kw">=</span><span class="fl">TRUE</span>, <span class="kw">prior_aux</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="fl">10</span>,<span class="fl">2</span>))
-<span class="no">fm2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)</pre></body></html></div>
-<p>The results of both models are shown in <a href="#fig:flu1918-plots">1</a>. The key difference
+used the serial interval provided by <strong>EpiEstim</strong>. This makes the implicit assumption that the serial interval approximates the
+generation time. <code>prior_aux</code> sets
+the prior on the coefficient of dispersion <span class="math inline">\(d\)</span>. This prior assumes that
+infections have conditional variance around 10 times the conditional mean.</p>
+</div>
+<div id="fitting-the-model" class="section level2">
+<h2 class="hasAnchor">
+<a href="#fitting-the-model" class="anchor"></a>Fitting the Model</h2>
+<hr>
+<p>We are left to collect all remaining arguments required for <code><a href="../reference/epim.html">epim()</a></code>. This
+is done as follows.</p>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">rt</span> <span class="kw">=</span> <span class="no">rt</span>, <span class="kw">obs</span> <span class="kw">=</span> <span class="no">obs</span>, <span class="kw">inf</span> <span class="kw">=</span> <span class="no">inf</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">data</span>, <span class="kw">iter</span> <span class="kw">=</span> <span class="fl">2e3</span>,
+             <span class="kw">seed</span> <span class="kw">=</span> <span class="fl">12345</span>)
+<span class="no">args_ext</span> <span class="kw">&lt;-</span> <span class="no">args</span>; <span class="no">args_ext</span>$<span class="no">inf</span> <span class="kw">&lt;-</span> <span class="no">inf_ext</span></pre></body></html></div>
+<p>The arguments <code>iter</code> and <code>seed</code> set the number of MCMC iterations
+and seeds respectively, and are passed directly on to the <code>sampling()</code>
+function from <strong>rstan</strong>.</p>
+<p>We wrap the calls to <code><a href="../reference/epim.html">epim()</a></code> in <code>system.time</code> in order to assess
+the computational cost of fitting the models. The snippet below fits both
+versions of the model. <code>fm1</code> and <code>fm2</code>are the fitted basic model
+and extended model respectively.</p>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="no">fm1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>))</pre></body></html></div>
+<pre><code>##    user  system elapsed 
+## 408.947   1.279 210.401</code></pre>
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="no">fm2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args_ext</span>))</pre></body></html></div>
+<pre><code>##    user  system elapsed 
+##  75.083   1.020  37.289</code></pre>
+<p>Note the stark difference in running time. The extended model appears to fit
+faster even though there are <span class="math inline">\(87\)</span> additional parameters being sampled (daily
+infections after the seeding period, and the coefficient of dispersion).
+We conjecture that the additional variance
+around infections adds slack to the model, and leads to a posterior distribution
+that is easier to sample.</p>
+<p>The results of both models are shown in Figure <a href="#fig:flu1918-plots">1</a>. This
+Figure has been produced using <strong>epidemia</strong>’s plotting functions <code><a href="../reference/plot_rt.html">spaghetti_rt()</a></code>, <code><a href="../reference/plot_infections.html">spaghetti_infections()</a></code> and <code><a href="../reference/plot_obs.html">spaghetti_obs()</a></code>. The key difference
 stems from the infection process. In the basic model, infections are deterministic
-given the reproduction numbers and seeds. However when infection counts are low, we
+given <span class="math inline">\(R_t\)</span> and seeds. However when infection counts are low, we
 generally expect high variance in the infection process. Since this
 variance is unaccounted for, the model appears to place too much confidence in
-the reproduction numbers in this setting. The extended model on the other hand,
-has much wider credible intervals for <span class="math inline">\(R\)</span> when infections are low. This is intuitive:
+<span class="math inline">\(R_t\)</span> in this setting. The extended model on the other hand,
+has much wider credible intervals for <span class="math inline">\(R_t\)</span> when infections are low. This is intuitive:
 when counts are low, changes in infections could be explained by either the
 variance in the offspring distribution of those who are infected, or by changes
-in the <span class="math inline">\(R\)</span> value. This model captures this intuition.</p>
+in the <span class="math inline">\(R_t\)</span> value. This model captures this intuition.</p>
 <p>Posterior predictive checks are shown in the bottom panel of Figure <a href="#fig:flu1918-plots">1</a>,
 and show that both models are able to fit the data well.</p>
-<div class="figure">
+<div class="figure" style="text-align: center">
 <span id="fig:flu1918-plots"></span>
-<img src="flu_files/figure-html/flu1918-plots-1.png" alt="Reproduction numbers, infections and posterior predictive for both fits. The basic model is shown in the left column, while the right column is for the extended version." width="864"><p class="caption">
-Figure 1: Reproduction numbers, infections and posterior predictive for both fits. The basic model is shown in the left column, while the right column is for the extended version.
+<img src="flu_files/figure-html/flu1918-plots-1.png" alt="Spaghetti plots showing the median (black) and sample paths (blue) from the posterior distribution. The **left** corresponds to the basic model, and the **right** panel is for the extended version. **Top**: inferred time-varying reproduction numbers, which have been smoothed over 7 days for illustration. **Middle**: Inferred latent infections. **Bottom**: observed cases, and cases simulated from the posterior. These align closely, and so do not flag problems with the model fit." width="70%"><p class="caption">
+Figure 1: Spaghetti plots showing the median (black) and sample paths (blue) from the posterior distribution. The <strong>left</strong> corresponds to the basic model, and the <strong>right</strong> panel is for the extended version. <strong>Top</strong>: inferred time-varying reproduction numbers, which have been smoothed over 7 days for illustration. <strong>Middle</strong>: Inferred latent infections. <strong>Bottom</strong>: observed cases, and cases simulated from the posterior. These align closely, and so do not flag problems with the model fit.
 </p>
+</div>
 </div>
 </div>
 </div>

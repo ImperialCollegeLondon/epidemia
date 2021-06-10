@@ -4,10 +4,16 @@
     <loc>https://imperialcollegelondon.github.io/epidemia//index.html</loc>
   </url>
   <url>
+    <loc>https://imperialcollegelondon.github.io/epidemia//reference/EnglandNewCases.html</loc>
+  </url>
+  <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//reference/EuropeCovid.html</loc>
   </url>
   <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//reference/EuropeCovid2.html</loc>
+  </url>
+  <url>
+    <loc>https://imperialcollegelondon.github.io/epidemia//reference/all_obs_types.html</loc>
   </url>
   <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//reference/as.matrix.epimodel.html</loc>
@@ -41,6 +47,9 @@
   </url>
   <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//reference/get_x.html</loc>
+  </url>
+  <url>
+    <loc>https://imperialcollegelondon.github.io/epidemia//reference/hexp.html</loc>
   </url>
   <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//reference/model.frame.epimodel.html</loc>
@@ -100,6 +109,9 @@
     <loc>https://imperialcollegelondon.github.io/epidemia//reference/posterior_rt.html</loc>
   </url>
   <url>
+    <loc>https://imperialcollegelondon.github.io/epidemia//reference/posterior_sample_size.html</loc>
+  </url>
+  <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//reference/print.epimodel.html</loc>
   </url>
   <url>
@@ -146,6 +158,15 @@
   </url>
   <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//articles/model-implementation.html</loc>
+  </url>
+  <url>
+    <loc>https://imperialcollegelondon.github.io/epidemia//articles/model-introduction.html</loc>
+  </url>
+  <url>
+    <loc>https://imperialcollegelondon.github.io/epidemia//articles/model-schematic.html</loc>
+  </url>
+  <url>
+    <loc>https://imperialcollegelondon.github.io/epidemia//articles/multiple-obs.html</loc>
   </url>
   <url>
     <loc>https://imperialcollegelondon.github.io/epidemia//articles/partial-pooling.html</loc>

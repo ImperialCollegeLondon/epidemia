@@ -62,10 +62,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -87,6 +93,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -135,22 +144,14 @@
 </style>
 <div class="article_container">
 
-<div id="overview" class="section level1">
+<div id="sec:modelimplementation" class="section level1">
 <h1 class="hasAnchor">
-<a href="#overview" class="anchor"></a><span class="header-section-number">1</span> Overview</h1>
+<a href="#sec:modelimplementation" class="anchor"></a><span class="header-section-number">1</span> Model Implementation</h1>
 <hr>
-<p>Here we give a high-level overview of the workflow required for defining and fitting a model with
-<strong>epidemia</strong>. The primary model fitting function is <code><a href="../reference/epim.html">epim()</a></code>. This takes a model description and
-additional arguments relating to the fitting algorithm, and proceeds to fit the model using a
-precompiled Stan program. This allows model fitting to begin immediately as opposed to requiring compilation each time
-<code><a href="../reference/epim.html">epim()</a></code> is called.</p>
-<p>This is similar to the workflow for fitting Bayesian regression models
-with <strong>rstanarm</strong>. A key difference, however, is that the models fit by <strong>epidemia</strong> are much more
-complex, and are therefore inherently more difficult to specify. <strong>epidemia</strong> aims to simplify this process
-by modularizing the model definition into three distinct parts: transmission,
-infections and observations. These components of the model are defined with the functions <code><a href="../reference/epirt.html">epirt()</a></code>, <code><a href="../reference/epiinf.html">epiinf()</a></code> and
+<p>Here we give a high-level overview of the workflow required for defining and fitting a model with <strong>epidemia</strong>. The primary model fitting function is <code><a href="../reference/epim.html">epim()</a></code>. This takes a model description and additional arguments relating to the fitting algorithm, and proceeds to fit the model using a precompiled <strong>Stan</strong> program. This is similar to the workflow for fitting Bayesian regression models
+with <strong>rstanarm</strong>. A key difference, however, is that the models fit by <strong>epidemia</strong> are generally complex, and are therefore inherently more difficult to specify. We simplify this process by taking a modular approach; models are defined through three distinct parts: transmission, infections and observations. These components of the model are defined with the functions <code><a href="../reference/epirt.html">epirt()</a></code>, <code><a href="../reference/epiinf.html">epiinf()</a></code> and
 <code><a href="../reference/epiobs.html">epiobs()</a></code> respectively.</p>
-<p><strong>epidemia</strong> contains an example dataset <code>EuropeCovid</code> which contains data
+<p>The package contains an example data set <code>EuropeCovid</code> which contains data
 on daily death counts from Covid-19 in 11 European Countries from February through May 2020, and a set
 of binary indicators of non-pharmaceutical interventions. This is
 used as an example throughout.</p>
@@ -159,15 +160,14 @@ used as an example throughout.</p>
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">rstanarm</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid"</span>)</pre></body></html></div>
 <p>We begin by describing <code><a href="../reference/epim.html">epim()</a></code> in more detail, and then proceed to discuss the three modeling functions.</p>
-</div>
-<div id="model-fitting" class="section level1">
-<h1 class="hasAnchor">
-<a href="#model-fitting" class="anchor"></a><span class="header-section-number">2</span> Model Fitting</h1>
+<div id="sec:fitting" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:fitting" class="anchor"></a><span class="header-section-number">1.1</span> Model Fitting</h2>
 <hr>
 <p><code><a href="../reference/epim.html">epim()</a></code> is the only model fitting function in <strong>epidemia</strong>. It has arguments <code>rt</code>, <code>inf</code>, and <code>obs</code> which
 expect a description of the transmission model, infection model and all observational models respectively.
 Together, these fully define the joint distribution of data and parameters. Each of these model components are
-described in terms of variables that are expected to live in a single dataframe, <code>data</code>. This dataframe
+described in terms of variables that are expected to live in a single data frame, <code>data</code>. This data frame
 must be compatible with the model components, in the sense that <em>it holds all variables defined in these
 models</em>. For our example, these variables are the following.</p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">data</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid</span>$<span class="no">data</span>
@@ -177,27 +177,24 @@ models</em>. For our example, these variables are the following.</p>
 ## [5] "public_events"                "lockdown"                    
 ## [7] "social_distancing_encouraged" "deaths"                      
 ## [9] "pop"</code></pre>
-<p>The <code>data</code> argument is described in more detail in Section <a href="#sec:data">6</a>.</p>
-<p>In addition to taking a model description and a dataframe,
+<p>The <code>data</code> argument is described in more detail in Section <a href="#sec:data">1.5</a>.</p>
+<p>In addition to taking a model description and a data frame,
 <code><a href="../reference/epim.html">epim()</a></code> has various additional arguments which specify how the model should be
 fit. If <code>algorithm = "sampling"</code> then the model
-will be fit using <em>Stan</em>’s adaptive Hamiltonian Monte Carlo sampler. This
-is done internally by calling <code><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html">rstan::sampling</a></code>. If <code>algorithm = "meanfield"</code> or
-<code>algorithm = "fullrank"</code>, then <em>Stan</em>’s variational Bayes algorithms are used
-instead, by calling <code><a href="https://mc-stan.org/rstan/reference/stanmodel-method-vb.html">rstan::vb</a></code>. Any unnamed
+will be fit using <strong>Stan</strong>’s adaptive Hamiltonian Monte Carlo sampler <span class="citation">(Hoffman and Gelman <a href="#ref-hoffman_2014" role="doc-biblioref">2014</a>)</span>. This
+is done internally by calling <code>sampling()</code> from <strong>rstan</strong>. If instead this is <code>"meanfield"</code> or <code>"fullrank"</code>, then <strong>Stan</strong>’s Variational Bayes
+algorithms <span class="citation">(Kucukelbir et al. <a href="#ref-Kucukelbir_2015" role="doc-biblioref">2015</a>, <a href="#ref-Kucukelbir_2017" role="doc-biblioref">2017</a>)</span> are employed by calling <code>vb()</code> from <strong>rstan</strong>. Any unnamed
 arguments in the call to <code><a href="../reference/epim.html">epim()</a></code> are passed directly onto the <strong>rstan</strong>
 sampling function. <code><a href="../reference/epim.html">epim()</a></code> returns a fitted model object of class
-<code>"epimodel"</code>, which contains posterior samples from the model along with other
+<code>epimodel</code>, which contains posterior samples from the model along with other
 useful objects.</p>
-<p>In general, the adaptive Hamiltonian Monte Carlo sampler
-should be used for final inference. Nonetheless, fitting these models
-using HMC is often computationally demanding, and variational Bayes can often be
-fruitful for quickly iterating models. All arguments for <code><a href="../reference/epim.html">epim()</a></code> are described in Table
-<a href="#tab:epim-args">2.1</a>.</p>
+<p>In general, Hamiltonian Monte Carlo should be used for final inference. Nonetheless, this is often computationally demanding, and Variational Bayes can often be
+used fruitful for quickly iterating models. All arguments for <code><a href="../reference/epim.html">epim()</a></code> are described in Table
+<a href="#tab:model-imp-epim-args">1.1</a>.</p>
 <div class="table">
 <table class="table  lightable-paper lightable-hover">
 <caption>
-<span id="tab:epim-args">Table 2.1: </span>Formal arguments for <code><a href="../reference/epim.html">epim()</a></code>
+<span id="tab:model-imp-epim-args">Table 1.1: </span>Formal arguments for the model fitting function <code><a href="../reference/epim.html">epim()</a></code>. The first three arguments listed below define the model to be fitted.
 </caption>
 <thead><tr>
 <th style="text-align:left;">
@@ -213,7 +210,7 @@ Description
 <code>rt</code>
 </td>
 <td style="text-align:left;">
-An object of class <code>"epirt"</code>, resulting from a call to <code><a href="../reference/epirt.html">epirt()</a></code>. This defines the model for reproduction numbers <span class="math inline">\(R\)</span>.
+An object of class <code>epirt</code>, resulting from a call to <code><a href="../reference/epirt.html">epirt()</a></code>. This defines the model for time-varying reproduction numbers <span class="math inline">\(R_t\)</span>.
 </td>
 </tr>
 <tr>
@@ -221,7 +218,7 @@ An object of class <code>"epirt"</code>, resulting from a call to <code><a href=
 <code>inf</code>
 </td>
 <td style="text-align:left;">
-An object of class <code>"epiinf"</code>, resulting from a call to <code><a href="../reference/epiinf.html">epiinf()</a></code>. This entirely defines the model for infections <span class="math inline">\(i_t\)</span>.)
+An object of class <code>epiinf</code>, resulting from a call to <code><a href="../reference/epiinf.html">epiinf()</a></code>. This entirely defines the model for infections <span class="math inline">\(i_t\)</span>.
 </td>
 </tr>
 <tr>
@@ -229,7 +226,7 @@ An object of class <code>"epiinf"</code>, resulting from a call to <code><a href
 <code>obs</code>
 </td>
 <td style="text-align:left;">
-Either an object of class <code>"epiobs"</code>, or a list of such objects. Each element of the list defines a model for an observed variable.
+Either an object of class <code>epiobs</code>, or a list of such objects. Each of these define a model for an observation vector in <code>data</code>, and result from a call to <code><a href="../reference/epiobs.html">epiobs()</a></code>. Each element of the list defines a model for an observed variable.
 </td>
 </tr>
 <tr>
@@ -237,7 +234,7 @@ Either an object of class <code>"epiobs"</code>, or a list of such objects. Each
 <code>data</code>
 </td>
 <td style="text-align:left;">
-A dataframe with all data required for fitting the model. This includes all observation variables and covariates specified in the models for the reproduction number and ascertainment rates.
+A dataframe with all data required for fitting the model. This includes all observations and covariates specified in the model.
 </td>
 </tr>
 <tr>
@@ -245,7 +242,7 @@ A dataframe with all data required for fitting the model. This includes all obse
 <code>algorithm</code>
 </td>
 <td style="text-align:left;">
-One of <code>"sampling"</code>, <code>"meanfield"</code> or <code>"fullrank"</code>. This determines the rstan sampling function to use for fitting the model. <code>"sampling"</code> corresponds to an adaptive HMC sampler, while <code>"meanfield"</code> and <code>"fullrank"</code> are both variational Bayes algorithms.
+One of <code>"sampling"</code>, <code>"meanfield"</code> or <code>"fullrank"</code>. This determines the <strong>rstan</strong> sampling function to use for fitting the model. <code>"sampling"</code> corresponds to HMC, while <code>"meanfield"</code> and <code>"fullrank"</code> are Variational Bayes algorithms.
 </td>
 </tr>
 <tr>
@@ -253,7 +250,7 @@ One of <code>"sampling"</code>, <code>"meanfield"</code> or <code>"fullrank"</co
 <code>group_subset</code>
 </td>
 <td style="text-align:left;">
-If specified, a character vector naming a subset of regions to include in the model.
+If specified, a character vector naming a subset of groups/populations to include in the model.
 </td>
 </tr>
 <tr>
@@ -261,7 +258,7 @@ If specified, a character vector naming a subset of regions to include in the mo
 <code>prior_PD</code>
 </td>
 <td style="text-align:left;">
-Same as in <code>rstan::stan_glm</code>. If <code>TRUE</code>, samples all parameters from their prior distributions. This is useful for prior predictive checks. Defaults to <code>FALSE</code>.
+If <code>TRUE</code>, parameters are sampled from their prior distributions. This is useful for prior predictive checks. Defaults to <code>FALSE</code>.
 </td>
 </tr>
 <tr>
@@ -269,53 +266,46 @@ Same as in <code>rstan::stan_glm</code>. If <code>TRUE</code>, samples all param
 …
 </td>
 <td style="text-align:left;">
-Additional arguments to pass to the <code>rstan</code> function used to fit the model. If <code>algorithm = "sampling"</code>, then this function is <code><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html">rstan::sampling</a></code>. Otherwise <code><a href="https://mc-stan.org/rstan/reference/stanmodel-method-vb.html">rstan::vb</a></code> is used.Please see the documentation for these functions.
+Additional arguments to pass to the <strong>rstan</strong> function used to fit the model. If <code>algorithm = "sampling"</code>, then this function is <code>sampling()</code>. Otherwise <code>vb()</code> is used.
 </td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>We now describe the three modeling functions in more detail, starting with <code><a href="../reference/epirt.html">epirt()</a></code>.</p>
 </div>
-<div id="transmission" class="section level1">
-<h1 class="hasAnchor">
-<a href="#transmission" class="anchor"></a><span class="header-section-number">3</span> Transmission</h1>
+<div id="sec:imp_transmission" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:imp_transmission" class="anchor"></a><span class="header-section-number">1.2</span> Transmission</h2>
 <hr>
 <p><code><a href="../reference/epirt.html">epirt()</a></code> defines the model for time-varying reproduction numbers, which
-was described in Section 4 of the <a href="model-description.html">model description article</a>.
-It has a <code>formula</code> argument which defines the linear predictor <span class="math inline">\(\eta\)</span>, an
-argument <code>link</code> defining the link function <code>g</code>, and additional arguments to
-specify priors on parameters making up <span class="math inline">\(\eta\)</span>.</p>
-<p>A general R formula gives a symbolic description of a model. It takes the form
+was described in Section 1.4 of the model description <a href="model-description.html">article</a>. Recall that these are modeled as a transformed linear predictor. <code><a href="../reference/epirt.html">epirt()</a></code> has a <code>formula</code> argument which defines the linear predictor <span class="math inline">\(\eta\)</span>, an argument <code>link</code> defining the link function <code>g</code>, and additional arguments to specify priors on parameters making up <span class="math inline">\(\eta\)</span>.</p>
+<p>A general <strong>R</strong> formula gives a symbolic description of a model. It takes the form
 <code>y ~ model</code>, where <code>y</code> is the response and <code>model</code> is a collection of terms
 separated by the <code><a href="https://rdrr.io/r/base/Arithmetic.html">+</a></code> operator. <code>model</code> fully defines a linear predictor used to
 predict <code>y</code>. In this case, the “response” being modeled are reproduction numbers which are
-unobserved. <code>epirt</code> therefore requires that
+unobserved. <code><a href="../reference/epirt.html">epirt()</a></code> therefore requires that
 the left hand side of the formula takes the form <code>R(group, date)</code>, where <code>group</code>
-and <code>date</code> refer to variables representing the region and date respectively.
+and <code>date</code> refer to variables representing the modeled populations and dates respectively.
 The right hand side can consist of fixed effects, random effects, and
 autocorrelation terms. For our example, a viable call to <code><a href="../reference/epirt.html">epirt()</a></code> is the
 following.</p>
-<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
-  <span class="fu">R</span>(<span class="no">country</span>, <span class="no">date</span>) ~ <span class="fl">1</span> + <span class="no">lockdown</span> + <span class="no">public_events</span>,
-  <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">7</span>)
-)</pre></body></html></div>
-<p>In the above example, two fixed effects are included which represent the
-effects of lockdown and public events. These effects are assumed constant across
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(<span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>, <span class="no">date</span>) ~ <span class="fl">1</span> + <span class="no">lockdown</span> + <span class="no">public_events</span>,
+            <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">7</span>))</pre></body></html></div>
+<p>Here, two fixed effects are included which represent the
+effects of implementing lockdown and banning public events. These effects are assumed constant across
 countries. They could alternatively be partially
 pooled by using the term <code>(lockdown + public_events | country)</code>.
-For information on how to interpret such terms, please read the <a href="partial-pooling.html">partial-pooling
-article</a>. Using <code>link = scaled_logit(7)</code> lets the link function be the
-scaled logit link described in the model description article (Equation 4.2),
-where <span class="math inline">\(K = 7\)</span> is maximum possible value for reproduction numbers.
+For information on how to interpret such terms, please see <a href="partial-pooling.html">partial pooling</a>. Using <code>link = scaled_logit(7)</code> lets the link function be the
+scaled logit link described by Equation (1.7) in the model description article,
+where <span class="math inline">\(K = 7\)</span> is the maximum possible value for reproduction numbers.
 For simplicity, we have omitted any prior arguments, however these
 should generally be specified explicitly. Please see
-<a href="priors.html">here</a> for detailed information on how to use priors. All arguments
-for <code><a href="../reference/epirt.html">epirt()</a></code> are listed in Table <a href="#tab:epirt-args">3.1</a>.</p>
+<a href="priors.html">prior</a> for detailed information on how to use priors. All arguments
+for <code><a href="../reference/epirt.html">epirt()</a></code> are listed in Table <a href="#tab:model-imp-epim-args">1.1</a>.</p>
 <div class="table">
 <table class="table  lightable-paper lightable-hover">
 <caption>
-<span id="tab:epirt-args">Table 3.1: </span>Formal arguments for <code><a href="../reference/epirt.html">epirt()</a></code>
+<span id="tab:model-imp-epirt-args">Table 1.2: </span>Formal arguments for <code><a href="../reference/epirt.html">epirt()</a></code>, which defines the model for <span class="math inline">\(R_t\)</span>.
 </caption>
 <thead><tr>
 <th style="text-align:left;">
@@ -331,7 +321,7 @@ Description
 <code>formula</code>
 </td>
 <td style="text-align:left;">
-An object of class <code>"formula"</code> which determines the linear predictor <span class="math inline">\(\eta\)</span> for <span class="math inline">\(R\)</span>. The left hand side must take the form <code>R(group, date)</code>, where <code>group</code> and <code>date</code> variables. <code>group</code> must be a factor vector indicating group membership (i.e. country, state, age cohort), and <code>date</code> must be a vector of class <code>"Date"</code>. This is syntactic sugar for the reproduction number in the given group at the give date.
+An object of class <code>formula</code> which determines the linear predictor <span class="math inline">\(\eta\)</span> for <span class="math inline">\(R\)</span>. The left hand side must take the form <code>R(group, date)</code>, where <code>group</code> must be a factor vector indicating group membership (i.e. country, state, age cohort), and <code>date</code> must be a vector of class <code>Date</code>. This is syntactic sugar for the reproduction number in the given group at the give date.
 </td>
 </tr>
 <tr>
@@ -339,7 +329,7 @@ An object of class <code>"formula"</code> which determines the linear predictor 
 <code>link</code>
 </td>
 <td style="text-align:left;">
-The link function <span class="math inline">\(g\)</span>. Can be <code>"log"</code>, <code>"identity"</code> or a call to <code><a href="../reference/scaled_logit.html">scaled_logit()</a></code>. Defaults to <code>log</code>.
+The link function <span class="math inline">\(g\)</span>. Can be <code>"log"</code>, <code>"identity"</code> or a call to <code><a href="../reference/scaled_logit.html">scaled_logit()</a></code>. Defaults to <code>"log"</code>.
 </td>
 </tr>
 <tr>
@@ -347,7 +337,7 @@ The link function <span class="math inline">\(g\)</span>. Can be <code>"log"</co
 <code>center</code>
 </td>
 <td style="text-align:left;">
-If <code>TRUE</code>, covariates in <code>formula</code> are centered to have mean zero. All priors should then be interpreted as priors on the centered covariates.
+If <code>TRUE</code>, covariates specified in <code>formula</code> are centered to have mean zero. All priors should then be interpreted as priors on the centered covariates.
 </td>
 </tr>
 <tr>
@@ -355,7 +345,7 @@ If <code>TRUE</code>, covariates in <code>formula</code> are centered to have me
 <code>prior</code>
 </td>
 <td style="text-align:left;">
-Same as in <code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html">rstanarm::stan_glm</a></code>. Defines the prior on <span class="math inline">\(\beta\)</span>. <strong>rstanarm</strong> provided <a href="http://mc-stan.org/rstanarm/reference/priors.html">priors</a>, a <code>shifted_gamma</code> can be used. <strong>Note</strong> if <code>autoscale=TRUE</code> in the call to the prior function, then automatic rescaling takes place.
+Same as in <code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html">stan_glm()</a></code> from <strong>rstanarm</strong>. Defines the prior on fixed effects <span class="math inline">\(\beta\)</span>. Priors provided by <strong>rstanarm</strong> can be used, and additionally <code>shifted_gamma</code>. <strong>Note</strong>: if <code>autoscale = TRUE</code> in the call to the prior function, then automatic rescaling takes place.
 </td>
 </tr>
 <tr>
@@ -363,62 +353,56 @@ Same as in <code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html">
 <code>prior_intercept</code>
 </td>
 <td style="text-align:left;">
-Same as in <code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html">rstanarm::stan_glm</a></code>. Prior for the regression intercept <span class="math inline">\(\beta_0\)</span> (if it exists).
+Same as in <code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html">stan_glm()</a></code> from <strong>rstanarm</strong>. Prior for the regression intercept <span class="math inline">\(\beta_0\)</span> (if it exists).
 </td>
 </tr>
 <tr>
 <td style="text-align:left;font-weight: bold;">
-<code>prior_covariance</code>
+<code>prior\_covariance</code>
 </td>
 <td style="text-align:left;">
-Same as in <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html">rstanarm::stan_glmer</a></code>. Defines the prior on the covariance matrix <span class="math inline">\(\Sigma\)</span>. Only use if the <code>formula</code> has one or more terms of the form <code>(x | y)</code>, in which case there are parameters to partially pool, i.e. <span class="math inline">\(b\)</span> has positive length.
+Same as in <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html">stan_glmer()</a></code> from <strong>rstanarm</strong>. Defines the prior on the covariance matrix <span class="math inline">\(\Sigma\)</span>. Only use if the <code>formula</code> has one or more terms of the form <code>(x | y)</code>, in which case there are parameters to partially pool, i.e. <span class="math inline">\(b\)</span> has positive length.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+<code>...</code>
+</td>
+<td style="text-align:left;">
+Additional arguments to pass to <code><a href="https://rdrr.io/r/stats/model.frame.html">model.frame()</a></code> from <strong>stats</strong>.
 </td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="infections" class="section level1">
-<h1 class="hasAnchor">
-<a href="#infections" class="anchor"></a><span class="header-section-number">4</span> Infections</h1>
+<div id="sec:imp_infections" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:imp_infections" class="anchor"></a><span class="header-section-number">1.3</span> Infections</h2>
 <hr>
-<p>The model for infections is represented by <code><a href="../reference/epiinf.html">epiinf()</a></code>. For the
-basic version of the model, this defines the generation distribution
-of the disease, the number of days for which to seed infections, and the
-prior distribution on the parameter <span class="math inline">\(\tau\)</span> (Equation 3.2). Recall that <span class="math inline">\(\tau\)</span> is
-the prior mean on daily seeded infections. These three parameters are
-controlled by the arguments <code>gen</code>, <code>seed_days</code> and <code>prior_tau</code> respectively.
-For our example, a possible model is the following.</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">inf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiinf.html">epiinf</a></span>(
-  <span class="kw">gen</span> <span class="kw">=</span> <span class="no">EuropeCovid</span>$<span class="no">si</span>,
-  <span class="kw">seed_days</span> <span class="kw">=</span> <span class="fl">6L</span>,
-  <span class="kw">prior_tau</span> <span class="kw">=</span> <span class="kw pkg">rstanarm</span><span class="kw ns">::</span><span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">exponential</a></span>(<span class="fl">0.02</span>)
-)</pre></body></html></div>
-<p><code>EuropeCovid$si</code> is a numeric vector representing the probability mass
-function for the serial interval of Covid-19. Here, we are implicitly assuming
-that the generation distribution can be approximated well by the serial interval.
-In this example, <span class="math inline">\(\tau\)</span>
-is given an exponential prior with a mean of 50. These seeds
-occur over a period of 6 days.</p>
-<p><code><a href="../reference/epiinf.html">epiinf()</a></code> has additional arguments which allow the user to extend the basic
-model. Using <code>latent=TRUE</code> replaces the renewal process (Equation 1.3) with
-Equation 5.1. Daily infections are then treated as latent parameters that are
-sampled along with other parameters. The <code>family</code> argument then gives
-the distribution for <span class="math inline">\(p(i'_t, d)\)</span>, while <code>prior_aux</code> defines the prior on the
+<p>The infection model is represented by <code><a href="../reference/epiinf.html">epiinf()</a></code>. In the most basic version, this defines the distribution of the generation time of the disease, the number of days for which to seed infections, and the prior distribution on seeded infections. These three parameters are
+controlled by the arguments <code>gen</code>, <code>seed_days</code> and <code>prior_seeds</code> respectively.
+A possible model is the following.</p>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">inf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiinf.html">epiinf</a></span>(<span class="kw">gen</span> <span class="kw">=</span> <span class="no">EuropeCovid</span>$<span class="no">si</span>, <span class="kw">seed_days</span> <span class="kw">=</span> <span class="fl">6L</span>,
+              <span class="kw">prior_seeds</span> <span class="kw">=</span> <span class="fu"><a href="../reference/hexp.html">hexp</a></span>(<span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">exponential</a></span>(<span class="fl">0.02</span>)))</pre></body></html></div>
+<p><code>EuropeCovid$si</code> is a numeric vector representing the distribution for the serial interval of Covid-19. There is an implicit assumption that the generation time can be approximated well by the serial interval. Seeds are modeled hierarchically, and are described by (1.4) and (1.5) in the model description. <span class="math inline">\(\tau\)</span> has been assigned an exponential prior with a mean of 50. Seeded infections are assumed to occur over a period of 6 days.</p>
+<p><code><a href="../reference/epiinf.html">epiinf()</a></code> has additional arguments that allow the user to extend the basic
+model. Using <code>latent = TRUE</code> replaces the renewal equation with
+Equation (1.8). Daily infections are then treated as latent parameters that are
+sampled along with other parameters. The <code>family</code> argument specifies
+the distribution <span class="math inline">\(p(i'_t, d)\)</span>, while <code>prior_aux</code> defines the prior on the
 coefficient of dispersion <span class="math inline">\(d\)</span>.</p>
-<p>Recall that one can adjust the infection process to explicitly
-model changes in infection rates as the remaining susceptible population is
-depleted. In particular, the adjustment ensures that cumulative infections
-never breaches the initial susceptible population. The adjustment was described
-in Section 5.3 of the model description article. It can be employed by
+<p>Recall from the model description that the infection process may be
+modified to explicitly account for changes in infection rates as the remaining
+susceptible population is depleted. In particular, the adjustment ensures that cumulative infections
+never breaches the population size. It can be employed by
 setting <code>pop_adjust = TRUE</code> and using the
-<code>susceptibles</code> argument to point towards a variable in the dataframe which gives
-the susceptible population at each point in time. All argument to <code><a href="../reference/epiinf.html">epiinf()</a></code> are
-described in Table <a href="#tab:epiinf-args">4.1</a>.</p>
+<code>pop</code> argument to point towards a static variable in the data frame giving the population size. All argument to <code><a href="../reference/epiinf.html">epiinf()</a></code> are
+described in Table <a href="#tab:model-imp-epiinf-args">1.3</a>.</p>
 <div class="table">
 <table class="table  lightable-paper lightable-hover">
 <caption>
-<span id="tab:epiinf-args">Table 4.1: </span>Formal arguments for <code><a href="../reference/epiinf.html">epiinf()</a></code>
+<span id="tab:model-imp-epiinf-args">Table 1.3: </span>Formal arguments for <code><a href="../reference/epiinf.html">epiinf()</a></code>, which defines the infection model.
 </caption>
 <thead><tr>
 <th style="text-align:left;">
@@ -434,7 +418,7 @@ Description
 <code>gen</code>
 </td>
 <td style="text-align:left;">
-A numeric vector giving the probability mass function <span class="math inline">\(g_k\)</span> of the generation distribution. Must be a simplex vector, i.e. nonnegative and summing to 1.
+A numeric vector giving the probability mass function <span class="math inline">\(g_k\)</span> for the generation time of the disease (must be a probability vector).
 </td>
 </tr>
 <tr>
@@ -442,7 +426,15 @@ A numeric vector giving the probability mass function <span class="math inline">
 <code>seed_days</code>
 </td>
 <td style="text-align:left;">
-An integer giving the number of seed days <span class="math inline">\(v + 1\)</span>. Defaults to 6L.
+An integer giving the number of days <span class="math inline">\(v + 1\)</span> for which to seed infections. Defaults to 6L.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+<code>prior_seeds</code>
+</td>
+<td style="text-align:left;">
+Prior distribution on the seed parameter <span class="math inline">\(i\)</span>. Defaults to <code><a href="../reference/hexp.html">hexp(prior_aux = rstanarm::exponential(0.03))</a></code>.
 </td>
 </tr>
 <tr>
@@ -450,7 +442,7 @@ An integer giving the number of seed days <span class="math inline">\(v + 1\)</s
 <code>latent</code>
 </td>
 <td style="text-align:left;">
-If <code>TRUE</code>, treat infections as latent parameters using the extensions described in Section 5.2.
+If <code>TRUE</code>, treat infections as latent parameters.
 </td>
 </tr>
 <tr>
@@ -458,7 +450,7 @@ If <code>TRUE</code>, treat infections as latent parameters using the extensions
 <code>family</code>
 </td>
 <td style="text-align:left;">
-Specifies the family for <span class="math inline">\(p(i'_t, d)\)</span>. Only used if <code>latent = TRUE</code>, and currently restricted to <code>log-normal</code>.
+Specifies the family for the infection distribution <span class="math inline">\(p(i'_t, d)\)</span>. Only used if <code>latent = TRUE</code>, and defaults to <code>"normal"</code>.
 </td>
 </tr>
 <tr>
@@ -466,15 +458,15 @@ Specifies the family for <span class="math inline">\(p(i'_t, d)\)</span>. Only u
 <code>prior_aux</code>
 </td>
 <td style="text-align:left;">
-Prior on the coefficient of variation <span class="math inline">\(d\)</span>.
+Prior on the auxiliary variable <span class="math inline">\(d\)</span> of <span class="math inline">\(p(i'_t,d)\)</span>. This is either the variance-to-mean ratio or the coefficient of variation, depending on the value of <code>fixed_vtm</code>. Only used if <code>latent = TRUE</code>.
 </td>
 </tr>
 <tr>
 <td style="text-align:left;font-weight: bold;">
-<code>prior_tau</code>
+<code>fixed_vtm</code>
 </td>
 <td style="text-align:left;">
-Prior distribution for the hyperparameter <span class="math inline">\(\tau\)</span>, which is the mean of the prior distribution for infection seeding. Defaults to <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::exponential(0.03)</a></code>.
+If <code>TRUE</code>, then <span class="math inline">\(p(i'_t, d)\)</span> has a fixed variance-to-mean ratio, i.e. variance is <span class="math inline">\(\sigma^2 = d i'_t\)</span>; In this case, <span class="math inline">\(d\)</span> refers to the <em>variance-to-mean ratio</em>. Id <code>FALSE</code> then instead standard deviation is assumed proportional to the mean, in which case <span class="math inline">\(d\)</span> is the <em>coefficient of variation</em>. Only used if <code>latent = TRUE</code>.
 </td>
 </tr>
 <tr>
@@ -482,54 +474,74 @@ Prior distribution for the hyperparameter <span class="math inline">\(\tau\)</sp
 <code>pop_adjust</code>
 </td>
 <td style="text-align:left;">
-If <code>TRUE</code>, applies a population adjustment to the infection process <span class="math inline">\(i_t\)</span>. Defaults to <code>FALSE</code>.
+If <code>TRUE</code>, applies the population adjustment to the infection process.
 </td>
 </tr>
 <tr>
 <td style="text-align:left;font-weight: bold;">
-<code>susceptibles</code>
+<code>pops</code>
 </td>
 <td style="text-align:left;">
-A character vector giving the name of the variable corresponding to the susceptible population over time. Only used if <code>pop_adjust=TRUE</code>.
+A character vector giving the population variable. Only used if <code>pop_adjust = TRUE</code>.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+<code>prior_susc</code>
+</td>
+<td style="text-align:left;">
+Prior on <span class="math inline">\(S_{v-1} / P\)</span>, the initial susceptible population as a proportion of the population size. If <code>NULL</code>, this is assumed to be equal to 1 (i.e. everyone is initially susceptible). Otherwise, can be a call to <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal()</a></code> from <strong>rstanarm</strong>, which assigns a normal prior truncated to <span class="math inline">\([0,1]\)</span>. Only used if <code>pop_adjust = TRUE</code>.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+<code>rm</code>
+</td>
+<td style="text-align:left;">
+A character vector giving the variable corresponding to <span class="math inline">\(v_t\)</span>, i.e. the proportion of <span class="math inline">\(S_t\)</span> to remove at time <span class="math inline">\(t\)</span>. Only used if <code>pop_adjust = TRUE</code>.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+<code>prior_rm_noise</code>
+</td>
+<td style="text-align:left;">
+Prior on the parameter <span class="math inline">\(\xi\)</span>, which controls noise around <span class="math inline">\(v_t\)</span>. If <code>NULL</code>, no noise is added. Only used if <code>pop_adjust = TRUE</code>.
 </td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="observations" class="section level1">
-<h1 class="hasAnchor">
-<a href="#observations" class="anchor"></a><span class="header-section-number">5</span> Observations</h1>
+<div id="sec:imp_observations" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:imp_observations" class="anchor"></a><span class="header-section-number">1.4</span> Observations</h2>
 <hr>
-<p>Each observational model is given by a call to <code><a href="../reference/epiobs.html">epiobs()</a></code>. In particular,
-this must define the model for ascertainment rates <span class="math inline">\(\alpha\)</span> and the time distribution
-from infection to observation <span class="math inline">\(\pi\)</span>. <code><a href="../reference/epiobs.html">epiobs()</a></code> has a formula argument. The left hand
-side must define the observation vector <span class="math inline">\(Y\)</span> which is to be modeled, while the
-right hand side defines a linear predictor for the ascertainment rate <span class="math inline">\(\alpha\)</span>.
-The argument <code>i2o</code> plays a similar role to the <code>gen</code> argument in <code><a href="../reference/epiinf.html">epiinf()</a></code>,
-however it instead defines the vector <span class="math inline">\(\pi\)</span> in Equation (1.2).</p>
-<p>Suppose we wish to model daily <code>deaths</code>, which as we saw is a variable in <code>data</code>.
-One could use the following.</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiobs.html">epiobs</a></span>(
-  <span class="no">deaths</span> ~ <span class="fl">1</span>,
-  <span class="kw">i2o</span> <span class="kw">=</span> <span class="no">EuropeCovid</span>$<span class="no">inf2death</span>,
-  <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">0.02</span>)
-)</pre></body></html></div>
-<p>The above models the infection fatality rate, <span class="math inline">\(\alpha\)</span>, as an intercept transformed by the scaled logit
-link. This implies that it is constant over time, can achieve a maximum value of
-2%, and a minimum value of 0%. If <code>prior_intercept</code> is chosen to be symmetric
-around zero, then the prior mean of <span class="math inline">\(\alpha\)</span> is 1%. <code>EuropeCovid$inf2death</code> is
-a numeric simplex vector that gives the same delay distribution as used in
-<span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, which is a discretized p.d.f. of a mixture of Gamma random variables.</p>
+<p>An observational model is defined by a call to <code><a href="../reference/epiobs.html">epiobs()</a></code>. In particular,
+this must also make explicit the model for the multipliers <span class="math inline">\(\alpha_t\)</span>, and must
+also specify the coefficients <span class="math inline">\(\pi_k\)</span>. <code><a href="../reference/epiobs.html">epiobs()</a></code> has a <code>formula</code> argument. The left hand
+side must indicate the observation vector to be modeled, while the
+right hand side defines a linear predictor for <span class="math inline">\(\alpha_t\)</span>. The argument <code>i2o</code> plays a similar role to the <code>gen</code> argument in <code><a href="../reference/epiinf.html">epiinf()</a></code>,
+however it instead corresponds the vector <span class="math inline">\(\pi\)</span> in Equation (1.2).</p>
+<p>Take for example the task of modeling daily <code>deaths</code>, which as we saw is
+a variable in <code>data</code>. A possible model is the following.</p>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiobs.html">epiobs</a></span>(<span class="kw">formula</span> <span class="kw">=</span> <span class="no">deaths</span> ~ <span class="fl">1</span>, <span class="kw">i2o</span> <span class="kw">=</span> <span class="no">EuropeCovid</span>$<span class="no">inf2death</span>,
+                 <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">0.02</span>))</pre></body></html></div>
+<p>Here <span class="math inline">\(\alpha_t\)</span> corresponds to the infection fatality rate (IFR), and is modeled as an
+intercept transformed by the scaled-logit link. This implies that the IFR is constant over time and its value lies somewhere between 0% and 2%. If the prior on
+the intercept (specified by the <code>prior_intercept</code> argument) is chosen to be
+symmetric around zero, then the prior mean for the IFR is 1%. <code>EuropeCovid$inf2death</code> is a numeric simplex vector that gives the same delay distribution as used in
+<span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. This is a density function for a discretized mixture of Gamma
+random variables.</p>
 <p>Additional arguments include <code>family</code>, which specifies the sampling distribution
 <span class="math inline">\(p(y_t, \phi)\)</span>. There are also arguments allowing the user to control
-prior distributions for parameters describing <span class="math inline">\(\alpha\)</span>, and the prior on the
+prior distributions for effects in the linear predictor for <span class="math inline">\(\alpha_t\)</span>, and the prior on the
 auxiliary variable <span class="math inline">\(\phi\)</span>. All arguments to <code><a href="../reference/epiobs.html">epiobs()</a></code> are shown in Table
-<a href="#tab:epiobs-args">5.1</a>.</p>
+<a href="#tab:model-imp-epiobs-args">1.4</a>.</p>
 <div class="table">
 <table class="table  lightable-paper lightable-hover">
 <caption>
-<span id="tab:epiobs-args">Table 5.1: </span>Formal arguments for <code><a href="../reference/epiobs.html">epiobs()</a></code>
+<span id="tab:model-imp-epiobs-args">Table 1.4: </span>Formal arguments for <code><a href="../reference/epiobs.html">epiobs()</a></code>. This defines a single observation model. Multiple such models can be used and passed to <code><a href="../reference/epim.html">epim()</a></code> in a list.
 </caption>
 <thead><tr>
 <th style="text-align:left;">
@@ -541,23 +553,23 @@ Description
 </tr></thead>
 <tbody>
 <tr>
-<td style="text-align:left;font-weight: bold;">
+<td style="text-align:left;width: 7em; font-weight: bold;">
 <code>formula</code>
 </td>
 <td style="text-align:left;">
-An object of class <code>"formula"</code> which determines the linear predictor for the ascertainment rate for a particular observation vector. The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainment rates)in a given country on a given date. <code>obs</code> refers to the response variable to be modeled.
+An object of class <code>formula</code> which determines the linear predictor for the ascertainment rate. The left hand side must define the response that is being modeled (i.e. the actual observations, not the latent ascertainments)
 </td>
 </tr>
 <tr>
-<td style="text-align:left;font-weight: bold;">
+<td style="text-align:left;width: 7em; font-weight: bold;">
 <code>i2o</code>
 </td>
 <td style="text-align:left;">
-A numeric (simplex) vector defining the probability mass function <span class="math inline">\(\pi_k\)</span> of the time distribution from infection to observation.
+A numeric (probability) vector defining the probability mass function <span class="math inline">\(\pi_k\)</span> of the time from an infection to an observation.
 </td>
 </tr>
 <tr>
-<td style="text-align:left;font-weight: bold;">
+<td style="text-align:left;width: 7em; font-weight: bold;">
 <code>family</code>
 </td>
 <td style="text-align:left;">
@@ -565,7 +577,7 @@ A string representing the family of the sampling distribution <span class="math 
 </td>
 </tr>
 <tr>
-<td style="text-align:left;font-weight: bold;">
+<td style="text-align:left;width: 7em; font-weight: bold;">
 <code>link</code>
 </td>
 <td style="text-align:left;">
@@ -573,15 +585,17 @@ A string representing the link function used to transform the linear predictor. 
 </td>
 </tr>
 <tr>
-<td style="text-align:left;font-weight: bold;">
-<code>center</code>, <code>prior</code>, <code>prior_intercept</code>
+<td style="text-align:left;width: 7em; font-weight: bold;">
+<code>center</code>,
+<code>prior</code>,
+<code>prior_intercept</code>
 </td>
 <td style="text-align:left;">
 same as in <code><a href="../reference/epirt.html">epirt()</a></code>, described above.
 </td>
 </tr>
 <tr>
-<td style="text-align:left;font-weight: bold;">
+<td style="text-align:left;width: 7em; font-weight: bold;">
 <code>prior_aux</code>
 </td>
 <td style="text-align:left;">
@@ -589,101 +603,143 @@ The prior distribution for the auxiliary parameter <span class="math inline">\(\
 </td>
 </tr>
 <tr>
-<td style="text-align:left;font-weight: bold;">
+<td style="text-align:left;width: 7em; font-weight: bold;">
 <code>...</code>
 </td>
 <td style="text-align:left;">
-Additional arguments for <code>model.frame</code>.
+Additional arguments for <code><a href="https://rdrr.io/r/stats/model.frame.html">model.frame()</a></code> from <strong>stats</strong>.
 </td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="sec:data" class="section level1">
-<h1 class="hasAnchor">
-<a href="#sec:data" class="anchor"></a><span class="header-section-number">6</span> Data</h1>
+<div id="sec:data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:data" class="anchor"></a><span class="header-section-number">1.5</span> Data</h2>
 <hr>
-<p>Recall that the <code>data</code> argument to <code><a href="../reference/epim.html">epim()</a></code> must contain all variables used in the transmission, infection and
-observational models. For our example,
-this looks like</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">data</span></pre></body></html></div>
-<pre><code>## # A tibble: 899 x 9
-## # Groups:   country [11]
-##    country date       schools_universi… self_isolating_i… public_events lockdown
-##    &lt;fct&gt;   &lt;date&gt;                 &lt;int&gt;             &lt;int&gt;         &lt;int&gt;    &lt;int&gt;
-##  1 Austria 2020-02-22                 0                 0             0        0
-##  2 Austria 2020-02-23                 0                 0             0        0
-##  3 Austria 2020-02-24                 0                 0             0        0
-##  4 Austria 2020-02-25                 0                 0             0        0
-##  5 Austria 2020-02-26                 0                 0             0        0
-##  6 Austria 2020-02-27                 0                 0             0        0
-##  7 Austria 2020-02-28                 0                 0             0        0
-##  8 Austria 2020-02-29                 0                 0             0        0
-##  9 Austria 2020-03-01                 0                 0             0        0
-## 10 Austria 2020-03-02                 0                 0             0        0
-## # … with 889 more rows, and 3 more variables:
-## #   social_distancing_encouraged &lt;int&gt;, deaths &lt;int&gt;, pop &lt;int&gt;</code></pre>
-<p>The <code>columns</code> country and <code>date</code> define the region and time period corresponding to each of the remaining
-variables. <code><a href="../reference/epim.html">epim()</a></code> assumes that the first seeding day (i.e. the start of the epidemic) in each region
-is the first date found in the dataframe. The last date is the final date at which the epidemic is
-simulated for the group. It is up to the user to appropriately choose these dates. For our example,
+<p>Before fitting our first model in Section <a href="#sec:first-fit">1.6</a>, we elaborate on
+the <code>data</code> argument to <code><a href="../reference/epim.html">epim()</a></code>. Recall that this must contain all variables used in the transmission and infection models, and in all observational models. For our example,
+<code>data</code> looks like</p>
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">data</span>)</pre></body></html></div>
+<pre><code>## # A tibble: 6 x 9
+## # Groups:   country [1]
+##   country date       schools_universit… self_isolating_i… public_events lockdown
+##   &lt;fct&gt;   &lt;date&gt;                  &lt;int&gt;             &lt;int&gt;         &lt;int&gt;    &lt;int&gt;
+## 1 Austria 2020-02-22                  0                 0             0        0
+## 2 Austria 2020-02-23                  0                 0             0        0
+## 3 Austria 2020-02-24                  0                 0             0        0
+## 4 Austria 2020-02-25                  0                 0             0        0
+## 5 Austria 2020-02-26                  0                 0             0        0
+## 6 Austria 2020-02-27                  0                 0             0        0
+## # … with 3 more variables: social_distancing_encouraged &lt;int&gt;, deaths &lt;int&gt;,
+## #   pop &lt;int&gt;</code></pre>
+<p>The columns <code>country</code> and <code>date</code> define the region and time period corresponding to each of the remaining
+variables. <code><a href="../reference/epim.html">epim()</a></code> assumes that the first seeding day (i.e. the start of the epidemic) in each region is the first date found in the data frame. The last data found for each region is the final data at which the epidemic is simulated. It is up to the user to appropriately choose these dates. For our example,
 the first and last dates for each group can be seen as follows.</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span>(<span class="no">data</span>, <span class="kw">start</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span>(<span class="no">date</span>), <span class="kw">end</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">date</span>))</pre></body></html></div>
-<pre><code>## # A tibble: 11 x 3
-##    country        start      end       
-##  * &lt;fct&gt;          &lt;date&gt;     &lt;date&gt;    
-##  1 Austria        2020-02-22 2020-05-05
-##  2 Belgium        2020-02-18 2020-05-05
-##  3 Denmark        2020-02-21 2020-05-05
-##  4 France         2020-02-07 2020-05-05
-##  5 Germany        2020-02-15 2020-05-05
-##  6 Italy          2020-01-27 2020-05-05
-##  7 Norway         2020-02-24 2020-05-05
-##  8 Spain          2020-02-09 2020-05-05
-##  9 Sweden         2020-02-18 2020-05-05
-## 10 Switzerland    2020-02-14 2020-05-05
-## 11 United_Kingdom 2020-02-13 2020-05-05</code></pre>
-<p>These start dates are 30 days prior to observing 10 cumulative deaths in each country.</p>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">dates</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span>(<span class="no">data</span>, <span class="kw">start</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span>(<span class="no">date</span>), <span class="kw">end</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">date</span>))
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">dates</span>)</pre></body></html></div>
+<pre><code>## # A tibble: 6 x 3
+##   country start      end       
+##   &lt;fct&gt;   &lt;date&gt;     &lt;date&gt;    
+## 1 Austria 2020-02-22 2020-05-05
+## 2 Belgium 2020-02-18 2020-05-05
+## 3 Denmark 2020-02-21 2020-05-05
+## 4 France  2020-02-07 2020-05-05
+## 5 Germany 2020-02-15 2020-05-05
+## 6 Italy   2020-01-27 2020-05-05</code></pre>
+<p>Here, the start dates have been heuristically chosen to be 30 days prior to
+observing 10 cumulative deaths in each country.</p>
 </div>
-<div id="a-first-fit" class="section level1">
-<h1 class="hasAnchor">
-<a href="#a-first-fit" class="anchor"></a><span class="header-section-number">7</span> A First Fit</h1>
-<p>We are ready to fit out first model. This is done by returning to the model
-fitting function <code><a href="../reference/epim.html">epim()</a></code>. Our call is as follows. Note that we use <code>refresh=0</code>
-to suppress the algorithm printing output in this article - however this should be disabled
-when you run models for yourself as this output is useful.</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">fm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epim.html">epim</a></span>(
-  <span class="kw">rt</span> <span class="kw">=</span> <span class="no">rt</span>,
-  <span class="kw">inf</span> <span class="kw">=</span> <span class="no">inf</span>,
-  <span class="kw">obs</span> <span class="kw">=</span> <span class="no">deaths</span>,
-  <span class="kw">data</span> <span class="kw">=</span> <span class="no">data</span>,
-  <span class="kw">group_subset</span> <span class="kw">=</span> <span class="st">"France"</span>,
-  <span class="kw">algorithm</span> <span class="kw">=</span> <span class="st">"fullrank"</span>,
-  <span class="kw">tol_rel_obj</span> <span class="kw">=</span> <span class="fl">1e-3</span>,
-  <span class="kw">seed</span> <span class="kw">=</span> <span class="fl">12345</span>,
-  <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>
-)</pre></body></html></div>
-<pre><code>## Warning: Pareto k diagnostic value is 0.76. Resampling is unreliable. Increasing
-## the number of draws or decreasing tol_rel_obj may help.</code></pre>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_rt.html">plot_rt</a></span>(<span class="no">fm</span>)</pre></body></html></div>
-<pre><code>## Registered S3 methods overwritten by 'car':
-##   method                          from
-##   influence.merMod                lme4
-##   cooks.distance.influence.merMod lme4
-##   dfbeta.influence.merMod         lme4
-##   dfbetas.influence.merMod        lme4</code></pre>
-<p><img src="model-implementation_files/figure-html/fit-model-1.png" width="672"></p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_obs.html">plot_obs</a></span>(<span class="no">fm</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"deaths"</span>)</pre></body></html></div>
-<p><img src="model-implementation_files/figure-html/fit-model-2.png" width="672"></p>
+<div id="sec:first-fit" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:first-fit" class="anchor"></a><span class="header-section-number">1.6</span> A First Fit</h2>
+<hr>
+<p>We are now ready to fit our first model. For this we return to the model
+fitting function <code><a href="../reference/epim.html">epim()</a></code>. The following command is used to instruct
+<strong>epidemia</strong> to run Markov chains in parallel, rather than sequentially, if
+multiple cores are detected.</p>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"> <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())</pre></body></html></div>
+<p>Our call to <code><a href="../reference/epim.html">epim()</a></code> is as follows. We use <code>refresh = 0</code>
+to suppress printing output in this article, however, this should
+not generally be used as such output is useful.</p>
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">fm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epim.html">epim</a></span>(<span class="kw">rt</span> <span class="kw">=</span> <span class="no">rt</span>, <span class="kw">inf</span> <span class="kw">=</span> <span class="no">inf</span>, <span class="kw">obs</span> <span class="kw">=</span> <span class="no">deaths</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">data</span>,
+           <span class="kw">group_subset</span> <span class="kw">=</span> <span class="st">"France"</span>, <span class="kw">algorithm</span> <span class="kw">=</span> <span class="st">"sampling"</span>, <span class="kw">iter</span> <span class="kw">=</span> <span class="fl">1e3</span>,
+           <span class="kw">seed</span> <span class="kw">=</span> <span class="fl">12345</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>)</pre></body></html></div>
+<p>The print method for <code>epimodel</code> objects prints summary statistics for
+model parameters. These are obtained from the sampled posterior distribution.
+Parameter are displayed
+according to which part of the model they belong to (transmission, observations,
+infections). An estimate of the standard deviation, labeled <code>MAD_SD</code> is
+displayed. This is the median absolute deviation from the median, and is more
+robust than naive estimates of the standard deviation for long-tailed
+distributions.</p>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">fm</span>)</pre></body></html></div>
+<pre><code>## 
+## Rt regression parameters:
+## ==========
+## coefficients:
+##                 Median MAD_SD
+## R|(Intercept)    0.7    0.2  
+## R|lockdown      -2.4    0.3  
+## R|public_events -0.4    0.3  
+## 
+##  deaths  regression parameters:
+## ==========
+## coefficients:
+##                              Median MAD_SD
+## deaths|(Intercept)            0.0    0.2  
+## deaths|reciprocal dispersion 10.4    0.4  
+## 
+## Infection model parameters:
+## ==========
+##               Median MAD_SD
+## seeds[France] 15.1    5.2  
+## seeds_aux     27.2   22.0</code></pre>
+<p>Alternatively, the summary method can be used. This gives quantiles of the
+posterior draws, and also displays some MCMC diagnostics.</p>
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">fm</span>)</pre></body></html></div>
+<pre><code>## 
+## 
+## Estimates:
+##                                mean   sd   10%   50%   90%
+## R|(Intercept)                 0.7    0.2  0.5   0.7   0.9 
+## R|lockdown                   -2.4    0.3 -2.8  -2.4  -2.1 
+## R|public_events              -0.4    0.3 -0.8  -0.4   0.0 
+## deaths|(Intercept)            0.0    0.2 -0.3   0.0   0.2 
+## seeds[France]                16.0    5.8  9.4  15.1  24.1 
+## seeds_aux                    38.2   35.3  8.5  27.2  80.7 
+## deaths|reciprocal dispersion 10.5    0.5 10.1  10.4  11.1 
+## 
+## MCMC diagnostics
+##                              mcse Rhat n_eff
+## R|(Intercept)                0.0  1.0  1221 
+## R|lockdown                   0.0  1.0  1168 
+## R|public_events              0.0  1.0   967 
+## deaths|(Intercept)           0.0  1.0  1649 
+## seeds[France]                0.2  1.0  1362 
+## seeds_aux                    1.1  1.0  1113 
+## deaths|reciprocal dispersion 0.0  1.0  2210 
+## log-posterior                0.1  1.0   708</code></pre>
+</div>
 </div>
 <div id="references" class="section level1">
 <h1 class="hasAnchor">
-<a href="#references" class="anchor"></a><span class="header-section-number">8</span> References</h1>
+<a href="#references" class="anchor"></a><span class="header-section-number">2</span> References</h1>
+<hr>
 </div>
 <div id="refs" class="references">
 <div id="ref-Flaxman2020">
 <p>Flaxman, Seth, Swapnil Mishra, Axel Gandy, H Juliette T Unwin, Thomas A Mellan, Helen Coupland, Charles Whittaker, et al. 2020. “Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.” <em>Nature</em>. <a href="https://doi.org/10.1038/s41586-020-2405-7">https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
+</div>
+<div id="ref-hoffman_2014">
+<p>Hoffman, Matthew D., and Andrew Gelman. 2014. “The no-U-turn sampler: Adaptively setting path lengths in Hamiltonian Monte Carlo.” <em>Journal of Machine Learning Research</em> 15.</p>
+</div>
+<div id="ref-Kucukelbir_2017">
+<p>Kucukelbir, Alp, David M. Blei, Andrew Gelman, Rajesh Ranganath, and Dustin Tran. 2017. “Automatic Differentiation Variational Inference.” <em>Journal of Machine Learning Research</em> 18.</p>
+</div>
+<div id="ref-Kucukelbir_2015">
+<p>Kucukelbir, Alp, Rajesh Ranganath, Andrew Gelman, and David M. Blei. 2015. “Automatic variational inference in Stan.” In <em>Advances in Neural Information Processing Systems</em>. Vols. 2015-January.</p>
 </div>
 </div>
 </div>

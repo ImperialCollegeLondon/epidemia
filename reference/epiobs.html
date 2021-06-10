@@ -112,10 +112,16 @@ vignette." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -137,6 +143,9 @@ vignette." />
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -237,7 +246,8 @@ for the regression intercept, if one has been specified.</p></td>
     <tr>
       <th>prior_aux</th>
       <td><p>The prior distribution for the auxiliary parameter, if it exists.
-Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter).</p></td>
+Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter). Can be a call to <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>exponential</a></code>,
+<code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>normal</a></code>, <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>student_t</a></code> or <code><a href='https://mc-stan.org/rstanarm/reference/priors.html'>cauchy</a></code>. These result in half-normal, half-t and half-cauchy priors.</p></td>
     </tr>
     <tr>
       <th>...</th>

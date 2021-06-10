@@ -110,10 +110,16 @@ vignette." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -135,6 +141,9 @@ vignette." />
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -248,6 +257,7 @@ The right hand side can consist of fixed effects, random effects, and autocorrel
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>epidemia</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"EuropeCovid"</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span>(<span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
 
@@ -272,14 +282,14 @@ The right hand side can consist of fixed effects, random effects, and autocorrel
   <span class='kw'>link</span> <span class='kw'>=</span> <span class='fu'><a href='scaled_logit.html'>scaled_logit</a></span>(<span class='fl'>7</span>)
 )
 
-<span class='no'>fm1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 1.09. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm1</span>)</div><div class='img'><img src='epirt-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='no'>fm1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 0.79. Resampling is unreliable. Increasing the number of draws or decreasing tol_rel_obj may help.</span></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm1</span>) + <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span>()</div><div class='img'><img src='epirt-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># Modeling effects of NPIs</span>
 <span class='no'>args</span>$<span class='no'>rt</span> <span class='kw'>&lt;-</span> <span class='fu'>epirt</span>(
   <span class='kw'>formula</span> <span class='kw'>=</span> <span class='fu'>R</span>(<span class='no'>country</span>, <span class='no'>date</span>) ~ <span class='fl'>1</span> + <span class='no'>lockdown</span> + <span class='no'>public_events</span>,
   <span class='kw'>link</span> <span class='kw'>=</span> <span class='fu'><a href='scaled_logit.html'>scaled_logit</a></span>(<span class='fl'>7</span>)
 )
 
-<span class='no'>fm2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 1.29. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm2</span>)</div><div class='img'><img src='epirt-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='no'>fm2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 1.62. Resampling is disabled. Decreasing tol_rel_obj may help if variational algorithm has terminated prematurely. Otherwise consider using sampling instead.</span></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm2</span>) + <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span>()</div><div class='img'><img src='epirt-2.png' alt='' width='700' height='433' /></div><div class='input'>
 
 <span class='co'># shifted gamma prior for NPI effects</span>
 <span class='no'>args</span>$<span class='no'>rt</span> <span class='kw'>&lt;-</span> <span class='fu'>epirt</span>(
@@ -290,7 +300,7 @@ The right hand side can consist of fixed effects, random effects, and autocorrel
 
 <span class='co'># How does the implied prior look?</span>
 <span class='no'>args</span>$<span class='no'>prior_PD</span> <span class='kw'>&lt;-</span> <span class='fl'>TRUE</span>
-<span class='no'>fm3</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 0.74. Resampling is unreliable. Increasing the number of draws or decreasing tol_rel_obj may help.</span></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm3</span>)</div><div class='img'><img src='epirt-3.png' alt='' width='700' height='433' /></div><div class='input'># }
+<span class='no'>fm3</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span>(<span class='no'>epim</span>, <span class='no'>args</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: Pareto k diagnostic value is 0.71. Resampling is unreliable. Increasing the number of draws or decreasing tol_rel_obj may help.</span></div><div class='input'><span class='fu'><a href='plot_rt.html'>plot_rt</a></span>(<span class='no'>fm3</span>) + <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span>()</div><div class='img'><img src='epirt-3.png' alt='' width='700' height='433' /></div><div class='input'># }
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

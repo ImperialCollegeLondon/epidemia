@@ -23,7 +23,7 @@
     that users can parameterize reproduction numbers and ascertainment rates in terms of predictors. Infections are propagated over 
     time using self-exciting point processes. Multiple regions can be modeled simultaneously with multilevel models. The models and framework behind 
     the package are described in Bhatt et al. (2021) &lt;arXiv:2012.00394&gt;. The design of the package has been inspired by, and has borrowed from, 
-    rstanarm (Goodrich et al., 2020) &lt;https://mc-stan.org/rstanarm&gt;. rstan (Stan Development Team, 2020) &lt;https://mc-stan.org/&gt; is used as 
+    rstanarm (Goodrich et al., 2020) &lt;https://mc-stan.org/rstanarm/&gt;. rstan (Stan Development Team, 2020) &lt;https://mc-stan.org/&gt; is used as 
     the back end for fitting models.">
 <meta property="og:image" content="https://imperialcollegelondon.github.io/epidemia/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS_CHTML.js" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -67,10 +67,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="articles/partial-pooling.html">Partial Pooling</a>
@@ -92,6 +98,9 @@
     </li>
     <li>
       <a href="articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -124,7 +133,7 @@
 
 <p><img src="reference/figures/logo_big.png" class="mainimg"></p>
 <div class="subtext">
-Flexibly specify and fit Bayesian statistical models for epidemics. epidemia leverages R’s formula interface to parameterize the time-varying reproduction rate as a function of covariates. Multiple regions can be modeled simultaneously with multilevel models. The design of the package has been inspired by, and has borrowed from, <a href="https://mc-stan.org/rstanarm/">rstanarm</a>. epidemia uses <a href="https://mc-stan.org/rstan/">rstan</a> as the backend for fitting models.
+Flexibly specify and fit Bayesian, regression-oriented models for infectious diseases. The implemented models define a likelihood for all observed data while also explicitly modeling transmission dynamics: an approach often termed as <em>semi-mechanistic</em>. Multiple regions can be modeled simultaneously with multilevel models. Key epidemiological quantities, including reproduction numbers and latent infections, may be estimated within the framework. The models may be used to evaluate the determinants of changes in transmission rates, including the effects of control measures. Epidemic dynamics may be simulated either from a fitted model or a “prior” model; allowing for prior/posterior predictive checks, experimentation, and forecasting.
 </div>
 <div class="row">
 <div class="span12">
@@ -140,23 +149,8 @@ Flexibly specify and fit Bayesian statistical models for epidemics. epidemia lev
 Getting Started
 </h4>
 <hr>
-<p>After <a href="articles/install.html">installing</a> the software, the best way to get started is to read the articles.</p>
-<ul>
-<li>
-<a href="articles/model-description.html">Model Description</a> introduces the class of models that can be fit in <strong>epidemia</strong>.</li>
-<li>
-<a href="articles/model-implementation.html">Model Implementation</a> shows how these models are implemented; considering the three main modeling functions, and the fitting function <code><a href="reference/epim.html">epim()</a></code>.</li>
-<li>
-<a href="articles/partial-pooling.html">Partial Pooling</a> presents the user with a number of example of how to leverage partial pooling.</li>
-<li>
-<a href="articles/priors.html">Priors</a> details which prior families are available for different model parameters, including intercepts, auxiliary parameters and covariance matrices.</li>
-<li>
-<a href="articles/flu.html">A Basic Example</a> infers reproduction numbers in Baltimore during the 1918 Spanish Flu epidemic.</li>
-<li>
-<a href="articles/europe-covid.html">A Multilevel Example</a> infers the effects of NPIs in European countries during the first wave of Covid-19.
+<p>After <a href="articles/install.html">installing</a> the software, the best way to get started is to become familiar with the <a href="articles/model-description.html">model</a> and its <a href="articles/model-implementation.html">implementation</a>. Once familiar with the model, there are a few articles showcasing the main features of the package using real example data. The simplest such article is <a href="articles/flu.html">here</a>.</p>
 <hr>
-</li>
-</ul>
 </div>
 <!-- <div class="row text-center">
   <div class='col-lg-3'>

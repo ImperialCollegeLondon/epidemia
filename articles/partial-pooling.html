@@ -62,10 +62,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -87,6 +93,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -114,7 +123,8 @@
 
       
 
-      </header><script src="partial-pooling_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><script src="partial-pooling_files/accessible-code-block-0.0.1/empty-anchor.js"></script><script src="partial-pooling_files/kePrint-0.0.1/kePrint.js"></script><link href="partial-pooling_files/lightable-0.0.1/lightable.css" rel="stylesheet">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Partial Pooling</h1>
@@ -134,31 +144,31 @@
 </style>
 <div class="article_container">
 
-<div id="partial-pooling-in-epidemia" class="section level1">
+<div id="sec:partial_pooling" class="section level1">
 <h1 class="hasAnchor">
-<a href="#partial-pooling-in-epidemia" class="anchor"></a><span class="header-section-number">1</span> Partial Pooling in epidemia</h1>
+<a href="#sec:partial_pooling" class="anchor"></a><span class="header-section-number">1</span> Partial Pooling in epidemia</h1>
 <hr>
-<p>Here we describe how to partially pool parameters underlying the reproduction
-numbers in <strong>epidemia</strong>. This is done using a special operator in the formula passed to
+<p>We describe how to partially pool parameters underlying the reproduction
+numbers. This is done using a special operator in the formula passed to
 <code><a href="../reference/epirt.html">epirt()</a></code>. If you have previously used any of the <strong>lme4</strong>,
 <strong>nlmer</strong>, <strong>gamm4</strong>, <strong>glmer</strong> or <strong>rstanarm</strong> packages then this
 syntax will be familiar.</p>
-<p>A general R formula is written as <code>y ~ model</code>, where <code>y</code> is the response that
+<p>A general <strong>R</strong> formula is written as <code>y ~ model</code>, where <code>y</code> is the response that
 is modeled as some function of the linear predictor which is symbolically
 represented by <code>model</code>. <code>model</code> is made up of a series of terms separated by
 <code><a href="https://rdrr.io/r/base/Arithmetic.html">+</a></code>. In <strong>epidemia</strong>, as in many other packages, parameters can be partially pooled
 by using terms of the form <code>(expr | factor)</code>, where both <code>expr</code> and <code>factor</code> are
-R expressions. <code>expr</code> is a standard linear model (i.e. treated the same as
+<strong>R</strong> expressions. <code>expr</code> is a standard linear model (i.e. treated the same as
 <code>model</code>), and is parsed to produce a model matrix. The syntax <code>(expr | factor)</code>
 makes explicit that columns in this model matrix have separate effects for
 different levels of the factor variable.</p>
 <p>Of course, separate effects can also be specified using the standard interaction
 operator <code>:</code>. This however corresponds to <em>no pooling</em>, in that parameters
 at different levels are given separate priors. The <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> operator, on the other
-hand, ensures that parameters at different levels are given a common prior, which
-is itself parameterised by parameters which are given hyperpriors. This allows
-information to be shared between levels of the factor. To be concrete, suppose
-that the model matrix parse from <code>expr</code> has <span class="math inline">\(p\)</span> columns,
+hand, ensures that effects for different levels are given a common prior. This
+common prior itself has parameters which are given hyperpriors. This allows
+information to be shared between different levels of the factor. To be concrete, suppose
+that the model matrix parsed from <code>expr</code> has <span class="math inline">\(p\)</span> columns,
 and that <code>factor</code> has <span class="math inline">\(L\)</span> levels. The <span class="math inline">\(p\)</span>-dimensional parameter vector for
 the <span class="math inline">\(l\)</span><sup>th</sup> group can be denoted by <span class="math inline">\(\theta_l\)</span>. In <strong>epidemia</strong>, this vector
 is modeled as multivariate normal with an unknown covariance matrix. Specifically,
@@ -166,10 +176,8 @@ is modeled as multivariate normal with an unknown covariance matrix. Specificall
   \theta_{l} \sim N(0, \Sigma),
 \end{equation}\]</span>
 where the covariance <span class="math inline">\(\Sigma\)</span> is given a prior. <strong>epidemia</strong> offers the same
-priors for covariance matrices as <strong>rstanarm</strong>; in particular the <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::decov</a></code> and
-<code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::lkj</a></code> priors can be used. Note that <span class="math inline">\(\Sigma\)</span> is not assumed diagonal, i.e. 
-the effects within each level may be correlated. For more information on priors
-for covariance matrices, please see this <a href="#">article</a>.</p>
+priors for covariance matrices as <strong>rstanarm</strong>; in particular the <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">decov()</a></code> and <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">lkj()</a></code> priors from <strong>rstanarm</strong> can be used. Note that <span class="math inline">\(\Sigma\)</span> is not assumed diagonal, i.e. 
+the effects within each level may be correlated.</p>
 <p>If independence is desired for parameters in <span class="math inline">\(\theta_l\)</span>, we can simply replace
 <code>(expr | factor)</code> with <code>(expr || factor)</code>. This latter term effectively
 expands into <span class="math inline">\(p\)</span> terms of the form <code>(expr_1 | factor)</code>, <span class="math inline">\(\ldots\)</span>, <code>(expr_p | factor)</code>,
@@ -177,60 +185,130 @@ where <code>expr_1</code> produces the first column of the model matrix given by
 and so on. From the above discussion, the effects are independent across terms,
 and essentially <span class="math inline">\(\Sigma\)</span> is replaced by <span class="math inline">\(p\)</span> one-dimensional covariance matrices
 (i.e. variances).</p>
-<div id="example-formulas-" class="section level2">
+<div id="example-formulas" class="section level2">
 <h2 class="hasAnchor">
-<a href="#example-formulas-" class="anchor"></a><span class="header-section-number">1.1</span> Example Formulas.</h2>
+<a href="#example-formulas" class="anchor"></a><span class="header-section-number">1.1</span> Example Formulas</h2>
+<hr>
 <p>The easiest way to become familiar with how the <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> operator works is to
 see a multitude of examples. Here, we give many examples, their interpretations,
 and where possible we compare the models to the no pooling and full pooling equivalents.
-For a comprehensive reference on mixed model formulas, please see the
-<a href="https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf">lme4 vignette</a>.</p>
-<p>There are many possible ways to specify intercepts.</p>
-<ul>
-<li>
-<code>R(region, date) ~ 1 + ...</code> : Full pooling, common intercept for all regions</li>
-<li>
-<code>R(region, date) ~ region + ...</code>: Separate intercepts for each region, not pooled.</li>
-<li>
-<code>R(region, date) ~ (1 | region) + ...</code> Separate intercepts for each region which are partially pooled.</li>
-<li>
-<code>R(region, date) ~   (1 | continent) + ...</code> Separate intercepts based on a factor other than <code>region</code>, partially pooled.</li>
-</ul>
-<p>We can also partially pool effects of covariates. Let <code>npi</code> be some indicator
-of a non-pharmaceutical intervention.</p>
-<ul>
-<li>
-<code>R(region, date) ~ 1 + npi + ...</code>: Full pooling. Effect of NPI the same across all regions.</li>
-<li>
-<code>R(region, date) ~ 1 + npi:region + ...</code>: No pooling. Separate effect in each region</li>
-<li>
-<code>R(region, date) ~ 1 + (0 + npi|region) + ...</code>: Partial pooling. Separate effects in each region.</li>
-<li>
-<code>R(region, date) ~ 1 + (npi|region) + ...</code>: Right hand side expands to <code>1 + (1 + npi|region)</code>, and so
-both the intercept and effect are partially pooled.</li>
-</ul>
-<p>The final example above shows that it is important to remember that to parse the
-term <code>(expr | factor)</code>, <code><a href="../reference/epim.html">epim()</a></code>first parses <code>expr</code> into a model matrix
-in the same way as functions like <code>lm</code> and <code>glm</code> parse models. In this case,
-the intercept term is implicit. Therefore, if this is to be avoided, we must
-explicitly use <code>0 +</code> or <code>-1 +</code>.</p>
+For a comprehensive reference on mixed model formulas, please see <span class="citation">Bates et al. (<a href="#ref-bates_2015" role="doc-biblioref">2015</a>)</span>.</p>
+<p>There are many possible ways to specify intercepts. Table <a href="#tab:intercept-specs">1.1</a> demonstrates some of these, including fully pooled, partially pooled and unpooled.
+Effects may also be partially pooled. This is shown in Table <a href="#tab:cov-specs">1.2</a>.</p>
+<div class="table">
+<table class="table  lightable-paper lightable-hover">
+<caption>
+<span id="tab:intercept-specs">Table 1.1: </span>Different intercept specifications. The intercept often has an interpretation as setting <span class="math inline">\(R_0\)</span> in each region. The left hand side of each formula is assumed to take the form <code>R(region, date)</code>.
+</caption>
+<thead><tr>
+<th style="text-align:left;">
+Formula R.H.S.
+</th>
+<th style="text-align:left;">
+Interpretation
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>1 + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+Full pooling, common intercept for all regions.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>region + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+Separate intercepts for each region, not pooled.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>(1 | region) + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+Separate intercepts for each region which are partially pooled.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>(1 | continent) + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+Separate intercepts based on a factor other than <code>region</code>, partially pooled.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="table">
+<table class="table  lightable-paper lightable-hover">
+<caption>
+<span id="tab:cov-specs">Table 1.2: </span>Different covariate specifications. Here NPI refers to some non-pharamceutical intervention. The left hand side of each formula is assumed to take the form <code>R(region, date)</code>.
+</caption>
+<thead><tr>
+<th style="text-align:left;">
+Formula R.H.S.
+</th>
+<th style="text-align:left;">
+Interpretation
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>1 + npi + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+Full pooling. Effect of NPI the same across all regions.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>1 + npi:region + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+No pooling. Separate effect in each region.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>1 + (0 + npi|region) + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+Partial pooling. Separate effects in each region.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 25em; font-weight: bold;">
+<code>1 + (npi|region) + ...</code>
+</td>
+<td style="text-align:left;width: 40em; ">
+Right hand side expands to <code>1 + (1 + npi|region)</code>, and so both the intercept and effect are partially pooled.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The final example in Table <a href="#tab:cov-specs">1.2</a> shows that it is important to remember that to parse the term <code>(expr | factor)</code>, <code><a href="../reference/epim.html">epim()</a></code> first parses <code>expr</code> into a model matrix in the same way as functions like <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> and <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> parse models. In this case, the intercept term is implicit. Therefore, if this is to be avoided, we must
+explicitly use either <code>(0 + npi | region)</code> or <code>(-1 + npi | region)</code>.</p>
 <div id="independent-effects" class="section level3">
 <h3 class="hasAnchor">
 <a href="#independent-effects" class="anchor"></a><span class="header-section-number">1.1.1</span> Independent Effects</h3>
 <p>By default, the vector of partially pooled intercepts and slopes for each region
-are correlated. The <code>||</code> operator can be used to specify independence. An example:</p>
-<ul>
-<li>
-<code>R(region, date) ~ npi + (npi || region) + ...</code>: Right hand side expands to
-<code>1 + npi + (1 | region) + (npi | region) + ...</code>. Separate intercepts and
-effects for each region which are partially pooled. The intercept and NPI effect
-are assumed independent within regions.</li>
-</ul>
+are correlated. The <code>||</code> operator can be used to specify independence. For
+example, consider a formula of the form</p>
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu">R</span>(<span class="no">region</span>, <span class="no">date</span>) ~ <span class="no">npi</span> + (<span class="no">npi</span> <span class="kw">||</span> <span class="no">region</span>) + <span class="no">...</span></pre></body></html></div>
+<p>The right hand side expands to <code>1 + npi + (1 | region) + (npi | region) + ...</code>. Separate intercepts and effects for each region which are partially pooled. The intercept and NPI effect
+are assumed independent within regions.</p>
 </div>
 <div id="nested-groupings" class="section level3">
 <h3 class="hasAnchor">
 <a href="#nested-groupings" class="anchor"></a><span class="header-section-number">1.1.2</span> Nested Groupings</h3>
-<p>Often we have groupings that are nested. For example, suppose we are modeling an
+<p>Often groupings that are nested. For example, suppose we wish to model an
 epidemic at quite a fine scale, say at the level of local districts.
 Often there will be little data for
 any given district, and so no pooling will give highly variable estimates of
@@ -238,12 +316,22 @@ reproduction numbers. Nonetheless, pooling at a broad scale, say at the country
 level may hide region specific variations.</p>
 <p>If we have another variable, say <code>county</code>, which denotes the county to which
 each district belongs, we can in theory use a formula of the form</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu">R</span>(<span class="no">district</span>, <span class="no">date</span>) ~ (<span class="fl">1</span> <span class="kw">|</span> <span class="no">county</span> / <span class="no">district</span>) + <span class="no">...</span></pre></body></html></div>
+<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu">R</span>(<span class="no">district</span>, <span class="no">date</span>) ~ (<span class="fl">1</span> <span class="kw">|</span> <span class="no">county</span> / <span class="no">district</span>) + <span class="no">...</span></pre></body></html></div>
 <p>The right hand side expands to <code>(1 | county) + (1 | county:district)</code>.
 There is a county level intercept, which is partially
 pooled across different counties. There are also district intercepts
 which are partially pooled <em>within</em> each county.</p>
 </div>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1 class="hasAnchor">
+<a href="#references" class="anchor"></a><span class="header-section-number">2</span> References</h1>
+<hr>
+</div>
+<div id="refs" class="references">
+<div id="ref-bates_2015">
+<p>Bates, Douglas, Martin Mächler, Ben Bolker, and Steve Walker. 2015. “Fitting Linear Mixed-Effects Models Using Lme4.” <em>Journal of Statistical Software</em> 67 (1): 1–48. <a href="https://doi.org/10.18637/jss.v067.i01">https://doi.org/10.18637/jss.v067.i01</a>.</p>
 </div>
 </div>
 </div>

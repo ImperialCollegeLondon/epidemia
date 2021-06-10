@@ -108,10 +108,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -133,6 +139,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -214,14 +223,8 @@ negative half of the real line.</p>
 &#8220;Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.&#8221;
 <em>Nature</em>.
 ISSN 1476-4687, doi: <a href='https://doi.org/10.1038/s41586-020-2405-7'>10.1038/s41586-020-2405-7</a>
-, <a href='https://doi.org/10.1038/s41586-020-2405-7'>https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
+.</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>epidemia</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>EuropeCovid</span>)
-<span class='no'>args</span> <span class='kw'>&lt;-</span> <span class='no'>EuropeCovid</span>
-<span class='no'>args</span>$<span class='no'>prior</span> <span class='kw'>&lt;-</span> <span class='fu'>shifted_gamma</span>(<span class='kw'>shape</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>scale</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>shift</span><span class='kw'>=</span>-<span class='fl'>0.5</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

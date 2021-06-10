@@ -62,10 +62,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -87,6 +93,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -134,212 +143,358 @@
 </style>
 <div class="article_container">
 
-<div id="basic-model" class="section level1">
+<div id="sec:modeldescription" class="section level1">
 <h1 class="hasAnchor">
-<a href="#basic-model" class="anchor"></a><span class="header-section-number">1</span> Basic Model</h1>
+<a href="#sec:modeldescription" class="anchor"></a><span class="header-section-number">1</span> Model Description</h1>
 <hr>
-<p>We now formulate the basic version of the model for one homogeneous population. The same model can be used for multiple regions or groups jointly. Suppose we observe a time series of data <span class="math inline">\(Y = (Y_1, \ldots Y_n)\)</span> in a single region. This could for example be daily death or case incidence data. <span class="math inline">\(Y_t\)</span> is modeled as deriving from past new infections <span class="math inline">\(i_s\)</span>, <span class="math inline">\(s &lt; t\)</span>, and some parameter <span class="math inline">\(\alpha_t\)</span> representing the instantaneous <em>ascertainment rate</em>. The general model can be expressed as
-<span class="math display" id="eq:obsmean">\[\begin{align}
-    Y_t &amp; \sim p(y_t , \phi), \tag{1.1} \\\\
-    y_t &amp; = \alpha_t \sum_{s &lt; t} i_s \pi_{t-s} \tag{1.2},
+<p>We present the modeling framework implemented by the package.
+Section <a href="#sec:basic-model">1.1</a> outlines the bare-bones version of the
+model, which is elaborated on in Sections <a href="#sec:observations">1.2</a>,
+<a href="#sec:infections">1.3</a> and <a href="#sec:transmission">1.4</a>. Section
+<a href="#sec:extensions">1.5</a> extends the model and introduces multilevel
+modeling, treating infections as parameters, and accounting for
+population effects.</p>
+<div id="sec:basic-model" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:basic-model" class="anchor"></a><span class="header-section-number">1.1</span> Basic Model</h2>
+<hr>
+<p>We now formulate the basic version of the model for one homogeneous
+population. The same model can be used for multiple regions or groups
+jointly. Suppose we observe a non-negative time series of count data
+<span class="math inline">\(Y = (Y_1, \ldots Y_n)\)</span> for a single population. This could for example
+be daily death or case incidence. <span class="math inline">\(Y_t\)</span> is modeled as deriving from past
+new infections <span class="math inline">\(i_s\)</span>, <span class="math inline">\(s &lt; t\)</span>, and some parameter <span class="math inline">\(\alpha_t &gt; 0\)</span>, a
+multiplier, which in most contexts represents an instantaneous
+<em>ascertainment rate</em>. The general model can be expressed as
+<span class="math display" id="eq:obsmean">\[\begin{align} 
+Y_t &amp; \sim p(y_t , \phi), \tag{1.1} \\\\
+y_t &amp; = \alpha_t \sum_{s &lt; t} i_s \pi_{t-s} \tag{1.2}, 
 \end{align}\]</span>
-where <span class="math inline">\(y_t\)</span> is the expected value of the data distribution and <span class="math inline">\(\phi\)</span> is an auxiliary parameter. <span class="math inline">\(\pi_{k}\)</span> is typically the time distribution from an infection to an observation, which we refer to as the <em>infection to observation</em> distribution. New infections <span class="math inline">\(i_t\)</span> at times <span class="math inline">\(t&gt;0\)</span> are modeled through a discrete renewal process, and are tempered by a non-negative parameter <span class="math inline">\(R_t\)</span> which represents the reproduction number at time <span class="math inline">\(t\)</span>. Formally
+where <span class="math inline">\(y_t\)</span> is the expected value of
+the data distribution and <span class="math inline">\(\phi\)</span> is an auxiliary parameter. <span class="math inline">\(\pi_{k}\)</span> is
+typically the time distribution from an infection to an observation,
+which we refer to as the <em>infection to observation</em> distribution. More
+generally, however, <span class="math inline">\(\pi_k\)</span> can be used to obtain any linear combination
+of past infections. New infections <span class="math inline">\(i_t\)</span> at times <span class="math inline">\(t&gt;0\)</span> are modeled
+through a renewal equation, and are tempered by a non-negative parameter
+<span class="math inline">\(R_t\)</span> which represents the reproduction number at time <span class="math inline">\(t\)</span>. Formally
 <span class="math display" id="eq:renewal">\[\begin{align} 
-i_t &amp;= R_t \sum_{s &lt; t} i_s g_{t-s},
-\tag{1.3}
+i_t &amp;= R_t \sum_{s &lt; t} i_s g_{t-s}, \tag{1.3}
 \end{align}\]</span>
-where <span class="math inline">\(g\)</span> is a probability mass function for the time between infections. The recursion is initialized with <em>seeded</em> infections <span class="math inline">\(i_{v:0}\)</span>, <span class="math inline">\(v &lt; 0\)</span>, which are treated as unknown parameters. All parameters are assigned priors, i.e.
-<span class="math display">\[\begin{equation}
-    i_{v:0}, R, \phi, \alpha \sim p(\cdot),
+where <span class="math inline">\(g_k\)</span> is a probability mass
+function for the time between infections. The recursion is initialized
+with <em>seeded</em> infections <span class="math inline">\(i_{v:0}\)</span>, <span class="math inline">\(v &lt; 0\)</span>, which are treated as
+unknown parameters. All parameters are assigned priors, i.e.
+<span class="math display">\[\begin{equation} 
+i_{v:0}, R, \phi, \alpha \sim p(\cdot),
 \end{equation}\]</span>
-where <span class="math inline">\(R = (R_1, \ldots, R_n)\)</span> and <span class="math inline">\(\alpha = (\alpha_1, \ldots, \alpha_n)\)</span>. The posterior distribution is then proportional to prior and likelihood, i.e.
+where <span class="math inline">\(R = (R_1, \ldots, R_n)\)</span> and <span class="math inline">\(\alpha = (\alpha_1, \ldots, \alpha_n)\)</span>. The posterior distribution is then
+proportional to prior and likelihood, i.e. 
 <span class="math display">\[\begin{equation}
-    p(i_{v:0}, R, \phi, \alpha \mid Y) \propto p(i_{v:0})p(R)p(\phi)p(\alpha) \prod_{t} p(Y_t \mid y_t, \phi).
+p(i_{v:0}, R, \phi, \alpha \mid Y) \propto p(i_{v:0})p(R)p(\phi)p(\alpha) \prod_{t} p(Y_t \mid y_t, \phi). 
 \end{equation}\]</span>
-<strong>epidemia</strong> represents this posterior distribution in Stan, and uses its adaptive Hamiltonian Monte Carlo sampler to approximately draw samples from this posterior distribution. These samples allow for inference on the parameters, in addition to simulating data from the posterior predictive distribution.</p>
-<p>Transmission rates <span class="math inline">\(R\)</span> and ascertainment rates <span class="math inline">\(\alpha\)</span> can be modeled flexibly using Bayesian regression models, and through sharing of parameters, are the means through which we tie together multiple regions or groups using multilevel modeling. One can, for example, model transmission rates as depending on a binary covariate for an NPI, say full lockdown. The coefficient for this can be <em>partially pooled</em> between these groups. The effect is to share information between groups, while still permitting between group variation.</p>
+This posterior distribution is
+represented in a <strong>Stan</strong> program, and an adaptive Hamiltonian
+Monte Carlo sampler <span class="citation">(Hoffman and Gelman <a href="#ref-hoffman_2014" role="doc-biblioref">2014</a>)</span> is used to approximately draw
+samples from it. These samples allow for inference on the parameters, in
+addition to simulating data from the posterior predictive distribution.</p>
+<p>Reproduction numbers <span class="math inline">\(R\)</span> and multipliers <span class="math inline">\(\alpha\)</span> can be modeled
+flexibly with Bayesian regression models, and by sharing parameters, are
+the means by which multiple regions or groups are tied together through
+multilevel models. One can, for example, model <span class="math inline">\(R\)</span> as depending on a
+binary covariate for a control measure, say full lockdown. The
+coefficient for this can be <em>partially pooled</em> between multiple
+populations. The effect is to share information between groups, while
+still permitting between group variation.</p>
 </div>
-<div id="sec:observations" class="section level1">
-<h1 class="hasAnchor">
-<a href="#sec:observations" class="anchor"></a><span class="header-section-number">2</span> Observations</h1>
-<hr>
-<p><span class="math inline">\(Y_t\)</span> is typically the  occurring at time <span class="math inline">\(t\)</span>.
-Such events are precipitated by past infections.
-Prototypical examples include daily case or death counts.
-<span class="math inline">\(\alpha_t\)</span> represents an <em>ascertainment rate</em>.
-For case or death data this would be the infection ascertainment rate (IAR) or the infection fatality rate (IFR) respectively.
-<span class="math inline">\(\alpha\)</span> plays a similar role for observations as <span class="math inline">\(R\)</span> does for infections;
-tempering expected observations for time-specific considerations.
-As such, <strong>epidemia</strong> models <span class="math inline">\(\alpha\)</span> in a similar manner to <span class="math inline">\(R\)</span>; parameterising it as a transformed linear predictor.
-This is discussed in detail in Section <a href="#sec:transmission">4</a>, and is not repeated here.</p>
-<p>The sampling distribution <span class="math inline">\(p(y_t, \phi)\)</span> (Equation <a href="#eq:ysampling">(1.1)</a>) should generally be informed by
-parts of the data generating mechanism not captured by the mean <span class="math inline">\(y_t\)</span>: i.e. any mechanisms which
-may induce additional variation around <span class="math inline">\(y_t\)</span>. Options for <span class="math inline">\(p(y_t, \phi)\)</span> include the Poisson, quasi-Poisson
-and negative-binomial families.
-Poisson has no auxiliary parameter <span class="math inline">\(\phi\)</span>, while for the latter two families this represents a non-negative
-<em>dispersion parameter</em> which is assigned a prior.</p>
-<p><strong>epidemia</strong> allows for multiple observation vectors, in which case we can simply
-superscript <span class="math inline">\(Y_t^{(l)}\)</span>, <span class="math inline">\(\alpha_{t}^{(l)}\)</span> and <span class="math inline">\(\pi^{(l)}\)</span>, and assign independent sampling distributions for each type.
-Separate models are then specified <span class="math inline">\(\alpha_{t}^{(l)}\)</span>.
-Multiple observation types can often enhance a model.
-High quality death data existed during the first wave of the Covid-19 pandemic in Europe.
-Case data gradually increased in reliability over time, and has the advantage of picking up
-changes in transmission dynamics much quicker than death data.</p>
-</div>
-<div id="sec:infections" class="section level1">
-<h1 class="hasAnchor">
-<a href="#sec:infections" class="anchor"></a><span class="header-section-number">3</span> Infections</h1>
-<hr>
-<p>Infections <span class="math inline">\(i_t\)</span> propagate over time through the discrete renewal process <a href="#eq:renewal">(1.3)</a>.
-This is <em>self-exciting</em>: past infections give rise to new infections.
-The theoretical motivation for this lies in counting processes and is explained in more detail in
-<span class="citation">Bhatt et al. (<a href="#ref-bhatt2020" role="doc-biblioref">2020</a>)</span>. The equation is connected to Hawkes processes and the Bellman Harris branching process
-<span class="citation">(Bellman and Harris <a href="#ref-bellman1948" role="doc-biblioref">1948</a>, <a href="#ref-bellman1952" role="doc-biblioref">1952</a>; Mishra et al. <a href="#ref-mishra2020" role="doc-biblioref">2020</a>)</span>. Such processes have been used in numerous previous studies
-<span class="citation">(Fraser <a href="#ref-fraser_2007" role="doc-biblioref">2007</a>; Cori et al. <a href="#ref-Cori2013" role="doc-biblioref">2013</a>; Nouvellet et al. <a href="#ref-nouvellet_2018" role="doc-biblioref">2018</a>; Cauchemez et al. <a href="#ref-cauchemez_2008" role="doc-biblioref">2008</a>)</span>, and are also connected to compartmental models
-such as the SEIR model <span class="citation">(Champredon, Dushoff, and Earn <a href="#ref-champredon_2018" role="doc-biblioref">2018</a>)</span>.</p>
-<p>Equation <a href="#eq:renewal">(1.3)</a> implies that <span class="math inline">\(i_t\)</span>, <span class="math inline">\(t &gt; 0\)</span> are deterministic given <span class="math inline">\(R\)</span> and seeded infections <span class="math inline">\(i_{v:0}\)</span>.
-<strong>epidemia</strong> sets a prior on <span class="math inline">\(i_{v:0}\)</span> by first assuming that daily seeds constant over the seeding period.
-Formally, <span class="math inline">\(i_{k} = i\)</span> for each <span class="math inline">\(k \in \{v,\ldots 0\}\)</span>.
-The parameter <span class="math inline">\(i\)</span> is modeled hierarchically as
-<span class="math display" id="eq:tau">\[\begin{align}
-    i &amp;\sim \text{Exp}(\tau^{-1}), \tag{3.1}\\\\
-    \tau &amp; \sim \text{Exp}(\lambda_0) \tag{3.2},
-\end{align}\]</span>
-where <span class="math inline">\(\lambda_0 &gt; 0\)</span> is a rate hyperparameter.
-This prior is uninformative, allowing seeds to be largely determined by initial transmission rates and the chosen start date of the epidemic.
-Several extensions to this infection process are possible in <strong>epidemia</strong>, including extending <a href="#eq:renewal">(1.3)</a> to better capture
-dynamics such as super-spreading events, and also adjusting the process for the size of the remaining susceptible population. These
-extensions are discussed in Section <a href="#sec:latent">5.2</a> and <a href="#sec:popadjust">5.3</a> respectively.</p>
-</div>
-<div id="sec:transmission" class="section level1">
-<h1 class="hasAnchor">
-<a href="#sec:transmission" class="anchor"></a><span class="header-section-number">4</span> Transmission</h1>
-<hr>
-<p>Reproduction numbers are modeled flexibly. One can form a linear predictor consisting of fixed effects, random effects and autocorrelation terms, which is then transformed via a suitable link function. Formally
-<span class="math display">\[\begin{equation}
-    R = g^{-1}(\eta),
-\end{equation}\]</span>
-where <span class="math inline">\(g\)</span> is a link function and <span class="math inline">\(\eta\)</span> is a linear predictor. In full generality, <span class="math inline">\(\eta\)</span> can be expressed as
-<span class="math display" id="eq:linpred">\[\begin{equation}
-    \eta = \beta_0 + X \beta + Z b + Q \gamma,
-    \tag{4.1}
-\end{equation}\]</span>
-where <span class="math inline">\(X\)</span> is an <span class="math inline">\(n \times p\)</span> model matrix, <span class="math inline">\(Z\)</span> is an <span class="math inline">\(n \times q\)</span> model matrix for the <span class="math inline">\(q\)</span>-vector of group-specific parameters <span class="math inline">\(b\)</span>. <span class="math inline">\(Q\)</span> is an <span class="math inline">\(n \times r\)</span> model matrix for the <span class="math inline">\(r\)</span>-vector of autocorrelation terms.
-The columns of <span class="math inline">\(X\)</span> are predictors explaining changes in transmission. These could, for example, be binary vectors encoding non-pharmaceutical interventions, as in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>.
-A number of families can be used for the prior on <span class="math inline">\(\beta\)</span>, including normal, cauchy, and hierarchical shrinkage families.
-The parameters <span class="math inline">\(b\)</span> are modeled hierarchically as
-<span class="math display">\[\begin{equation}
-    b \sim N(0, \Sigma),
-\end{equation}\]</span>
-where <span class="math inline">\(\Sigma\)</span> is a covariance matrix that is itself assigned a prior.
-The particular form for <span class="math inline">\(\Sigma\)</span>, as well as its prior is discussed in more detail <a href="partial-pooling.html">here</a>.
-These parameters are particularly useful when multiple regions are being modeled simultaneously.
-In this case, they allow information on transmission rates to be shared between groups.</p>
-<p><span class="math inline">\(Q\)</span> is a binary matrix specifying which of the autocorrelation terms in <span class="math inline">\(\gamma\)</span> to include for each period <span class="math inline">\(t\)</span>.
-Currently, <strong>epidemia</strong> supports only random walk processes. However multiple such processes can be included, and
-can have increments that occur at a different time scale to <span class="math inline">\(R\)</span>; for example weekly increments can be used.</p>
-<div id="sec:links" class="section level2">
+<div id="sec:observations" class="section level2">
 <h2 class="hasAnchor">
-<a href="#sec:links" class="anchor"></a><span class="header-section-number">4.1</span> Link Functions</h2>
-<p>Choosing an appropriate link function <span class="math inline">\(g\)</span> is difficult. <span class="math inline">\(R_t\)</span> is non-negative, but is clearly not able to grow exponentially: regardless of the value of the linear predictor <span class="math inline">\(\eta_t\)</span>, one expects <span class="math inline">\(R_t\)</span> to be bounded by some maximum value <span class="math inline">\(K\)</span>. In other words, <span class="math inline">\(R_t\)</span> has some <em>carrying capacity</em>. One of the simplest options for <span class="math inline">\(g\)</span> is the log-link. This satisfies non-negativity, and also allows for easily interpretable effect sizes; a one unit change in a predictor scales <span class="math inline">\(R_t\)</span> by a constant factor. Nonetheless, it does not respect the carry capacity <span class="math inline">\(K\)</span>, often placing too much prior mass on large values of <span class="math inline">\(R_t\)</span>. With this in mind, <strong>epidemia</strong> offers an alternative link function satisfying
+<a href="#sec:observations" class="anchor"></a><span class="header-section-number">1.2</span> Observations</h2>
+<hr>
+<p>As mentioned, <span class="math inline">\(Y_t\)</span> is usually a count of some event type occurring at
+time <span class="math inline">\(t\)</span>. These events are precipitated by past infections.
+Prototypical examples include daily cases or deaths. <span class="math inline">\(\alpha_t\)</span> is a
+multiplier, and when modeling count data, it typically is interpreted as
+an <em>ascertainment rate</em>, i.e. the proportion of events at time <span class="math inline">\(t\)</span>
+that are recorded in the data. For case or death data this would be the
+infection ascertainment rate (IAR) or the infection fatality rate (IFR)
+respectively.</p>
+<p>The multiplier <span class="math inline">\(\alpha\)</span> plays a similar role for observations as
+<span class="math inline">\(R\)</span> does for infections; tempering expected observations for
+time-specific considerations. As such, <strong>epidemia</strong> treats
+<span class="math inline">\(\alpha\)</span> in a similar manner to reproductions number, and allows the
+user to specify a regression model for it. Section
+<a href="#sec:transmission">1.4</a> discusses this in detail in the context of
+reproduction numbers, and this discussion is not repeated here. The model schematic](model-schematic.html) details the
+model for <span class="math inline">\(\alpha\)</span>, as well as for observational models in general.</p>
+<p>The sampling distribution <span class="math inline">\(p(y_t, \phi)\)</span> (Equation
+<a href="#eq:ysampling">(1.1)</a>) should generally be informed by parts of the data
+generating mechanism not captured by the mean <span class="math inline">\(y_t\)</span>: i.e. any
+mechanisms which may induce additional variation around <span class="math inline">\(y_t\)</span>. Options
+for <span class="math inline">\(p(y_t, \phi)\)</span> include the Poisson, quasi-Poisson and
+negative-binomial families. The Poisson family has no auxiliary
+parameter <span class="math inline">\(\phi\)</span>, while for the latter two families this represents a
+non-negative <em>dispersion parameter</em> which is assigned a prior.</p>
+<p><strong>epidemia</strong> allows simultaneous modeling of multiple observation
+vectors. In this case, we simply superscript <span class="math inline">\(Y_t^{(l)}\)</span>,
+<span class="math inline">\(\alpha_{t}^{(l)}\)</span> and <span class="math inline">\(\pi^{(l)}\)</span>, and assign independent
+sampling distributions for each type. Separate regression models are
+then specified for each multiplier <span class="math inline">\(\alpha_{t}^{(l)}\)</span>. Leveraging
+multiple observation types can often enhance a model. For example, high
+quality death data existed during the first wave of the Covid-19
+pandemic in Europe. Case data gradually increased in reliability over
+time, and has the advantage of picking up changes in transmission
+dynamics much quicker than death data.</p>
+</div>
+<div id="sec:infections" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:infections" class="anchor"></a><span class="header-section-number">1.3</span> Infections</h2>
+<hr>
+<p>Infections <span class="math inline">\(i_t\)</span> propagate over time through the discrete renewal
+equation <a href="#eq:renewal">(1.3)</a>. This is <em>self-exciting</em>: past infections
+give rise to new infections. The theoretical motivation for this lies in
+counting processes and is explained in more detail in <span class="citation">Bhatt et al. (<a href="#ref-Bhatt2020" role="doc-biblioref">2020</a>)</span>. The
+equation is connected to Hawkes processes and the Bellman Harris
+branching process <span class="citation">(Bellman and Harris <a href="#ref-bellman_1948" role="doc-biblioref">1948</a>, <a href="#ref-bellman_1952" role="doc-biblioref">1952</a>; Mishra et al. <a href="#ref-mishra2020" role="doc-biblioref">2020</a>)</span>. Such
+processes have been used in numerous previous studies <span class="citation">(Fraser <a href="#ref-fraser_2007" role="doc-biblioref">2007</a>; Cori et al. <a href="#ref-Cori2013" role="doc-biblioref">2013</a>; Nouvellet et al. <a href="#ref-nouvellet_2018" role="doc-biblioref">2018</a>; Cauchemez et al. <a href="#ref-cauchemez_2008" role="doc-biblioref">2008</a>)</span>, and are also connected
+to compartmental models such as the SEIR model <span class="citation">(Champredon, Dushoff, and Earn <a href="#ref-champredon_2018" role="doc-biblioref">2018</a>)</span>.</p>
+<p>Equation <a href="#eq:renewal">(1.3)</a> implies that infections <span class="math inline">\(i_t\)</span>, <span class="math inline">\(t &gt; 0\)</span>
+are deterministic given <span class="math inline">\(R\)</span> and seeded infections <span class="math inline">\(i_{v:0}\)</span>.
+<strong>epidemia</strong> sets a prior on <span class="math inline">\(i_{v:0}\)</span> by first assuming that
+daily seeds are constant over the seeding period. Formally, <span class="math inline">\(i_{k} = i\)</span> for each <span class="math inline">\(k \in \{v,\ldots 0\}\)</span>. The parameter <span class="math inline">\(i\)</span> can be assigned
+a range of prior distributions. One option is to model it hierarchically;
+for example as
+<span class="math display" id="eq:tau">\[\begin{align} 
+i &amp; \sim \text{Exp}(\tau^{-1}), \tag{1.4}\\\\
+\tau &amp; \sim \text{Exp}(\lambda_0) \tag{1.5},
+\end{align}\]</span>
+where <span class="math inline">\(\lambda_0 &gt; 0\)</span> is a rate hyperparameter. This
+prior is uninformative, and allows seeds to be largely determined by
+initial transmission rates and the chosen start date of the epidemic.</p>
+<p>Several extensions to the infection model are possible in
+<strong>epidemia</strong>, including extending <a href="#eq:renewal">(1.3)</a> to better
+capture dynamics such as super-spreading events, and also adjusting the
+process for the size of the remaining susceptible population. These
+extensions are discussed in Section <a href="#sec:latent">1.5.2</a> and
+<a href="#sec:popadjust">1.5.3</a> respectively. The basic infection model is shown in
+the model <a href="model-schematic.html">schematic</a>.</p>
+</div>
+<div id="sec:transmission" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:transmission" class="anchor"></a><span class="header-section-number">1.4</span> Transmission</h2>
+<hr>
+<p>Reproduction numbers are modeled flexibly. One can form a linear
+predictor consisting of fixed effects, random effects and
+autocorrelation terms, which is then transformed via a suitable link
+function. Formally
+<span class="math display">\[\begin{equation} 
+R = g^{-1}(\eta),
+\end{equation}\]</span>
+where <span class="math inline">\(g\)</span> is a link function and <span class="math inline">\(\eta\)</span> is a
+linear predictor. In full generality, <span class="math inline">\(\eta\)</span> can be expressed as
+<span class="math display" id="eq:linpred">\[\begin{equation} 
+\eta = \beta_0 + X \beta + Z b + Q \gamma, \tag{1.6}
+\end{equation}\]</span> where <span class="math inline">\(X\)</span> is an <span class="math inline">\(n \times p\)</span> model matrix, <span class="math inline">\(Z\)</span> is an <span class="math inline">\(n \times q\)</span> model matrix for the <span class="math inline">\(q\)</span>-vector of group-specific parameters <span class="math inline">\(b\)</span>. <span class="math inline">\(Q\)</span> is an <span class="math inline">\(n \times r\)</span> model matrix for the <span class="math inline">\(r\)</span>-vector of autocorrelation terms. The
+columns of <span class="math inline">\(X\)</span> are predictors explaining changes in transmission.
+These could, for example, be binary vectors encoding non-pharmaceutical
+interventions, as in <span class="citation">Flaxman et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. A number of families can be used for
+the prior on <span class="math inline">\(\beta\)</span>, including normal, cauchy, and hierarchical
+shrinkage families. The parameters <span class="math inline">\(b\)</span> are modeled hierarchically as
+<span class="math display">\[\begin{equation} 
+b \sim N(0, \Sigma), 
+\end{equation}\]</span>
+where <span class="math inline">\(\Sigma\)</span> is a covariance matrix that is itself assigned a prior. The
+particular form for <span class="math inline">\(\Sigma\)</span>, as well as its prior is discussed in
+more detail in this <a href="priors.html">article</a>. These partially-pooled
+parameters are particularly useful when multiple regions are being
+modeled simultaneously. In this case, they allow information on
+transmission rates to be shared between groups.</p>
+<p><span class="math inline">\(Q\)</span> is a binary matrix specifying which of the autocorrelation terms
+in <span class="math inline">\(\gamma\)</span> to include for each period <span class="math inline">\(t\)</span>. Currently,
+<strong>epidemia</strong> supports only random walk processes. However multiple
+such processes can be included, and can have increments that occur at a
+different time scale to <span class="math inline">\(R\)</span>; for example weekly increments can be
+used.</p>
+<div id="sec:links" class="section level3">
+<h3 class="hasAnchor">
+<a href="#sec:links" class="anchor"></a><span class="header-section-number">1.4.1</span> Link Functions</h3>
+<p>Choosing an appropriate link function <span class="math inline">\(g\)</span> is difficult. <span class="math inline">\(R_t\)</span> is
+non-negative, but is clearly not able to grow exponentially: regardless
+of the value of the linear predictor <span class="math inline">\(\eta_t\)</span>, one expects <span class="math inline">\(R_t\)</span> to
+be bounded by some maximum value <span class="math inline">\(K\)</span>. In other words, <span class="math inline">\(R_t\)</span> has some
+<em>carrying capacity</em>. One of the simplest options for <span class="math inline">\(g\)</span> is the
+log-link. This satisfies non-negativity, and also allows for easily
+interpretable effect sizes; a one unit change in a predictor scales
+<span class="math inline">\(R_t\)</span> by a constant factor. Nonetheless, it does not respect the carry
+capacity <span class="math inline">\(K\)</span>, often placing too much prior mass on large values of
+<span class="math inline">\(R_t\)</span>. With this in mind, <strong>epidemia</strong> offers an alternative link
+function satisfying
 <span class="math display" id="eq:scaledlogit">\[\begin{equation}
-    g^{-1}(x) = \frac{K}{1 + e^{-x}} \tag{4.2}.
-\end{equation}\]</span>
-This is a generalization of the logit-link, and we refer to it as the <em>scaled-logit</em>.
-That is to say we expect <span class="math inline">\(R\)</span> to have some <em>carry capacity</em>. These considerations should inform the choice of link function.</p>
+g^{-1}(x) = \frac{K}{1 + e^{-x}} \tag{1.7}. 
+\end{equation}\]</span> This is a
+generalization of the logit-link, and we refer to it as the
+<em>scaled-logit</em>.</p>
 </div>
 </div>
-<div id="extensions" class="section level1">
-<h1 class="hasAnchor">
-<a href="#extensions" class="anchor"></a><span class="header-section-number">5</span> Extensions</h1>
+<div id="sec:extensions" class="section level2">
+<h2 class="hasAnchor">
+<a href="#sec:extensions" class="anchor"></a><span class="header-section-number">1.5</span> Extensions</h2>
 <hr>
-<div id="joint-modeling-of-multiple-regions" class="section level2">
-<h2 class="hasAnchor">
-<a href="#joint-modeling-of-multiple-regions" class="anchor"></a><span class="header-section-number">5.1</span> Joint modeling of Multiple Regions</h2>
-<p>Consider modeling the evolution of an epidemic across multiple regions/groups.
-Of course, one can always specify separate models for each group.
-This approach is quick as each model can be fit in parallel.
+<p>Various extensions to the basic model just presented are possible,
+including multilevel modeling, adding variation to the infection
+process, and explicitly accounting for population effects. These are
+discussed in turn.</p>
+<div id="sec:mult" class="section level3">
+<h3 class="hasAnchor">
+<a href="#sec:mult" class="anchor"></a><span class="header-section-number">1.5.1</span> Joint Modeling of Multiple Populations</h3>
+<p>Consider modeling the evolution of an epidemic across multiple regions
+or populations. Of course, separate models can be specified for each
+group. This approach is fast as each model can be fit in parallel.
 Nonetheless, often there is little high quality data for some groups,
-particularly in the early stages of an epidemic.
-A joint model can benefit from improved parameter estimation by
-<em>sharing signal across groups</em>. This can be done by partially or fully
-pooling parameters describing <span class="math inline">\(R\)</span> and/or <span class="math inline">\(\alpha\)</span>.</p>
-<p>We give an example for concreteness.
-Suppose the task is to infer the effect of a series of <span class="math inline">\(p\)</span> non-pharmaceutical interventions (NPIs) on transmission rates.
-Using the framework of Section <a href="#sec:transmission">4</a> and letting <span class="math inline">\(R^{(m)}\)</span> be the vector of
-reproduction numbers for the <span class="math inline">\(m\)</span> group, one could write
+particularly in the early stages of an epidemic. A joint model can
+benefit from improved parameter estimation by <em>sharing signal across
+groups</em>. This can be done by partially or fully pooling effects
+underlying reproduction numbers <span class="math inline">\(R\)</span>.</p>
+<p>We give an example for concreteness. Suppose the task is to infer the
+effect of a series of <span class="math inline">\(p\)</span> control measures on transmission rates.
+Letting <span class="math inline">\(R^{(m)}\)</span> be the vector of reproduction numbers for the
+<span class="math inline">\(m\)</span> group, one could write
 <span class="math display">\[\begin{equation}
-    R^{(m)} = g^{-1}\left( \beta_0 + b_0^{(m)} + X^{(m)} (\beta + b^{(m)}) \right),
+R^{(m)} = g^{-1}\left( \beta_0 + b_0^{(m)} + X^{(m)}
+(\beta + b^{(m)}) \right), 
 \end{equation}\]</span>
-where <span class="math inline">\(X^{(m)}\)</span> is an <span class="math inline">\(n \times p\)</span> matrix whose rows are binary vectors indicating which of the <span class="math inline">\(p\)</span> NPIs have been
-implemented in the <span class="math inline">\(m\)</span> group at that point in time. The parameters <span class="math inline">\(b_{0}^{(m)}\)</span> give each region its own <span class="math inline">\(R_0\)</span>,
-while <span class="math inline">\(b^{(m)}\)</span> allow for region-specific NPI effects.
-These parameters can be partially pooled by letting
-<span class="math display">\[\begin{equation}
-    (b_0^{(m)}, b^{(m)}) \sim N(0, \tilde{\Sigma}),
+where <span class="math inline">\(X^{(m)}\)</span>
+is an <span class="math inline">\(n \times p\)</span> matrix whose rows are binary vectors indicating
+which of the <span class="math inline">\(p\)</span> measures have been implemented in the
+<span class="math inline">\(m\)</span> group at that point in time. The parameters
+<span class="math inline">\(b_{0}^{(m)}\)</span> allow each region to have its own initial reproduction
+number <span class="math inline">\(R_0\)</span>, while <span class="math inline">\(b^{(m)}\)</span> allow for region-specific policy
+effects. These parameters can be partially pooled by letting
+<span class="math display">\[\begin{equation} 
+(b_0^{(m)}, b^{(m)}) \sim N(0,\tilde{\Sigma}),
 \end{equation}\]</span>
-for each <span class="math inline">\(m\)</span>, and assigning a hyperprior to the covariance matrix <span class="math inline">\(\tilde{\Sigma}\)</span>.</p>
-<p>In <strong>epidemia</strong>, seeded infections within each group are modeled hierarchically, with Equations <a href="#eq:seeds">(3.1)</a> and <a href="#eq:tau">(3.2)</a> being replaced by
+for each <span class="math inline">\(m\)</span>, and assigning a
+hyperprior to the covariance matrix <span class="math inline">\(\tilde{\Sigma}\)</span>.</p>
+<p>In addition to hierarchical modeling of parameters making up <span class="math inline">\(R\)</span>,
+seeded infections can also be modeled hierarchically. Equations
+<a href="#eq:seeds">(1.4)</a> and <a href="#eq:tau">(1.5)</a> are replaced with
 <span class="math display">\[\begin{align}
-    i^{(m)} &amp;\sim \text{Exp}(\tau^{-1}), \\\\
-    \tau &amp; \sim \text{Exp}(\lambda_0),
+i^{(m)} &amp;\sim \text{Exp}(\tau^{-1}), \\\\
+\tau &amp; \sim \text{Exp}(\lambda_0),
 \end{align}\]</span>
-where <span class="math inline">\(i^{(m)}\)</span> is the daily seeding for the <span class="math inline">\(m\)</span> group.</p>
+where
+<span class="math inline">\(i^{(m)}\)</span> is the daily seeded infections for the
+<span class="math inline">\(m\)</span> group.</p>
 </div>
-<div id="sec:latent" class="section level2">
-<h2 class="hasAnchor">
-<a href="#sec:latent" class="anchor"></a><span class="header-section-number">5.2</span> Infections as Parameters</h2>
-<p>Recall the renewal equation (Equation <a href="#eq:renewal">(1.3)</a>) which describes how infections propagate in the basic model.
-<span class="math inline">\(i_t\)</span> for <span class="math inline">\(t &gt; 0\)</span> are a deterministic function of seeds <span class="math inline">\(i_{v:0}\)</span> and reproduction numbers <span class="math inline">\(R\)</span>.
-This model does not adequately capture important epidemiological dynamics including, for example,
-the effects of super-spreading events.
-Although the <em>expected</em> number of offspring of any given infection is driven
-by <span class="math inline">\(R\)</span>, in practice the actual number of offspring can exhibit considerable variation around this.
-To capture this randomness, replace Equation <a href="#eq:renewal">(1.3)</a> with
-<span class="math display" id="eq:infextended">\[\begin{align}
-    i_t &amp;\sim p(i_t', d), \tag{5.1}\\\\
-    i_{t}' &amp;= R_t \sum_{s &lt; t} i_s g_{t-s}.
+<div id="sec:latent" class="section level3">
+<h3 class="hasAnchor">
+<a href="#sec:latent" class="anchor"></a><span class="header-section-number">1.5.2</span> Infections as Parameters</h3>
+<p>Recall the renewal equation (Equation <a href="#eq:renewal">(1.3)</a>) which
+describes how infections propagate in the basic model. Infections
+<span class="math inline">\(i_t\)</span> for <span class="math inline">\(t &gt; 0\)</span> are a deterministic function of seeds
+<span class="math inline">\(i_{v:0}\)</span> and reproduction numbers <span class="math inline">\(R\)</span>. If infections counts are
+large, then this process may be realistic enough. However, when
+infection counts are low, there could variation in day-to-day infections
+caused by a heavy tailed offspring distribution and super-spreader
+events. This may cause actual infections to deviate from those implied
+by the renewal equation. Although the <em>expected</em> number of offspring
+of any given infection is driven by <span class="math inline">\(R\)</span>, in practice the actual number
+of offspring can exhibit considerable variation around this. To capture
+this randomness, replace Equation <a href="#eq:renewal">(1.3)</a> with
+<span class="math display" id="eq:infextended">\[\begin{align} 
+i_t &amp;\sim p(i_t', d), \tag{1.8} \\\\
+i_{t}' &amp;= R_t \sum_{s &lt; t} i_s g_{t-s}.
 \end{align}\]</span>
-This treats <span class="math inline">\(i_t\)</span> as latent parameters which must be sampled. Instead, the  is described by
-the renewal equation. <span class="math inline">\(p(i_t', d)\)</span> is parameterised by the mean and the coefficient of variation <span class="math inline">\(d\)</span>, which
-is assigned a prior. This extension can be motivated formally through counting processes. Please see <span class="citation">Bhatt et al. (<a href="#ref-bhatt2020" role="doc-biblioref">2020</a>)</span>
-for more details.</p>
+This treats <span class="math inline">\(i_t\)</span> as latent
+parameters which must be sampled. Instead, the  is
+described by the renewal equation. <span class="math inline">\(p(i_t', d)\)</span> is parameterised by
+the mean and the coefficient of dispersion <span class="math inline">\(d\)</span>, which is assigned a
+prior. This extension can be motivated formally through counting
+processes. Please see <span class="citation">Bhatt et al. (<a href="#ref-Bhatt2020" role="doc-biblioref">2020</a>)</span> for more details.</p>
 </div>
-<div id="sec:popadjust" class="section level2">
-<h2 class="hasAnchor">
-<a href="#sec:popadjust" class="anchor"></a><span class="header-section-number">5.3</span> Population Adjustments</h2>
-<p>Nothing in Equation <a href="#eq:renewal">(1.3)</a> stops cumulative infections from exceeding the total susceptible population
-<span class="math inline">\(S_0\)</span> in the region being considered. In particular, if <span class="math inline">\(R_t\)</span> is above 1 infections can grow exponentially over time.
-This does not always present a problem for modeling. Indeed the posterior distribution usually constrains
-past infections to reasonable values. Nonetheless, forecasting in the basic model will be unrealistic if
-projected infections grow too large. As the susceptible population diminishes, the transmission rate is also
-expected to reduce.</p>
-<p><strong>epidemia</strong> can apply a transformation to infections to ensure cumulative infections remain bounded by <span class="math inline">\(S_0\)</span>, and
-that transmission rates are adjusted for changes in the susceptible population. We define the susceptible population <span class="math inline">\(S_t\)</span>
-at time <span class="math inline">\(t\)</span> as the number of individuals who are susceptible at time <span class="math inline">\(0\)</span> and have not been removed by vaccination. Note
-that this excludes those who may have been previously infected by time <span class="math inline">\(t\)</span>.</p>
-<p>Let <span class="math inline">\(i'_t\)</span> denote the unadjusted infections from the model: this is given by <a href="#eq:renewal">(1.3)</a> in the basic model
-or by <a href="#eq:infextended">(5.1)</a> if the extension of Section <a href="#sec:latent">5.2</a> is applied. Then we let
-<span class="math display">\[\begin{equation}
-    i_t = (S_0 - I_{t-1}) \left(1 - \exp \left(-\frac{S_t}{S_0}\frac{i'_t}{S_0}\right)\right),
+<div id="sec:popadjust" class="section level3">
+<h3 class="hasAnchor">
+<a href="#sec:popadjust" class="anchor"></a><span class="header-section-number">1.5.3</span> Depletion of the Susceptible Population</h3>
+<p>Nothing in Equation <a href="#eq:renewal">(1.3)</a> prevents cumulative infections
+from exceeding the total population size <span class="math inline">\(P\)</span>. In particular if <span class="math inline">\(R_t &gt; 1\)</span> then infections can grow exponentially over time. This does not
+always present a problem for modeling. Indeed the posterior distribution
+usually constrains past infections to reasonable values. Nonetheless,
+forecasting in the basic model will be unrealistic if projected
+infections grow too large. As the susceptible population diminishes, the
+transmission rate is expected to fall.</p>
+<p><strong>epidemia</strong> can apply a simple transformation to ensure that
+cumulative infections remain bounded by <span class="math inline">\(P\)</span>, and that transmission
+rates are adjusted for changes in the susceptible population. Let
+<span class="math inline">\(S_t \in [0,P]\)</span> be the number of susceptible individuals in the
+population at time <span class="math inline">\(t\)</span>. Just like infections, this is treated as a
+continuous quantity. <span class="math inline">\(S_t\)</span> consists of those who have not been
+infected by time <span class="math inline">\(t\)</span>, and have not been removed from the susceptible
+class by other means; i.e. vaccination.</p>
+<p>Let <span class="math inline">\(i'_t\)</span> denote  from the model.
+This is given by <a href="#eq:renewal">(1.3)</a> in the basic model or by
+<a href="#eq:infextended">(1.8)</a> if the extension of Section <a href="#sec:latent">1.5.2</a> is
+applied. These are interpreted as the number of infections if the entire population were susceptible. These are adjusted with</p>
+<p><span class="math display" id="eq:pop-adjust">\[\begin{equation}
+i_t = S_{t-1}\left( 1 - \exp\left(-\frac{i'_t}{P}\right)\right). 
+\tag{1.9}
+\end{equation}\]</span></p>
+<p>The motivation for this is provided in <span class="citation">Bhatt et al. (<a href="#ref-Bhatt2020" role="doc-biblioref">2020</a>)</span>. Equation <a href="#eq:pop-adjust">(1.9)</a> satisfies intuitive properties: if <span class="math inline">\(i'_t = 0\)</span> then <span class="math inline">\(i_t = 0\)</span>, and as <span class="math inline">\(i'_t \to \infty\)</span> we have that <span class="math inline">\(i_t \to S_{t-1}\)</span>. All infections at
+time <span class="math inline">\(t\)</span> are then removed from the susceptible population, so that
+<span class="math display" id="eq:st-rec">\[\begin{equation}
+S_t = S_{t-1} - i_t
+\tag{1.10}
 \end{equation}\]</span>
-where <span class="math inline">\(I_t = \sum_{s&lt; t} i_s\)</span> are cumulative infections by <span class="math inline">\(t-1\)</span>. The motivation for this adjustment is
-provided in <span class="citation">Bhatt et al. (<a href="#ref-bhatt2020" role="doc-biblioref">2020</a>)</span>.</p>
+We are left to define <span class="math inline">\(S_{v-1}\)</span>, the susceptible population the day
+before modeling begins. If this is the start of an epidemic,
+it is natural to take <span class="math inline">\(S_{v-1} = P\)</span>. Nonetheless, it is often of
+interest to begin modeling later, when a degree of immunity already
+exists exists within the population. In this case, <strong>epidemia</strong> allows
+the user to assign a prior distribution to <span class="math inline">\(S_{v-1} / P\)</span>. This must lie
+between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>.</p>
+<div id="accounting-for-vaccinations" class="section level4">
+<h4 class="hasAnchor">
+<a href="#accounting-for-vaccinations" class="anchor"></a><span class="header-section-number">1.5.3.1</span> Accounting for Vaccinations</h4>
+<p>Previous infection is one avenue through which individuals are removed
+from the susceptible population. Immunity can also be incurred through
+vaccination. <strong>epidemia</strong> provides a basic way to incorporate such
+effects.</p>
+<p>Let <span class="math inline">\(v_t\)</span> be the proportion of the susceptible population at time <span class="math inline">\(t\)</span>
+who are removed through some means other than infection. These are
+individuals who have never been infected but may have been previously
+vaccinated, and their immunity is assumed to have developed at
+time <span class="math inline">\(t\)</span>.</p>
+<p><strong>epidemia</strong> requires <span class="math inline">\(v_t\)</span> to be supplied by the user. Then
+<a href="#eq:st-rec">(1.10)</a> is replaced with
+<span class="math display">\[\begin{equation}
+S_t = \left(S_{t-1} - i_t\right) \left(1 - v_t \right). 
+\end{equation}\]</span>
+Of course, <span class="math inline">\(v_t\)</span> is a difficult quantity to estimate. It requires the user
+to estimate the time-lag for a jab to become effective, and to also
+adjust for potentially different efficacies of jabs and doses.
+Recognizing this, we allow the update
+<span class="math display">\[\begin{equation} 
+S_t = \left(S_{t-1} - i_t\right) \left(1 - v_t \xi \right),
+\end{equation}\]</span>
+where <span class="math inline">\(\xi\)</span> is a noise term that is assigned a prior
+distribution. <span class="math inline">\(\xi\)</span> helps to account for potentially systematic biases
+in calculating vaccine efficacy.</p>
+</div>
+</div>
 </div>
 </div>
 <div id="references" class="section level1">
 <h1 class="hasAnchor">
-<a href="#references" class="anchor"></a><span class="header-section-number">6</span> References</h1>
+<a href="#references" class="anchor"></a><span class="header-section-number">2</span> References</h1>
 </div>
 <div id="refs" class="references">
-<div id="ref-bellman1948">
+<div id="ref-bellman_1948">
 <p>Bellman, R., and T. E. Harris. 1948. “On the Theory of Age-Dependent Stochastic Branching Processes.” <em>Proceedings of the National Academy of Sciences</em>. <a href="https://doi.org/10.1073/pnas.34.12.601">https://doi.org/10.1073/pnas.34.12.601</a>.</p>
 </div>
-<div id="ref-bellman1952">
+<div id="ref-bellman_1952">
 <p>Bellman, Richard, and Theodore Harris. 1952. “On Age-Dependent Binary Branching Processes.” <em>The Annals of Mathematics</em>. <a href="https://doi.org/10.2307/1969779">https://doi.org/10.2307/1969779</a>.</p>
 </div>
-<div id="ref-bhatt2020">
-<p>Bhatt, Samir, Neil Ferguson, Seth Flaxman, Axel Gandy, Swapnil Mishra, and James A Scott. 2020. “Semi-Mechanistic Bayesian Modeling of Covid-19 with Renewal Processes.” <em>arXiv Preprint arXiv:2012.00394</em>. <a href="https://arxiv.org/abs/2012.00394">https://arxiv.org/abs/2012.00394</a>.</p>
+<div id="ref-Bhatt2020">
+<p>Bhatt, Samir, Neil Ferguson, Seth Flaxman, Axel Gandy, Swapnil Mishra, and James A Scott. 2020. “Semi-Mechanistic Bayesian Modeling of COVID-19 with Renewal Processes.” <em>arXiv Preprint arXiv:2012.00394</em>. <a href="https://arxiv.org/abs/2012.00394">https://arxiv.org/abs/2012.00394</a>.</p>
 </div>
 <div id="ref-cauchemez_2008">
 <p>Cauchemez, Simon, Alain Jacques Valleron, Pierre Yves Boëlle, Antoine Flahault, and Neil M. Ferguson. 2008. “Estimating the impact of school closure on influenza transmission from Sentinel data.” <em>Nature</em>. <a href="https://doi.org/10.1038/nature06732">https://doi.org/10.1038/nature06732</a>.</p>
@@ -356,8 +511,11 @@ provided in <span class="citation">Bhatt et al. (<a href="#ref-bhatt2020" role="
 <div id="ref-fraser_2007">
 <p>Fraser, Christophe. 2007. “Estimating individual and household reproduction numbers in an emerging epidemic.” <em>PLoS ONE</em>. <a href="https://doi.org/10.1371/journal.pone.0000758">https://doi.org/10.1371/journal.pone.0000758</a>.</p>
 </div>
+<div id="ref-hoffman_2014">
+<p>Hoffman, Matthew D., and Andrew Gelman. 2014. “The no-U-turn sampler: Adaptively setting path lengths in Hamiltonian Monte Carlo.” <em>Journal of Machine Learning Research</em> 15.</p>
+</div>
 <div id="ref-mishra2020">
-<p>Mishra, Swapnil, Tresnia Berah, Thomas A Mellan, H Juliette T Unwin, Michaela A Vollmer, Kris V Parag, Axel Gandy, Seth Flaxman, and Samir Bhatt. 2020. “On the Derivation of the Renewal Equation from an Age-Dependent Branching Process: An Epidemic Modeling Perspective.” <em>arXiv Preprint arXiv:2006.16487</em>.</p>
+<p>Mishra, Swapnil, Tresnia Berah, Thomas A Mellan, H Juliette T Unwin, Michaela A Vollmer, Kris V Parag, Axel Gandy, Seth Flaxman, and Samir Bhatt. 2020. “On the derivation of the renewal equation from an age-dependent branching process: an epidemic modelling perspective.” <em>arXiv Preprint arXiv:2006.16487</em>.</p>
 </div>
 <div id="ref-nouvellet_2018">
 <p>Nouvellet, Pierre, Anne Cori, Tini Garske, Isobel M. Blake, Ilaria Dorigatti, Wes Hinsley, Thibaut Jombart, et al. 2018. “A simple approach to measure transmissibility and forecast incidence.” <em>Epidemics</em>. <a href="https://doi.org/10.1016/j.epidem.2017.02.012">https://doi.org/10.1016/j.epidem.2017.02.012</a>.</p>

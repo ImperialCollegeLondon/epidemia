@@ -110,10 +110,16 @@ whether the observation is new (not used in fitting)." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -135,6 +141,9 @@ whether the observation is new (not used in fitting)." />
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -184,8 +193,7 @@ whether the observation is new (not used in fitting).</p>
   <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>95</span>),
   <span class='kw'>period</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>by_group</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>by_unseen</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>plotly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+  <span class='kw'>by_unseen</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -230,17 +238,11 @@ if specified.</p></td>
       <td><p>Plot coverage separately for seen and unseen observations.
 Observations are 'seen' if they were used for fitting.</p></td>
     </tr>
-    <tr>
-      <th>plotly</th>
-      <td><p>If <code>TRUE</code>, wraps the <code>ggplot</code> object into a <code>plotly</code> object. This is
-useful for interactive graphing.</p></td>
-    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If <code>plotly = FALSE</code> then a <code>ggplot</code> object. Otherwise a
-<code>plotly</code> object.</p>
+    <p>A <code>ggplot</code> object.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

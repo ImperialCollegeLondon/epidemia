@@ -62,10 +62,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -87,6 +93,9 @@
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -137,37 +146,41 @@
 
 
 
-
-<div id="effects-of-interventions-on-covid-19" class="section level1">
+<div id="sec:multilevel" class="section level1">
 <h1 class="hasAnchor">
-<a href="#effects-of-interventions-on-covid-19" class="anchor"></a><span class="header-section-number">1</span> Effects of Interventions on Covid-19</h1>
+<a href="#sec:multilevel" class="anchor"></a><span class="header-section-number">1</span> Assessing the Effects of Interventions on COVID-19</h1>
 <hr>
-<p>The Spanish flu <a href="flu.html">example</a> considered inferring the instantaneous
-reproduction number over time in a single population. Here, we demonstrate some
-of the more advanced modeling capabilities of the package. We strongly recommend
-reviewing the H1N1 <a href="flu.html">vignette</a> before continuing with this article.</p>
-<p>Consider modeling the evolution of an epidemic in multiple regions. Of course,
-one can always specify separate models for each group. This approach is fast;
-each model can be fit independently in parallel. Nonetheless, often there is
-little high quality data for some groups, and the data does little to inform
-parameter estimates. This is particularly true in the early stages of an
-epidemic. Joining regions together using multilevel models can allows
-information to be shared between regions in a natural way, improving parameter
-estimates while still permitting between group variation.</p>
-<p>In this article, we use a multilevel model to estimate the effect of non
-pharmaceutical interventions (NPIs) on the transmissibility of Covid-19.
-We consider the same setup as <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>: attempting to estimate the effect of
-NPIs that were implemented in March 2020 in 11 European countries using daily death data, during the
-first wave of Covid-19. The same set of NPIs and countries are used here. <span class="citation">Flaxman, Mishra, Scott, et al. (<a href="#ref-Flaxman2020MA" role="doc-biblioref">2020</a>)</span>
-considered a version of this model that used partial pooling for all NPI effects.
-Here, we consider a model that uses the same approach.</p>
-<p>This example is not intended to be a fully rigorous statistical analysis.
-Rather, the intention is to demonstrate partial pooling of parameters in
-<strong>epidemia</strong> and how to infer their effect sizes. We also shows how
-to forecast observations into the future, and how to undertake counterfactual
-analyses.</p>
+<p>The Spanish flu <a href="flu.html">example</a> considered inferring the
+instantaneous reproduction number over time in a single population.
+Here, we demonstrate some of the more advanced modeling capabilities of
+the package.</p>
+<p>Consider modeling the evolution of an epidemic in multiple distinct
+regions. As discussed in the model <a href="model-description.html">description</a>, one can always approach
+this by modeling each group separately. It was argued that this approach
+is fast, because models may be fit independently. Nonetheless, often
+there is little high quality data for some groups, and the data does
+little to inform parameter estimates. This is particularly true in the
+early stages of an epidemic. Joining regions together through
+hierarchical models allows information to be shared between regions in a
+natural way, improving parameter estimates while still permitting
+between group variation.</p>
+<p>In this section, we use a hierarchical model to estimate the effect of
+non-pharmaceutical interventions (NPIs) on the transmissibility of
+Covid-19. We consider the same setup as <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>: attempting to
+estimate the effect of a set of measures that were implemented in March
+2020 in 11 European countries during the first wave of Covid-19. This
+will be done by fitting the model to daily death data. The same set of
+measures and countries that were used in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span> are also used
+here. <span class="citation">Flaxman, Mishra, Scott, et al. (<a href="#ref-Flaxman2020MA" role="doc-biblioref">2020</a>)</span> considered a version of this model that used
+partial pooling for all NPI effects. Here, we consider a model that uses
+the same approach.</p>
+<p>This example is not intended to be a fully rigorous statistical
+analysis. Rather, the intention is to demonstrate partial pooling of
+parameters in <strong>epidemia</strong> and how to infer their effect sizes. We
+also show how to forecast observations into the future, and how to
+undertake counterfactual analyses.</p>
 <p>Begin by loading required packages. <strong>dplyr</strong> will be used to manipulate
-the dataset, while <strong>rstanarm</strong> is used to define prior distributions.</p>
+the data set, while <strong>rstanarm</strong> is used to define prior distributions.</p>
 <div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">dplyr</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">epidemia</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">rstanarm</span>)</pre></body></html></div>
@@ -175,19 +188,23 @@ the dataset, while <strong>rstanarm</strong> is used to define prior distributio
 <h2 class="hasAnchor">
 <a href="#data" class="anchor"></a><span class="header-section-number">1.1</span> Data</h2>
 <hr>
-<p>We use a dataset <code>EuropeCovid2</code>, which is provided by <strong>epidemia</strong>. This contains
-daily death and case data in the 11 countries concerned up until the 1<sup>st</sup> July
-2020. The data derives from the WHO COVID-19 explorer as of the 5<sup>th</sup> of January
-2021. This differs from the data used in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, because case and death counts
-have been adjusted retrospectively as new information came to light. <strong>epidemia</strong>
-also has a dataset <code>EuropeCovid</code> which contains the same data as that in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>,
-and this could alternatively be used for this exercise.</p>
-<p><code>EuropeCovid2</code> also contains binary variables representing the set of five NPIs considered
-in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. These correspond to the closing of schools and universities, the
-banning of public events, encouraging social distancing, requiring self isolation
-if ill, and finally the implementation of full lockdown. The dates at which these
-policies were enacted are exactly the same as those used in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>.</p>
-<p>Load the dataset as follows.</p>
+<p>We use a data set <code>EuropeCovid2</code>, which is provided by
+<strong>epidemia</strong>. This contains daily death and case data in the 11
+countries concerned up until the 1<sup>st</sup> July 2020. The data derives from
+the WHO COVID-19 explorer as of the 5<sup>th</sup> of January 2021. This differs
+from the data used in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, because case and death counts have
+been adjusted retrospectively as new information came to light.
+<strong>epidemia</strong> also has a data set <code>EuropeCovid</code> which contains the
+same data as that in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, and this could alternatively be used
+for this exercise.</p>
+<p><code>EuropeCovid2</code> also contains binary series representing the set of
+five mitigation measures considered in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. These correspond to
+the closing of schools and universities, the banning of public events,
+encouraging social distancing, requiring self isolation if ill, and
+finally the implementation of full lockdown. The dates at which these
+policies were enacted are exactly the same as those used in
+<span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>.</p>
+<p>Load the data set as follows.</p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"EuropeCovid2"</span>)
 <span class="no">data</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid2</span>$<span class="no">data</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">data</span>)</pre></body></html></div>
@@ -203,338 +220,354 @@ policies were enacted are exactly the same as those used in <span class="citatio
 ## 6 AT    Austria 2020-01-08     0      0                    0                   0
 ## # … with 4 more variables: public_events &lt;int&gt;, lockdown &lt;int&gt;,
 ## #   social_distancing_encouraged &lt;int&gt;, pop &lt;int&gt;</code></pre>
-<p>Recall that for each region, <strong>epidemia</strong> will use the earliest date in <code>data</code>
-as the first date to begin seeding infections. Therefore, we must choose an
-appropriate start date for each group. One option is to use the same rule as in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>,
-and assume that seeding begins in each country 30 days prior to
-observing 10 cumulative deaths. To do this, we filter the dataframe as follows.</p>
+<p>Recall that for each country, <strong>epidemia</strong> will use the earliest date
+in <code>data</code> as the first date to begin seeding infections. Therefore,
+we must choose an appropriate start date for each group. One option is
+to use the same rule as in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, and assume that seeding begins
+in each country 30 days prior to observing 10 cumulative deaths. To do
+this, we filter the data frame as follows.</p>
 <div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">data</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(<span class="no">data</span>, <span class="no">date</span> <span class="kw">&gt;</span> <span class="no">date</span>[<span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span>(<span class="no">deaths</span>) <span class="kw">&gt;</span> <span class="fl">10</span>)[<span class="fl">1</span>] - <span class="fl">30</span>])</pre></body></html></div>
 <p>This leaves the following assumed start dates.</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span>(<span class="no">data</span>, <span class="kw">start</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span>(<span class="no">date</span>), <span class="kw">end</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">date</span>))</pre></body></html></div>
-<pre><code>## # A tibble: 11 x 3
-##    country        start      end       
-##    &lt;chr&gt;          &lt;date&gt;     &lt;date&gt;    
-##  1 Austria        2020-02-23 2020-06-30
-##  2 Belgium        2020-02-15 2020-06-30
-##  3 Denmark        2020-02-22 2020-06-30
-##  4 France         2020-02-09 2020-06-30
-##  5 Germany        2020-02-16 2020-06-30
-##  6 Italy          2020-01-28 2020-06-30
-##  7 Norway         2020-02-26 2020-06-30
-##  8 Spain          2020-02-09 2020-06-30
-##  9 Sweden         2020-02-20 2020-06-30
-## 10 Switzerland    2020-02-12 2020-06-30
-## 11 United_Kingdom 2020-02-15 2020-06-30</code></pre>
-<p>Although <code>data</code> contains observations up until the end of June, we use only
-a subset of the data, so that we can hold out the rest to demonstrate forecasting.
-Following <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, we use data up until the 5<sup>th</sup> May.</p>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">dates</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span>(<span class="no">data</span>, <span class="kw">start</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span>(<span class="no">date</span>), <span class="kw">end</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">date</span>))
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">dates</span>)</pre></body></html></div>
+<pre><code>## # A tibble: 6 x 3
+##   country start      end       
+##   &lt;chr&gt;   &lt;date&gt;     &lt;date&gt;    
+## 1 Austria 2020-02-23 2020-06-30
+## 2 Belgium 2020-02-15 2020-06-30
+## 3 Denmark 2020-02-22 2020-06-30
+## 4 France  2020-02-09 2020-06-30
+## 5 Germany 2020-02-16 2020-06-30
+## 6 Italy   2020-01-28 2020-06-30</code></pre>
+<p>Although <code>data</code> contains observations up until the end of June, we
+fit the model using a subset of the data. We hold out the rest to
+demonstrate forecasting out-of-sample. Following <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, the final
+date considered is the 5<sup>th</sup> May.</p>
 <div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">data</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(<span class="no">data</span>, <span class="no">date</span> <span class="kw">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span>(<span class="st">"2020-05-05"</span>))</pre></body></html></div>
-</div>
-<div id="model-components" class="section level2">
-<h2 class="hasAnchor">
-<a href="#model-components" class="anchor"></a><span class="header-section-number">1.2</span> Model Components</h2>
-<hr>
-<p>Recall that <strong>epidemia</strong> requires the user to specify three model components -
-transmission, infections, and observations. These are considered in turn.</p>
-<div id="transmission" class="section level3">
+<div id="model-components" class="section level3">
 <h3 class="hasAnchor">
-<a href="#transmission" class="anchor"></a><span class="header-section-number">1.2.1</span> Transmission</h3>
-<p>We parametrise reproduction numbers <span class="math inline">\(R^{(m)}_{t}\)</span> in terms of the NPI
-covariates. This will imply that <span class="math inline">\(R^{(m)}_{t}\)</span> is a step function - possibly
-increasing or decreasing as policies come into play.</p>
-<p>Let <span class="math inline">\(I^{(m)}_{1}, \ldots, I^{(m)}_{5}\)</span> be a set of binary vectors such
-that <span class="math inline">\(I^{(m)}_{i,t} = 1\)</span> if the <span class="math inline">\(i\)</span><sup>th</sup> NPI has been implemented in the <span class="math inline">\(m\)</span><sup>th</sup>
-country by time <span class="math inline">\(t\)</span>, and be <span class="math inline">\(0\)</span> otherwise. We parameterise reproduction numbers
-as
+<a href="#model-components" class="anchor"></a><span class="header-section-number">1.1.1</span> Model Components</h3>
+<p>We have seen several times now that <strong>epidemia</strong> require the user to
+specify three model components: transmission, infections, and
+observations. These are now considered in turn.</p>
+<div id="sec:europe-covid_transmission" class="section level4">
+<h4 class="hasAnchor">
+<a href="#sec:europe-covid_transmission" class="anchor"></a><span class="header-section-number">1.1.1.1</span> Transmission</h4>
+<p>Country-specific reproduction numbers <span class="math inline">\(R^{(m)}_{t}\)</span> are expressed in
+terms of the control measures. Since the measures are encoded as binary
+policy indicators, reproduction rates must follow a step function. They
+are constant between policies, and either increase or decrease as
+policies come into play. The implicit assumption, of course, is that
+only control measures may affect transmission, and that these effects
+are fully realized instantaneously.</p>
+<p>Let <span class="math inline">\(t^{(m)}_{k} \geq 0\)</span>, <span class="math inline">\(k \in \{1,\ldots,5\}\)</span> be the set of integer
+times at which the <span class="math inline">\(k\)</span><sup>th</sup> control measure was enacted in the <span class="math inline">\(m\)</span><sup>th</sup>
+country. Accordingly, we let <span class="math inline">\(I^{(m)}_{k}\)</span>, <span class="math inline">\(k \in \{1,\ldots,5\}\)</span> be a
+set of corresponding binary vectors such that <span class="math display">\[\begin{equation}
+I^{(m)}_{k,t} = 
+\begin{cases}
+0, &amp; \text{if } t &lt; t^{(m)}_k \\
+1. &amp; \text{if } t \geq t^{(m)}_k
+\end{cases}
+\end{equation}\]</span> Reproduction numbers are mathematically expressed as
 <span class="math display">\[\begin{equation}
-R^{(m)}_{t} = R' g^{-1}\left(b^{(m)}_0 + \sum_{i=1}^{5}\left(\beta_i + b^{(m)}_i\right)I^{(m)}_{i,t}\right),
-\end{equation}\]</span>
-where <span class="math inline">\(R' = 3.25\)</span> and <span class="math inline">\(g\)</span> is the logit-link. Parameters <span class="math inline">\(b^{(m)}_0\)</span> are country intercepts, and
-each <span class="math inline">\(b^{(m)}_i\)</span> is a country effects for the <span class="math inline">\(i\)</span><sup>th</sup> NPI. The intercepts allow
-countries to have differing <span class="math inline">\(R_0\)</span>’s, and models variations in the inherent
-transmissibility of Covid-19 in each population.
-<span class="math inline">\(\beta_i\)</span> is a fixed effect for the <span class="math inline">\(i\)</span><sup>th</sup> NPI. This
-models the average effect of an NPI across all countries considered.</p>
-<p>The NPIs
-considered were implemented in quick succession across the countries
-considered, often with some being enacted simultaneously. Therefore
-they are <em>highly colinear</em> and so the effects <span class="math inline">\(\beta_i\)</span> may be difficult to infer with uninformative
-priors. In particular, it is apriori unlikely that these NPIs served to increase
-transmission rates significantly, while they plausibly had a significant effect
-on reducing transmission. A symmetric prior like the Gaussian does not capture
-this intuition, and increases the difficulty in inferring effects, because they
-are more able to offset each other. This motivated the prior used in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>,
-which was a Gamma shifted to have support other than zero. We use the same
-prior here. Denoting the distribution of Gamma random variable with
-shape <span class="math inline">\(a\)</span> and scale <span class="math inline">\(b\)</span> by <span class="math inline">\(\Gamma(a, b)\)</span>, this prior is
-<span class="math display" id="eq:betaprior">\[\begin{equation}
--\beta_i - \frac{\log(1.05)}{6} \sim \Gamma(1/6, 1),
-\tag{1.1}
-\end{equation}\]</span>
-whereby the shift allows the NPIs to increase transmission slightly.
-The country specific parameters are partially pooled by letting
+R^{(m)}_{t} = R' g^{-1}\left(b^{(m)}_0 + \sum_{k=1}^{5}\left(\beta_k + b^{(m)}_k\right)I^{(m)}_{k,t}\right),
+\end{equation}\]</span> where <span class="math inline">\(R' = 3.25\)</span> and <span class="math inline">\(g\)</span> is the logit-link. Parameters
+<span class="math inline">\(b^{(m)}_0\)</span> are country-specific intercepts, and each <span class="math inline">\(b^{(m)}_k\)</span> is a
+country effect for the <span class="math inline">\(k\)</span><sup>th</sup> measure. The intercepts allow each
+country to have its own initial reproduction number, and hence accounts
+for possible variation in the inherent transmissibility of Covid-19 in
+each population. <span class="math inline">\(\beta_k\)</span> is a fixed effect for the <span class="math inline">\(k\)</span><sup>th</sup> policy.
+This quantity corresponds to the average effect of a measure across all
+countries considered.</p>
+<p>Control measures were implemented in quick succession in most countries.
+For some countries, a subset of the measures were in fact enacted
+simultaneously. For example, Germany banned public events at the same
+time as implementing lockdown. The upshot of this is that policy effects
+are <em>highly colinear</em> and may prove difficult to infer with
+uninformative priors.</p>
+<p>One potential remedy is to use domain knowledge to incorporate
+information into the priors. In particular, it seems a priori unlikely
+that the measures served to increase transmission rates significantly.
+It is plausible, however, that each had a significant effect on reducing
+transmission. A symmetric prior like the Gaussian does not capture this
+intuition and increases the difficulty in inferring effects, because
+they are more able to offset each other. This motivated the prior used
+in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>, which was a Gamma distribution shifted to have support
+other than zero.</p>
+<p>We use the same prior in our example. Denoting the distribution of a
+Gamma random variable with shape <span class="math inline">\(a\)</span> and scale <span class="math inline">\(b\)</span> by
+<span class="math inline">\(\text{Gamma}(a, b)\)</span>, this prior is <span class="math display">\[\begin{equation}
+-\beta_k - \frac{\log(1.05)}{6} \sim \text{Gamma}(1/6, 1).
+\label{eq:betaprior}
+\end{equation}\]</span> The shift allows the measures to increase transmission
+slightly.</p>
+<p>All country-specific parameters are partially pooled by letting
 <span class="math display">\[\begin{equation}
-b^{(m)}_i \sim N(0, \sigma_i),
-\end{equation}\]</span>
-where <span class="math inline">\(\sigma_i\)</span> are standard deviations, <span class="math inline">\(\sigma_0 \sim \Gamma(2, 0.25)\)</span>
-and <span class="math inline">\(\sigma_i \sim \Gamma(0.5, 0.25)\)</span>
-for all <span class="math inline">\(i &gt; 0\)</span>. This gives the intercept terms more variability under the prior.</p>
-<p>This model is expressed by the following call to <code><a href="../reference/epirt.html">epirt()</a></code>.</p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(
-  <span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>, <span class="no">date</span>) ~ <span class="fl">0</span> + (<span class="fl">1</span> + <span class="no">public_events</span> + <span class="no">schools_universities</span> + <span class="no">self_isolating_if_ill</span> + <span class="no">social_distancing_encouraged</span> + <span class="no">lockdown</span> <span class="kw">||</span> <span class="no">country</span>) + <span class="no">public_events</span> + <span class="no">schools_universities</span> + <span class="no">self_isolating_if_ill</span> + <span class="no">social_distancing_encouraged</span> + <span class="no">lockdown</span>,
-  <span class="kw">prior</span> <span class="kw">=</span> <span class="fu"><a href="../reference/shifted_gamma.html">shifted_gamma</a></span>(<span class="kw">shape</span><span class="kw">=</span><span class="fl">1</span>/<span class="fl">6</span>, <span class="kw">scale</span> <span class="kw">=</span> <span class="fl">1</span>, <span class="kw">shift</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)/<span class="fl">6</span>),
-  <span class="kw">prior_covariance</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">decov</a></span>(<span class="kw">shape</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">0.5</span>, <span class="fl">5</span>)),<span class="kw">scale</span><span class="kw">=</span><span class="fl">0.25</span>),
-  <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">6.5</span>)
-)</pre></body></html></div>
-<p>Note that the operator <code>||</code> is used rather than <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> for the random effects. This
-operator ensures that all effects for a given country are independent, as in the
-model described above. Using <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> would alternatively give a prior on the full
-covariance matrix, rather than on the individual <span class="math inline">\(\sigma_i\)</span>s. The argument
-<code>prior</code> reflects Equation <a href="#eq:betaprior">(1.1)</a>. Since country effects are
-assumed independent, the <code>decov</code> prior reduces to assigning Gamma priors to
-each <span class="math inline">\(\sigma_i\)</span>. By using a vector rather than a scalar for the <code>shape</code> argument,
-we are able to give the prior on the intercepts a larger shape parameter.</p>
+b^{(m)}_k \sim N(0, \sigma_k),
+\end{equation}\]</span> where <span class="math inline">\(\sigma_k\)</span> are standard deviations,
+<span class="math inline">\(\sigma_0 \sim \text{Gamma}(2, 0.25)\)</span> and
+<span class="math inline">\(\sigma_k \sim \text{Gamma}(0.5, 0.25)\)</span> for all <span class="math inline">\(k &gt; 0\)</span>. This gives the
+intercept terms more variability under the prior.</p>
+<p>The transmission model described above is expressed programmatically as
+follows.</p>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">rt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epirt.html">epirt</a></span>(<span class="kw">formula</span> <span class="kw">=</span> <span class="fu">R</span>(<span class="no">country</span>, <span class="no">date</span>) ~ <span class="fl">0</span> + (<span class="fl">1</span> + <span class="no">public_events</span> +
+              <span class="no">schools_universities</span> + <span class="no">self_isolating_if_ill</span> +
+              <span class="no">social_distancing_encouraged</span> + <span class="no">lockdown</span> <span class="kw">||</span> <span class="no">country</span>) +
+              <span class="no">public_events</span> + <span class="no">schools_universities</span> + <span class="no">self_isolating_if_ill</span> +
+              <span class="no">social_distancing_encouraged</span> + <span class="no">lockdown</span>,
+            <span class="kw">prior</span> <span class="kw">=</span> <span class="fu"><a href="../reference/shifted_gamma.html">shifted_gamma</a></span>(<span class="kw">shape</span> <span class="kw">=</span> <span class="fl">1</span>/<span class="fl">6</span>, <span class="kw">scale</span> <span class="kw">=</span> <span class="fl">1</span>, <span class="kw">shift</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span>(<span class="fl">1.05</span>)/<span class="fl">6</span>),
+            <span class="kw">prior_covariance</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">decov</a></span>(<span class="kw">shape</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">0.5</span>, <span class="fl">5</span>)), <span class="kw">scale</span> <span class="kw">=</span> <span class="fl">0.25</span>),
+            <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">6.5</span>))</pre></body></html></div>
+<p>The operator <code>||</code> is used rather than <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> for random effects.
+This ensures that all effects for a given country are independent, as
+was assumed in the model described above. Using <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> would
+alternatively give a prior on the full covariance matrix, rather than on
+the individual <span class="math inline">\(\sigma_i\)</span> terms. The argument <code>prior</code> reflects
+Equation . Since country effects are assumed
+independent, the <code>decov</code> prior reduces to assigning Gamma priors to
+each <span class="math inline">\(\sigma_i\)</span>. By using a vector rather than a scalar for the
+<code>shape</code> argument, we are able to give the prior on the intercepts a
+larger shape parameter.</p>
+</div>
 </div>
 <div id="infections" class="section level3">
 <h3 class="hasAnchor">
-<a href="#infections" class="anchor"></a><span class="header-section-number">1.2.2</span> Infections</h3>
-<p>We keep infections simple here by using the basic version of the model.
-That is to say that infections are taken to be a deterministic function of
-seeds and reproduction numbers, propagated by the renewal process. Extensions
-to modeling infections as parameters and adjustments for the susceptible
-population are not considered. The model is defined as follows.</p>
+<a href="#infections" class="anchor"></a><span class="header-section-number">1.1.2</span> Infections</h3>
+<p>Infections are kept simple here by using the basic version of the model.
+That is to say that infections are taken to be a deterministic function
+of seeds and reproduction numbers, propagated by the renewal process.
+Extensions to modeling infections as parameters and adjustments for the
+susceptible population are not considered. The model is defined as
+follows.</p>
 <div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">inf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiinf.html">epiinf</a></span>(<span class="kw">gen</span> <span class="kw">=</span> <span class="no">EuropeCovid</span>$<span class="no">si</span>, <span class="kw">seed_days</span> <span class="kw">=</span> <span class="fl">6</span>)</pre></body></html></div>
-<p><code>EuropeCovid$si</code> is a numeric vector giving the serial interval used in
-<span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. As in that work, we make no distinction between the generation
-distribution and serial interval here.</p>
+<p><code>EuropeCovid$si</code> is a numeric vector giving the serial interval
+used in <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>. As in that work, we make no distinction between
+the generation distribution and serial interval here.</p>
 </div>
 <div id="observations" class="section level3">
 <h3 class="hasAnchor">
-<a href="#observations" class="anchor"></a><span class="header-section-number">1.2.3</span> Observations</h3>
-<p>Daily deaths are used in the model. In theory, additional types of data can be
-included in the model, but such extension are not considered here. A simple
-intercept model is used for the infection fatality rate (IFR). This makes the
-assumption that the IFR is constant over time. The model can be written as
-follows.</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiobs.html">epiobs</a></span>(
-  <span class="kw">formula</span> <span class="kw">=</span> <span class="no">deaths</span> ~ <span class="fl">1</span>,
-  <span class="kw">i2o</span> <span class="kw">=</span> <span class="no">EuropeCovid2</span>$<span class="no">inf2death</span>,
-  <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="fl">0</span>,<span class="fl">0.2</span>),
-  <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">0.02</span>)
-)</pre></body></html></div>
-<p>By using <code>link = scaled_logit(0.02)</code>, we let the IFR range between <span class="math inline">\(0\%\)</span> and
-<span class="math inline">\(2\%\)</span>. In conjunction with the symmetric prior on the intercept, this gives
-the IFR a prior mean of <span class="math inline">\(1\%\)</span>. <code>EuropeCovid2$inf2death</code> is a numeric vector
-giving the same distribution for the time from infection to death as that used in
+<a href="#observations" class="anchor"></a><span class="header-section-number">1.1.3</span> Observations</h3>
+<p>In order to infer the effects of control measures on transmission, we
+must fit the model to data. Here, daily deaths are used. In theory,
+additional types of data can be included in the model, but such
+extension are not considered here. A simple intercept model is used for
+the infection fatality rate (IFR). This makes the assumption that the
+IFR is constant over time. The model can be written as follows.</p>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">deaths</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/epiobs.html">epiobs</a></span>(<span class="kw">formula</span> <span class="kw">=</span> <span class="no">deaths</span> ~ <span class="fl">1</span>, <span class="kw">i2o</span> <span class="kw">=</span> <span class="no">EuropeCovid2</span>$<span class="no">inf2death</span>,
+                 <span class="kw">prior_intercept</span> <span class="kw">=</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/priors.html">normal</a></span>(<span class="fl">0</span>,<span class="fl">0.2</span>), <span class="kw">link</span> <span class="kw">=</span> <span class="fu"><a href="../reference/scaled_logit.html">scaled_logit</a></span>(<span class="fl">0.02</span>))</pre></body></html></div>
+<p>By using <code>link = scaled_logit(0.02)</code>, we let the IFR range between
+<span class="math inline">\(0\%\)</span> and <span class="math inline">\(2\%\)</span>. In conjunction with the symmetric prior on the
+intercept, this gives the IFR a prior mean of <span class="math inline">\(1\%\)</span>.
+<code>EuropeCovid2$inf2death</code> is a numeric vector giving the same
+distribution for the time from infection to death as that used in
 <span class="citation">Flaxman, Mishra, Gandy, et al. (<a href="#ref-Flaxman2020" role="doc-biblioref">2020</a>)</span>.</p>
 </div>
 </div>
 <div id="model-fitting" class="section level2">
 <h2 class="hasAnchor">
-<a href="#model-fitting" class="anchor"></a><span class="header-section-number">1.3</span> Model Fitting</h2>
+<a href="#model-fitting" class="anchor"></a><span class="header-section-number">1.2</span> Model Fitting</h2>
 <hr>
-<p>Here, we use variational Bayes (VB) to fit the model as opposed to full MCMC
-sampling. This is because full MCMC sampling of a joint model of this size
-is computationally demanding, due in part to renewal processes having to be computed
-for each region and for each evaluation of the likelihood and its derivatives.
-MCMC should generally be used for final inference. Nonetheless, VB allows rapid
-iteration of models and may lead to reasonable estimates of effect sizes. For
-this example, we have also run full MCMC, and the inferences reported here are
-not substantially different.</p>
+<p>In general, <strong>epidemia</strong>’s models should be fit using Hamiltonian
+Monte Carlo. For this example, however, we use Variational Bayes (VB) as
+opposed to full MCMC sampling. This is because full MCMC sampling of a
+joint model of this size is computationally demanding, due in part to
+renewal equation having to be evaluated for each region and for each
+evaluation of the likelihood and its derivatives. Nonetheless, VB allows
+rapid iteration of models and may lead to reasonable estimates of effect
+sizes. For this example, we have also run full MCMC, and the inferences
+reported here are not substantially different.</p>
 <div id="prior-check" class="section level3">
 <h3 class="hasAnchor">
-<a href="#prior-check" class="anchor"></a><span class="header-section-number">1.3.1</span> Prior Check</h3>
-<p>It is useful to check the implied prior distribution on reproduction numbers
-before fitting a full model. This can catch obvious mistakes that can occur
-when specifying the transmission model, and can help affirm that the prior is
-reasonable.</p>
-<p>In <strong>epidemia</strong> we can do this by using the <code>priorPD = TRUE</code> flag in
-<code><a href="../reference/epim.html">epim()</a></code>. This discards the likelihood component of the posterior, leaving
-just the prior. If we <code>alogrithm = "sampling"</code>, HMC is used to sample parameters
-from the prior. Here we use sampling rather than VB, partly because
-sampling from the prior is relatively quick: it is the likelihood that is
-expensive to evaluate. In addition, we have defined Gamma priors on some
-coefficients, which are generally poorly approximated by VB.</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">rt</span><span class="kw">=</span><span class="no">rt</span>, <span class="kw">inf</span><span class="kw">=</span><span class="no">inf</span>, <span class="kw">obs</span><span class="kw">=</span><span class="no">deaths</span>, <span class="kw">data</span><span class="kw">=</span><span class="no">data</span>, <span class="kw">seed</span><span class="kw">=</span><span class="fl">12345</span>, <span class="kw">refresh</span><span class="kw">=</span><span class="fl">0</span>)</pre></body></html></div>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span>(<span class="kw">mc.cores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
-<span class="no">pr_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">args</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">algorithm</span><span class="kw">=</span><span class="st">"sampling"</span>, <span class="kw">iter</span><span class="kw">=</span><span class="fl">1e3</span>, <span class="kw">prior_PD</span><span class="kw">=</span><span class="fl">TRUE</span>))
-
+<a href="#prior-check" class="anchor"></a><span class="header-section-number">1.2.1</span> Prior Check</h3>
+<p>The flu <a href="flu.html">article</a> gave an example of using posterior predictive
+checks. It is also useful to do prior predictive checks as these allow
+the user to catch obvious mistakes that can occur when specifying the
+model, and can also help to affirm that the prior is in fact reasonable.</p>
+<p>In <strong>epidemia</strong> we can do this by using the <code>priorPD = TRUE</code> flag
+in <code><a href="../reference/epim.html">epim()</a></code>. This discards the likelihood component of the
+posterior, leaving just the prior. We use Hamiltonian Monte Carlo over
+VB for the prior check, partly because sampling from the prior is quick
+(it is the likelihood that is expensive to evaluate). In addition, we
+have defined Gamma priors on some coefficients, which are generally
+poorly approximated by VB.</p>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">rt</span> <span class="kw">=</span> <span class="no">rt</span>, <span class="kw">inf</span> <span class="kw">=</span> <span class="no">inf</span>, <span class="kw">obs</span> <span class="kw">=</span> <span class="no">deaths</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">data</span>, <span class="kw">seed</span> <span class="kw">=</span> <span class="fl">12345</span>,
+             <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>)
+<span class="no">pr_args</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">args</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">algorithm</span> <span class="kw">=</span> <span class="st">"sampling"</span>, <span class="kw">iter</span> <span class="kw">=</span> <span class="fl">1e3</span>, <span class="kw">prior_PD</span> <span class="kw">=</span> <span class="fl">TRUE</span>))
 <span class="no">fm_prior</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">pr_args</span>)</pre></body></html></div>
-<p>Below we plot approximate samples of <span class="math inline">\(R_{t,m}\)</span> from the prior distribution.</p>
-<pre><code>## Registered S3 methods overwritten by 'car':
-##   method                          from
-##   influence.merMod                lme4
-##   cooks.distance.influence.merMod lme4
-##   dfbeta.influence.merMod         lme4
-##   dfbetas.influence.merMod        lme4</code></pre>
-<p><img src="multilevel-prior-plot.png" width="50%" style="display: block; margin: auto;"></p>
+<p>Figure <a href="#fig:multilevel-prior">1.1</a> shows approximate samples of <span class="math inline">\(R_{t,m}\)</span>
+from the prior distribution. This confirms that reproduction numbers
+follow a step function, and that rates can both increase and decrease as
+measures come into play.</p>
+<div class="figure" style="text-align: center">
+<span id="fig:multilevel-prior"></span>
+<img src="multilevel-prior-plot.png" alt="A prior predictive check for reproduction numbers $R_t$ in the multilevel model. Only results for the United Kingdom are presented here. The prior median is shown in black, with credible intervals shown in various shades of green. The check appears to confirm that $R_t$ follows a step-function." width="60%"><p class="caption">
+Figure 1.1: A prior predictive check for reproduction numbers <span class="math inline">\(R_t\)</span> in the multilevel model. Only results for the United Kingdom are presented here. The prior median is shown in black, with credible intervals shown in various shades of green. The check appears to confirm that <span class="math inline">\(R_t\)</span> follows a step-function.
+</p>
+</div>
 </div>
 <div id="approximating-the-posterior" class="section level3">
 <h3 class="hasAnchor">
-<a href="#approximating-the-posterior" class="anchor"></a><span class="header-section-number">1.3.2</span> Approximating the Posterior</h3>
-<p>Recall that the model will be fit using VB. In particular, <code>algorithm = "fullrank"</code>
-is used. This is generally
-preferable to <code>"meanfield"</code> for these models - largely because <code>"meanfield"</code>
-ignores posterior correlations. We decrease the parameter <code>tol_rel_obj</code> from
-its default, and increase the number of iterations to aid convergence.</p>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"fullrank"</span>
-<span class="no">args</span>$<span class="no">iter</span> <span class="kw">&lt;-</span> <span class="fl">5e4</span>
-<span class="no">args</span>$<span class="no">tol_rel_obj</span> <span class="kw">&lt;-</span> <span class="fl">1e-3</span>
-
+<a href="#approximating-the-posterior" class="anchor"></a><span class="header-section-number">1.2.2</span> Approximating the Posterior</h3>
+<p>The model will be fit using Variational Bayes by using
+<code>algorithm = "fullrank"</code> in the call to <code><a href="../reference/epim.html">epim()</a></code>. This is
+generally preferable to <code>"meanfield"</code> for these models, largely
+because <code>"meanfield"</code> ignores posterior correlations. We decrease
+the parameter <code>tol_rel_obj</code> from its default value, and increase
+the number of iterations to aid convergence.</p>
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">args</span>$<span class="no">algorithm</span> <span class="kw">&lt;-</span> <span class="st">"fullrank"</span>; <span class="no">args</span>$<span class="no">iter</span> <span class="kw">&lt;-</span> <span class="fl">5e4</span>; <span class="no">args</span>$<span class="no">tol_rel_obj</span> <span class="kw">&lt;-</span> <span class="fl">1e-3</span>
 <span class="no">fm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>)</pre></body></html></div>
-<pre><code>## Warning: Pareto k diagnostic value is 3.32. Resampling is disabled. Decreasing
-## tol_rel_obj may help if variational algorithm has terminated prematurely.
-## Otherwise consider using sampling instead.</code></pre>
-<p>A first step in evaluating the model fit is to perform posterior predictive
-checks. This is to confirm that the model adequately explains the observed
-daily deaths in each region. This can be done using the command
-<code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", levels = c(50, 95))</a></code>. The plot is shown in Figure <a href="#fig:obs-plots">1.1</a>.</p>
+<p>A first step in evaluating the model fit is to perform posterior
+predictive checks. This is to confirm that the model adequately explains
+the observed daily deaths in each region. This can be done using the
+command <code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", levels = c(50, 95))</a></code>. The
+plot is shown in Figure <a href="#fig:multilevel-obs-plots">1.2</a>.</p>
 <div class="figure" style="text-align: center">
-<span id="fig:obs-plots"></span>
-<img src="multilevel-obs-plot.png" alt="Posterior predictive checks. Observed data is plotted with credible intervals derived from the approximated posterior." width="100%"><p class="caption">
-Figure 1.1: Posterior predictive checks. Observed data is plotted with credible intervals derived from the approximated posterior.
+<span id="fig:multilevel-obs-plots"></span>
+<img src="multilevel-obs-plot.png" alt="Posterior predictive checks. Observed daily deaths (red) is plotted as a bar plot. Credible intervals from the posterior are plotted in shades of blue, in addition to the posterior median in black. Each panel shows the data for a single country." width="100%"><p class="caption">
+Figure 1.2: Posterior predictive checks. Observed daily deaths (red) is plotted as a bar plot. Credible intervals from the posterior are plotted in shades of blue, in addition to the posterior median in black. Each panel shows the data for a single country.
 </p>
 </div>
-<p>Figure <a href="#fig:obs-plots">1.1</a> suggest that the epidemic was bought under control
-in each group considered, with reproduction numbers falling below one everywhere.
-Indeed, we would expect that the posterior reproduction numbers fall below one
-in each region. Figure <a href="#fig:rt-plots">1.2</a> is the result of <code><a href="../reference/plot_rt.html">plot_rt(fm, step = T, levels = c(50,95))</a></code>, and confirms this.</p>
+<p>Figure <a href="#fig:multilevel-obs-plots">1.2</a> suggest that the epidemic was
+bought under control in each group considered. Indeed, one would expect
+that the posterior distribution for reproduction numbers lies largely
+below one in each region. Figure <a href="#fig:multilevel-rt-plots">1.3</a> is the
+result of <code><a href="../reference/plot_rt.html">plot_rt(fm, step = T, levels = c(50,95))</a></code>, and confirms
+this.</p>
 <div class="figure" style="text-align: center">
-<span id="fig:rt-plots"></span>
-<img src="multilevel-rt-plot.png" alt="Credible intervals for reproduction numbers. These are step functions because $R_t$ is parameterised only in terms of NPIs." width="100%"><p class="caption">
-Figure 1.2: Credible intervals for reproduction numbers. These are step functions because <span class="math inline">\(R_t\)</span> is parameterised only in terms of NPIs.
+<span id="fig:multilevel-rt-plots"></span>
+<img src="multilevel-rt-plot.png" alt="Inferred reproduction numbers in each country. Credible intervals from the posterior are plotted in shades of green, in addition to the posterior median in black. Each panel shows the data for a single country." width="100%"><p class="caption">
+Figure 1.3: Inferred reproduction numbers in each country. Credible intervals from the posterior are plotted in shades of green, in addition to the posterior median in black. Each panel shows the data for a single country.
 </p>
 </div>
 </div>
 </div>
 <div id="effect-sizes" class="section level2">
 <h2 class="hasAnchor">
-<a href="#effect-sizes" class="anchor"></a><span class="header-section-number">1.4</span> Effect Sizes</h2>
+<a href="#effect-sizes" class="anchor"></a><span class="header-section-number">1.3</span> Effect Sizes</h2>
 <hr>
-<p>In <strong>epidemia</strong>, estimated effect sizes can be visualized using the <code>plot.epimodel</code>
-method. This serves a similar purpose to <code>plot.stanreg</code> in <strong>rstanarm</strong>,
-providing an interface to the <strong>bayesplot</strong> package. The models in <strong>epidemia</strong>
-often have many parameters, some of which pertain to a particular part of the model
-(i.e. transmission), and some which pertain to particular
-groups (i.e., country-specific terms). Therefore <code>plot.epimodel</code> has
-arguments <code>par_models</code>, <code>par_types</code> and <code>par_groups</code>, which restrict the
-parameters considered to particular parts of the model.</p>
-<p>As an example, one can plot credible intervals for the global
-coefficients <span class="math inline">\(\beta_i\)</span> using the command
+<p>In <strong>epidemia</strong>, estimated effect sizes can be visualized using the
+<code>plot.epimodel</code> method. This serves a similar purpose to
+<code>plot.stanreg</code> in <strong>rstanarm</strong>, providing an interface to the
+<strong>bayesplot</strong> package. The models in <strong>epidemia</strong> often have many
+parameters, some of which pertain to a particular part of the model
+(i.e. transmission), and some which pertain to particular groups (i.e.,
+country-specific terms). Therefore <code>plot.epimodel</code> has arguments
+<code>par_models</code>, <code>par_types</code> and <code>par_groups</code>, which
+restrict the parameters considered to particular parts of the model.</p>
+<p>As an example, credible intervals for the global coefficients <span class="math inline">\(\beta_i\)</span>
+can be plotted using the command
 <code><a href="https://rdrr.io/r/base/plot.html">plot(fm, par_models = "R", par_types = "fixed")</a></code>. This leads to
-<a href="#fig:effect-plots">1.3</a>.</p>
-<pre><code>## Scale for 'y' is already present. Adding another scale for 'y', which will
-## replace the existing scale.</code></pre>
-<div class="figure" style="text-align: center">
-<span id="fig:effect-plots"></span>
-<img src="multilevel-effect-plots.png" alt="Effect sizes for global coefficients." width="70%"><p class="caption">
-Figure 1.3: Effect sizes for global coefficients.
-</p>
-</div>
-<p>Figure <a href="#fig:effect-plots">1.3</a> shows a large negative coefficient for lockdown,
-suggesting that this is on average the most effective intervention.
-The effect of banning public events is the next largest, while the other NPIs appear closer
-to zero. Note that <a href="#fig:effect-plots">1.3</a> shows only global coefficients, and does
-not show inferred effects in any given country. To assess the latter, one must
-instead consider the quantities <span class="math inline">\(\beta_i + b^{(m)}_i\)</span>. We do this by
-extracting the underlying draws using <code>as.matrix.epimodel</code>, as is done below
-for Italy.</p>
-<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="no">beta</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fm</span>, <span class="kw">par_models</span> <span class="kw">=</span> <span class="st">"R"</span>, <span class="kw">par_types</span> <span class="kw">=</span> <span class="st">"fixed"</span>)
+the left plot in Figure <a href="#fig:multilevel-effects-plots">1.4</a>.</p>
+<p>Figure <a href="#fig:multilevel-effects-plots">1.4</a> shows a large negative
+coefficient for lockdown, suggesting that this is on average the most
+effective intervention. The effect of banning public events is the next
+largest, while the other policy effects appear closer to zero. Note that
+the left plot in Figure <a href="#fig:multilevel-effects-plots">1.4</a> shows only global
+coefficients, and does not show inferred effects in any given country.
+To assess the latter, one must instead consider the quantities
+<span class="math inline">\(\beta_i + b^{(m)}_i\)</span>. We do this by extracting the underlying draws
+using <code>as.matrix.epimodel</code>, as is done below for Italy.</p>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">beta</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fm</span>, <span class="kw">par_models</span> <span class="kw">=</span> <span class="st">"R"</span>, <span class="kw">par_types</span> <span class="kw">=</span> <span class="st">"fixed"</span>)
 <span class="no">b</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fm</span>, <span class="kw">regex_pars</span> <span class="kw">=</span> <span class="st">"^R\\|b"</span>, <span class="kw">par_groups</span> <span class="kw">=</span> <span class="st">"Italy"</span>)
 <span class="no">mat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="no">b</span>[,<span class="fl">1</span>], <span class="no">beta</span> + <span class="no">b</span>[,<span class="fl">2</span>:<span class="fl">6</span>])
+<span class="no">labels</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Events"</span>, <span class="st">"Schools"</span>, <span class="st">"Isolating"</span>, <span class="st">"Distancing"</span>, <span class="st">"Lockdown"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="no">mat</span>) <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Intercept"</span>, <span class="no">labels</span>)</pre></body></html></div>
-Calling <code><a href="https://mc-stan.org/bayesplot/reference/MCMC-intervals.html">bayesplot::mcmc_intervals(mat)</a></code> gives
-Figure <a href="#fig:total-effects">1.4</a>.
 <div class="figure" style="text-align: center">
-<span id="fig:total-effects"></span>
-<img src="multilevel-total-effect-plots.png" alt="Total effect Sizes" width="70%"><p class="caption">
-Figure 1.4: Total effect Sizes
+<span id="fig:multilevel-effects-plots"></span>
+<img src="multilevel-plot-effects.png" alt="**Left**: Global Effect sizes for the five policy measures considered. **Right**: Effect sizes specific to Italy. The global and country-specific effects may differ because the effects are *partially pooled*." width="80%"><p class="caption">
+Figure 1.4: <strong>Left</strong>: Global Effect sizes for the five policy measures considered. <strong>Right</strong>: Effect sizes specific to Italy. The global and country-specific effects may differ because the effects are <em>partially pooled</em>.
 </p>
 </div>
-<p>Figure <a href="#fig:total-effects">1.4</a> has relatively narrow intervals for many of the
-effect sizes. This appears to be an artifact of using variational Bayes. In
-particular, when repeating this analysis with full MCMC, we observe that the
-intervals for all policies other than lockdown overlap with zero.</p>
+<p>Calling <code><a href="https://mc-stan.org/bayesplot/reference/MCMC-intervals.html">bayesplot::mcmc_intervals(mat)</a></code> leads to the results shown
+in the right panel of Figure <a href="#fig:multilevel-effects-plots">1.4</a>.</p>
+<p>Figure <a href="#fig:multilevel-effects-plots">1.4</a> has relatively narrow
+intervals for many of the effect sizes. This appears to be an artifact
+of using Variational Bayes. In particular, when repeating this analysis
+with full MCMC, we observe that the intervals for all policies other
+than lockdown overlap with zero.</p>
 <p>Consider now the role of partial pooling in this analysis. Figure
-<a href="#fig:rt-plots">1.2</a> shows that Sweden did enough to reduce <span class="math inline">\(R\)</span> below one. However,
-it did so without a full lockdown. Given the small effect sizes for other NPIs,
-the model must explain Sweden using the country-specific terms. Figure <a href="#fig:interval-plots">1.5</a>
-shows estimated seeds, intercepts and the effects of banning public events for each
-country. Sweden has a lower intercept than other terms which in turn suggests a
-lower <span class="math inline">\(R_0\)</span> - giving the effects less to do to explain Sweden. There
-is greater variability in seeding, because the magnitude of future infections
-becomes less sensitive to initial conditions when the rate of growth is lower.
-Figure <a href="#fig:interval-plots">1.5</a> shows that the model estimates a large negative
-coefficient for public events in Sweden. This is
-significantly larger then the effects for other policies - which are not reported
-here. However, the idiosyncrasies relating to Sweden must be explained in this
-model by at least one of the covariates, and the large effect for public policy
-in Sweden is most probably an artifact of this. Nonetheless, the use of
-partial pooling is essential for explaining difference between countries. If
-full pooling were used, effect sizes would be overly influenced by outliers like
-Sweden. This argument is made in more detail in <span class="citation">Flaxman, Mishra, Scott, et al. (<a href="#ref-Flaxman2020MA" role="doc-biblioref">2020</a>)</span>.</p>
+<a href="#fig:multilevel-rt-plots">1.3</a> shows that Sweden did enough to reduce <span class="math inline">\(R\)</span>
+below one. However, it did so without a full lockdown. Given the small
+effect sizes for other measures, the model must explain Sweden using the
+country-specific terms. Figure <a href="#fig:multilevel-interval-plots">1.5</a> shows
+estimated seeds, intercepts and the effects of banning public events for
+each country. Sweden has a lower intercept than other terms which in
+turn suggests a lower <span class="math inline">\(R_0\)</span> - giving the effects less to do to explain
+Sweden. There is greater variability in seeding, because the magnitude
+of future infections becomes less sensitive to initial conditions when
+the rate of growth is lower. Figure <a href="#fig:multilevel-interval-plots">1.5</a>
+shows that the model estimates a large negative coefficient for public
+events in Sweden. This is significantly larger then the effects for
+other policies - which are not reported here. However, the
+idiosyncrasies relating to Sweden must be explained in this model by at
+least one of the covariates, and the large effect for public policy in
+Sweden is most probably an artifact of this. Nonetheless, the use of
+partial pooling is essential for explaining difference between
+countries. If full pooling were used, effect sizes would be overly
+influenced by outliers like Sweden. This argument is made in more detail
+in <span class="citation">Flaxman, Mishra, Scott, et al. (<a href="#ref-Flaxman2020MA" role="doc-biblioref">2020</a>)</span>.</p>
 <div class="figure" style="text-align: center">
-<span id="fig:interval-plots"></span>
-<img src="multilevel-interval-plots.png" alt="Seeds, intercepts and public polic effects for each country" width="100%"><p class="caption">
-Figure 1.5: Seeds, intercepts and public polic effects for each country
+<span id="fig:multilevel-interval-plots"></span>
+<img src="multilevel-interval-plots.png" alt=" **Left**: Inferred daily seeded infections in each country. These have been assumed to occur over a period of 6 days. **Middle**: Estimated Intercepts in the linear predictor for reproduction numbers. **Right**: Country-specific effect sizes corresponding to the banning of public events." width="100%"><p class="caption">
+Figure 1.5:  <strong>Left</strong>: Inferred daily seeded infections in each country. These have been assumed to occur over a period of 6 days. <strong>Middle</strong>: Estimated Intercepts in the linear predictor for reproduction numbers. <strong>Right</strong>: Country-specific effect sizes corresponding to the banning of public events.
 </p>
 </div>
 </div>
 <div id="forecasting" class="section level2">
 <h2 class="hasAnchor">
-<a href="#forecasting" class="anchor"></a><span class="header-section-number">1.5</span> Forecasting</h2>
+<a href="#forecasting" class="anchor"></a><span class="header-section-number">1.4</span> Forecasting</h2>
 <hr>
-<p>Forecasting within <strong>epidemia</strong> is straightforward, and consists of constructing
-a new dataframe which is used in place of the original dataframe. This could,
-for example, change the values of covariates, or alternatively include new
-observations in order to check the out-of-sample performance of the fitted
-model.</p>
-<p>Recall that <code>EuropeCovid2</code> holds daily death data up until the end of
-June 2020, however we only fitted the model up until the <span class="math inline">\(5\)</span><sup>th</sup> May. The
-following constructs a dataframe <code>newdata</code> which contains the additional
-observations. Note that we are careful to select the same start dates as in
-<code>data</code>.</p>
-<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="no">newdata</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid2</span>$<span class="no">data</span>
+<p>Forecasting within <strong>epidemia</strong> is straightforward, and consists of
+constructing a new data frame which is used in place of the original
+data frame. This could, for example, change the values of covariates, or
+alternatively include new observations in order to check the
+out-of-sample performance of the fitted model.</p>
+<p>Recall that <code>EuropeCovid2</code> holds daily death data up until the end
+of June 2020, however we only fitted the model up until the <span class="math inline">\(5\)</span><sup>th</sup> May.
+The following constructs a data frame <code>newdata</code> which contains the
+additional observations. Note that we are careful to select the same
+start dates as in the original data frame.</p>
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">newdata</span> <span class="kw">&lt;-</span> <span class="no">EuropeCovid2</span>$<span class="no">data</span>
 <span class="no">newdata</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(<span class="no">newdata</span>, <span class="no">date</span> <span class="kw">&gt;</span> <span class="no">date</span>[<span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span>(<span class="no">deaths</span>) <span class="kw">&gt;</span> <span class="fl">10</span>)[<span class="fl">1</span>] - <span class="fl">30</span>])</pre></body></html></div>
-<p>This dataframe can be passed to plotting functions <code><a href="../reference/plot_rt.html">plot_rt()</a></code>, <code><a href="../reference/plot_obs.html">plot_obs()</a></code>,
-<code><a href="../reference/plot_infections.html">plot_infections()</a></code> and <code><a href="../reference/plot_infectious.html">plot_infectious()</a></code>. If the raw samples are desired, we
-can also pass as an argument to <code><a href="../reference/posterior_rt.html">posterior_rt()</a></code>, <code><a href="https://mc-stan.org/rstantools/reference/posterior_predict.html">posterior_predict()</a></code> etc.
-Figure <a href="#fig:forecasting">1.6</a> is the result of using the command
-<code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", newdata = newdata, groups = "Italy")</a></code>. This
-plots the out of sample observations with credible intervals from the forecast.</p>
-<div class="figure" style="text-align: center">
-<span id="fig:forecasting"></span>
-<img src="multilevel-forecasting.png" alt="Forecasted and observed daily deaths in Italy up until the end of June 2020" width="100%"><p class="caption">
-Figure 1.6: Forecasted and observed daily deaths in Italy up until the end of June 2020
-</p>
-</div>
+<p>This data frame can be passed to plotting functions <code><a href="../reference/plot_rt.html">plot_rt()</a></code>,
+<code><a href="../reference/plot_obs.html">plot_obs()</a></code>, <code><a href="../reference/plot_infections.html">plot_infections()</a></code> and
+<code><a href="../reference/plot_infectious.html">plot_infectious()</a></code>. If the raw samples are desired, we can also
+pass as an argument to <code><a href="../reference/posterior_rt.html">posterior_rt()</a></code>, <code><a href="https://mc-stan.org/rstantools/reference/posterior_predict.html">posterior_predict()</a></code>
+etc. The top panel of Figure <a href="#fig:multilevel-counterfactuals">1.6</a> is the
+result of using the command
+<code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", newdata = newdata, groups = "Italy")</a></code>.
+This plots the out of sample observations with credible intervals from
+the forecast.</p>
 </div>
 <div id="counterfactuals" class="section level2">
 <h2 class="hasAnchor">
-<a href="#counterfactuals" class="anchor"></a><span class="header-section-number">1.6</span> Counterfactuals</h2>
-<hr>
-<p>Counterfactuals are also easy. Again, one simply has to modify the dataframe used.
-In this case we shift all NPIs back three days.</p>
-<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="no">shift_earlier</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">x</span>, <span class="no">k</span>) <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">x</span>[-(<span class="fl">1</span>:<span class="no">k</span>)], <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">1</span>,<span class="no">k</span>))
+<a href="#counterfactuals" class="anchor"></a><span class="header-section-number">1.5</span> Counterfactuals</h2>
+<p>Counterfactual scenarios are also easy. Again, one simply has to modify
+the data frame used. In this case we shift all policy measures back
+three days.</p>
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">shift</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">x</span>, <span class="no">k</span>) <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">x</span>[-(<span class="fl">1</span>:<span class="no">k</span>)], <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">1</span>,<span class="no">k</span>))
 <span class="no">days</span> <span class="kw">&lt;-</span> <span class="fl">3</span>
 
 <span class="no">newdata</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="no">newdata</span>,
-  <span class="kw">lockdown</span> <span class="kw">=</span> <span class="fu">shift_earlier</span>(<span class="no">lockdown</span>, <span class="no">days</span>),
-  <span class="kw">public_events</span> <span class="kw">=</span> <span class="fu">shift_earlier</span>(<span class="no">public_events</span>, <span class="no">days</span>),
-  <span class="kw">social_distancing_encouraged</span> <span class="kw">=</span> <span class="fu">shift_earlier</span>(<span class="no">social_distancing_encouraged</span>, <span class="no">days</span>),
-  <span class="kw">self_isolating_if_ill</span> <span class="kw">=</span> <span class="fu">shift_earlier</span>(<span class="no">self_isolating_if_ill</span>, <span class="no">days</span>),
-  <span class="kw">schools_universities</span> <span class="kw">=</span> <span class="fu">shift_earlier</span>(<span class="no">schools_universities</span>, <span class="no">days</span>)
+  <span class="kw">lockdown</span> <span class="kw">=</span> <span class="fu">shift</span>(<span class="no">lockdown</span>, <span class="no">days</span>),
+  <span class="kw">public_events</span> <span class="kw">=</span> <span class="fu">shift</span>(<span class="no">public_events</span>, <span class="no">days</span>),
+  <span class="kw">social_distancing_encouraged</span> <span class="kw">=</span> <span class="fu">shift</span>(<span class="no">social_distancing_encouraged</span>, <span class="no">days</span>),
+  <span class="kw">self_isolating_if_ill</span> <span class="kw">=</span> <span class="fu">shift</span>(<span class="no">self_isolating_if_ill</span>, <span class="no">days</span>),
+  <span class="kw">schools_universities</span> <span class="kw">=</span> <span class="fu">shift</span>(<span class="no">schools_universities</span>, <span class="no">days</span>)
 )</pre></body></html></div>
-<p>Figure <a href="#fig:counterfactuals">1.7</a> visualizes the counterfactual scenario of all
-policies being implemented in the UK three days earlier. Deaths are projected
-over both the in-sample period, and the out of sample period. The left plot
-is obtained using <code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", newdata=newdata, groups = "United_Kingdom")</a></code>,
-while the right plot adds the <code>cumulative = TRUE</code> argument. We reiterate that these results are
-not intended to be statistically rigorous - simply to illustrate usage of epidemia.</p>
+<p>The bottom panel of Figure <a href="#fig:multilevel-counterfactuals">1.6</a> visualizes
+the counterfactual scenario of all policies being implemented in the UK
+three days earlier. Deaths are projected over both the in-sample period,
+and the out-of-sample period. The left plot is obtained using
+<code><a href="../reference/plot_obs.html">plot_obs(fm, type = "deaths", newdata = newdata, groups = "United_Kingdom")</a></code>,
+while the right plot adds the <code>cumulative = TRUE</code> argument. We reiterate
+that these results are not intended to be fully rigorous: they are
+simply there to illustrate usage of <strong>epidemia</strong>.</p>
 <div class="figure" style="text-align: center">
-<span id="fig:counterfactuals"></span>
-<img src="multilevel-counterfactual.png" alt="Counterfactual for UK where all NPIs implemented 3 days earlier. Left is daily deaths, right is cumulative." width="100%"><p class="caption">
-Figure 1.7: Counterfactual for UK where all NPIs implemented 3 days earlier. Left is daily deaths, right is cumulative.
+<span id="fig:multilevel-counterfactuals"></span>
+<img src="multilevel-counterfactuals.png" alt="Forecasts and counterfactual scenarios. All results pertain to the United Kingdom. **Top**: An out-of-sample forecast for daily deaths. **Bottom:** Results corresponding to a a counterfactual whereby all policies were implemented 3 days earlier. The left plot shows credible intervals for daily deaths under this scenario. The right presents cumulative deaths. The black dotted line shows observed cumulative deaths." width="90%"><p class="caption">
+Figure 1.6: Forecasts and counterfactual scenarios. All results pertain to the United Kingdom. <strong>Top</strong>: An out-of-sample forecast for daily deaths. <strong>Bottom:</strong> Results corresponding to a a counterfactual whereby all policies were implemented 3 days earlier. The left plot shows credible intervals for daily deaths under this scenario. The right presents cumulative deaths. The black dotted line shows observed cumulative deaths.
 </p>
 </div>
 </div>
@@ -542,13 +575,14 @@ Figure 1.7: Counterfactual for UK where all NPIs implemented 3 days earlier. Lef
 <div id="references" class="section level1">
 <h1 class="hasAnchor">
 <a href="#references" class="anchor"></a><span class="header-section-number">2</span> References</h1>
+<hr>
 </div>
 <div id="refs" class="references">
 <div id="ref-Flaxman2020">
 <p>Flaxman, Seth, Swapnil Mishra, Axel Gandy, H Juliette T Unwin, Thomas A Mellan, Helen Coupland, Charles Whittaker, et al. 2020. “Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe.” <em>Nature</em>. <a href="https://doi.org/10.1038/s41586-020-2405-7">https://doi.org/10.1038/s41586-020-2405-7</a>.</p>
 </div>
 <div id="ref-Flaxman2020MA">
-<p>Flaxman, Seth, Swapnil Mishra, James Scott, Neil Ferguson, Axel Gandy, and Samir Bhatt. 2020. “Reply to: The Effect of Interventions on Covid-19.” <em>Nature</em> 588 (7839): E29–E32. <a href="https://doi.org/10.1038/s41586-020-3026-x">https://doi.org/10.1038/s41586-020-3026-x</a>.</p>
+<p>Flaxman, Seth, Swapnil Mishra, James Scott, Neil Ferguson, Axel Gandy, and Samir Bhatt. 2020. “Reply to: The effect of interventions on COVID-19.” <em>Nature</em> 588 (7839): E29—–E32. <a href="https://doi.org/10.1038/s41586-020-3026-x">https://doi.org/10.1038/s41586-020-3026-x</a>.</p>
 </div>
 </div>
 </div>

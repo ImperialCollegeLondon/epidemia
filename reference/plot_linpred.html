@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plotting the posterior linear predictor for R or ascertainment rates — plot_linpred • epidemia</title>
+<title>Plotting the posterior linear predictor for R or ascertainment rates — posterior_sample_size.epimodel • epidemia</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,7 +48,7 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Plotting the posterior linear predictor for R or ascertainment rates — plot_linpred" />
+<meta property="og:title" content="Plotting the posterior linear predictor for R or ascertainment rates — posterior_sample_size.epimodel" />
 <meta property="og:description" content="Plots credible intervals for the observed data under the posterior
 predictive distribution, and for a specific observation type.
 The user can control the levels of the intervals and the plotted group(s).
@@ -111,10 +111,16 @@ This is a generic function." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/model-introduction.html">Introduction</a>
+    </li>
+    <li>
       <a href="../articles/model-description.html">Description</a>
     </li>
     <li>
       <a href="../articles/model-implementation.html">Implementation</a>
+    </li>
+    <li>
+      <a href="../articles/model-schematic.html">Schematic</a>
     </li>
     <li>
       <a href="../articles/partial-pooling.html">Partial Pooling</a>
@@ -136,6 +142,9 @@ This is a generic function." />
     </li>
     <li>
       <a href="../articles/europe-covid.html">A Multilevel Model</a>
+    </li>
+    <li>
+      <a href="../articles/multiple-obs.html">Multiple Observations</a>
     </li>
   </ul>
 </li>
@@ -167,7 +176,7 @@ This is a generic function." />
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plotting the posterior linear predictor for R or ascertainment rates</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plots_epi.R'><code>R/plots_epi.R</code></a></small>
+    <small class="dont-index">Source: <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/misc.R'><code>R/misc.R</code></a>, <a href='https://github.com/ImperialCollegeLondon/epidemia/blob/master/R/plots_epi.R'><code>R/plots_epi.R</code></a></small>
     <div class="hidden name"><code>plot_linpred.Rd</code></div>
     </div>
 
@@ -178,7 +187,13 @@ The user can control the levels of the intervals and the plotted group(s).
 This is a generic function.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_linpred</span>(<span class='no'>object</span>, <span class='no'>...</span>)
+    <pre class="usage"><span class='co'># S3 method for epimodel</span>
+<span class='fu'><a href='posterior_sample_size.html'>posterior_sample_size</a></span>(<span class='no'>object</span>)
+
+<span class='co'># S3 method for epimodel</span>
+<span class='fu'><a href='all_obs_types.html'>all_obs_types</a></span>(<span class='no'>object</span>)
+
+<span class='fu'>plot_linpred</span>(<span class='no'>object</span>, <span class='no'>...</span>)
 
 <span class='co'># S3 method for epimodel</span>
 <span class='fu'>plot_linpred</span>(
@@ -189,7 +204,6 @@ This is a generic function.</p>
   <span class='kw'>date_breaks</span> <span class='kw'>=</span> <span class='st'>"2 weeks"</span>,
   <span class='kw'>date_format</span> <span class='kw'>=</span> <span class='st'>"%Y-%m-%d"</span>,
   <span class='kw'>levels</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>30</span>, <span class='fl'>60</span>, <span class='fl'>90</span>),
-  <span class='kw'>plotly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -242,17 +256,11 @@ argument to <code><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></cod
       <td><p>A numeric vector defining the levels of the plotted
 credible intervals.</p></td>
     </tr>
-    <tr>
-      <th>plotly</th>
-      <td><p>If <code>TRUE</code>, wraps the <code>ggplot</code> object into a <code>plotly</code> object. This is
-useful for interactive graphing.</p></td>
-    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If <code>plotly = FALSE</code>, a <code>ggplot</code> object which can be further modified. Otherwise
-a <code>plotly</code> object.</p>
+    <p>A <code>ggplot</code> object which can be further modified.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
