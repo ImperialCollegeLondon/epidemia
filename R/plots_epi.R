@@ -215,7 +215,7 @@ plot_obs.epimodel <- function(object, type, groups = NULL, dates = NULL,
 
   if (by_100k) {
     obs <- by100k(obs, object)
-    pop_df <- summarise(object$data, pop = (!!as.symbol(object$inf$pops))[1])
+    pop_df <- dplyr::summarise(object$data, pop = (!!as.symbol(object$inf$pops))[1])
     df <- df %>%
       dplyr::left_join(pop_df, by = "group") %>%
       dplyr::mutate(obs = .data$obs * 1e5 / .data$pop)
@@ -552,7 +552,7 @@ spaghetti_obs <- function(
 
   if (by_100k) {
     obs <- by100k(obs, object)
-    pop_df <- summarise(object$data, pop = (!!as.symbol(object$inf$pops))[1])
+    pop_df <- dplyr::summarise(object$data, pop = (!!as.symbol(object$inf$pops))[1])
     df <- df %>%
       dplyr::left_join(pop_df, by = "group") %>%
       dplyr::mutate(obs = .data$obs * 1e5 / .data$pop)
