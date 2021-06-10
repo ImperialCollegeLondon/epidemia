@@ -100,8 +100,7 @@ time-specific considerations. As such, **epidemia** treats
 $\alpha$ in a similar manner to reproductions number, and allows the
 user to specify a regression model for it. Section
 \@ref(sec:transmission) discusses this in detail in the context of
-reproduction numbers, and this discussion is not repeated here. Figure
-\@ref(fig:obs-model) in Appendix \@ref(sec:modelschematic) details the
+reproduction numbers, and this discussion is not repeated here. The model schematic](model-schematic.html) details the
 model for $\alpha$, as well as for observational models in general.
 
 The sampling distribution $p(y_t, \phi)$ (Equation
@@ -158,7 +157,7 @@ capture dynamics such as super-spreading events, and also adjusting the
 process for the size of the remaining susceptible population. These
 extensions are discussed in Section \@ref(sec:latent) and
 \@ref(sec:popadjust) respectively. The basic infection model is shown in
-Figure \@ref(fig:inf-basic) in Appendix \@ref(sec:modelschematic).
+the model [schematic](model-schematic.html).
 
 ## Transmission {#sec:transmission}
 <hr>
@@ -185,7 +184,7 @@ b \sim N(0, \Sigma),
 \end{equation} 
 where $\Sigma$ is a covariance matrix that is itself assigned a prior. The
 particular form for $\Sigma$, as well as its prior is discussed in
-more detail in Appendix \@ref(sec:priorscov). These partially-pooled
+more detail in this [article](priors.html). These partially-pooled
 parameters are particularly useful when multiple regions are being
 modeled simultaneously. In this case, they allow information on
 transmission rates to be shared between groups.
@@ -318,15 +317,15 @@ applied. These are interpreted as the number of infections if the entire populat
 
 \begin{equation}
 i_t = S_{t-1}\left( 1 - \exp\left(-\frac{i'_t}{P}\right)\right). 
-(\#eq:pop_adjust)
+(\#eq:pop-adjust)
 \end{equation}
 
-The motivation for this is provided in @Bhatt2020. Equation \@ref(eq:pop_adjust) satisfies intuitive properties: if $i'_t = 0$ then $i_t = 0$, and as $i'_t
+The motivation for this is provided in @Bhatt2020. Equation \@ref(eq:pop-adjust) satisfies intuitive properties: if $i'_t = 0$ then $i_t = 0$, and as $i'_t
 \to \infty$ we have that $i_t \to S_{t-1}$. All infections at
 time $t$ are then removed from the susceptible population, so that
 \begin{equation}
 S_t = S_{t-1} - i_t
-(\#eq:st_rec)
+(\#eq:st-rec)
 \end{equation}
 We are left to define $S_{v-1}$, the susceptible population the day
 before modeling begins. If this is the start of an epidemic,
@@ -350,7 +349,7 @@ vaccinated, and their immunity is assumed to have developed at
 time $t$.
 
 **epidemia** requires $v_t$ to be supplied by the user. Then
-\@ref(eq:st_rec) is replaced with 
+\@ref(eq:st-rec) is replaced with 
 \begin{equation}
 S_t = \left(S_{t-1} - i_t\right) \left(1 - v_t \right). 
 \end{equation} 

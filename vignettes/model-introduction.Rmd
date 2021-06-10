@@ -40,7 +40,7 @@ between COVID-19 lineages [@Faria_2021; @Volz_2021].
 Models of infectious disease dynamics are commonly classified as either mechanistic or statistical [@Myers2000]. Mechanistic models derive infection dynamics from theoretical considerations over how diseases spread within and between communities. An example of this are deterministic compartmental models (DCMs) [@kermack_1927; @kermack_1932; @kermack_1933], which propose differential equations that govern the change in infections over time. These equations are motivated by contacts between individuals in susceptible and infected classes. Purely statistical models, on the other hand, make 
 few assumptions over the transmission mechanism, and instead infer future 
 dynamics from the history of the process and related covariates. Examples include Generalized 
-Linear Models (GLMs), time series approaches including Auto Regressive Integrated Moving Average (ARIMA) [@box_1962], and more modern forecasting methods based on machine learning. 
+Linear Models (GLMs), time series approaches including Auto Regressive Integrated Moving Average (ARIMA) [@Box_1962], and more modern forecasting methods based on machine learning. 
 
 **epidemia** provides models which are *semi-mechanistic*. These are 
 statistical models that explicitly describe infection dynamics. Self-exciting 
@@ -95,7 +95,7 @@ case counts over time and an approximation of the disease's generation distribut
 Infection incidence is assumed to follow a Poisson process with expectation 
 given by a renewal equation. **R0** [@obadia_2012] implements techniques for estimating both 
 initial and time-varying transmission rates. In particular, the package implements
-the method of @Wallinga_2004, which bases estimates off a probabilistic reconstruction 
+the method of @wallinga_2004, which bases estimates off a probabilistic reconstruction 
 of transmission trees. **epidemia** differs from these packages in several ways. First, if 
 infection counts are low then the Poisson assumption may be too restrictive, as 
 super-spreader events can lead to over-dispersion in the infection process. 

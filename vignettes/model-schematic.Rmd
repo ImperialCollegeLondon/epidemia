@@ -22,12 +22,9 @@ pkgdown:
 We provide schematics for different parts of the model outlined [here](model-description.html). These are useful because they clarify how different 
 model objects, including data and parameters, are related to one another. 
 
-
-Figures \@ref(fig:schem-obs) illustrates a complete observational model, and in particular details the model for multipliers $\alpha_t$. Figure \@ref(fig:schem-inf) presents 
+Figure \@ref(fig:schem-obs) illustrates a complete observational model, and in particular details the model for multipliers $\alpha_t$. Figure \@ref(fig:schem-inf) presents 
 the basic infection model, and also shows the GLM-style model for reproduction 
-numbers $R_t$. Finally Figures \@ref(fig:schem-latent) and \@ref(fig:schem-pop) shows extensions of the basic 
-infection model, including treating latent infections as parameters and 
-including population adjustments. 
+numbers $R_t$. Finally Figure \@ref(fig:schem-latent) shows treating latent infections as parameters.
 
 All mathematical notation shown in the figures corresponds to that used in the model description article. Each node is outlined in a color corresponding to the type of object considered. These are interpreted as follows.
 
@@ -213,54 +210,4 @@ minimum width=2.4cm, fill=white]
 \end{tikzpicture}
 ```
 
-# Population Adjustments
-<hr>
-
-```{tikz schem-pop, fig.cap = "Population adjustment to infection Process. The population adjustment may be applied to either the infections shown at the bottom of Figure \\@ref(fig:schem-latent), or those at the top.", fig.ext = 'png', echo = FALSE, fig.align="center", out.width = "40%"}
-\usetikzlibrary{shapes,arrows}
-\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
-\definecolor{amaranth}{rgb}{0.9, 0.17, 0.31}
-\definecolor{ao(english)}{rgb}{0.0, 0.5, 0.0}
-\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
-\definecolor{anti-flashwhite}{rgb}{0.95, 0.95, 0.96}
-\definecolor{arsenic}{rgb}{0.23, 0.27, 0.29}
-\definecolor{amber}{rgb}{1.0, 0.49, 0.0}
-\tikzstyle{tparam} = [rectangle, draw = amaranth, line width = 0.5mm, minimum size = 20pt, inner sep=5pt, align = center, rounded corners=.2cm, 
-minimum width=2.4cm, fill=white]
-\tikzstyle{dummy} = [minimum size = 20pt, minimum height=30pt, minimum width=2.4cm]
-\tikzstyle{param} = [tparam, draw = ao(english)]
-\tikzstyle{quant} = [tparam, draw = gray, fill = gray!20]
-\tikzstyle{obs} = [tparam, draw = airforceblue]
-\tikzstyle{line} = [draw, -latex', ultra thick, color=gray!80]
-\begin{tikzpicture}
-\foreach \x in {0,...,4}
-    \foreach \y in {0,...,3}
-    {
-        \node[dummy] (\x\y) at (1.8*\x, 1.8*\y) {};
-    }
-    \node[quant] (vacc) at (00) {Vaccinations \\ $V_t-V_{t-1}$};
-    \node[tparam] (immunepast) at (20) {Immune \\ $Q_{t-1}$};
-    \node[tparam, draw=amber] (infunadj) at (40) {Infections \\ $i_{t}$};
-    \node[tparam] (effvacc) at (02) {Effective \\ $v_t$};
-    \node[tparam] (immune) at (22) {Immune \\ $Q_{t}$};
-    \node[tparam] (inf) at (42) {Infections \\ $i_{t}$};
-    \node[quant] (pop) at (23) {Population \\ $P$};
-    \path[line,-] (41.south) to[bend right=45] (31.east);
-    \path[line,-] (21.south) to[bend right=45] (11.east);
-    \path[line,-] (21.north) to[bend right=45] (31.west);
-    \path[line,-] (01.north) to[bend right=45] (11.west);
-    \path[line,-] (11.west) to (31.east);
-    \path[line] (vacc.north) to (effvacc.south);
-    \path[line] (immunepast.north) to (immune.south);
-    \path[line] (infunadj.north) to (inf.south);
-    \path[line] (effvacc.east) to (immune.west);
-    \path[line] (immune.east) to (inf.west);
-    \path[line,-] (pop.west) to (13.west);
-    \path[line,-] (13.west) to[bend right=45] (03.south);
-    \path[line,-] (pop.east) to (33.east);
-    \path[line,-] (33.east) to[bend left=45] (43.south);
-    \path[line] (03.south) to (effvacc.north);
-    \path[line] (43.south) to (inf.north);
-\end{tikzpicture}
-```
 </div>

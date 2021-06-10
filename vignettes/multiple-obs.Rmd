@@ -60,7 +60,8 @@ doing so, we relax the aforementioned modeling assumptions and
 demonstrate further capabilities of the package. Population adjustments
 are applied in order to explicitly account for pre-existing immunity in
 the population. The model is conditioned on two observation series:
-daily case counts, and positivity from seroprevalence surveys.
+daily case counts, and positivity from seroprevalence surveys. This example is 
+inspired by this [paper](https://rss.org.uk/RSS/media/File-library/News/2021/MishraScott.pdf),  which uses **epidemia** to track SARS-CoV-2 at the local authority level in the UK.
 
 Fitting the model to case counts requires a model for the case
 ascertainment rates (IAR). Unlike in previous examples, we do not assume

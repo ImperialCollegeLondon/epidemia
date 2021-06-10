@@ -2,6 +2,11 @@
 * First version submitted to CRAN
 * Bug fixed for latent infections and first Rt with pop_adjust
 * reorganized files to correctly attribute copyright.
+* New model for adding vaccination adjustments
+* latent infections switched to normal, from log-normal
+* Additional vignettes and model description
+* Additional noise options for infection process 
+* Many small bug fixes
 
 ## epidemia 0.7.0
 * Changes to general interface - new epiinf() function for representing infection model

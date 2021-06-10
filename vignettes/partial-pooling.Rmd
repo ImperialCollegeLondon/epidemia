@@ -73,7 +73,7 @@ and essentially $\Sigma$ is replaced by $p$ one-dimensional covariance matrices
 The easiest way to become familiar with how the `|` operator works is to 
 see a multitude of examples. Here, we give many examples, their interpretations, 
 and where possible we compare the models to the no pooling and full pooling equivalents.
-For a comprehensive reference on mixed model formulas, please see @Bates_2015.
+For a comprehensive reference on mixed model formulas, please see @bates_2015.
 
 There are many possible ways to specify intercepts. Table \@ref(tab:intercept-specs) demonstrates some of these, including fully pooled, partially pooled and unpooled. 
 Effects may also be partially pooled. This is shown in Table \@ref(tab:cov-specs).
