@@ -23,11 +23,10 @@
 #' @importFrom rstan vb
 #' @importFrom Rdpack reprompt
 #' @importFrom utils tail
-#' @importFrom dplyr %>%
+#' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @references
 #' \insertAllCited()
-#' Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.19.3. https://mc-stan.org
 #'
 NULL
 
@@ -39,3 +38,47 @@ rstantools::posterior_predict
 
 #' @export 
 rstantools::prior_summary
+
+#' @importFrom rstanarm normal
+#' @export
+rstanarm::normal
+
+#' @importFrom rstanarm student_t
+#' @export
+rstanarm::student_t
+
+#' @importFrom rstanarm cauchy
+#' @export
+rstanarm::cauchy
+
+#' @importFrom rstanarm hs
+#' @export
+rstanarm::hs
+
+#' @importFrom rstanarm hs_plus
+#' @export
+rstanarm::hs_plus
+
+#' @importFrom rstanarm laplace
+#' @export
+rstanarm::laplace
+
+#' @importFrom rstanarm lasso
+#' @export
+rstanarm::lasso
+
+#' @importFrom rstanarm product_normal
+#' @export
+rstanarm::product_normal
+
+#' @importFrom rstanarm exponential
+#' @export
+rstanarm::exponential
+
+#' @importFrom rstanarm decov
+#' @export
+rstanarm::decov
+
+#' @importFrom rstanarm lkj
+#' @export
+rstanarm::lkj

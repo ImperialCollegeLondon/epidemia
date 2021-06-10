@@ -1037,11 +1037,6 @@ base_plot <- function(qtl, log, date_breaks, step=FALSE) {
   return(p)
 }
 
-#' @importFrom dplyr %>%
-#' @export
-dplyr::`%>%`
-
-
 fancy_scientific <- function(l) {
   if (all(l[!is.na(l)] <= 1e4)) {
     l <- format(l)

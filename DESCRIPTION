@@ -82,10 +82,10 @@ Description: Flexibly specify and fit Bayesian statistical models for epidemics.
     that users can parameterize reproduction numbers and ascertainment rates in terms of predictors. Infections are propagated over 
     time using self-exciting point processes. Multiple regions can be modeled simultaneously with multilevel models. The models and framework behind 
     the package are described in Bhatt et al. (2021) <arXiv:2012.00394>. The design of the package has been inspired by, and has borrowed from, 
-    'rstanarm' (Goodrich et al., 2020) <https://mc-stan.org/rstanarm>. 'rstan' (Stan Development Team, 2020) <https://mc-stan.org/> is used as 
+    'rstanarm' (Goodrich et al., 2020) <https://mc-stan.org/rstanarm/>. 'rstan' (Stan Development Team, 2020) <https://mc-stan.org/> is used as 
     the back end for fitting models.
 License: GPL-3
-URL: https://github.com/ImperialCollegeLondon/epidemia
+URL: https://github.com/ImperialCollegeLondon/epidemia/
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -99,6 +99,7 @@ Imports:
     Rcpp (>= 0.12.0),
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0),
+    magrittr,
     rstanarm,
     lme4,
     ggplot2,
@@ -125,7 +126,6 @@ Suggests:
     bookdown,
     EpiEstim,
     lubridate,
-    rstanarm,
     kableExtra,
     extrafont
 RdMacros:
