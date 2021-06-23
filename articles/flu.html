@@ -269,10 +269,10 @@ versions of the model. <code>fm1</code> and <code>fm2</code>are the fitted basic
 and extended model respectively.</p>
 <div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="no">fm1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args</span>))</pre></body></html></div>
 <pre><code>##    user  system elapsed 
-## 408.947   1.279 210.401</code></pre>
+## 403.493   1.361 208.374</code></pre>
 <div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span>(<span class="no">fm2</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span>(<span class="no">epim</span>, <span class="no">args_ext</span>))</pre></body></html></div>
 <pre><code>##    user  system elapsed 
-##  75.083   1.020  37.289</code></pre>
+##  74.837   1.220  37.412</code></pre>
 <p>Note the stark difference in running time. The extended model appears to fit
 faster even though there are <span class="math inline">\(87\)</span> additional parameters being sampled (daily
 infections after the seeding period, and the coefficient of dispersion).
