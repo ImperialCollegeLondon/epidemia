@@ -2,9 +2,9 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master, rstan-next]
+    branches: [main, master]
   pull_request:
-    branches: [main, master, rstan-next]
+    branches: [main, master]
 
 name: R-CMD-check
 
@@ -19,7 +19,8 @@ jobs:
       matrix:
         config:
           - {os: macOS-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
+          # Vignette building hangs infinitely on Windows GHA, so disable for now
+          #- {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
