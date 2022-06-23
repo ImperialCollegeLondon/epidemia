@@ -45,7 +45,7 @@ jobs:
           extra-packages: rstantools rcmdcheck
 
       - name: Check against CRAN StanHeaders and CRAN RStan
-      - uses: r-lib/actions/check-r-package@v2
+         uses: r-lib/actions/check-r-package@v2
           with:
             args: 'c("--no-manual", "--as-cran")'
             error-on: '"error"'
@@ -58,7 +58,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Check against Development StanHeaders and CRAN RStan
-      - uses: r-lib/actions/check-r-package@v2
+         uses: r-lib/actions/check-r-package@v2
           with:
             args: 'c("--no-manual", "--as-cran")'
             error-on: '"error"'
@@ -71,7 +71,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Check against Development StanHeaders and Development RStan
-      - uses: r-lib/actions/check-r-package@v2
+         uses: r-lib/actions/check-r-package@v2
           with:
             args: 'c("--no-manual", "--as-cran")'
             error-on: '"error"'
