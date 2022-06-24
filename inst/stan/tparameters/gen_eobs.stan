@@ -1,11 +1,12 @@
 { // apply link function
     int i = 1;
     for (r in 1:R) {
-        E_obs[i:(i+oN[r]-1)] = linkinv(segment(oeta, i, oN[r]) + 1e-15, olink[r]);
+        vector[oN[r]] inv_vec = segment(oeta, i, oN[r]) + 1e-15;
+        E_obs[i:(i+oN[r]-1)] = linkinv(inv_vec, olink[r]);
         i += oN[r];
     }
 }
- 
+
 {  // compute expected values of the observations
 for (i in 1:N_obs) {
     int m = obs_group[i];
