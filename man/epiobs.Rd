@@ -13,6 +13,7 @@ epiobs(
   prior = rstanarm::normal(scale = 0.2),
   prior_intercept = rstanarm::normal(scale = 0.2),
   prior_aux = rstanarm::normal(location = 10, scale = 5),
+  period = 1L,
   ...
 )
 }
@@ -46,6 +47,13 @@ for the regression intercept, if one has been specified.}
 Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter). Can be a call to \code{\link[rstanarm]{exponential}},
 \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} or \code{\link[rstanarm]{cauchy}}. These result in half-normal, half-t and half-cauchy priors.}
 
+\item{period}{The number of days that each observation covers. The default, \code{1}, models daily observations.
+Otherwise each observation is taken to be the total over the \code{period} days ending on its date: its expected
+value is the sum of the expected daily observations over those days, and the sampling distribution given by
+\code{family} applies to the total. For example, weekly case counts are modeled with \code{period = 7}, each dated
+at the last day of its week, and \code{NA} for the observation on the other days. The ascertainment rate of a
+period is that on the observation's date, so covariates for the ascertainment rate should be constant over each period.}
+
 \item{...}{Additional arguments for \code{\link[stats]{model.frame}}}
 }
 \value{
@@ -72,5 +80,13 @@ deaths <- epiobs(
  deaths ~ 1,
  i2o = EuropeCovid$inf2death,
  link = scaled_logit(0.02)
+)
+
+# weekly deaths, each dated at the end of its week
+deaths <- epiobs(
+ deaths ~ 1,
+ i2o = EuropeCovid$inf2death,
+ link = scaled_logit(0.02),
+ period = 7
 )
 }

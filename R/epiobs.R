@@ -33,6 +33,12 @@
 #' @param prior_aux 	The prior distribution for the auxiliary parameter, if it exists. 
 #' Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter). Can be a call to \code{\link[rstanarm]{exponential}}, 
 #' \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} or \code{\link[rstanarm]{cauchy}}. These result in half-normal, half-t and half-cauchy priors.
+#' @param period The number of days that each observation covers. The default, \code{1}, models daily observations. 
+#' Otherwise each observation is taken to be the total over the \code{period} days ending on its date: its expected 
+#' value is the sum of the expected daily observations over those days, and the sampling distribution given by 
+#' \code{family} applies to the total. For example, weekly case counts are modeled with \code{period = 7}, each dated 
+#' at the last day of its week, and \code{NA} for the observation on the other days. The ascertainment rate of a 
+#' period is that on the observation's date, so covariates for the ascertainment rate should be constant over each period.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @return An object of class \code{epiobs}.
 #' @examples 
@@ -43,6 +49,14 @@
 #'  deaths ~ 1,
 #'  i2o = EuropeCovid$inf2death,
 #'  link = scaled_logit(0.02)
+#' )
+#' 
+#' # weekly deaths, each dated at the end of its week
+#' deaths <- epiobs(
+#'  deaths ~ 1,
+#'  i2o = EuropeCovid$inf2death,
+#'  link = scaled_logit(0.02),
+#'  period = 7
 #' )
 #' @export
 #' 
@@ -55,6 +69,7 @@ epiobs <- function(
   prior = rstanarm::normal(scale = 0.2),
   prior_intercept = rstanarm::normal(scale = 0.2),
   prior_aux = rstanarm::normal(location=10, scale=5),
+  period = 1L,
   ...) {
 
   call <- match.call(expand.dots = TRUE)
@@ -93,6 +108,12 @@ epiobs <- function(
   check_scalar(center)
   check_logical(center)
 
+  # period must be a positive integer scalar
+  check_numeric(period)
+  check_scalar(period)
+  check_integer(period)
+  check_positive(period)
+
   # check priors
   check_prior(prior)
   check_prior(prior_intercept)
@@ -114,6 +135,7 @@ epiobs <- function(
     prior,
     prior_intercept,
     prior_aux = if (family != "poisson") prior_aux else NULL,
+    period = as.integer(period),
     mfargs <- list(...)
   )
   class(out) <- "epiobs"
@@ -161,6 +183,33 @@ epiobs_ <- function(object, data) {
   
   class(out) <- "epiobs_"
   return(out)
+}
+
+# Warns if the periods of an aggregated observation overlap
+#
+# @param object An epiobs_ object
+check_obs_periods <- function(object) {
+  period <- object$period %ORifNULL% 1L
+  if (period == 1)
+    return(invisible(NULL))
+  gaps <- unlist(lapply(split(as.numeric(get_time(object)), get_gr(object)), function(x) diff(sort(x))))
+  if (any(gaps < period))
+    warning("observations of ", .get_obs(formula(object)), " are less than period = ", period, 
+      " days apart in some groups, so their periods overlap.", call. = FALSE)
+  return(invisible(NULL))
+}
+
+# The kernel from daily infections to an observation: i2o 
+# summed over the days of the observation's period
+#
+# @param i2o The i2o vector of an epiobs object
+# @param period The number of days covered by each observation
+# @return A numeric vector of length length(i2o) + period - 1
+i2o_period <- function(i2o, period = 1L) {
+  n <- length(i2o)
+  rowSums(vapply(seq_len(period) - 1L, 
+    function(j) c(rep(0, j), i2o, rep(0, period - 1L - j)), 
+    numeric(n + period - 1L)))
 }
 
 

@@ -123,6 +123,7 @@ epim <- function(
   obs_orig <- obs
   rt <- epirt_(rt, data)
   obs <- lapply(obs_orig, epiobs_, data)
+  lapply(obs, check_obs_periods)
 
   # collect arguments for standata function
   args <- nlist(rt, inf, obs, data, prior_PD)

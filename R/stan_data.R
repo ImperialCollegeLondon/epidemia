@@ -271,11 +271,13 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oN <- sapply(obs, function(x) nobs(x))
     oN <- array(pad(oN, maxtypes, 0))
 
-    pvecs_len <- array(sapply(obs,
-      function(x) length(x$i2o)))
+    # the i2o vectors, summed over the period of aggregated observations
+    i2o <- lapply(obs, function(x) i2o_period(x$i2o, x$period %ORifNULL% 1L))
 
-    pvecs <- as.array(lapply(obs,
-      function(x) pad(x$i2o, nsim, 0, FALSE)))
+    pvecs_len <- array(sapply(i2o, length))
+
+    pvecs <- as.array(lapply(i2o,
+      function(x) pad(x, nsim, 0, FALSE)))
 
     dat <- array(unlist(
       lapply(
