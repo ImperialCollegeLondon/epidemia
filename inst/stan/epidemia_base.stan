@@ -5,7 +5,7 @@ functions {
 #include /functions/linkinv.stan
 
   vector test_csr_matrix_times_vector(int m, int n, vector w,
-                                      int[] v, int[] u, vector b) {
+                                      array[] int v, array[] int u, vector b) {
     return csr_matrix_times_vector(m, n, w, v, u, b);
   }
 }
@@ -13,8 +13,8 @@ functions {
 data {
 #include /data/data_indices.stan
 #include /data/data_obs.stan
-int obs[N_obs]; // vector of observations
-real obs_real[N_obs]; // vector of observations
+array[N_obs] int obs; // vector of observations
+array[N_obs] real obs_real; // vector of observations
 #include /data/data_obs_mm.stan
 #include /data/data_model.stan
 #include /data/NKX.stan
@@ -28,8 +28,8 @@ real obs_real[N_obs]; // vector of observations
 
 transformed data {
   real aux = not_a_number();
-  int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
-  int<lower=0> ac_V[ac_nterms, N] = make_V(N, ac_nterms, ac_v);
+  array[special_case ? t : 0, N] int<lower=1> V = make_V(N, special_case ? t : 0, v);
+  array[ac_nterms, N] int<lower=0> ac_V = make_V(N, ac_nterms, ac_v);
 #include /tdata/tdata_reverse.stan
 #include /tdata/tdata_glm.stan
 
@@ -172,7 +172,7 @@ model {
 }
 
 generated quantities {
-  real alpha[has_intercept];
+  array[has_intercept] real alpha;
   
   if (has_intercept == 1) {
     alpha[1] = gamma[1] - dot_product(xbar, beta);
