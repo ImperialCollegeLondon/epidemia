@@ -12,7 +12,7 @@ standata_all <- function(rt,
   out <- c(
     out,
     standata_rt(rt),
-    standata_inf(inf, out$M),
+    standata_inf(inf, out$M, out$groups),
     standata_obs(
       obs = obs,
       groups = out$groups,
@@ -24,16 +24,14 @@ standata_all <- function(rt,
   return(out)
 }
 
-standata_inf <- function(inf, M) {
+standata_inf <- function(inf, M, groups = NULL) {
 
-  out <- list(
-      gen_len = length(inf$gen),
-      gen = inf$gen,
+  out <- c(standata_gen(inf, M, groups), list(
       N0 = inf$seed_days,
       latent = 1 * inf$latent,
       inf_family = 1 * inf$latent,
       pop_adjust = 1 * inf$pop_adjust
-  )
+  ))
 
   # are seeds modeled hierarchically?
   out$hseeds <- 1 * (inf$prior_seeds$dist == "hexp")
@@ -109,6 +107,38 @@ standata_inf <- function(inf, M) {
   out$fixed_vtm <- inf$fixed_vtm
 
   return(out)
+}
+
+# Generation distributions as stan data
+#
+# @param inf An epiinf object
+# @param M The number of modeled groups
+# @param groups The modeled groups, in model order. Only needed 
+#  if inf has several generation distributions.
+# @return A list giving the padded distributions (one per row 
+#  of gen) and the distribution used by each group (gen_idx)
+standata_gen <- function(inf, M, groups = NULL) {
+  gens <- if (is.list(inf$gen)) inf$gen else list(inf$gen)
+  if (length(gens) == 1) {
+    idx <- rep(1L, M)
+  } else {
+    map <- inf$gen_group %ORifNULL% stats::setNames(names(gens), names(gens))
+    if (is.null(groups))
+      stop("Bug found. Groups are needed to match them to generation distributions.", call. = FALSE)
+    miss <- setdiff(groups, names(map))
+    if (length(miss))
+      stop("no generation distribution given for group(s) ", paste(miss, collapse = ", "), 
+        ". Name the elements of gen by group, or map groups to them with gen_group.", call. = FALSE)
+    idx <- match(map[groups], names(gens))
+  }
+  gen_len <- max(lengths(gens))
+  gen <- unname(t(vapply(gens, function(g) pad(g, gen_len, 0), numeric(gen_len))))
+  return(list(
+    gen_len = gen_len,
+    n_gen = length(gens),
+    gen = gen,
+    gen_idx = as.array(as.integer(idx))
+  ))
 }
 
 # Generate standata for autocorrelation terms

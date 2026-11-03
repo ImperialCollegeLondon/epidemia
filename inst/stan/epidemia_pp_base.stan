@@ -44,6 +44,8 @@ generated quantities {
     Rt = Rt_unadj;
   }
 
-  infectiousness = load / max(gen);
+  for (m in 1:M) {
+    infectiousness[1:N2, m] = load[1:N2, m] / max(gen[gen_idx[m]]);
+  }
 }
 
