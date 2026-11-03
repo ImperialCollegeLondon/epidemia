@@ -187,8 +187,8 @@ rhs <- function(x) {
 check_obs_formula <- function(form) {
   s <- as.character.expr(substitute(form))
   if (is.mixed(form)) {
-    stop(paste0("random effects terms found in ", s, " but are not currently
-      supported", call. = FALSE))
+    stop(paste0("random effects terms found in ", s, 
+      " but are not currently supported in observation models"), call. = FALSE)
   }
   if (length(form) < 3) {
     stop(paste0(s, " must have a response."), call. = FALSE)
