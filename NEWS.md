@@ -1,3 +1,40 @@
+## epidemia 1.0.0.9000
+
+This is a maintained fork of epidemia 1.0.0 (https://github.com/OJWatson/epidemia). Models that do not use the
+new options below are the same as in 1.0.0. Issue and pull request numbers refer to
+https://github.com/ImperialCollegeLondon/epidemia.
+
+### Installation
+
+* Installs with current rstan, StanHeaders and rstantools (checked with rstan 2.32.7, StanHeaders 2.39.1 and
+  rstantools 2.7.1): the Stan programs use the array syntax required since Stan 2.33, the sparse matrix helper
+  `csr_matrix_times_vector2()` compiles against the Stan Math types of Stan >= 2.26, and the build files follow
+  rstantools 2.7 (C++17). rstan and StanHeaders >= 2.26 are now required (#67).
+* Sources and help pages are ASCII, so installation no longer fails in non-UTF-8 locales (#65).
+* The unused `inst/include/tests.cpp`, which included a missing header, is removed (#61).
+* An R CMD check workflow runs on GitHub Actions.
+
+### New features
+
+* `epiinf()`: `gen` can hold a generation distribution for each group, as a named list or a matrix with named
+  columns. They are matched to groups by name, or through the new `gen_group` argument.
+* `epiinf()`: `importations = TRUE` adds a constant number of imported infections each day in each group to the
+  renewal equation, with prior `prior_importations` (half-normal with scale 0.2 by default). Off by default (#15).
+* `epiobs()`: `period` models observations that are totals over the `period` days ending on their date, such as
+  weekly counts with `period = 7`. Daily observations (`period = 1`) remain the default.
+* `discretize_cdf()` turns a continuous delay distribution, given by its CDF, into the probability mass function
+  on whole days used by `gen` and `i2o` (#3).
+* New article "Weekly Counts, Importations and Counterfactuals", including counterfactuals with `newdata`.
+
+### Other changes
+
+* `plot_rt()` no longer plots the seeding period, where Rt does not enter the model; `seeding = TRUE` restores it
+  (#54).
+* Posterior simulations (`posterior_rt()`, `posterior_predict()` and the plots) no longer print sampler timings.
+* `check_time_as_date()` rejects numeric date columns again on R >= 4.3.
+* The check that `gen` sums to one allows rounding error up to 1e-8, as Stan's simplex check does.
+* A broken link in the model description vignette is fixed (pull request #63).
+
 ## epidemia 1.0.0
 * First version submitted to CRAN
 * Bug fixed for latent infections and first Rt with pop_adjust
