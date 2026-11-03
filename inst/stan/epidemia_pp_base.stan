@@ -16,6 +16,9 @@ transformed data {
 
 for(r in 1:R)
       pvecs_rev[r] = reverse2(pvecs[r]);
+
+for(k in 1:n_gen)
+      gen_rev[k] = reverse2(gen[k]);
 }
 
 parameters {
