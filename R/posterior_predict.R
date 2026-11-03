@@ -94,7 +94,7 @@ posterior_predict.epimodel <-
             draws <- apply(
               draws, 
               2, 
-              function(x) rlnorm(n=x, meanlog= x - (oaux * oaux) / 2, sdlog = oaux)
+              function(x) rlnorm(n=x, meanlog= log(x) - (oaux * oaux) / 2, sdlog = oaux)
             )
           }
         }
