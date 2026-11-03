@@ -52,3 +52,9 @@ array[S0_fixed ? 0 : M] real<lower=0> prior_scale_for_S0;
 array[veps_fixed ? 0 : M] real prior_mean_for_veps;
 array[veps_fixed ? 0 : M] real<lower=0> prior_scale_for_veps;
 
+// and constant daily importations
+array[importations] int<lower=0, upper=3> prior_dist_for_iota;
+array[importations] real prior_mean_for_iota;
+array[importations] real<lower=0> prior_scale_for_iota;
+array[importations] real<lower=0> prior_df_for_iota;
+

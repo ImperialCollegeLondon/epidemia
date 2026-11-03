@@ -106,6 +106,18 @@ standata_inf <- function(inf, M, groups = NULL) {
 
   out$fixed_vtm <- inf$fixed_vtm
 
+  # add data for constant daily importations
+  out$importations <- 1 * isTRUE(inf$importations)
+  p_iota <- handle_glm_prior(
+    inf$prior_importations,
+    out$importations,
+    link = NULL,
+    default_scale = 0.2,
+    ok_dists = ok_aux_dists
+  )
+  names(p_iota) <- paste0(names(p_iota), "_for_iota")
+  out <- c(out, p_iota)
+
   return(out)
 }
 

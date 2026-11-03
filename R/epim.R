@@ -197,6 +197,7 @@ pars <- function(sdat) {
       if (sdat$len_theta_L) "theta_L",
       "seeds",
       if (sdat$hseeds) "seeds_aux",
+      if (sdat$importations) "iota",
       if (length(sdat$ac_nterms)) "ac_scale",
       if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
       if (sdat$num_oaux > 0) "oaux",
@@ -268,6 +269,9 @@ new_names <- function(sdat, rt, obs, fit, data) {
       },
       c(paste0("seeds[", sdat$groups, "]")),
       if (sdat$hseeds) "seeds_aux",
+      if (sdat$importations) {
+        paste0("importations[", sdat$groups, "]")
+      },
       if (sdat$ac_nterms > 0) {
         make_rw_sigma_nms(rt, data)
       },

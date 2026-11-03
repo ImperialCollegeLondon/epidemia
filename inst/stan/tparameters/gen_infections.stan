@@ -33,6 +33,7 @@
 
             if (i > n1) { // infections after the seeding period
                 E_infections[i,m] = Rt_unadj[i,m] * load[i,m];
+                if (importations) E_infections[i,m] += iota[m];
                 if (latent) infections[i,m] = infections_raw[idx2];
                 else infections[i,m] = E_infections[i,m];
                 idx2 += 1;

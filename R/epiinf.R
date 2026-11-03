@@ -44,6 +44,15 @@
 #' giving for each modeled group the name (or position) of the element of \code{gen} that it uses. This allows groups 
 #' to share a distribution, for example one per region. If \code{NULL} (the default), the names of \code{gen} must 
 #' include every modeled group.
+#' @param importations If \code{TRUE}, each group has a constant number of imported infections every day after the seeding 
+#' period, \eqn{\iota}, an unknown parameter, so that the renewal equation becomes 
+#' \eqn{i_t = R_t \sum_{s < t} i_s g_{t-s} + \iota}. Imported infections keep an epidemic going when \eqn{R_t < 1}, 
+#' so they matter most when counts are low; they can also make \eqn{R_t} harder to identify there. Defaults to \code{FALSE}.
+#' @param prior_importations Prior distribution on the daily importations \eqn{\iota} of each group, which are on the scale of 
+#' infections. Only used if \code{importations = TRUE}. Can be a call to \code{\link[rstanarm]{normal}}, 
+#' \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{cauchy}} or \code{\link[rstanarm]{exponential}}; the 
+#' first three are truncated at zero. The default, a half-normal with scale 0.2, suits small numbers of importations; 
+#' choose a scale to suit the size of the epidemic.
 #' @return An object of class \code{epiinf}.
 #' @examples 
 #' data(EuropeCovid)
@@ -74,7 +83,9 @@ epiinf <- function(
   rm = NULL,
   prior_susc = NULL,
   prior_rm_noise = NULL,
-  gen_group = NULL) {
+  gen_group = NULL,
+  importations = FALSE,
+  prior_importations = rstanarm::normal(0, 0.2)) {
 
   call <- match.call(expand.dots = TRUE)
 
@@ -96,11 +107,13 @@ epiinf <- function(
   check_scalar(seed_days)
   check_positive(seed_days)
 
-  # latent, pop_adjust, must be logical scalarss
+  # latent, pop_adjust, importations must be logical scalarss
   check_scalar(latent)
   check_logical(latent)
   check_scalar(pop_adjust)
   check_logical(pop_adjust)
+  check_scalar(importations)
+  check_logical(importations)
 
   # family should be scalar character in the set
   check_character(family)
@@ -112,6 +125,8 @@ epiinf <- function(
   check_prior(prior_aux)
   check_in_set(prior_seeds$dist, c(ok_aux_dists, "hexp"))
   check_in_set(prior_aux$dist, ok_aux_dists)
+  check_prior(prior_importations)
+  check_in_set(prior_importations$dist, ok_aux_dists)
 
   if (!is.null(prior_susc)) {
     check_prior(prior_susc)
@@ -154,7 +169,9 @@ epiinf <- function(
     prior_susc,
     prior_rm_noise,
     fixed_vtm = fixed_vtm,
-    gen_group
+    gen_group,
+    importations,
+    prior_importations = if (importations) prior_importations else NULL
   )
   class(out) <- "epiinf"
   return(out)

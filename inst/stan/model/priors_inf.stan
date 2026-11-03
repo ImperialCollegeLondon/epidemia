@@ -50,3 +50,12 @@ if (!S0_fixed) {
 if (!veps_fixed) {
     target += normal_lpdf(veps | prior_mean_for_veps, prior_scale_for_veps);
 }
+
+if (importations) { // truncated at zero
+    if (prior_dist_for_iota[1] == 1)
+        target += normal_lpdf(iota | prior_mean_for_iota[1], prior_scale_for_iota[1]);
+    else if (prior_dist_for_iota[1] == 2)
+        target += student_t_lpdf(iota | prior_df_for_iota[1], prior_mean_for_iota[1], prior_scale_for_iota[1]);
+    else if (prior_dist_for_iota[1] == 3)
+        target += exponential_lpdf(iota | 1 / prior_scale_for_iota[1]);
+}
