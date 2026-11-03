@@ -250,6 +250,9 @@ check_time_as_date <- function(object, data) {
   time <- .get_time(formula(object))
   x <- data[, time]
   msg <- paste0("column ", time, " in data should be coercible to class `Date` and have no NAs.")
+  # as.Date() accepts numbers without an origin since R 4.3.0
+  if (is.numeric(x))
+    stop(msg, call. = FALSE)
   tryCatch(x <- as.Date(x, optional=TRUE), error = function(cond) stop(msg, call. = FALSE))
   if (anyNA(x))
     stop(msg, call. = FALSE)
@@ -558,7 +561,7 @@ obs_to_int <- function(data, obs) {
   col <- .get_obs(formula(obs))
   discrete_fams <- c("neg_binom", "poisson", "quasi_poisson")
   if (obs$family %in% discrete_fams) {
-    data <- dplyr::mutate(data, dplyr::across(col, as.integer))
+    data <- dplyr::mutate(data, dplyr::across(dplyr::all_of(col), as.integer))
   }
   return(data)
 }
