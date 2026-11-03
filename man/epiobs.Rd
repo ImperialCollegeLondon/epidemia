@@ -71,6 +71,13 @@ Each observational model is given by a call to \code{\link{epiobs}}.
 In particular, this must define the model for ascertainment rates and the time distribution from infection to observation.
 \code{\link{epiobs}} has a \code{formula} argument. The left hand side must define the observation vector  to be modeled, while the right hand side defines a linear predictor for the ascertainment rate.
 The argument \code{i2o} plays a similar role to the \code{gen} argument in \code{epiinf}, however it instead defines the probability mass function for the time between infection and observation.
+
+To fix the ascertainment rate at known values rather than estimate it, use an offset with the identity link and
+no other terms, such as \code{deaths ~ 0 + offset(cfr)} with \code{link = "identity"}, where the column \code{cfr}
+of \code{data} holds the known rate (here a case fatality ratio, which may differ by group and date). That
+observation then sets the scale of infections, and other observations can estimate their ascertainment against it:
+for example, \code{cases ~ 0 + group} with the logit link estimates a case reporting rate for each group. See the
+examples.
 }
 \examples{
 data(EuropeCovid)
@@ -80,6 +87,19 @@ deaths <- epiobs(
  deaths ~ 1,
  i2o = EuropeCovid$inf2death,
  link = scaled_logit(0.02)
+)
+
+# deaths with a known case fatality ratio, held in column cfr of the data, 
+# and cases with an unknown reporting rate in each country
+deaths <- epiobs(
+ deaths ~ 0 + offset(cfr),
+ i2o = EuropeCovid$inf2death,
+ link = "identity"
+)
+cases <- epiobs(
+ cases ~ 0 + country,
+ i2o = rep(0.25, 4),
+ link = "logit"
 )
 
 # weekly deaths, each dated at the end of its week
