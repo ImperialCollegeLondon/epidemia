@@ -170,18 +170,6 @@ plot_rt.epimodel <-
 }
 
 
-# Drops the seeding period at the start of each group from a 
-# series of posterior draws
-#
-# @param x A list with group, time and draws, as from posterior_rt
-# @param seed_days The number of seeding days
-drop_seeding <- function(x, seed_days) {
-  time <- as.numeric(x$time)
-  keep <- time >= stats::ave(time, x$group, FUN = min) + seed_days
-  return(sub_(x, keep))
-}
-
-
 #' Plot posterior predictive distributions
 #'
 #' Plots credible intervals and median for the observed data under the posterior
@@ -908,6 +896,17 @@ gr_subset <- function(object, groups) {
   }
   w <- object$group %in% groups
   return(sub_(object, w))
+}
+
+# Drops the seeding period at the start of each group from a 
+# series of posterior draws
+#
+# @param x A list with group, time and draws, as from posterior_rt
+# @param seed_days The number of seeding days
+drop_seeding <- function(x, seed_days) {
+  time <- as.numeric(x$time)
+  keep <- time >= ave(time, x$group, FUN = min) + seed_days
+  return(sub_(x, keep))
 }
 
 # makes sure all levels are between 0 and 100 (inclusive)

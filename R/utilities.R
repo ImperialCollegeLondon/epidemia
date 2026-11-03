@@ -392,6 +392,60 @@ check_inf <- function(x) {
     stop(paste(s, "must have class 'epiinf'."), call. = FALSE)
 }
 
+# Checks a list (or matrix) of generation distributions
+#
+# @param gen A list of numeric vectors, or a matrix with one 
+#  distribution per column
+# @return gen as a named list of numeric vectors
+check_gen_list <- function(gen) {
+  if (is.matrix(gen)) {
+    nms <- colnames(gen)
+    gen <- lapply(seq_len(ncol(gen)), function(j) gen[, j])
+    names(gen) <- nms
+  }
+  if (length(gen) == 0)
+    stop("gen must hold at least one generation distribution", call. = FALSE)
+  nms <- names(gen)
+  if (is.null(nms) || anyNA(nms) || any(nms == "") || anyDuplicated(nms))
+    stop("the generation distributions in gen must have unique names", call. = FALSE)
+  for (nm in nms) {
+    g <- gen[[nm]]
+    s <- paste0("gen[[\"", nm, "\"]]")
+    if (!is.numeric(g) || length(g) == 0 || anyNA(g))
+      stop(s, " should be a numeric vector.", call. = FALSE)
+    if (any(g < 0))
+      stop(s, " must be non-negative", call. = FALSE)
+    if (abs(sum(g) - 1) > 1e-8)
+      stop(s, " does not sum to one.", call. = FALSE)
+  }
+  return(gen)
+}
+
+# Checks the mapping from groups to generation distributions
+#
+# @param gen_group NULL, or a vector named by group
+# @param gen A named list of generation distributions
+# @return NULL, or a character vector named by group giving 
+#  names of gen
+check_gen_group <- function(gen_group, gen) {
+  if (is.null(gen_group))
+    return(NULL)
+  nms <- names(gen_group)
+  if (is.null(nms) || anyNA(nms) || any(nms == "") || anyDuplicated(nms))
+    stop("gen_group must be a vector named by group", call. = FALSE)
+  if (is.numeric(gen_group)) {
+    check_integer(gen_group)
+    if (any(gen_group < 1 | gen_group > length(gen)))
+      stop("gen_group must give positions between 1 and length(gen)", call. = FALSE)
+    gen_group <- names(gen)[gen_group]
+  } else {
+    gen_group <- as.character(gen_group)
+    check_all_in_set(gen_group, names(gen))
+  }
+  names(gen_group) <- nms
+  return(gen_group)
+}
+
 # Checks the `obs` argument to epim
 #
 # @param x Either an 'epiobs' object or a list of 'epiobs' objects.
@@ -416,6 +470,20 @@ check_obs <- function(obs) {
       ". Please check ", s, " argument."), call. = FALSE)
     }
   }
+}
+
+# Warns if the periods of an aggregated observation overlap
+#
+# @param object An epiobs_ object
+check_obs_periods <- function(object) {
+  period <- object$period %ORifNULL% 1L
+  if (period == 1)
+    return(invisible(NULL))
+  gaps <- unlist(lapply(split(as.numeric(get_time(object)), get_gr(object)), function(x) diff(sort(x))))
+  if (any(gaps < period))
+    warning("observations of ", .get_obs(formula(object)), " are less than period = ", period, 
+      " days apart in some groups, so their periods overlap.", call. = FALSE)
+  return(invisible(NULL))
 }
 
 # Checks the `group_subset` argument to epim

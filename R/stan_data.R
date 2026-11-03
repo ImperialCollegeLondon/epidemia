@@ -26,12 +26,15 @@ standata_all <- function(rt,
 
 standata_inf <- function(inf, M, groups = NULL) {
 
-  out <- c(standata_gen(inf, M, groups), list(
+  out <- list(
       N0 = inf$seed_days,
       latent = 1 * inf$latent,
       inf_family = 1 * inf$latent,
       pop_adjust = 1 * inf$pop_adjust
-  ))
+  )
+
+  # add the generation distributions
+  out <- c(out, standata_gen(inf, M, groups))
 
   # are seeds modeled hierarchically?
   out$hseeds <- 1 * (inf$prior_seeds$dist == "hexp")
@@ -134,7 +137,7 @@ standata_gen <- function(inf, M, groups = NULL) {
   if (length(gens) == 1) {
     idx <- rep(1L, M)
   } else {
-    map <- inf$gen_group %ORifNULL% stats::setNames(names(gens), names(gens))
+    map <- inf$gen_group %ORifNULL% setNames(names(gens), names(gens))
     if (is.null(groups))
       stop("Bug found. Groups are needed to match them to generation distributions.", call. = FALSE)
     miss <- setdiff(groups, names(map))
@@ -475,6 +478,19 @@ pad <- function(x, len, a, sv = FALSE) {
     out <- out / sum(out)
   }
   return(out)
+}
+
+# The kernel from daily infections to an observation: i2o 
+# summed over the days of the observation's period
+#
+# @param i2o The i2o vector of an epiobs object
+# @param period The number of days covered by each observation
+# @return A numeric vector of length length(i2o) + period - 1
+i2o_period <- function(i2o, period = 1L) {
+  n <- length(i2o)
+  rowSums(vapply(seq_len(period) - 1L, 
+    function(j) c(rep(0, j), i2o, rep(0, period - 1L - j)), 
+    numeric(n + period - 1L)))
 }
 
 

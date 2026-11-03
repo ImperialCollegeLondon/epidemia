@@ -205,31 +205,4 @@ epiobs_ <- function(object, data) {
   return(out)
 }
 
-# Warns if the periods of an aggregated observation overlap
-#
-# @param object An epiobs_ object
-check_obs_periods <- function(object) {
-  period <- object$period %ORifNULL% 1L
-  if (period == 1)
-    return(invisible(NULL))
-  gaps <- unlist(lapply(split(as.numeric(get_time(object)), get_gr(object)), function(x) diff(sort(x))))
-  if (any(gaps < period))
-    warning("observations of ", .get_obs(formula(object)), " are less than period = ", period, 
-      " days apart in some groups, so their periods overlap.", call. = FALSE)
-  return(invisible(NULL))
-}
-
-# The kernel from daily infections to an observation: i2o 
-# summed over the days of the observation's period
-#
-# @param i2o The i2o vector of an epiobs object
-# @param period The number of days covered by each observation
-# @return A numeric vector of length length(i2o) + period - 1
-i2o_period <- function(i2o, period = 1L) {
-  n <- length(i2o)
-  rowSums(vapply(seq_len(period) - 1L, 
-    function(j) c(rep(0, j), i2o, rep(0, period - 1L - j)), 
-    numeric(n + period - 1L)))
-}
-
 
