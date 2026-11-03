@@ -24,7 +24,7 @@ epiinf(
 }
 \arguments{
 \item{gen}{A numeric vector representing the probability mass function for the generation time of the disease (must be a
-probability vector). Its \eqn{k}th element is the probability that the generation time is \eqn{k} days, and
+probability vector; \code{\link{discretize_cdf}} makes one from a continuous distribution). Its \eqn{k}th element is the probability that the generation time is \eqn{k} days, and
 it is used for every group. To give groups different generation distributions, use instead a named list of
 such vectors, or a matrix whose (named) columns are such vectors. These are matched to groups by name, or
 by \code{gen_group}. Distributions of different lengths are padded with zeros.}
