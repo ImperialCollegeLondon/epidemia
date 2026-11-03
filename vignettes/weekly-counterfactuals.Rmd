@@ -19,7 +19,9 @@ This article shows three model options added in **epidemia** 1.0.0.9000, using s
 * observations that are totals over a period, such as weekly case counts (`period` in `epiobs()`).
 
 It then uses `newdata` to estimate what would have happened without an intervention: the reproduction number
-and the expected cases with the intervention's effect removed.
+and the expected cases with the intervention's effect removed. The last section fits cases and deaths together,
+with a known case fatality ratio and an unknown case reporting rate in each group, and estimates the deaths
+averted.
 
 ```{r packages, message = FALSE}
 library(epidemia)
@@ -39,14 +41,15 @@ be reported, after a delay of 1 to 5 days.
 # gamma distributions on whole days, with a given mean and standard deviation
 gamma_pmf <- function(mean, sd, n) discretize_cdf(pgamma, n, shape = (mean / sd)^2, rate = mean / sd^2)
 gen <- list(fast = gamma_pmf(4, 3, 30), slow = gamma_pmf(9, 6, 30))
-i2o <- c(0.1, 0.3, 0.3, 0.2, 0.1) # lags of 1 to 5 days
+i2o <- c(0.1, 0.3, 0.3, 0.2, 0.1) # infection to reported case: lags of 1 to 5 days
+i2d <- gamma_pmf(10, 5, 40)         # infection to death, used later
 
 weeks <- 40
 seed_days <- 30
 start <- as.Date("2024-01-01")
 set.seed(12345)
 
-simulate_region <- function(region, gen, R0, start_week, iota) {
+simulate_region <- function(region, gen, R0, start_week, iota, report = 1, cfr = NULL) {
   days <- seed_days + 7 * weeks
   week <- pmax(1, (seq_len(days) - seed_days - 1) %/% 7 + 1)
   intervention <- as.numeric(week >= start_week)
@@ -57,16 +60,23 @@ simulate_region <- function(region, gen, R0, start_week, iota) {
     s <- seq_len(min(t - 1, length(gen)))
     inf[t] <- R[t] * sum(inf[t - s] * gen[s]) + iota
   }
-  # expected daily cases and weekly totals, dated at the end of each week
-  daily <- sapply(seq_len(days), function(t) {
-    s <- seq_len(min(t - 1, length(i2o)))
-    sum(inf[t - s] * i2o[s])
-  })
+  # weekly totals of a share (rate) of infections, observed after a delay and dated at the
+  # end of each week, with negative binomial noise
   ends <- seed_days + 7 * seq_len(weeks)
-  cases <- rep(NA, days)
-  cases[ends] <- rnbinom(weeks, mu = sapply(ends, function(e) sum(daily[(e - 6):e])), size = 20)
-  data.frame(region = region, date = start + seq_len(days) - 1, week = week,
-             intervention = intervention, cases = cases, R = R)
+  weekly <- function(delay, rate) {
+    daily <- sapply(seq_len(days), function(t) {
+      s <- seq_len(min(t - 1, length(delay)))
+      sum(inf[t - s] * delay[s])
+    })
+    y <- rep(NA, days)
+    y[ends] <- rnbinom(weeks, mu = rate * sapply(ends, function(e) sum(daily[(e - 6):e])), size = 20)
+    y
+  }
+  out <- data.frame(region = region, date = start + seq_len(days) - 1, week = week,
+                    intervention = intervention, cases = weekly(i2o, report), R = R)
+  if (!is.null(cfr))
+    out$deaths <- weekly(i2d, cfr)
+  out
 }
 
 data <- rbind(
@@ -215,4 +225,74 @@ t(sapply(names(starts), function(g) {
   i <- mu_with$group == g & week >= starts[g] & week < starts[g] + 8
   quantile(rowSums(averted[, i, drop = FALSE]), c(0.5, 0.025, 0.975))
 }))
+```
+
+## Cases and deaths
+<hr>
+
+Case reporting often differs between places, so the ratio of deaths to reported cases can vary much more than the
+case fatality ratio (CFR) itself. If deaths are fully reported and the CFR is known, deaths fix the scale of
+infections, and the reporting rate of cases in each group can be estimated against them.
+
+The two regions are simulated again, now with 30% of cases reported in the north and 60% in the south, and with
+deaths, on average 10 days after infection, for a CFR of 1.5% in both. There are then about 5 deaths per 100 reported
+cases in the north and 2.5 in the south.
+
+```{r simulate-deaths}
+data2 <- rbind(
+  simulate_region("north", gen$fast, R0 = 1.25, start_week = 14, iota = 1, report = 0.3, cfr = 0.015),
+  simulate_region("south", gen$slow, R0 = 1.45, start_week = 20, iota = 1, report = 0.6, cfr = 0.015)
+)
+data2$cfr <- 0.015
+# deaths per reported case
+with(data2, tapply(deaths, region, sum, na.rm = TRUE) / tapply(cases, region, sum, na.rm = TRUE))
+```
+
+Deaths have their ascertainment fixed at the CFR: an offset, here the column `cfr` (which could differ by region or
+date), with the identity link and no other terms. Cases have a reporting rate for each region, on the logit scale,
+with a normal(0, 1.5) prior. Both are weekly totals.
+
+```{r obs-deaths}
+cases <- epiobs(cases ~ 0 + region, i2o = i2o, link = "logit", period = 7,
+                prior = rstanarm::normal(0, 1.5))
+deaths <- epiobs(deaths ~ 0 + offset(cfr), i2o = i2d, link = "identity", period = 7)
+```
+
+```{r fit-deaths, cache = TRUE}
+fm2 <- epim(rt = rt, inf = inf, obs = list(cases, deaths), data = data2, iter = 1000, chains = 4,
+            seed = 12345, refresh = 0, control = list(adapt_delta = 0.95))
+```
+
+The estimated reporting rates, with 95% credible intervals (simulated: 0.3 in the north and 0.6 in the south):
+
+```{r reporting}
+rho <- plogis(as.matrix(fm2)[, c("cases|regionnorth", "cases|regionsouth")])
+round(t(apply(rho, 2, quantile, c(0.5, 0.025, 0.975))), 2)
+```
+
+With several observation types, `posterior_predict()` returns a list with an element for each, so one counterfactual
+gives both the deaths and the reported cases averted. Dividing reported cases by the reporting rate would give all
+cases.
+
+```{r averted-deaths}
+nodata2 <- data2
+nodata2$intervention <- 0
+mu2 <- posterior_predict(fm2, posterior_mean = TRUE)
+mu2_without <- posterior_predict(fm2, newdata = nodata2, posterior_mean = TRUE)
+names(mu2)
+
+# deaths averted in the eight weeks after the intervention started
+week2 <- data2$week[match(paste(mu2$deaths$group, mu2$deaths$time), paste(data2$region, data2$date))]
+deaths_averted <- mu2_without$deaths$draws - mu2$deaths$draws
+t(sapply(names(starts), function(g) {
+  i <- mu2$deaths$group == g & week2 >= starts[g] & week2 < starts[g] + 8
+  quantile(rowSums(deaths_averted[, i, drop = FALSE]), c(0.5, 0.025, 0.975))
+}))
+```
+
+With fewer cases reported, and deaths few, the intervention's effect is less certain than in the first model, so these
+intervals are wide and include zero:
+
+```{r effect-deaths}
+round(quantile(as.matrix(fm2)[, "R|intervention"], c(0.5, 0.025, 0.975)), 2)
 ```
