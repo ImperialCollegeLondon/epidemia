@@ -8,9 +8,20 @@ pkgdown:
   as_is: true
 ---
 
+<style>
+.contents .page-header {
+    display: none;
+  }
+</style>
+
+<div class = "article_container">
+
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(fig.width = 7, fig.height = 4, out.width = "80%", fig.align = "center", warning = FALSE)
 ```
+
+# Weekly Counts, Importations and Counterfactuals {#sec:weekly}
+<hr>
 
 This article shows three model options added in **epidemia** 1.0.0.9000, using simulated data:
 
@@ -296,3 +307,5 @@ intervals are wide and include zero:
 ```{r effect-deaths}
 round(quantile(as.matrix(fm2)[, "R|intervention"], c(0.5, 0.025, 0.975)), 2)
 ```
+
+</div>
