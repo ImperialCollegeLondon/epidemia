@@ -24,7 +24,20 @@ https://github.com/ImperialCollegeLondon/epidemia.
   weekly counts with `period = 7`. Daily observations (`period = 1`) remain the default.
 * `discretize_cdf()` turns a continuous delay distribution, given by its CDF, into the probability mass function
   on whole days used by `gen` and `i2o` (#3).
-* New article "Weekly Counts, Importations and Counterfactuals", including counterfactuals with `newdata`.
+* Cases and deaths can be fitted together, with deaths fully reported at a known case fatality ratio (CFR) and
+  cases at an unknown reporting rate in each group: `epiobs(deaths ~ 0 + offset(cfr), link = "identity")` fixes the
+  ascertainment of deaths at the CFR held in column `cfr`, and `epiobs(cases ~ 0 + group, link = "logit")` estimates
+  a reporting rate for each group. The `epiobs()` help page now describes this.
+* New article "Weekly Counts, Importations and Counterfactuals", including counterfactuals with `newdata` and a joint
+  fit of weekly cases and deaths with the deaths averted.
+
+### Bug fixes
+
+* `posterior_predict()` returned `NULL` for models with several observation types unless a single type was asked
+  for. It now returns a list named by type, so one counterfactual gives, for example, both cases and deaths.
+* `posterior_predict()` drew log-normal observations on the wrong scale (`meanlog = mu - sigma^2 / 2` instead of
+  `log(mu) - sigma^2 / 2`).
+* The error for random effects in an observation formula no longer ends in "FALSE".
 
 ### Other changes
 
