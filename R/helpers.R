@@ -663,7 +663,7 @@ process_x <- function(x, center) {
 # @param prior A list
 # @param nvars An integer indicating the number of variables
 # @param default_scale Default value to use to scale if not specified by user
-# @param § String naming the link function.
+# @param link String naming the link function.
 # @param ok_dists A list of admissible distributions.
 handle_glm_prior <- function(prior, nvars, default_scale, link,
                              ok_dists = nlist("gamma", "normal", student_t = "t", 

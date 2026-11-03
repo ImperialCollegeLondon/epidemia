@@ -55,7 +55,7 @@ and additional arguments to specify priors on parameters making up the linear pr
 
 A general R formula gives a symbolic description of a model. It takes the form \code{y ~ model}, where \code{y} is the response
 and \code{model} is a collection of terms separated by the \code{+} operator. \code{model} fully defines a linear predictor used to predict \code{y}.
-In this case, the “response” being modeled are reproduction numbers which are unobserved.
+In this case, the "response" being modeled are reproduction numbers which are unobserved.
 \code{\link{epirt}} therefore requires that the left hand side of the formula takes the form \code{R(group, date)},
 where \code{group} and \code{date} refer to variables representing the region and date respectively.
 The right hand side can consist of fixed effects, random effects, and autocorrelation terms.
