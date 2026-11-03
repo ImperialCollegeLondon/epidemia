@@ -9,8 +9,10 @@
 #'  variables to consider. If unspecified, uses all.
 #' @param posterior_mean If TRUE, return samples of posterior means rather than
 #'  from the posterior predictive.
-#' @return A named list of draws from the posterior predictive. Each element
-#'  corresponds to a specific outcome.
+#' @return Draws from the posterior predictive for one outcome: a list giving the
+#'  \code{group}, \code{time} and \code{draws} (a matrix with a column for each 
+#'  observation). If \code{types} names several outcomes (by default, all of them), 
+#'  a list of these, named by outcome.
 #' @export
 posterior_predict.epimodel <-
   function(object,
@@ -66,7 +68,7 @@ posterior_predict.epimodel <-
           )
         } else {
           # get samples for the auxiliary variables
-          oaux <- mat[, grep(type, colnames(mat)), drop=FALSE]
+          oaux <- mat[, startsWith(colnames(mat), paste0(type, "|")), drop=FALSE]
           if (ncol(oaux) != 1) {
             stop("Bug found. Samples from auxiliary variables required but not found.", .call=FALSE)
           }
@@ -99,7 +101,9 @@ posterior_predict.epimodel <-
         out[[type]]$draws <- draws
       }
     }
-    return(out[[types]])
+    if (length(types) == 1)
+      return(out[[types]])
+    return(out)
   }
 
 
