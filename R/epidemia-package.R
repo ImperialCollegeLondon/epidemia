@@ -21,6 +21,7 @@
 #' @importFrom lme4 ngrps
 #' @importFrom rstan sampling
 #' @importFrom rstan vb
+#' @importFrom RcppParallel RcppParallelLibs
 #' @importFrom Rdpack reprompt
 #' @importFrom utils tail
 #' @importFrom magrittr %>%
