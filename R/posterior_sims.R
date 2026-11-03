@@ -79,10 +79,11 @@ posterior_sims <- function(object,
     groups = levels(data$group)
   )
 
-  sims <- rstan::gqs(stanmodels$epidemia_pp_base,
+  # gqs prints sampler timings, which are of no use here
+  utils::capture.output(sims <- rstan::gqs(stanmodels$epidemia_pp_base,
     data = standata,
     draws = stanmat
-  )
+  ))
 
   # get list of indices for slicing result of gqs
   ind <- Map(
