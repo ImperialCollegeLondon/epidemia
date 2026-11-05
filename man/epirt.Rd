@@ -37,7 +37,9 @@ automatic rescaling of the prior may take place.}
 the regression intercept (if it exists).}
 
 \item{prior_covariance}{Same as in \code{\link[rstanarm]{stan_glmer}}. Only
-used if the \code{formula} argument specifies random effects.}
+used if the \code{formula} argument specifies random effects. Alternatively, when every random effects term has
+one coefficient (such as \code{(0 + x || group)}), \code{rstanarm::normal(0, s)} gives the standard deviation of
+each term a half-normal prior with scale \code{s} (a vector of scales gives one per term).}
 
 \item{...}{Additional arguments for \code{\link[stats]{model.frame}}}
 }

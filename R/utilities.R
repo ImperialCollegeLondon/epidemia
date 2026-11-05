@@ -699,7 +699,8 @@ ok_aux_dists <- nlist(
 
 ok_cov_dists <- nlist(
  "decov", 
- "lkj"
+ "lkj",
+ "normal"
 )
 
 ok_families <- c(

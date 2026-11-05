@@ -9,6 +9,8 @@ All are off by default, so models that do not use them are unchanged.
 * `epiobs(prior_aux_on = "inv_sqrt")` makes `prior_aux` a prior on one over the square root of the auxiliary
   parameter: `prior_aux = rstanarm::normal(0, 1)` then gives the negative binomial's 1/sqrt(phi) a half-normal(0, 1)
   prior. The help page now says that a normal prior with location m is m + s|z|, so the default keeps phi >= 10.
+* `epirt(prior_covariance = rstanarm::normal(0, s))` gives the standard deviation of each random effects term a
+  half-normal(0, s) prior instead of decov's, when every term has one coefficient, as in `(0 + x || group)`.
 
 ## epidemia 1.0.0.9000
 

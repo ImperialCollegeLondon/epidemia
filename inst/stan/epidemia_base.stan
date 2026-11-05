@@ -146,8 +146,13 @@ model {
 #include /model/priors_obs.stan
 #include /model/priors_inf.stan
   if (t > 0) {
-    real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
-                          regularization, delta, shape, t, p);
+    if (re_sd_normal) { // every term has one coefficient, with sd tau * scale
+      target += normal_lpdf(z_b | 0, 1);
+      target += normal_lpdf(tau | 0, 1);
+    } else {
+      real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
+                            regularization, delta, shape, t, p);
+    }
   }
 
   if (prior_PD == 0) {

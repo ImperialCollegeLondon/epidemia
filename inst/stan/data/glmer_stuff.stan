@@ -8,6 +8,7 @@
 
   // hyperparameters for glmer stuff; if t > 0 priors are mandatory
   vector<lower=0>[t] shape; 
+  int<lower=0, upper=1> re_sd_normal; // 1: half-normal sds of one-coefficient terms instead of decov
   vector<lower=0>[t] scale;
   int<lower=0> len_concentration;
   array[len_concentration] real<lower=0> concentration;

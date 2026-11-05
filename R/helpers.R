@@ -331,6 +331,10 @@ neff_ratio.epimodel <- function (object, pars = NULL, regex_pars = NULL, ...) {
                ", shape = ", .f1(p$shape),
                ", scale = ", .f1(p$scale), ")")
     )    
+  } else if (p$dist == "normal") {
+    .f1 <- formatters[[1]]
+    cat(paste0("\n", txt, "\n ~"),
+        paste0("half-normal standard deviations (scale = ", .f1(.format_pars(p$scale, .f1)), ")"))
   } else if (p$dist == "lkj") {
     .f1 <- formatters[[1]]
     .f2 <- formatters[[2]]
