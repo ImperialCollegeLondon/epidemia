@@ -23,11 +23,12 @@ knitr::opts_chunk$set(fig.width = 7, fig.height = 4, out.width = "80%", fig.alig
 # Weekly Counts, Importations and Counterfactuals {#sec:weekly}
 <hr>
 
-This article shows three model options added in **epidemia** 1.0.0.9000, using simulated data:
+This article shows four model options added in **epidemia** 1.0.0.9000 and 1.0.0.9001, using simulated data:
 
 * a generation distribution for each group (`gen` and `gen_group` in `epiinf()`);
 * a constant number of imported infections each day in each group (`importations` in `epiinf()`);
-* observations that are totals over a period, such as weekly case counts (`period` in `epiobs()`).
+* observations that are totals over a period, such as weekly case counts (`period` in `epiobs()`);
+* a negative binomial dispersion for each group (`aux_by_group` in `epiobs()`).
 
 It then uses `newdata` to estimate what would have happened without an intervention: the reproduction number
 and the expected cases with the intervention's effect removed. The last section fits cases and deaths together,
@@ -46,7 +47,8 @@ Two regions, `north` and `south`, report weekly case counts for 40 weeks. Transm
 (mean generation time 4 days) than in the south (mean 9 days). In both, $R_t$ falls to 1 after a first wave, then an
 intervention cuts it by 20%, from week 14 in the north and week 20 in the south. One infection a day arrives from
 elsewhere. Every infection is assumed to
-be reported, after a delay of 1 to 5 days.
+be reported, after a delay of 1 to 5 days. The weekly counts are noisier in the north: their negative binomial
+reciprocal dispersion is 5 there and 50 in the south.
 
 ```{r simulate}
 # gamma distributions on whole days, with a given mean and standard deviation
@@ -60,7 +62,7 @@ seed_days <- 30
 start <- as.Date("2024-01-01")
 set.seed(12345)
 
-simulate_region <- function(region, gen, R0, start_week, iota, report = 1, cfr = NULL) {
+simulate_region <- function(region, gen, R0, start_week, iota, size = 20, report = 1, cfr = NULL) {
   days <- seed_days + 7 * weeks
   week <- pmax(1, (seq_len(days) - seed_days - 1) %/% 7 + 1)
   intervention <- as.numeric(week >= start_week)
@@ -80,7 +82,7 @@ simulate_region <- function(region, gen, R0, start_week, iota, report = 1, cfr =
       sum(inf[t - s] * delay[s])
     })
     y <- rep(NA, days)
-    y[ends] <- rnbinom(weeks, mu = rate * sapply(ends, function(e) sum(daily[(e - 6):e])), size = 20)
+    y[ends] <- rnbinom(weeks, mu = rate * sapply(ends, function(e) sum(daily[(e - 6):e])), size = size)
     y
   }
   out <- data.frame(region = region, date = start + seq_len(days) - 1, week = week,
@@ -91,8 +93,8 @@ simulate_region <- function(region, gen, R0, start_week, iota, report = 1, cfr =
 }
 
 data <- rbind(
-  simulate_region("north", gen$fast, R0 = 1.25, start_week = 14, iota = 1),
-  simulate_region("south", gen$slow, R0 = 1.45, start_week = 20, iota = 1)
+  simulate_region("north", gen$fast, R0 = 1.25, start_week = 14, iota = 1, size = 5),
+  simulate_region("south", gen$slow, R0 = 1.45, start_week = 20, iota = 1, size = 50)
 )
 ```
 
@@ -151,13 +153,20 @@ The weekly counts use `period = 7`. The expected value of each count is then the
 the seven days ending on its date, and the negative binomial applies to the weekly total. All infections are reported
 here, so the ascertainment rate is fixed at 1 using an offset and the identity link.
 
+With `aux_by_group = TRUE`, each region has its own reciprocal dispersion $\phi$, each with the prior `prior_aux`.
+`prior_aux_on = "inv_sqrt"` puts that prior on $1/\sqrt{\phi}$: here a half-normal(0, 1), which allows strong
+overdispersion. The default prior, `normal(10, 5)` on $\phi$ itself, would keep $\phi$ at 10 or more.
+
 ```{r obs}
 data$one <- 1
 obs <- epiobs(
   formula = cases ~ 0 + offset(one),
   i2o = i2o,
   link = "identity",
-  period = 7
+  period = 7,
+  aux_by_group = TRUE,
+  prior_aux = rstanarm::normal(0, 1),
+  prior_aux_on = "inv_sqrt"
 )
 ```
 
@@ -169,14 +178,16 @@ fm <- epim(rt = rt, inf = inf, obs = obs, data = data, iter = 1000, chains = 4,
            seed = 12345, refresh = 0, control = list(adapt_delta = 0.95))
 ```
 
-The intervention effect and the importations, with 95% credible intervals:
+The intervention effect, the importations and the dispersions, with 95% credible intervals:
 
 ```{r estimates}
-pars <- c("R|intervention", "importations[north]", "importations[south]")
+pars <- c("R|intervention", "importations[north]", "importations[south]",
+          "cases|reciprocal dispersion[north]", "cases|reciprocal dispersion[south]")
 round(t(apply(as.matrix(fm)[, pars], 2, quantile, c(0.5, 0.025, 0.975))), 2)
 ```
 
-The simulated values, $\log 0.8 \approx -0.22$ and one infection a day, are inside the intervals.
+The simulated values, $\log 0.8 \approx -0.22$, one infection a day, and reciprocal dispersions of 5 and 50, are
+inside the intervals.
 
 ```{r rt-plot}
 plot_rt(fm, step = TRUE, date_breaks = "1 month")
@@ -246,7 +257,8 @@ case fatality ratio (CFR) itself. If deaths are fully reported and the CFR is kn
 infections, and the reporting rate of cases in each group can be estimated against them.
 
 The two regions are simulated again, now with 30% of cases reported in the north and 60% in the south, and with
-deaths, on average 10 days after infection, for a CFR of 1.5% in both. There are then about 5 deaths per 100 reported
+deaths, on average 10 days after infection, for a CFR of 1.5% in both. The reciprocal dispersion is 20
+everywhere, and the model below has one for each observation type, the default. There are then about 5 deaths per 100 reported
 cases in the north and 2.5 in the south.
 
 ```{r simulate-deaths}
@@ -301,8 +313,8 @@ t(sapply(names(starts), function(g) {
 }))
 ```
 
-With fewer cases reported, and deaths few, the intervention's effect is less certain than in the first model, so these
-intervals are wide and include zero:
+These intervals are wide for the same reason as the cases averted: a small error in the estimated effect compounds
+week after week. The effect itself, with its 95% credible interval (simulated: $\log 0.8 \approx -0.22$):
 
 ```{r effect-deaths}
 round(quantile(as.matrix(fm2)[, "R|intervention"], c(0.5, 0.025, 0.975)), 2)

@@ -52,9 +52,13 @@
 #' itself, or \code{"inv_sqrt"}, one over its square root. For the negative binomial, whose auxiliary parameter is the 
 #' reciprocal dispersion \eqn{\phi}, \code{prior_aux = rstanarm::normal(0, 1)} with \code{prior_aux_on = "inv_sqrt"} 
 #' gives \eqn{1/\sqrt{\phi}} a half-normal(0, 1) prior.
-#' @param aux_by_group If \code{TRUE}, each group has its own auxiliary parameter (e.g. its own negative binomial 
-#' dispersion), each with the prior \code{prior_aux}. Defaults to \code{FALSE}: one auxiliary parameter for the 
-#' observation type. With several groups this avoids one observation model per group (at most 10 are allowed).
+#' @param aux_by_group If \code{TRUE}, each group has its own auxiliary parameter, for example its own negative 
+#' binomial dispersion of cases or of deaths. This works for every family that has an auxiliary parameter (with 
+#' \code{"poisson"} it has no effect). Each group's parameter has the prior \code{prior_aux}, on the scale set by 
+#' \code{prior_aux_on}, and is named by group, as in \code{cases|reciprocal dispersion[north]}. Defaults to 
+#' \code{FALSE}: one auxiliary parameter for the observation type, as in epidemia 1.0.0. With several groups this 
+#' avoids one observation model per group (at most 10 are allowed). The article "Weekly Counts, Importations and 
+#' Counterfactuals" has an example.
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @return An object of class \code{epiobs}.
 #' @examples 

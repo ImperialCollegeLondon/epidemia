@@ -67,3 +67,57 @@ test_that("posterior predictions draw each group with its own auxiliary paramete
   expect_equal(unname(a), cbind(11:13, 1:3, 11:13))
   expect_error(aux_draws(fm$obs[[1]], mat, "Spain"), regexp = "group\\(s\\) Spain")
 })
+
+test_that("every family with an auxiliary parameter can have one per group", {
+  nms <- c(quasi_poisson = "dispersion", normal = "standard deviation")
+  for (fam in names(nms)) {
+    run_args <- args
+    run_args$obs <- suppressWarnings(epiobs(deaths ~ 1, i2o = i2d, family = fam, aux_by_group = TRUE))
+    fm <- suppressWarnings(do.call(epim, run_args))
+    expect_true(all(paste0("deaths|", nms[fam], "[", c("Germany", "Italy"), "]") %in% colnames(as.matrix(fm))))
+  }
+})
+
+test_that("by default the log density is that of epidemia 1.0.0", {
+  # shared dispersions for two observation types, random intercepts and a centred walk; the values are those of
+  # epidemia 1.0.0 at the same unconstrained parameter values
+  d <- data
+  d$week <- as.integer(format(d$date, "%V"))
+  fm <- suppressWarnings(epim(
+    rt = epirt(R(country, date) ~ 1 + lockdown + (1 | country) + rw(time = week, gr = country)),
+    inf = epiinf(gen = EuropeCovid$si),
+    obs = list(epiobs(deaths ~ 1, i2o = i2d), epiobs(cases ~ 1, i2o = rep(0.25, 4))),
+    data = d, iter = 10, chains = 1, seed = 1, refresh = 0))
+  expect_identical(rstan::get_num_upars(fm$stanfit), 43L)
+  lp <- rstan::log_prob(fm$stanfit, 0.3 * sin(seq_len(43)), gradient = TRUE)
+  g <- attr(lp, "gradient")
+  expect_equal(as.numeric(lp), -56178.2592859092, tolerance = 1e-10)
+  expect_equal(c(sum(g), sum(g * seq_along(g))), c(1916860.0415205397, 42882232.2137610614), tolerance = 1e-10)
+})
+
+test_that("a fit recovers different dispersions in two groups", {
+  # daily cases with R = 1, negative binomial with reciprocal dispersion 2 in group A and 100 in group B
+  gen <- EuropeCovid$si
+  i2o <- rep(0.25, 4)
+  days <- 120
+  set.seed(1)
+  simulate <- function(phi) {
+    inf <- c(rep(50, 6), numeric(days - 6))
+    for (t in 7:days) inf[t] <- sum(inf[t - seq_len(min(t - 1, length(gen)))] * gen[seq_len(min(t - 1, length(gen)))])
+    mu <- sapply(seq_len(days), function(t) sum(inf[t - seq_len(min(t - 1, 4))] * i2o[seq_len(min(t - 1, 4))]))
+    y <- rnbinom(days, mu = mu, size = phi)
+    y[1:6] <- NA
+    y
+  }
+  sim <- data.frame(group = rep(c("A", "B"), each = days), date = rep(as.Date("2024-01-01") + seq_len(days) - 1, 2),
+    cases = c(simulate(2), simulate(100)), one = 1)
+  fm <- suppressWarnings(epim(rt = epirt(R(group, date) ~ 0 + group), inf = epiinf(gen = gen),
+    obs = epiobs(cases ~ 0 + offset(one), i2o = i2o, link = "identity", aux_by_group = TRUE,
+      prior_aux = rstanarm::normal(0, 1), prior_aux_on = "inv_sqrt"),
+    data = sim, iter = 400, chains = 2, seed = 12345, refresh = 0))
+  phi <- as.matrix(fm)[, paste0("cases|reciprocal dispersion[", c("A", "B"), "]")]
+  q <- apply(phi, 2, stats::quantile, c(0.05, 0.95))
+  expect_true(q[1, 1] < 2 && 2 < q[2, 1])
+  expect_true(q[1, 2] < 100 && 100 < q[2, 2])
+  expect_gt(q[1, 2], q[2, 1])
+})

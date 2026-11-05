@@ -3,9 +3,12 @@
 Options that let the fork fit the renewal model of the cholera anticipatory-action fits (`rt_renewal.stan`) exactly.
 All are off by default, so models that do not use them are unchanged.
 
-* `epiobs(aux_by_group = TRUE)` gives each group its own auxiliary parameter (e.g. negative binomial dispersion),
-  each with the prior `prior_aux`, instead of one per observation type. Several groups no longer need one
-  observation model each (at most 10 are allowed).
+* `epiobs(aux_by_group = TRUE)` gives each group its own auxiliary parameter, such as its own negative binomial
+  dispersion, for any observation type that has one: cases and deaths alike. Each group's parameter has the type's
+  `prior_aux`, on the scale that `prior_aux_on` sets, and is named by group (`cases|reciprocal dispersion[north]`).
+  Several groups no longer need one observation model each (at most 10 are allowed). With the default, `FALSE`,
+  the model is that of 1.0.0: a test checks that its log density and gradient equal 1.0.0's, and another that a fit
+  recovers different dispersions in two groups of simulated data. The weekly-counterfactuals article has an example.
 * `epiobs(prior_aux_on = "inv_sqrt")` makes `prior_aux` a prior on one over the square root of the auxiliary
   parameter: `prior_aux = rstanarm::normal(0, 1)` then gives the negative binomial's 1/sqrt(phi) a half-normal(0, 1)
   prior. The help page now says that a normal prior with location m is m + s|z|, so the default keeps phi >= 10.

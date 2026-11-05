@@ -58,9 +58,13 @@ value is the sum of the expected daily observations over those days, and the sam
 at the last day of its week, and \code{NA} for the observation on the other days. The ascertainment rate of a
 period is that on the observation's date, so covariates for the ascertainment rate should be constant over each period.}
 
-\item{aux_by_group}{If \code{TRUE}, each group has its own auxiliary parameter (e.g. its own negative binomial
-dispersion), each with the prior \code{prior_aux}. Defaults to \code{FALSE}: one auxiliary parameter for the
-observation type. With several groups this avoids one observation model per group (at most 10 are allowed).}
+\item{aux_by_group}{If \code{TRUE}, each group has its own auxiliary parameter, for example its own negative
+binomial dispersion of cases or of deaths. This works for every family that has an auxiliary parameter (with
+\code{"poisson"} it has no effect). Each group's parameter has the prior \code{prior_aux}, on the scale set by
+\code{prior_aux_on}, and is named by group, as in \code{cases|reciprocal dispersion[north]}. Defaults to
+\code{FALSE}: one auxiliary parameter for the observation type, as in epidemia 1.0.0. With several groups this
+avoids one observation model per group (at most 10 are allowed). The article "Weekly Counts, Importations and
+Counterfactuals" has an example.}
 
 \item{prior_aux_on}{What \code{prior_aux} is a prior on: \code{"aux"} (the default), the auxiliary parameter
 itself, or \code{"inv_sqrt"}, one over its square root. For the negative binomial, whose auxiliary parameter is the
