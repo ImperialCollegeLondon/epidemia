@@ -14,6 +14,8 @@ All are off by default, so models that do not use them are unchanged.
 * `lognormal(meanlog, sdlog)` is a new prior for `epiinf(prior_seeds = )`: the log of each group's daily seeded
   infections is normal, with a mean (and standard deviation) per group if given, so seeds can be centred on each
   group's early counts.
+* The `rw()` help page explains that rows with an `NA` time have no walk term, so a walk can start in the second
+  period, with the first period's log Rt given by the intercept alone.
 
 ## epidemia 1.0.0.9000
 

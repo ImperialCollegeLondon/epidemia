@@ -10,7 +10,10 @@ rw(time, gr, prior_scale = 0.2)
 \item{time}{An optional name defining the random walk time periods for each
 date and group. This must be a column name found in the \code{data} argument to \code{epim}.
 If not specified, determined by the dates column implied by the \code{formula} argument to \code{epim}
-is used.}
+is used. Rows whose time is \code{NA} have no random walk term. Giving \code{NA} to the first period of each
+group (and to any seeding days before it) starts the walk in the second period: the first period's value is
+then the intercept alone, and each later period adds a step. With a normal(0, s) prior on a group intercept,
+the first period's log Rt is normal(0, s), followed by a driftless walk.}
 
 \item{gr}{Same as for \code{time}, except this defines the grouping to use for the random walks. A separate walk is defined
 for each group. If not specified a common random walk is used for all groups.}
