@@ -9,7 +9,7 @@
 #' 
 #' A general R formula gives a symbolic description of a model. It takes the form \code{y ~ model}, where \code{y} is the response 
 #' and \code{model} is a collection of terms separated by the \code{+} operator. \code{model} fully defines a linear predictor used to predict \code{y}. 
-#' In this case, the “response” being modeled are reproduction numbers which are unobserved. 
+#' In this case, the "response" being modeled are reproduction numbers which are unobserved. 
 #' \code{\link{epirt}} therefore requires that the left hand side of the formula takes the form \code{R(group, date)}, 
 #' where \code{group} and \code{date} refer to variables representing the region and date respectively. 
 #' The right hand side can consist of fixed effects, random effects, and autocorrelation terms. 
@@ -31,7 +31,9 @@
 #' @param prior_intercept Same as in \code{\link[rstanarm]{stan_glm}}. Prior for
 #'  the regression intercept (if it exists).
 #' @param prior_covariance Same as in \code{\link[rstanarm]{stan_glmer}}. Only
-#'  used if the \code{formula} argument specifies random effects.
+#'  used if the \code{formula} argument specifies random effects. Alternatively, when every random effects term has 
+#'  one coefficient (such as \code{(0 + x || group)}), \code{rstanarm::normal(0, s)} gives the standard deviation of 
+#'  each term a half-normal prior with scale \code{s} (a vector of scales gives one per term).
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @export
 #' @return An object of class \code{epirt}.

@@ -12,7 +12,7 @@ standata_all <- function(rt,
   out <- c(
     out,
     standata_rt(rt),
-    standata_inf(inf, out$M),
+    standata_inf(inf, out$M, out$groups),
     standata_obs(
       obs = obs,
       groups = out$groups,
@@ -24,16 +24,17 @@ standata_all <- function(rt,
   return(out)
 }
 
-standata_inf <- function(inf, M) {
+standata_inf <- function(inf, M, groups = NULL) {
 
   out <- list(
-      gen_len = length(inf$gen),
-      gen = inf$gen,
       N0 = inf$seed_days,
       latent = 1 * inf$latent,
       inf_family = 1 * inf$latent,
       pop_adjust = 1 * inf$pop_adjust
   )
+
+  # add the generation distributions
+  out <- c(out, standata_gen(inf, M, groups))
 
   # are seeds modeled hierarchically?
   out$hseeds <- 1 * (inf$prior_seeds$dist == "hexp")
@@ -44,7 +45,7 @@ standata_inf <- function(inf, M) {
     nvars = M,
     default_scale = 1,
     link = NULL,
-    ok_dists = c(ok_aux_dists, "hexp")
+    ok_dists = c(ok_aux_dists, "hexp", "lognormal")
   )
 
   names(prior_seeds_stuff) <- paste0(names(prior_seeds_stuff), "_for_seeds")
@@ -108,7 +109,51 @@ standata_inf <- function(inf, M) {
 
   out$fixed_vtm <- inf$fixed_vtm
 
+  # add data for constant daily importations
+  out$importations <- 1 * isTRUE(inf$importations)
+  p_iota <- handle_glm_prior(
+    inf$prior_importations,
+    out$importations,
+    link = NULL,
+    default_scale = 0.2,
+    ok_dists = ok_aux_dists
+  )
+  names(p_iota) <- paste0(names(p_iota), "_for_iota")
+  out <- c(out, p_iota)
+
   return(out)
+}
+
+# Generation distributions as stan data
+#
+# @param inf An epiinf object
+# @param M The number of modeled groups
+# @param groups The modeled groups, in model order. Only needed 
+#  if inf has several generation distributions.
+# @return A list giving the padded distributions (one per row 
+#  of gen) and the distribution used by each group (gen_idx)
+standata_gen <- function(inf, M, groups = NULL) {
+  gens <- if (is.list(inf$gen)) inf$gen else list(inf$gen)
+  if (length(gens) == 1) {
+    idx <- rep(1L, M)
+  } else {
+    map <- inf$gen_group %ORifNULL% setNames(names(gens), names(gens))
+    if (is.null(groups))
+      stop("Bug found. Groups are needed to match them to generation distributions.", call. = FALSE)
+    miss <- setdiff(groups, names(map))
+    if (length(miss))
+      stop("no generation distribution given for group(s) ", paste(miss, collapse = ", "), 
+        ". Name the elements of gen by group, or map groups to them with gen_group.", call. = FALSE)
+    idx <- match(map[groups], names(gens))
+  }
+  gen_len <- max(lengths(gens))
+  gen <- unname(t(vapply(gens, function(g) pad(g, gen_len, 0), numeric(gen_len))))
+  return(list(
+    gen_len = gen_len,
+    n_gen = length(gens),
+    gen = gen,
+    gen_idx = as.array(as.integer(idx))
+  ))
 }
 
 # Generate standata for autocorrelation terms
@@ -124,6 +169,7 @@ standata_autocor <- function(autocor) {
   out$ac_nproc <- sum(autocor$nproc)
   # todo: implement this as an option
   out$ac_prior_scales <- as.array(autocor$prior_scale)
+  out$ac_noncentred <- as.array(as.integer(autocor$noncentred %ORifNULL% rep(FALSE, out$ac_nproc)))
 
   # add sparse matrix representation
   parts <- rstan::extract_sparse_parts(autocor$Z)
@@ -135,6 +181,7 @@ standata_autocor <- function(autocor) {
   } else {
     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0
     out$ac_prior_scales <- out$ac_v <- out$ac_ntime <- numeric()
+    out$ac_noncentred <- integer()
   }
   return(out)
 }
@@ -229,11 +276,13 @@ standata_obs <- function(obs, groups, nsim, begin) {
     oN <- sapply(obs, function(x) nobs(x))
     oN <- array(pad(oN, maxtypes, 0))
 
-    pvecs_len <- array(sapply(obs,
-      function(x) length(x$i2o)))
+    # the i2o vectors, summed over the period of aggregated observations
+    i2o <- lapply(obs, function(x) i2o_period(x$i2o, x$period %ORifNULL% 1L))
 
-    pvecs <- as.array(lapply(obs,
-      function(x) pad(x$i2o, nsim, 0, FALSE)))
+    pvecs_len <- array(sapply(i2o, length))
+
+    pvecs <- as.array(lapply(i2o,
+      function(x) pad(x, nsim, 0, FALSE)))
 
     dat <- array(unlist(
       lapply(
@@ -295,9 +344,18 @@ standata_obs <- function(obs, groups, nsim, begin) {
     # auxiliary params
     ofamily <- array(sapply(reg, function(x) x$family))
     olink <- array(sapply(reg, function(x) x$link))
-    has_oaux <- ofamily != 1
-    num_oaux <- sum(has_oaux)
-    has_oaux <- array(has_oaux * cumsum(has_oaux))
+    # auxiliary parameters: one for each type that has one, or one for 
+    # each observed group of a type with aux_by_group
+    aux_groups <- lapply(obs, aux_groups)
+    n_aux <- ifelse(ofamily != 1, pmax(lengths(aux_groups), 1), 0)
+    num_oaux <- sum(n_aux)
+    has_oaux <- array(ifelse(n_aux > 0, cumsum(n_aux) - n_aux + 1, 0))
+    # the auxiliary parameter of each observation (0 if none)
+    obs_oaux <- array(as.integer(unlist(lapply(seq_along(obs), function(r) {
+      if (n_aux[r] == 0) return(rep(0, oN[r]))
+      if (is.null(aux_groups[[r]])) return(rep(has_oaux[r], oN[r]))
+      has_oaux[r] - 1 + match(as.character(get_gr(obs[[r]])), aux_groups[[r]])
+    }))))
 
     # can only take normal for now
     prior_mean_for_ointercept <- array(unlist(lapply(
@@ -314,9 +372,12 @@ standata_obs <- function(obs, groups, nsim, begin) {
                 "prior_scale","prior_df")
 
     for (i in paste0(nms, "_for_oaux")){
-      temp <- unlist(lapply(reg, function(x) x[[i]]))
+      temp <- unlist(Map(function(x, n) rep(x[[i]], n), reg, n_aux))
       assign(i, array(as.numeric(temp) %ORifNULL% rep(0,0)))
     }
+    # 1 where prior_aux is a prior on one over the square root of the parameter
+    oaux_inv_sqrt <- array(as.integer(unlist(Map(
+      function(x, n) rep(identical(x$prior_aux_on, "inv_sqrt"), n), obs, n_aux))))
 
     has_offset <- array(sapply(obs, function(x) any(x$offset != 0) * 1))
     offset_ <- array(unlist(lapply(obs, function(x) x$offset)))
@@ -331,7 +392,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_df_for_oaux <- offset_ <- rep(0,0)
     obs_group <- obs_date <- obs_type  <- oxbar <-
     has_ointercept <- prior_dist_for_oaux <- has_offset <- 
-    has_oaux <- olink <- ofamily <- pvecs_len <- integer(0)
+    has_oaux <- obs_oaux <- oaux_inv_sqrt <- olink <- ofamily <- pvecs_len <- integer(0)
     oN <- oK <- rep(0, maxtypes)
     pvecs <- array(0, dim = c(0, nsim))
     obs_prior_info <- NULL
@@ -357,7 +418,8 @@ standata_obs <- function(obs, groups, nsim, begin) {
   autocor <- list(
     nproc = unlist(lapply(obs, function(x) x$autocor$nproc)),
     ntime = unlist(lapply(obs, function(x) x$autocor$ntime)),
-    prior_scale = unlist(lapply(obs, function(x) x$autocor$prior_scale))
+    prior_scale = unlist(lapply(obs, function(x) x$autocor$prior_scale)),
+    noncentred = unlist(lapply(obs, function(x) x$autocor$noncentred))
   )
   
   Z_list <- lapply(obs, function(x) get_Z(x))
@@ -405,17 +467,29 @@ standata_obs <- function(obs, groups, nsim, begin) {
     ofamily,
     olink,
     has_oaux,
+    obs_oaux,
     num_oaux,
     prior_dist_for_oaux,
     prior_mean_for_oaux,
     prior_scale_for_oaux,
     prior_df_for_oaux,
+    oaux_inv_sqrt,
     pvecs,
     pvecs_len,
     has_offset,
     offset_
   ))
   return(out)
+}
+
+# The groups of an observation type that have their own auxiliary 
+# parameter: those observed if aux_by_group, else NULL
+#
+# @param x An epiobs_ object
+aux_groups <- function(x) {
+  if (!isTRUE(x$aux_by_group))
+    return(NULL)
+  levels(droplevels(as.factor(get_gr(x))))
 }
 
 # Takes a vector and extends to required length
@@ -431,6 +505,19 @@ pad <- function(x, len, a, sv = FALSE) {
     out <- out / sum(out)
   }
   return(out)
+}
+
+# The kernel from daily infections to an observation: i2o 
+# summed over the days of the observation's period
+#
+# @param i2o The i2o vector of an epiobs object
+# @param period The number of days covered by each observation
+# @return A numeric vector of length length(i2o) + period - 1
+i2o_period <- function(i2o, period = 1L) {
+  n <- length(i2o)
+  rowSums(vapply(seq_len(period) - 1L, 
+    function(j) c(rep(0, j), i2o, rep(0, period - 1L - j)), 
+    numeric(n + period - 1L)))
 }
 
 

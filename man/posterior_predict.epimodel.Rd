@@ -36,8 +36,10 @@ from the posterior predictive.}
 \item{...}{Not used.}
 }
 \value{
-A named list of draws from the posterior predictive. Each element
-corresponds to a specific outcome.
+Draws from the posterior predictive for one outcome: a list giving the
+\code{group}, \code{time} and \code{draws} (a matrix with a column for each
+observation). If \code{types} names several outcomes (by default, all of them),
+a list of these, named by outcome.
 }
 \description{
 Generate data from the posterior predictive distribution. This is useful for

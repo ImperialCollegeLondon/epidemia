@@ -24,10 +24,10 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{lme4}{\code{\link[lme4]{ngrps}}}
+  \item{lme4}{\code{\link[lme4:ngrps]{ngrps()}}}
 
-  \item{rstanarm}{\code{\link[rstanarm:priors]{cauchy}}, \code{\link[rstanarm:priors]{decov}}, \code{\link[rstanarm:priors]{exponential}}, \code{\link[rstanarm:priors]{hs}}, \code{\link[rstanarm:priors]{hs_plus}}, \code{\link[rstanarm:priors]{laplace}}, \code{\link[rstanarm:priors]{lasso}}, \code{\link[rstanarm:priors]{lkj}}, \code{\link[rstanarm:priors]{normal}}, \code{\link[rstanarm:priors]{product_normal}}, \code{\link[rstanarm:priors]{student_t}}}
+  \item{rstanarm}{\code{\link[rstanarm:cauchy]{cauchy()}}, \code{\link[rstanarm:decov]{decov()}}, \code{\link[rstanarm:exponential]{exponential()}}, \code{\link[rstanarm:hs]{hs()}}, \code{\link[rstanarm:hs_plus]{hs_plus()}}, \code{\link[rstanarm:laplace]{laplace()}}, \code{\link[rstanarm:lasso]{lasso()}}, \code{\link[rstanarm:lkj]{lkj()}}, \code{\link[rstanarm:normal]{normal()}}, \code{\link[rstanarm:product_normal]{product_normal()}}, \code{\link[rstanarm:student_t]{student_t()}}}
 
-  \item{rstantools}{\code{\link[rstantools]{posterior_predict}}, \code{\link[rstantools]{prior_summary}}}
+  \item{rstantools}{\code{\link[rstantools:posterior_predict]{posterior_predict()}}, \code{\link[rstantools:prior_summary]{prior_summary()}}}
 }}
 

@@ -5,7 +5,38 @@ test_that("generation distribution", {
   inf <- epiinf(gen = vec)
   sdat <- standata_inf(inf, 1)
   expect_equal(sdat$gen_len, length(vec))
-  expect_equal(sdat$gen, vec)
+  expect_equal(sdat$n_gen, 1)
+  expect_equal(sdat$gen, matrix(vec, nrow = 1))
+  expect_equal(sdat$gen_idx, array(1L))
+
+  sdat <- standata_inf(inf, 3, c("a", "b", "c"))
+  expect_equal(sdat$gen_idx, array(c(1L, 1L, 1L)))
+})
+
+test_that("generation distribution per group", {
+  g1 <- c(0.2, 0.8)
+  g2 <- rep(0.25, 4)
+
+  # matched to groups by name, padded to a common length
+  inf <- epiinf(gen = list(b = g2, a = g1))
+  sdat <- standata_inf(inf, 2, c("a", "b"))
+  expect_equal(sdat$gen_len, 4)
+  expect_equal(sdat$n_gen, 2)
+  expect_equal(sdat$gen, unname(rbind(g2, c(g1, 0, 0))))
+  expect_equal(sdat$gen_idx, array(c(2L, 1L)))
+  expect_error(standata_inf(inf, 2, c("a", "z")), regexp = "group\\(s\\) z")
+
+  # matched through gen_group, which may name groups that are not modeled
+  inf <- epiinf(gen = list(fast = g1, slow = g2), 
+    gen_group = c(x = "slow", y = "fast", z = "slow"))
+  sdat <- standata_inf(inf, 2, c("x", "y"))
+  expect_equal(sdat$gen_idx, array(c(2L, 1L)))
+  expect_error(standata_inf(inf, 2, c("x", "w")), regexp = "group\\(s\\) w")
+
+  # one distribution in a list is used by every group
+  inf <- epiinf(gen = list(only = g2))
+  sdat <- standata_inf(inf, 2, c("x", "y"))
+  expect_equal(sdat$gen_idx, array(c(1L, 1L)))
 })
 
 test_that("seed days", {

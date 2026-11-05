@@ -31,6 +31,7 @@ S3method(terms,epimodel)
 export(all_obs_types)
 export(cauchy)
 export(decov)
+export(discretize_cdf)
 export(epiinf)
 export(epim)
 export(epiobs)
@@ -46,6 +47,7 @@ export(hs_plus)
 export(laplace)
 export(lasso)
 export(lkj)
+export(lognormal)
 export(ngrps)
 export(normal)
 export(plot_coverage)
@@ -78,30 +80,43 @@ import(Rcpp)
 import(methods)
 import(rstantools)
 import(stats)
+importFrom(RcppParallel,RcppParallelLibs)
 importFrom(Rdpack,reprompt)
-importFrom(bayesplot,pairs_condition)
-importFrom(bayesplot,pairs_style_np)
-importFrom(ggplot2,"%+replace%")
-importFrom(ggplot2,aes_string)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,xlab)
+importFrom(bayesplot,
+  pairs_condition,
+  pairs_style_np
+)
+importFrom(ggplot2,
+  "%+replace%",
+  aes_string,
+  ggplot,
+  theme,
+  xlab
+)
 importFrom(lme4,ngrps)
 importFrom(magrittr,"%>%")
 importFrom(rlang,.data)
-importFrom(rstan,sampling)
-importFrom(rstan,vb)
-importFrom(rstanarm,cauchy)
-importFrom(rstanarm,decov)
-importFrom(rstanarm,exponential)
-importFrom(rstanarm,hs)
-importFrom(rstanarm,hs_plus)
-importFrom(rstanarm,laplace)
-importFrom(rstanarm,lasso)
-importFrom(rstanarm,lkj)
-importFrom(rstanarm,normal)
-importFrom(rstanarm,product_normal)
-importFrom(rstanarm,student_t)
+importFrom(rstan,
+  sampling,
+  vb
+)
+importFrom(rstanarm,
+  cauchy,
+  decov,
+  exponential,
+  hs,
+  hs_plus,
+  laplace,
+  lasso,
+  lkj,
+  normal,
+  product_normal,
+  student_t
+)
+importFrom(rstantools,
+  posterior_predict,
+  prior_summary
+)
 importFrom(utils,tail)
 importMethodsFrom(rstan,summary)
 useDynLib(epidemia, .registration = TRUE)

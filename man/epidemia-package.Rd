@@ -19,3 +19,38 @@ The primary model fitting function in \pkg{epidemia} is \code{\link[epidemia]{ep
 \references{
 \insertAllCited()
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/OJWatson/epidemia}
+  \item \url{https://github.com/ImperialCollegeLondon/epidemia/}
+  \item Report bugs at \url{https://github.com/OJWatson/epidemia/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: James Scott \email{james.scott15@imperial.ac.uk} (\href{https://orcid.org/0000-0003-0106-5618}{ORCID})
+
+Authors:
+\itemize{
+  \item James Scott \email{james.scott15@imperial.ac.uk} (\href{https://orcid.org/0000-0003-0106-5618}{ORCID})
+  \item Axel Gandy \email{a.gandy@imperial.ac.uk} (\href{https://orcid.org/0000-0002-6777-0451}{ORCID})
+  \item Swapnil Mishra \email{swapnilmishra.anu@gmail.com} (\href{https://orcid.org/0000-0002-8759-5902}{ORCID})
+  \item Juliette Unwin \email{h.unwin@imperial.ac.uk} (\href{https://orcid.org/0000-0002-9120-4003}{ORCID})
+  \item Seth Flaxman \email{s.flaxman@imperial.ac.uk} (\href{https://orcid.org/0000-0002-2477-4217}{ORCID})
+  \item Samir Bhatt \email{s.bhatt@imperial.ac.uk} (\href{https://orcid.org/0000-0002-0891-4611}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Jonathan Ish-Horowicz \email{jonathan.ish-horowicz17@imperial.ac.uk} (\href{https://orcid.org/0000-0002-5386-6620}{ORCID}) [contributor]
+  \item Leon Wu \email{leon.wu16@imperial.ac.uk} [contributor]
+  \item Ben Goodrich \email{benjamin.goodrich@columbia.edu} [contributor]
+  \item Jonah Gabry \email{jsg2201@columbia.edu} [contributor]
+  \item Trustees of Columbia University (R/helpers.R) [copyright holder]
+  \item Paul-Christian Burkner \email{paul.buerkner@gmail.com} (R/misc.R) [copyright holder]
+  \item Triad Sou \email{triadsou@gmail.com} (R/geom_stepribbon.R) [copyright holder]
+  \item Kengo Nagashima (R/geom_stepribbon.R) [copyright holder]
+}
+
+}

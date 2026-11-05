@@ -15,9 +15,12 @@
 #' It can be employed by setting \code{pop_adjust = TRUE} and using the \code{susceptibles} argument to point towards a variable in the dataframe which gives the susceptible population at each point in time. 
 #' 
 #' @param gen A numeric vector representing the probability mass function for the generation time of the disease (must be a
-#'  probability vector).
+#'  probability vector; \code{\link{discretize_cdf}} makes one from a continuous distribution). Its \eqn{k}th element is the probability that the generation time is \eqn{k} days, and 
+#'  it is used for every group. To give groups different generation distributions, use instead a named list of 
+#'  such vectors, or a matrix whose (named) columns are such vectors. These are matched to groups by name, or 
+#'  by \code{gen_group}. Distributions of different lengths are padded with zeros.
 #' @param seed_days An integer giving the number of days for which to seed infections. Defaults to \code{6L}.
-#' @param prior_seeds The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, or to \code{\link[epidemia]{hexp}}. The latter 
+#' @param prior_seeds The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, \code{\link[epidemia]{lognormal}}, or to \code{\link[epidemia]{hexp}}. The latter 
 #' distribution allows hierarchical modeling of seeded infections.
 #' @param latent If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.
 #' @param family 	Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{normal}.
@@ -37,6 +40,19 @@
 #' @param prior_rm_noise Removal from the susceptible population (to account for vaccinations) can be applied using the \code{rm} argument. However, in practice, it 
 #' is difficult to specify the proportion of the susceptible class removed at any point in time. \code{prior_rm_noise} 
 #' helps to model noise around this. If specified, should be a call to \code{\link[rstanarm]{normal}}.
+#' @param gen_group Only used if \code{gen} holds several generation distributions. A vector, named by group, 
+#' giving for each modeled group the name (or position) of the element of \code{gen} that it uses. This allows groups 
+#' to share a distribution, for example one per region. If \code{NULL} (the default), the names of \code{gen} must 
+#' include every modeled group.
+#' @param importations If \code{TRUE}, each group has a constant number of imported infections every day after the seeding 
+#' period, \eqn{\iota}, an unknown parameter, so that the renewal equation becomes 
+#' \eqn{i_t = R_t \sum_{s < t} i_s g_{t-s} + \iota}. Imported infections keep an epidemic going when \eqn{R_t < 1}, 
+#' so they matter most when counts are low; they can also make \eqn{R_t} harder to identify there. Defaults to \code{FALSE}.
+#' @param prior_importations Prior distribution on the daily importations \eqn{\iota} of each group, which are on the scale of 
+#' infections. Only used if \code{importations = TRUE}. Can be a call to \code{\link[rstanarm]{normal}}, 
+#' \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{cauchy}} or \code{\link[rstanarm]{exponential}}; the 
+#' first three are truncated at zero. The default, a half-normal with scale 0.2, suits small numbers of importations; 
+#' choose a scale to suit the size of the epidemic.
 #' @return An object of class \code{epiinf}.
 #' @examples 
 #' data(EuropeCovid)
@@ -44,6 +60,13 @@
 #'  gen = EuropeCovid$si,
 #'  seed_days = 6L,
 #'  prior_seeds = hexp(rstanarm::exponential(0.02))
+#' )
+#' 
+#' # a faster generation distribution in some groups
+#' fast <- EuropeCovid$si[1:20] / sum(EuropeCovid$si[1:20])
+#' inf <- epiinf(
+#'  gen = list(slow = EuropeCovid$si, fast = fast),
+#'  gen_group = c(Italy = "fast", Spain = "fast", Germany = "slow")
 #' )
 #' @export
 
@@ -59,14 +82,24 @@ epiinf <- function(
   pops = NULL,
   rm = NULL,
   prior_susc = NULL,
-  prior_rm_noise = NULL) {
+  prior_rm_noise = NULL,
+  gen_group = NULL,
+  importations = FALSE,
+  prior_importations = rstanarm::normal(0, 0.2)) {
 
   call <- match.call(expand.dots = TRUE)
 
-  # check gen satisfied conditions for a simplex vector
-  check_numeric(gen)
-  check_non_negative(gen)
-  check_sum_to_one(gen)
+  # check gen is a simplex vector, or a named list of them
+  if (is.list(gen) || is.matrix(gen)) {
+    gen <- check_gen_list(gen)
+    gen_group <- check_gen_group(gen_group, gen)
+  } else {
+    check_numeric(gen)
+    check_non_negative(gen)
+    check_sum_to_one(gen, tol = 1e-8)
+    if (!is.null(gen_group))
+      stop("gen_group is only used when gen holds several generation distributions", call. = FALSE)
+  }
 
   # seed_days must be positive scalar integer
   check_numeric(seed_days)
@@ -74,11 +107,13 @@ epiinf <- function(
   check_scalar(seed_days)
   check_positive(seed_days)
 
-  # latent, pop_adjust, must be logical scalarss
+  # latent, pop_adjust, importations must be logical scalarss
   check_scalar(latent)
   check_logical(latent)
   check_scalar(pop_adjust)
   check_logical(pop_adjust)
+  check_scalar(importations)
+  check_logical(importations)
 
   # family should be scalar character in the set
   check_character(family)
@@ -88,8 +123,10 @@ epiinf <- function(
   # priors have restricted families
   check_prior(prior_seeds)
   check_prior(prior_aux)
-  check_in_set(prior_seeds$dist, c(ok_aux_dists, "hexp"))
+  check_in_set(prior_seeds$dist, c(ok_aux_dists, "hexp", "lognormal"))
   check_in_set(prior_aux$dist, ok_aux_dists)
+  check_prior(prior_importations)
+  check_in_set(prior_importations$dist, ok_aux_dists)
 
   if (!is.null(prior_susc)) {
     check_prior(prior_susc)
@@ -131,7 +168,10 @@ epiinf <- function(
     rm = if (pop_adjust && !is.null(s)) s else NULL,
     prior_susc,
     prior_rm_noise,
-    fixed_vtm = fixed_vtm
+    fixed_vtm = fixed_vtm,
+    gen_group,
+    importations,
+    prior_importations = if (importations) prior_importations else NULL
   )
   class(out) <- "epiinf"
   return(out)

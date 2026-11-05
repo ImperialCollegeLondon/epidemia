@@ -68,10 +68,10 @@ This dataframe must be compatible with the model components, in the sense that i
 
 In addition to taking a model description and a dataframe, \code{\link{epim}} has various
 additional arguments which specify how the model should be fit. If \code{algorithm = "sampling"}
-then the model will be fit using \pkg{Stan}’s adaptive Hamiltonian Monte Carlo sampler.
+then the model will be fit using \pkg{Stan}'s adaptive Hamiltonian Monte Carlo sampler.
 This is done internally by calling \code{\link[rstan]{sampling}}. If
 \code{algorithm = "meanfield"} or \code{algorithm = "fullrank"}, then
-\pkg{Stan}’s variational Bayes algorithms are used instead, by calling \code{\link[rstan]{vb}}.
+\pkg{Stan}'s variational Bayes algorithms are used instead, by calling \code{\link[rstan]{vb}}.
 Any unnamed arguments in the call to \code{\link{epim}} are passed directly on to the \pkg{rstan} sampling function.
 \code{\link{epim}} returns a fitted model object of class \code{epimodel}, which contains posterior samples from the model along with other useful objects.
 

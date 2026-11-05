@@ -1,6 +1,6 @@
 Package: epidemia
 Title: Modeling of Epidemics using Hierarchical Bayesian Models
-Version: 1.0.0
+Version: 1.0.0.9001
 Authors@R: c(
     person(given = "James",
            family = "Scott",
@@ -85,11 +85,11 @@ Description: Flexibly specify and fit Bayesian statistical models for epidemics.
     'rstanarm' (Goodrich et al., 2020) <https://mc-stan.org/rstanarm/>. 'rstan' (Stan Development Team, 2020) <https://mc-stan.org/> is used as 
     the back end for fitting models.
 License: GPL-3
-URL: https://github.com/ImperialCollegeLondon/epidemia/
+URL: https://github.com/OJWatson/epidemia, https://github.com/ImperialCollegeLondon/epidemia/
+BugReports: https://github.com/OJWatson/epidemia/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
 Biarch: true
 Depends: 
     R (>= 3.5.0)
@@ -97,8 +97,9 @@ Imports:
     dplyr (>= 0.8.5),
     methods,
     Rcpp (>= 0.12.0),
-    rstan (>= 2.18.1),
-    rstantools (>= 2.0.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.26.0),
+    rstantools (>= 2.1.1),
     magrittr,
     rstanarm,
     lme4,
@@ -116,8 +117,9 @@ LinkingTo:
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppEigen (>= 0.3.3.3.0),
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.26.0),
+    StanHeaders (>= 2.26.0)
 SystemRequirements: GNU make
 Suggests: 
     testthat,
@@ -130,3 +132,4 @@ Suggests:
     extrafont
 RdMacros:
     Rdpack
+Config/roxygen2/version: 8.1.0

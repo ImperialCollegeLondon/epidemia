@@ -24,10 +24,10 @@
 #' 
 #' In addition to taking a model description and a dataframe, \code{\link{epim}} has various 
 #' additional arguments which specify how the model should be fit. If \code{algorithm = "sampling"} 
-#' then the model will be fit using \pkg{Stan}’s adaptive Hamiltonian Monte Carlo sampler. 
+#' then the model will be fit using \pkg{Stan}'s adaptive Hamiltonian Monte Carlo sampler. 
 #' This is done internally by calling \code{\link[rstan]{sampling}}. If 
 #' \code{algorithm = "meanfield"} or \code{algorithm = "fullrank"}, then 
-#' \pkg{Stan}’s variational Bayes algorithms are used instead, by calling \code{\link[rstan]{vb}}. 
+#' \pkg{Stan}'s variational Bayes algorithms are used instead, by calling \code{\link[rstan]{vb}}. 
 #' Any unnamed arguments in the call to \code{\link{epim}} are passed directly on to the \pkg{rstan} sampling function. 
 #' \code{\link{epim}} returns a fitted model object of class \code{epimodel}, which contains posterior samples from the model along with other useful objects.
 #' 
@@ -123,6 +123,7 @@ epim <- function(
   obs_orig <- obs
   rt <- epirt_(rt, data)
   obs <- lapply(obs_orig, epiobs_, data)
+  for (o in obs) check_obs_periods(o)
 
   # collect arguments for standata function
   args <- nlist(rt, inf, obs, data, prior_PD)
@@ -160,6 +161,10 @@ epim <- function(
       do.call(rstan::vb, args)
     }
 
+  # report the covariances of the random effects, not their Cholesky factors
+  if (sdat$len_theta_L)
+    fit <- transformTheta_L(fit, rt$group$cnms)
+
   # replace names for the simulation
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit, data)
@@ -190,13 +195,14 @@ pars <- function(sdat) {
       if (sdat$has_intercept) "alpha",
       if (sdat$K > 0) "beta",
       if (sdat$q > 0) "b",
-      if (length(sdat$ac_nterms)) "ac_noise",
+      if (length(sdat$ac_nterms)) "ac_steps",
       if (sdat$num_ointercepts > 0) "ogamma",
       if (sdat$K_all > 0) "obeta",
-      if (length(sdat$obs_ac_nterms)) "obs_ac_noise",
+      if (length(sdat$obs_ac_nterms)) "obs_ac_steps",
       if (sdat$len_theta_L) "theta_L",
       "seeds",
       if (sdat$hseeds) "seeds_aux",
+      if (sdat$importations) "iota",
       if (length(sdat$ac_nterms)) "ac_scale",
       if (length(sdat$obs_ac_nterms)) "obs_ac_scale",
       if (sdat$num_oaux > 0) "oaux",
@@ -216,7 +222,6 @@ pars <- function(sdat) {
 make_Sigma_nms <- function(rt, sdat, fit) {
   if (sdat$len_theta_L) {
     cnms <- rt$group$cnms
-    fit <- transformTheta_L(fit, cnms)
 
     # names
     Sigma_nms <- lapply(cnms, FUN = function(grp) {
@@ -268,6 +273,9 @@ new_names <- function(sdat, rt, obs, fit, data) {
       },
       c(paste0("seeds[", sdat$groups, "]")),
       if (sdat$hseeds) "seeds_aux",
+      if (sdat$importations) {
+        paste0("importations[", sdat$groups, "]")
+      },
       if (sdat$ac_nterms > 0) {
         make_rw_sigma_nms(rt, data)
       },
@@ -373,22 +381,25 @@ make_oaux_nms <- function(obs) {
   nms <- list()
   for (o in obs) {
     if (!is.null(o$prior_aux)) {
-      if (o$family == "neg_binom") {
-        x <- "|reciprocal dispersion"
-      }
-      else if (o$family == "quasi_poisson") {
-        x <- "|dispersion"
-      }
-      else if (o$family == "normal"){
-        x <- "|standard deviation"
-      } else {
-        x <- "|sigma"
-      }
+      groups <- aux_groups(o)
       nms <- c(nms,
-      paste0(.get_obs(formula(o)), x))
+      paste0(oaux_name(o), if (length(groups)) paste0("[", groups, "]")))
     }
   }
   return(unlist(nms))
+}
+
+# The name of the auxiliary parameter of an observation type, without 
+# the group for aux_by_group
+#
+# @param o An epiobs object
+oaux_name <- function(o) {
+  x <- switch(o$family,
+    neg_binom = "|reciprocal dispersion",
+    quasi_poisson = "|dispersion",
+    normal = "|standard deviation",
+    "|sigma")
+  paste0(.get_obs(formula(o)), x)
 }
 
 
