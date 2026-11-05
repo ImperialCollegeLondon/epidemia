@@ -4,7 +4,7 @@
 \alias{rw}
 \title{Adds random walks with independent Gaussian steps to the parameterization of the time-varying reproduction number.}
 \usage{
-rw(time, gr, prior_scale = 0.2)
+rw(time, gr, prior_scale = 0.2, noncentred = FALSE)
 }
 \arguments{
 \item{time}{An optional name defining the random walk time periods for each
@@ -20,6 +20,10 @@ for each group. If not specified a common random walk is used for all groups.}
 
 \item{prior_scale}{The steps of the walks are independent zero mean normal with an unknown scale hyperparameter. This scale is given
 a half-normal prior. \code{prior_scale} sets the scale parameter of this hyperprior.}
+
+\item{noncentred}{If \code{TRUE}, the steps are sampled as standard normal variables and then multiplied by the
+scale (a non-centred parameterisation). This is the same model, but often easier to sample when the scale is
+close to zero. The reported steps are the same either way. Defaults to \code{FALSE}.}
 }
 \value{
 A list to be parsed internally.

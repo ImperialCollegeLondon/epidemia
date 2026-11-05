@@ -123,13 +123,17 @@ transformed parameters {
   {
     int i = 1;
     for (proc in 1:ac_nproc) { // this treats ac terms as random walks for now (to be extended to AR(p))
-        ac_beta[i:(i+ac_ntime[proc]-1)] = cumulative_sum(ac_noise[i:(i+ac_ntime[proc]-1)]);
+        if (ac_noncentred[proc])
+            ac_steps[i:(i+ac_ntime[proc]-1)] *= ac_scale[proc];
+        ac_beta[i:(i+ac_ntime[proc]-1)] = cumulative_sum(ac_steps[i:(i+ac_ntime[proc]-1)]);
         i += ac_ntime[proc];
     }
 
     i = 1;
     for (proc in 1:obs_ac_nproc) {
-        obs_ac_beta[i:(i+obs_ac_ntime[proc]-1)] = cumulative_sum(obs_ac_noise[i:(i+obs_ac_ntime[proc]-1)]);
+        if (obs_ac_noncentred[proc])
+            obs_ac_steps[i:(i+obs_ac_ntime[proc]-1)] *= obs_ac_scale[proc];
+        obs_ac_beta[i:(i+obs_ac_ntime[proc]-1)] = cumulative_sum(obs_ac_steps[i:(i+obs_ac_ntime[proc]-1)]);
         i += obs_ac_ntime[proc];
     }
   }

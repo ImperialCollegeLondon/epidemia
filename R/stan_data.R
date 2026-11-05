@@ -169,6 +169,7 @@ standata_autocor <- function(autocor) {
   out$ac_nproc <- sum(autocor$nproc)
   # todo: implement this as an option
   out$ac_prior_scales <- as.array(autocor$prior_scale)
+  out$ac_noncentred <- as.array(as.integer(autocor$noncentred %ORifNULL% rep(FALSE, out$ac_nproc)))
 
   # add sparse matrix representation
   parts <- rstan::extract_sparse_parts(autocor$Z)
@@ -180,6 +181,7 @@ standata_autocor <- function(autocor) {
   } else {
     out$ac_nterms <- out$ac_q <- out$ac_nproc <- out$ac_nnz <- 0
     out$ac_prior_scales <- out$ac_v <- out$ac_ntime <- numeric()
+    out$ac_noncentred <- integer()
   }
   return(out)
 }
@@ -416,7 +418,8 @@ standata_obs <- function(obs, groups, nsim, begin) {
   autocor <- list(
     nproc = unlist(lapply(obs, function(x) x$autocor$nproc)),
     ntime = unlist(lapply(obs, function(x) x$autocor$ntime)),
-    prior_scale = unlist(lapply(obs, function(x) x$autocor$prior_scale))
+    prior_scale = unlist(lapply(obs, function(x) x$autocor$prior_scale)),
+    noncentred = unlist(lapply(obs, function(x) x$autocor$noncentred))
   )
   
   Z_list <- lapply(obs, function(x) get_Z(x))

@@ -15,6 +15,9 @@
 #'  for each group. If not specified a common random walk is used for all groups.
 #' @param  prior_scale The steps of the walks are independent zero mean normal with an unknown scale hyperparameter. This scale is given 
 #'  a half-normal prior. \code{prior_scale} sets the scale parameter of this hyperprior.
+#' @param noncentred If \code{TRUE}, the steps are sampled as standard normal variables and then multiplied by the 
+#'  scale (a non-centred parameterisation). This is the same model, but often easier to sample when the scale is 
+#'  close to zero. The reported steps are the same either way. Defaults to \code{FALSE}.
 #' @return A list to be parsed internally.
 #' @examples
 #' 
@@ -22,11 +25,13 @@
 #' args <- EuropeCovid
 #' args$formula <- R(country, date) ~ 1 + rw(gr=country) + lockdown
 #' @export
-rw <- function(time, gr, prior_scale = 0.2) {
+rw <- function(time, gr, prior_scale = 0.2, noncentred = FALSE) {
   label <- deparse(match.call())
   time <- if(missing(time)) NULL else deparse(substitute(time))
   gr <- if(missing(gr)) NULL else deparse(substitute(gr))
-  out <- nlist(time, gr, label, prior_scale)
+  check_scalar(noncentred)
+  check_logical(noncentred)
+  out <- nlist(time, gr, label, prior_scale, noncentred)
   class(out) <- c("rw_term")
   return(out)
 }
@@ -68,12 +73,13 @@ parse_term <- function(trm, data) {
   ntime <- sapply(fbygr, function(x) length(unique(x[!is.na(x)])))
   nproc <- length(ntime)
   prior_scale <- rep(as.numeric(trm$prior_scale), nproc)
+  noncentred <- rep(isTRUE(trm$noncentred), nproc)
   
   f <- paste0(time,",", group)
   f <- ordered(f, levels=unique(f))
   Z <- Matrix::t(as(f, Class="sparseMatrix"))
 
-  return(nlist(nproc, ntime, Z, prior_scale))
+  return(nlist(nproc, ntime, Z, prior_scale, noncentred))
 }
 
 get_autocor_gr <- function(trm, data) {
@@ -134,6 +140,7 @@ parse_all_terms <- function(trms, data) {
   new_idx <- c(grep("NA", colnames(Z), invert=TRUE), grep("NA", colnames(Z)))
   Z <- Z[, new_idx]
   prior_scale <- do.call(c, args=lapply(out, function(x) x$prior_scale))
-  return(nlist(nproc, ntime, Z, prior_scale))
+  noncentred <- do.call(c, args=lapply(out, function(x) x$noncentred))
+  return(nlist(nproc, ntime, Z, prior_scale, noncentred))
 }
 

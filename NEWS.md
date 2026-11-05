@@ -16,6 +16,9 @@ All are off by default, so models that do not use them are unchanged.
   group's early counts.
 * The `rw()` help page explains that rows with an `NA` time have no walk term, so a walk can start in the second
   period, with the first period's log Rt given by the intercept alone.
+* `rw(noncentred = TRUE)` samples a walk's steps as standard normal variables and multiplies them by the walk's
+  scale. The model is the same, but it samples much better when the scale is near zero. The reported steps are the
+  scaled ones either way, so `posterior_rt()` and the other posterior simulations are unchanged.
 
 ### Bug fixes
 
