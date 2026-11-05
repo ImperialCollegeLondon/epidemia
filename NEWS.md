@@ -17,6 +17,12 @@ All are off by default, so models that do not use them are unchanged.
 * The `rw()` help page explains that rows with an `NA` time have no walk term, so a walk can start in the second
   period, with the first period's log Rt given by the intercept alone.
 
+### Bug fixes
+
+* `R|Sigma[...]` reported the Cholesky factors of the random effects' covariance matrices, not the covariances its
+  name says: `epim()` converted them in a helper and dropped the result. For a term with one coefficient it was the
+  standard deviation rather than the variance.
+
 ## epidemia 1.0.0.9000
 
 This is a maintained fork of epidemia 1.0.0 (https://github.com/OJWatson/epidemia). Models that do not use the

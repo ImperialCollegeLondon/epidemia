@@ -161,6 +161,10 @@ epim <- function(
       do.call(rstan::vb, args)
     }
 
+  # report the covariances of the random effects, not their Cholesky factors
+  if (sdat$len_theta_L)
+    fit <- transformTheta_L(fit, rt$group$cnms)
+
   # replace names for the simulation
   orig_names <- fit@sim$fnames_oi
   fit@sim$fnames_oi <- new_names(sdat, rt, obs, fit, data)
@@ -218,7 +222,6 @@ pars <- function(sdat) {
 make_Sigma_nms <- function(rt, sdat, fit) {
   if (sdat$len_theta_L) {
     cnms <- rt$group$cnms
-    fit <- transformTheta_L(fit, cnms)
 
     # names
     Sigma_nms <- lapply(cnms, FUN = function(grp) {
