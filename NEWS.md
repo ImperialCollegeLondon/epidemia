@@ -29,6 +29,11 @@ All are off by default, so models that do not use them are unchanged.
   name says: `epim()` converted them in a helper and dropped the result. For a term with one coefficient it was the
   standard deviation rather than the variance.
 
+### Other changes
+
+* The pkgdown workflow builds the site with the current pkgdown and R on Linux, on pull requests and pushes to
+  master, and no longer deploys it. It replaces upstream's workflow (R 4.0.2 on macOS with a pinned pkgdown fork).
+
 ## epidemia 1.0.0.9000
 
 This is a maintained fork of epidemia 1.0.0 (https://github.com/OJWatson/epidemia). Models that do not use the

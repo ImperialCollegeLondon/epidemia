@@ -132,4 +132,5 @@ Suggests:
     extrafont
 RdMacros:
     Rdpack
+Config/Needs/website: magick, pdftools, tinytex
 Config/roxygen2/version: 8.1.0
