@@ -1,3 +1,12 @@
+## epidemia 1.0.0.9001
+
+Options that let the fork fit the renewal model of the cholera anticipatory-action fits (`rt_renewal.stan`) exactly.
+All are off by default, so models that do not use them are unchanged.
+
+* `epiobs(aux_by_group = TRUE)` gives each group its own auxiliary parameter (e.g. negative binomial dispersion),
+  each with the prior `prior_aux`, instead of one per observation type. Several groups no longer need one
+  observation model each (at most 10 are allowed).
+
 ## epidemia 1.0.0.9000
 
 This is a maintained fork of epidemia 1.0.0 (https://github.com/OJWatson/epidemia). Models that do not use the

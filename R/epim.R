@@ -378,22 +378,25 @@ make_oaux_nms <- function(obs) {
   nms <- list()
   for (o in obs) {
     if (!is.null(o$prior_aux)) {
-      if (o$family == "neg_binom") {
-        x <- "|reciprocal dispersion"
-      }
-      else if (o$family == "quasi_poisson") {
-        x <- "|dispersion"
-      }
-      else if (o$family == "normal"){
-        x <- "|standard deviation"
-      } else {
-        x <- "|sigma"
-      }
+      groups <- aux_groups(o)
       nms <- c(nms,
-      paste0(.get_obs(formula(o)), x))
+      paste0(oaux_name(o), if (length(groups)) paste0("[", groups, "]")))
     }
   }
   return(unlist(nms))
+}
+
+# The name of the auxiliary parameter of an observation type, without 
+# the group for aux_by_group
+#
+# @param o An epiobs object
+oaux_name <- function(o) {
+  x <- switch(o$family,
+    neg_binom = "|reciprocal dispersion",
+    quasi_poisson = "|dispersion",
+    normal = "|standard deviation",
+    "|sigma")
+  paste0(.get_obs(formula(o)), x)
 }
 
 

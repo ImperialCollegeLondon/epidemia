@@ -52,7 +52,7 @@ posterior_predict.epimodel <-
 
       # filter for required types and get associaited aux params
       obs <- object$obs[alltypes %in% types]
-      mat <- as.matrix(object, pars = make_oaux_nms(obs))
+      mat <- as.matrix(object)
 
       for (o in obs) {
 
@@ -67,35 +67,21 @@ posterior_predict.epimodel <-
             function(x) rpois(n=x, lambda=x)
           )
         } else {
-          # get samples for the auxiliary variables
-          oaux <- mat[, startsWith(colnames(mat), paste0(type, "|")), drop=FALSE]
-          if (ncol(oaux) != 1) {
-            stop("Bug found. Samples from auxiliary variables required but not found.", .call=FALSE)
-          }
-          if (family == "neg_binom") {
-            draws <- apply(
-              draws, 
-              2, 
-              function(x) rnbinom(n=x, mu=x, size=oaux)
-            )
-          } else if (family == "quasi_poisson") {
-            draws <- apply(
-              draws, 
-              2, 
-              function(x) rnbinom(n=x, mu=x, size= x / oaux)
-            )
-          } else if (family == "normal") {
-            draws <- apply(
-              draws, 
-              2, 
-              function(x) rnorm(n=x, mean=x, sd=oaux)
-            )
-          } else { # log normal
-            draws <- apply(
-              draws, 
-              2, 
-              function(x) rlnorm(n=x, meanlog= log(x) - (oaux * oaux) / 2, sdlog = oaux)
-            )
+          # samples of the auxiliary variable of each observation
+          oaux <- aux_draws(o, mat, out[[type]]$group)
+          n <- nrow(draws)
+          for (j in seq_len(ncol(draws))) {
+            mu <- draws[, j]
+            a <- oaux[, j]
+            draws[, j] <- if (family == "neg_binom") {
+              rnbinom(n, mu = mu, size = a)
+            } else if (family == "quasi_poisson") {
+              rnbinom(n, mu = mu, size = mu / a)
+            } else if (family == "normal") {
+              rnorm(n, mean = mu, sd = a)
+            } else { # log normal
+              rlnorm(n, meanlog = log(mu) - a^2 / 2, sdlog = a)
+            }
           }
         }
         out[[type]]$draws <- draws
@@ -106,8 +92,23 @@ posterior_predict.epimodel <-
     return(out)
   }
 
-
-
-
-
-
+# Draws of the auxiliary variable of each observation of a type
+#
+# @param o An epiobs object
+# @param mat A matrix of draws with the auxiliary variables of o
+# @param group The group of each observation
+# @return A matrix with a column for each observation
+aux_draws <- function(o, mat, group) {
+  nm <- oaux_name(o)
+  if (!isTRUE(o$aux_by_group)) {
+    if (!nm %in% colnames(mat))
+      stop("Bug found. Samples from auxiliary variables required but not found.", call. = FALSE)
+    return(matrix(mat[, nm], nrow(mat), length(group)))
+  }
+  nms <- paste0(nm, "[", group, "]")
+  if (!all(nms %in% colnames(mat))) {
+    stop("no auxiliary variable of ", .get_obs(formula(o)), " for group(s) ",
+      paste(unique(group[!nms %in% colnames(mat)]), collapse = ", "), call. = FALSE)
+  }
+  mat[, nms, drop = FALSE]
+}

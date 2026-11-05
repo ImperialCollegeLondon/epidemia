@@ -46,6 +46,9 @@
 #' \code{family} applies to the total. For example, weekly case counts are modeled with \code{period = 7}, each dated 
 #' at the last day of its week, and \code{NA} for the observation on the other days. The ascertainment rate of a 
 #' period is that on the observation's date, so covariates for the ascertainment rate should be constant over each period.
+#' @param aux_by_group If \code{TRUE}, each group has its own auxiliary parameter (e.g. its own negative binomial 
+#' dispersion), each with the prior \code{prior_aux}. Defaults to \code{FALSE}: one auxiliary parameter for the 
+#' observation type. With several groups this avoids one observation model per group (at most 10 are allowed).
 #' @param ... Additional arguments for \code{\link[stats]{model.frame}}
 #' @return An object of class \code{epiobs}.
 #' @examples 
@@ -90,6 +93,7 @@ epiobs <- function(
   prior_intercept = rstanarm::normal(scale = 0.2),
   prior_aux = rstanarm::normal(location=10, scale=5),
   period = 1L,
+  aux_by_group = FALSE,
   ...) {
 
   call <- match.call(expand.dots = TRUE)
@@ -134,6 +138,10 @@ epiobs <- function(
   check_integer(period)
   check_positive(period)
 
+  # aux_by_group must be a logical scalar
+  check_scalar(aux_by_group)
+  check_logical(aux_by_group)
+
   # check priors
   check_prior(prior)
   check_prior(prior_intercept)
@@ -156,6 +164,7 @@ epiobs <- function(
     prior_intercept,
     prior_aux = if (family != "poisson") prior_aux else NULL,
     period = as.integer(period),
+    aux_by_group = aux_by_group && family != "poisson",
     mfargs <- list(...)
   )
   class(out) <- "epiobs"

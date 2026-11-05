@@ -342,9 +342,18 @@ standata_obs <- function(obs, groups, nsim, begin) {
     # auxiliary params
     ofamily <- array(sapply(reg, function(x) x$family))
     olink <- array(sapply(reg, function(x) x$link))
-    has_oaux <- ofamily != 1
-    num_oaux <- sum(has_oaux)
-    has_oaux <- array(has_oaux * cumsum(has_oaux))
+    # auxiliary parameters: one for each type that has one, or one for 
+    # each observed group of a type with aux_by_group
+    aux_groups <- lapply(obs, aux_groups)
+    n_aux <- ifelse(ofamily != 1, pmax(lengths(aux_groups), 1), 0)
+    num_oaux <- sum(n_aux)
+    has_oaux <- array(ifelse(n_aux > 0, cumsum(n_aux) - n_aux + 1, 0))
+    # the auxiliary parameter of each observation (0 if none)
+    obs_oaux <- array(as.integer(unlist(lapply(seq_along(obs), function(r) {
+      if (n_aux[r] == 0) return(rep(0, oN[r]))
+      if (is.null(aux_groups[[r]])) return(rep(has_oaux[r], oN[r]))
+      has_oaux[r] - 1 + match(as.character(get_gr(obs[[r]])), aux_groups[[r]])
+    }))))
 
     # can only take normal for now
     prior_mean_for_ointercept <- array(unlist(lapply(
@@ -361,7 +370,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
                 "prior_scale","prior_df")
 
     for (i in paste0(nms, "_for_oaux")){
-      temp <- unlist(lapply(reg, function(x) x[[i]]))
+      temp <- unlist(Map(function(x, n) rep(x[[i]], n), reg, n_aux))
       assign(i, array(as.numeric(temp) %ORifNULL% rep(0,0)))
     }
 
@@ -378,7 +387,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_df_for_oaux <- offset_ <- rep(0,0)
     obs_group <- obs_date <- obs_type  <- oxbar <-
     has_ointercept <- prior_dist_for_oaux <- has_offset <- 
-    has_oaux <- olink <- ofamily <- pvecs_len <- integer(0)
+    has_oaux <- obs_oaux <- olink <- ofamily <- pvecs_len <- integer(0)
     oN <- oK <- rep(0, maxtypes)
     pvecs <- array(0, dim = c(0, nsim))
     obs_prior_info <- NULL
@@ -452,6 +461,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     ofamily,
     olink,
     has_oaux,
+    obs_oaux,
     num_oaux,
     prior_dist_for_oaux,
     prior_mean_for_oaux,
@@ -463,6 +473,16 @@ standata_obs <- function(obs, groups, nsim, begin) {
     offset_
   ))
   return(out)
+}
+
+# The groups of an observation type that have their own auxiliary 
+# parameter: those observed if aux_by_group, else NULL
+#
+# @param x An epiobs_ object
+aux_groups <- function(x) {
+  if (!isTRUE(x$aux_by_group))
+    return(NULL)
+  levels(droplevels(as.factor(get_gr(x))))
 }
 
 # Takes a vector and extends to required length

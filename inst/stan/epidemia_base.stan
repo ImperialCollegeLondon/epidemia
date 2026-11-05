@@ -155,18 +155,19 @@ model {
       }
       else if (ofamily[r] == 2) { // neg binom
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
-        segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, oaux[segment(obs_oaux, i, oN[r])]);
       } 
       else if (ofamily[r] == 3) { // quasi-poisson
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
-        segment(E_obs, i, oN[r]) + 1e-15, (segment(E_obs, i, oN[r]) + 1e-15) / oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, (segment(E_obs, i, oN[r]) + 1e-15) ./ oaux[segment(obs_oaux, i, oN[r])]);
       } 
       else if (ofamily[r] == 4) { // normal
         target += normal_lpdf(segment(obs_real, i, oN[r]) |
-        segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, oaux[segment(obs_oaux, i, oN[r])]);
         } else { // log normal
           target += lognormal_lpdf(segment(obs_real, i, oN[r]) |
-          log(segment(E_obs, i, oN[r])) - pow(oaux[has_oaux[r]], 2)/2 + 1e-15, oaux[has_oaux[r]]);
+          log(segment(E_obs, i, oN[r])) - square(oaux[segment(obs_oaux, i, oN[r])])/2 + 1e-15, 
+          oaux[segment(obs_oaux, i, oN[r])]);
         }
       i += oN[r];
     }

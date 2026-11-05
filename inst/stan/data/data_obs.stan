@@ -17,4 +17,5 @@ array[R] int<lower=1,upper=5> olink; //1:log 2:probit 3:cauchit 4:cloglog 5:iden
   
 // data for auxiliary parameters
 int<lower=0> num_oaux; // total number aux params
-array[R] int<lower=0, upper=num_oaux> has_oaux;
+array[R] int<lower=0, upper=num_oaux> has_oaux; // the first auxiliary parameter of each type
+array[N_obs] int<lower=0, upper=num_oaux> obs_oaux; // the auxiliary parameter of each observation
