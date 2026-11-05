@@ -15,6 +15,7 @@ epiobs(
   prior_aux = rstanarm::normal(location = 10, scale = 5),
   period = 1L,
   aux_by_group = FALSE,
+  prior_aux_on = "aux",
   ...
 )
 }
@@ -46,7 +47,9 @@ for the regression intercept, if one has been specified.}
 
 \item{prior_aux}{The prior distribution for the auxiliary parameter, if it exists.
 Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter). Can be a call to \code{\link[rstanarm]{exponential}},
-\code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} or \code{\link[rstanarm]{cauchy}}. These result in half-normal, half-t and half-cauchy priors.}
+\code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} or \code{\link[rstanarm]{cauchy}}. These result in half-normal, half-t and half-cauchy priors.
+A location \eqn{m} shifts these to start at \eqn{m}: \code{normal(m, s)} is \eqn{m + s|z|} for a standard normal \eqn{z}, so the
+default keeps the parameter at 10 or more. See also \code{prior_aux_on}.}
 
 \item{period}{The number of days that each observation covers. The default, \code{1}, models daily observations.
 Otherwise each observation is taken to be the total over the \code{period} days ending on its date: its expected
@@ -58,6 +61,11 @@ period is that on the observation's date, so covariates for the ascertainment ra
 \item{aux_by_group}{If \code{TRUE}, each group has its own auxiliary parameter (e.g. its own negative binomial
 dispersion), each with the prior \code{prior_aux}. Defaults to \code{FALSE}: one auxiliary parameter for the
 observation type. With several groups this avoids one observation model per group (at most 10 are allowed).}
+
+\item{prior_aux_on}{What \code{prior_aux} is a prior on: \code{"aux"} (the default), the auxiliary parameter
+itself, or \code{"inv_sqrt"}, one over its square root. For the negative binomial, whose auxiliary parameter is the
+reciprocal dispersion \eqn{\phi}, \code{prior_aux = rstanarm::normal(0, 1)} with \code{prior_aux_on = "inv_sqrt"}
+gives \eqn{1/\sqrt{\phi}} a half-normal(0, 1) prior.}
 
 \item{...}{Additional arguments for \code{\link[stats]{model.frame}}}
 }

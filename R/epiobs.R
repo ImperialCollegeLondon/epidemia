@@ -39,13 +39,19 @@
 #'  for the regression intercept, if one has been specified.
 #' @param prior_aux 	The prior distribution for the auxiliary parameter, if it exists. 
 #' Only used if family is "neg_binom" (reciprocal dispersion), "quasi_poisson" (dispersion), "normal" (standard deviation) or "log_normal" (sigma parameter). Can be a call to \code{\link[rstanarm]{exponential}}, 
-#' \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} or \code{\link[rstanarm]{cauchy}}. These result in half-normal, half-t and half-cauchy priors.
+#' \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}} or \code{\link[rstanarm]{cauchy}}. These result in half-normal, half-t and half-cauchy priors. 
+#' A location \eqn{m} shifts these to start at \eqn{m}: \code{normal(m, s)} is \eqn{m + s|z|} for a standard normal \eqn{z}, so the 
+#' default keeps the parameter at 10 or more. See also \code{prior_aux_on}.
 #' @param period The number of days that each observation covers. The default, \code{1}, models daily observations. 
 #' Otherwise each observation is taken to be the total over the \code{period} days ending on its date: its expected 
 #' value is the sum of the expected daily observations over those days, and the sampling distribution given by 
 #' \code{family} applies to the total. For example, weekly case counts are modeled with \code{period = 7}, each dated 
 #' at the last day of its week, and \code{NA} for the observation on the other days. The ascertainment rate of a 
 #' period is that on the observation's date, so covariates for the ascertainment rate should be constant over each period.
+#' @param prior_aux_on What \code{prior_aux} is a prior on: \code{"aux"} (the default), the auxiliary parameter 
+#' itself, or \code{"inv_sqrt"}, one over its square root. For the negative binomial, whose auxiliary parameter is the 
+#' reciprocal dispersion \eqn{\phi}, \code{prior_aux = rstanarm::normal(0, 1)} with \code{prior_aux_on = "inv_sqrt"} 
+#' gives \eqn{1/\sqrt{\phi}} a half-normal(0, 1) prior.
 #' @param aux_by_group If \code{TRUE}, each group has its own auxiliary parameter (e.g. its own negative binomial 
 #' dispersion), each with the prior \code{prior_aux}. Defaults to \code{FALSE}: one auxiliary parameter for the 
 #' observation type. With several groups this avoids one observation model per group (at most 10 are allowed).
@@ -94,6 +100,7 @@ epiobs <- function(
   prior_aux = rstanarm::normal(location=10, scale=5),
   period = 1L,
   aux_by_group = FALSE,
+  prior_aux_on = "aux",
   ...) {
 
   call <- match.call(expand.dots = TRUE)
@@ -142,6 +149,11 @@ epiobs <- function(
   check_scalar(aux_by_group)
   check_logical(aux_by_group)
 
+  # prior_aux_on must be one of the allowed transforms
+  check_character(prior_aux_on)
+  check_scalar(prior_aux_on)
+  check_in_set(prior_aux_on, c("aux", "inv_sqrt"))
+
   # check priors
   check_prior(prior)
   check_prior(prior_intercept)
@@ -165,6 +177,7 @@ epiobs <- function(
     prior_aux = if (family != "poisson") prior_aux else NULL,
     period = as.integer(period),
     aux_by_group = aux_by_group && family != "poisson",
+    prior_aux_on,
     mfargs <- list(...)
   )
   class(out) <- "epiobs"

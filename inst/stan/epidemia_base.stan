@@ -77,6 +77,9 @@ transformed parameters {
         oaux[i] += prior_mean_for_oaux[i];
       }
     }
+    if (oaux_inv_sqrt[i]) {
+      oaux[i] = inv_square(oaux[i]);
+    }
   }
 
   if (has_intercept) {

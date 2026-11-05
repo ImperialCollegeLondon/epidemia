@@ -24,6 +24,7 @@ array[num_oaux] int<lower=0, upper=3> prior_dist_for_oaux;
 vector[num_oaux] prior_mean_for_oaux;
 vector<lower=0>[num_oaux] prior_scale_for_oaux;
 vector<lower=0>[num_oaux] prior_df_for_oaux;
+array[num_oaux] int<lower=0, upper=1> oaux_inv_sqrt; // 1: the prior is on 1 / sqrt(oaux)
 
 // and also for inf auxiliary variables
 array[latent] int<lower=0, upper=3> prior_dist_for_inf_aux;

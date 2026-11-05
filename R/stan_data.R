@@ -373,6 +373,9 @@ standata_obs <- function(obs, groups, nsim, begin) {
       temp <- unlist(Map(function(x, n) rep(x[[i]], n), reg, n_aux))
       assign(i, array(as.numeric(temp) %ORifNULL% rep(0,0)))
     }
+    # 1 where prior_aux is a prior on one over the square root of the parameter
+    oaux_inv_sqrt <- array(as.integer(unlist(Map(
+      function(x, n) rep(identical(x$prior_aux_on, "inv_sqrt"), n), obs, n_aux))))
 
     has_offset <- array(sapply(obs, function(x) any(x$offset != 0) * 1))
     offset_ <- array(unlist(lapply(obs, function(x) x$offset)))
@@ -387,7 +390,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_df_for_oaux <- offset_ <- rep(0,0)
     obs_group <- obs_date <- obs_type  <- oxbar <-
     has_ointercept <- prior_dist_for_oaux <- has_offset <- 
-    has_oaux <- obs_oaux <- olink <- ofamily <- pvecs_len <- integer(0)
+    has_oaux <- obs_oaux <- oaux_inv_sqrt <- olink <- ofamily <- pvecs_len <- integer(0)
     oN <- oK <- rep(0, maxtypes)
     pvecs <- array(0, dim = c(0, nsim))
     obs_prior_info <- NULL
@@ -467,6 +470,7 @@ standata_obs <- function(obs, groups, nsim, begin) {
     prior_mean_for_oaux,
     prior_scale_for_oaux,
     prior_df_for_oaux,
+    oaux_inv_sqrt,
     pvecs,
     pvecs_len,
     has_offset,
