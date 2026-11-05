@@ -1,62 +1,42 @@
+# Build the pkgdown site, so that broken reference pages, examples and articles show up. Nothing is deployed.
+# The articles fit their models, and compiling the two Stan models needs several GB of memory and about 15 minutes.
+# The model schematic article draws its figures with TikZ, so it needs LaTeX, and magick and pdftools to convert them
+# (Config/Needs/website in DESCRIPTION).
 on:
   push:
-    branches: master
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
 
 name: pkgdown
 
+permissions: read-all
+
 jobs:
   pkgdown:
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      MAKEFLAGS: -j2
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-tinytex@v2
+
+      - uses: r-lib/actions/setup-r@v2
         with:
-          r-version: '4.0.2' # because lag exists for mac os binary
+          r-version: release
+          use-public-rspm: true
 
-      - uses: r-lib/actions/setup-pandoc@master
-
-      - name: Query dependencies
-        run: |
-          install.packages('remotes', type="binary")
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
-          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
-        shell: Rscript {0}
-
-      - name: Cache R packages
-        uses: actions/cache@v1
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+          extra-packages: any::pkgdown, local::.
+          needs: website
 
-      - name: Install dependencies
-        run: |
-          remotes::install_deps(dependencies = TRUE, type="binary")
-          install.packages("devtools", type="binary")
-          install.packages("EpiEstim", type="binary")
-          install.packages("magick", type = "binary")
-          install.packages("pdftools", type = "binary")
-          install.packages('tinytex')
-          tinytex::install_tinytex()
-          devtools::install_github("jscott6/pkgdown", ref = "v5")
-        shell: Rscript {0}
-
-      - name: Install tbb
-        run: brew install tbb
-
-      - name: Install package
-        run: R CMD INSTALL .
-
-      - name: Prepare git for pkgdown commit
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-
-      - name: Deploy package
-        run: |
-          devtools::document()
-          pkgdown::deploy_to_branch(new_process = FALSE)
+      - name: Build site
+        run: pkgdown::build_site(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
