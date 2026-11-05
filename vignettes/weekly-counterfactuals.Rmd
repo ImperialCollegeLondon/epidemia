@@ -131,7 +131,7 @@ rt <- epirt(
 ```
 
 Each region has its own generation distribution. `gen` is a named list, and `gen_group` maps each region to one of
-its elements; several groups can share one, for example all the zones of a region. A list named by group can be given
+its elements; several groups can share one, for example all the counties of a state. A list named by group can be given
 instead of `gen_group`. With `importations = TRUE`, each region also gets an unknown number of imported infections
 every day after seeding, $\iota$, which is added in the renewal equation:
 $$
