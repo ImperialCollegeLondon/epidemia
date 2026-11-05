@@ -41,6 +41,8 @@ else if (prior_dist_for_seeds == 2)
     target += student_t_lpdf(seeds_raw | prior_df_for_seeds, 0, 1);
 else if (prior_dist_for_seeds == 3 || prior_dist_for_seeds == 9)
     target += exponential_lpdf(seeds_raw | 1);
+else if (prior_dist_for_seeds == 10)
+    target += lognormal_lpdf(seeds_raw | prior_mean_for_seeds, prior_scale_for_seeds);
 
 
 if (!S0_fixed) {

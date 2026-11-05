@@ -45,7 +45,7 @@ standata_inf <- function(inf, M, groups = NULL) {
     nvars = M,
     default_scale = 1,
     link = NULL,
-    ok_dists = c(ok_aux_dists, "hexp")
+    ok_dists = c(ok_aux_dists, "hexp", "lognormal")
   )
 
   names(prior_seeds_stuff) <- paste0(names(prior_seeds_stuff), "_for_seeds")

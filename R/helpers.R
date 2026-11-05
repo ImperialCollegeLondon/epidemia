@@ -725,6 +725,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
     prior_dist <- 3L # only used for scale parameters so 3 not a conflict with 3 for hs
   } else if(prior_dist_name %in% "hexp") {
     prior_dist = 9L
+  } else if (prior_dist_name %in% "lognormal") {
+    prior_dist <- 10L
   }
   
   prior_dist <- array(prior_dist)

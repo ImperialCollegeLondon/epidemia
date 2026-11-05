@@ -11,6 +11,9 @@ All are off by default, so models that do not use them are unchanged.
   prior. The help page now says that a normal prior with location m is m + s|z|, so the default keeps phi >= 10.
 * `epirt(prior_covariance = rstanarm::normal(0, s))` gives the standard deviation of each random effects term a
   half-normal(0, s) prior instead of decov's, when every term has one coefficient, as in `(0 + x || group)`.
+* `lognormal(meanlog, sdlog)` is a new prior for `epiinf(prior_seeds = )`: the log of each group's daily seeded
+  infections is normal, with a mean (and standard deviation) per group if given, so seeds can be centred on each
+  group's early counts.
 
 ## epidemia 1.0.0.9000
 

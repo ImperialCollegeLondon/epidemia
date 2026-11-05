@@ -31,7 +31,7 @@ by \code{gen_group}. Distributions of different lengths are padded with zeros.}
 
 \item{seed_days}{An integer giving the number of days for which to seed infections. Defaults to \code{6L}.}
 
-\item{prior_seeds}{The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, or to \code{\link[epidemia]{hexp}}. The latter
+\item{prior_seeds}{The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, \code{\link[epidemia]{lognormal}}, or to \code{\link[epidemia]{hexp}}. The latter
 distribution allows hierarchical modeling of seeded infections.}
 
 \item{latent}{If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.}

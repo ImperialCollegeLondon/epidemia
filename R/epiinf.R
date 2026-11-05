@@ -20,7 +20,7 @@
 #'  such vectors, or a matrix whose (named) columns are such vectors. These are matched to groups by name, or 
 #'  by \code{gen_group}. Distributions of different lengths are padded with zeros.
 #' @param seed_days An integer giving the number of days for which to seed infections. Defaults to \code{6L}.
-#' @param prior_seeds The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, or to \code{\link[epidemia]{hexp}}. The latter 
+#' @param prior_seeds The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, \code{\link[epidemia]{lognormal}}, or to \code{\link[epidemia]{hexp}}. The latter 
 #' distribution allows hierarchical modeling of seeded infections.
 #' @param latent If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.
 #' @param family 	Specifies the family for the prior distribution on daily infections. Only used if \code{latent = TRUE}, and currently restricted to \code{normal}.
@@ -123,7 +123,7 @@ epiinf <- function(
   # priors have restricted families
   check_prior(prior_seeds)
   check_prior(prior_aux)
-  check_in_set(prior_seeds$dist, c(ok_aux_dists, "hexp"))
+  check_in_set(prior_seeds$dist, c(ok_aux_dists, "hexp", "lognormal"))
   check_in_set(prior_aux$dist, ok_aux_dists)
   check_prior(prior_importations)
   check_in_set(prior_importations$dist, ok_aux_dists)
