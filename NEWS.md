@@ -1,7 +1,7 @@
 ## epidemia 1.0.0.9001
 
-Options that let the fork fit the renewal model of the cholera anticipatory-action fits (`rt_renewal.stan`) exactly.
-All are off by default, so models that do not use them are unchanged.
+Options for an auxiliary parameter per group, priors on the scale of 1 / sqrt(phi), half-normal random effect scales,
+log-normal seeds and non-centred random walks. All are off by default, so models that do not use them are unchanged.
 
 * `epiobs(aux_by_group = TRUE)` gives each group its own auxiliary parameter, such as its own negative binomial
   dispersion, for any observation type that has one: cases and deaths alike. Each group's parameter has the type's
