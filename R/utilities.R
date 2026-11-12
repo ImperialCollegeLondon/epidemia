@@ -136,7 +136,7 @@ check_rt_formula <- function(form) {
     stop(paste0("left hand side of ", s, " does not have required form of R(x,y)."), call.=FALSE)
 }
 
-as.character.expr <- function(x) {
+as.character.expr <- function(x, ...) {
   s <- paste(deparse(x), collapse=" ")
   s <- gsub( "\\s+", " ", s, perl=FALSE)
   return(s)
@@ -203,7 +203,7 @@ check_all_vars_data <- function(object, data) {
   vars <- all_vars(formula(object))
   not_found <- !(vars %in% colnames(data))
   if (any(not_found)) {
-    if (class(object) == "epirt") {
+    if (inherits(object, "epirt")) {
       msg <- paste0("variable(s) ", paste(vars[not_found], collapse = ", "), 
                   ", were found in the formula for R (in epirt object),", 
                   " but not in data. Please add to the dataframe.")
@@ -655,7 +655,7 @@ is.epimodel <- function(x) inherits(x, "epimodel")
 
 is.mixed <- function(object, ...) UseMethod("is.mixed")
 
-is.mixed.epimodel <- function(object) {
+is.mixed.epimodel <- function(object, ...) {
   stopifnot(is.epimodel(object))
   check1 <- inherits(object, "mixed")
   check2 <- !is.null(object$glmod)
@@ -667,7 +667,7 @@ is.mixed.epimodel <- function(object) {
   isTRUE(check1 && check2)
 }
 
-is.mixed.formula <- function(object) {
+is.mixed.formula <- function(object, ...) {
   !is.null(reformulas::findbars(norws(object)))
 }
 

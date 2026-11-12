@@ -130,11 +130,11 @@ epiobs <- function(
     if (!(link %in% ok_links)) {
       stop(msg, call.=FALSE)
     }
-  } else if (class(link) != "scaled_logit") {
+  } else if (!inherits(link, "scaled_logit")) {
      stop(msg, call.=FALSE)
   }
 
-  if (class(link) == "scaled_logit") { # apply adjustment to i2o vector
+  if (inherits(link, "scaled_logit")) { # apply adjustment to i2o vector
     i2o <- i2o * link$K
     link <- "logit"
   }
