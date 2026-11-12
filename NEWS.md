@@ -28,8 +28,13 @@ log-normal seeds and non-centred random walks. All are off by default, so models
 * `R|Sigma[...]` reported the Cholesky factors of the random effects' covariance matrices, not the covariances its
   name says: `epim()` converted them in a helper and dropped the result. For a term with one coefficient it was the
   standard deviation rather than the variance.
+* Log-normal observation models with zero observations failed to start, with rstan's unhelpful "no more scalars
+  to read". Zeros have zero density under the log-normal, so `epim()` now stops early and says to set them to `NA`
+  or use another family.
 
 ### Other changes
+
+* `findbars()`, `nobars()` and `subbars()` now come from reformulas, where lme4 2.0 says they have moved.
 
 * The pkgdown workflow builds the site with the current pkgdown and R on Linux, on pull requests and pushes to
   master, and no longer deploys it. It replaces upstream's workflow (R 4.0.2 on macOS with a pinned pkgdown fork).

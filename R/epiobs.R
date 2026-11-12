@@ -220,6 +220,11 @@ epiobs_ <- function(object, data) {
       stop("observation vector ", nme, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)
     }
   }
+
+  if (identical(object$family, "log_normal") && any(abs(x) < tol, na.rm = TRUE)) {
+    stop("observation vector ", nme, " has zeros, which have zero density under the log-normal family. ",
+         "Set them to NA, or use another family.", call. = FALSE)
+  }
   
   discrete_fams <- c("poisson", "quasi_poisson", "neg_binom")
   if (object$family %in% discrete_fams) {
