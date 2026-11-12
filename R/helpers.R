@@ -59,7 +59,7 @@ grep_for_pars <- function(x, regex_pars) {
 
 justRE <- function(f, response = FALSE) {
   response <- if (response && length(f) == 3) f[[2]] else NULL
-  reformulate(paste0("(", vapply(lme4::findbars(f), 
+  reformulate(paste0("(", vapply(reformulas::findbars(f), 
                                  function(x) paste(deparse(x, 500L), 
                                                    collapse = " "), 
                                  ""), ")"), 

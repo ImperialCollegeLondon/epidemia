@@ -668,7 +668,7 @@ is.mixed.epimodel <- function(object) {
 }
 
 is.mixed.formula <- function(object) {
-  !is.null(lme4::findbars(norws(object)))
+  !is.null(reformulas::findbars(norws(object)))
 }
 
 ok_dists <- nlist(
