@@ -35,7 +35,8 @@ log-normal seeds and non-centred random walks. All are off by default, so models
 ### Other changes
 
 * `findbars()`, `nobars()` and `subbars()` now come from reformulas, where lme4 2.0 says they have moved.
-
+* R CMD check runs with `--as-cran` on Linux, macOS and Windows, and on Linux also with R-devel and the previous R
+  release.
 * The pkgdown workflow builds the site with the current pkgdown and R on Linux, on pull requests and pushes to
   master, and no longer deploys it. It replaces upstream's workflow (R 4.0.2 on macOS with a pinned pkgdown fork).
 
