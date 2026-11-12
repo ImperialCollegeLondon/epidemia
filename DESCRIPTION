@@ -103,6 +103,7 @@ Imports:
     magrittr,
     rstanarm,
     lme4,
+    reformulas,
     ggplot2,
     Matrix,
     scales,

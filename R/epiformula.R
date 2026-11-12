@@ -14,7 +14,7 @@ parse_formula <- function(x, fixed.only = FALSE, random.only = FALSE, ...) {
     stop("'fixed.only' and 'random.only' can't both be TRUE.", call. = FALSE)
 
   if (fixed.only) {
-    form[[length(x)]] <- lme4::nobars(x[[length(x)]])
+    form[[length(x)]] <- reformulas::nobars(x[[length(x)]])
     form <- norws(form)
   }
   if (random.only) {

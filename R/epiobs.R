@@ -130,11 +130,11 @@ epiobs <- function(
     if (!(link %in% ok_links)) {
       stop(msg, call.=FALSE)
     }
-  } else if (class(link) != "scaled_logit") {
+  } else if (!inherits(link, "scaled_logit")) {
      stop(msg, call.=FALSE)
   }
 
-  if (class(link) == "scaled_logit") { # apply adjustment to i2o vector
+  if (inherits(link, "scaled_logit")) { # apply adjustment to i2o vector
     i2o <- i2o * link$K
     link <- "logit"
   }
@@ -219,6 +219,11 @@ epiobs_ <- function(object, data) {
     if (max(abs(x[x<0] + 1)) > tol) {
       stop("observation vector ", nme, " has negative values. Must either be positive, NA, or coded -1 (for forecasting)", call.=FALSE)
     }
+  }
+
+  if (identical(object$family, "log_normal") && any(abs(x) < tol, na.rm = TRUE)) {
+    stop("observation vector ", nme, " has zeros, which have zero density under the log-normal family. ",
+         "Set them to NA, or use another family.", call. = FALSE)
   }
   
   discrete_fams <- c("poisson", "quasi_poisson", "neg_binom")

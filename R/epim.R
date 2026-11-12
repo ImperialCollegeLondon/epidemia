@@ -367,7 +367,7 @@ make_rw_nms <- function(formula, data) {
 
 make_rw_sigma_nms <- function(obj, data) {
   trms <- terms_rw(formula(obj))
-  nme <- ifelse(class(obj) == "epirt_", "R", .get_obs(formula(obj)))
+  nme <- ifelse(inherits(obj, "epirt_"), "R", .get_obs(formula(obj)))
   nms <- character()
   for (trm in trms) {
     trm <- eval(parse(text = trm))

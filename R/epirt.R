@@ -119,7 +119,7 @@ epirt <- function(formula,
     if (!(link %in% c("log", "identity"))) {
       stop(msg, call.=FALSE)
     }
-  } else if (class(link) != "scaled_logit") {
+  } else if (!inherits(link, "scaled_logit")) {
      stop(msg, call.=FALSE)
   }
 

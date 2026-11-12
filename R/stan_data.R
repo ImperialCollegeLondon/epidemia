@@ -240,7 +240,7 @@ standata_rt <- function(rt) {
     out$link <- 1
     out$carry <- 1 # dummy
   }
-  else if (class(link) == "scaled_logit") {
+  else if (inherits(link, "scaled_logit")) {
     out$link <- 2
     out$carry <- link$K
   }
