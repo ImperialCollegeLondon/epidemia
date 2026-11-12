@@ -30,10 +30,9 @@ is working, please first install **rstan** by following these
 After installing **rstan**, running
 ```{r install, eval = FALSE} 
 #install.packages("devtools")
-devtools::install_github("OJWatson/epidemia")
+devtools::install_github("ImperialCollegeLondon/epidemia")
 ```
-will install the latest development version of **epidemia**, from the maintained fork
-that installs with current versions of **rstan**.
+will install the latest development version of **epidemia**.
 
 Compiling the package's two Stan models takes 10 to 20 minutes and 3 to 4 GB of memory
 for each compiler process, so the installation can look stuck while it runs. If the

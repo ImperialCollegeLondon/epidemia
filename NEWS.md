@@ -1,8 +1,35 @@
 ## epidemia 1.0.0.9001
 
-Options for an auxiliary parameter per group, priors on the scale of 1 / sqrt(phi), half-normal random effect scales,
-log-normal seeds and non-centred random walks. All are off by default, so models that do not use them are unchanged.
+Installs with current versions of Stan again, adds new model options and fixes several bugs. The new options are off
+by default, so models that do not use them are the same as in 1.0.0.
 
+### Installation
+
+* Installs with current rstan, StanHeaders and rstantools (checked with rstan 2.32.7, StanHeaders 2.39.1 and
+  rstantools 2.7.1): the Stan programs use the array syntax required since Stan 2.33, the sparse matrix helper
+  `csr_matrix_times_vector2()` compiles against the Stan Math types of Stan >= 2.26, and the build files follow
+  rstantools 2.7 (C++17). rstan and StanHeaders >= 2.26 are now required (#67).
+* Sources and help pages are ASCII, so installation no longer fails in non-UTF-8 locales (#65).
+* The unused `inst/include/tests.cpp`, which included a missing header, is removed (#61).
+* R CMD check runs on GitHub Actions, with `--as-cran` on Linux, macOS and Windows, and on Linux also with R-devel
+  and the previous R release.
+
+### New features
+
+* `epiinf()`: `gen` can hold a generation distribution for each group, as a named list or a matrix with named
+  columns. They are matched to groups by name, or through the new `gen_group` argument.
+* `epiinf()`: `importations = TRUE` adds a constant number of imported infections each day in each group to the
+  renewal equation, with prior `prior_importations` (half-normal with scale 0.2 by default). Off by default (#15).
+* `epiobs()`: `period` models observations that are totals over the `period` days ending on their date, such as
+  weekly counts with `period = 7`. Daily observations (`period = 1`) remain the default.
+* `discretize_cdf()` turns a continuous delay distribution, given by its CDF, into the probability mass function
+  on whole days used by `gen` and `i2o` (#3).
+* Cases and deaths can be fitted together, with deaths fully reported at a known case fatality ratio (CFR) and
+  cases at an unknown reporting rate in each group: `epiobs(deaths ~ 0 + offset(cfr), link = "identity")` fixes the
+  ascertainment of deaths at the CFR held in column `cfr`, and `epiobs(cases ~ 0 + group, link = "logit")` estimates
+  a reporting rate for each group. The `epiobs()` help page now describes this.
+* New article "Weekly Counts, Importations and Counterfactuals", including counterfactuals with `newdata` and a joint
+  fit of weekly cases and deaths with the deaths averted.
 * `epiobs(aux_by_group = TRUE)` gives each group its own auxiliary parameter, such as its own negative binomial
   dispersion, for any observation type that has one: cases and deaths alike. Each group's parameter has the type's
   `prior_aux`, on the scale that `prior_aux_on` sets, and is named by group (`cases|reciprocal dispersion[north]`).
@@ -25,6 +52,11 @@ log-normal seeds and non-centred random walks. All are off by default, so models
 
 ### Bug fixes
 
+* `posterior_predict()` returned `NULL` for models with several observation types unless a single type was asked
+  for. It now returns a list named by type, so one counterfactual gives, for example, both cases and deaths.
+* `posterior_predict()` drew log-normal observations on the wrong scale (`meanlog = mu - sigma^2 / 2` instead of
+  `log(mu) - sigma^2 / 2`).
+* The error for random effects in an observation formula no longer ends in "FALSE".
 * `R|Sigma[...]` reported the Cholesky factors of the random effects' covariance matrices, not the covariances its
   name says: `epim()` converted them in a helper and dropped the result. For a term with one coefficient it was the
   standard deviation rather than the variance.
@@ -34,63 +66,17 @@ log-normal seeds and non-centred random walks. All are off by default, so models
 
 ### Other changes
 
-* `findbars()`, `nobars()` and `subbars()` now come from reformulas, where lme4 2.0 says they have moved.
-* R CMD check `--as-cran` notes are cleared: class tests use `inherits()`, S3 methods are registered and match
-  their generics, and a help link names its package.
-* R CMD check runs with `--as-cran` on Linux, macOS and Windows, and on Linux also with R-devel and the previous R
-  release.
-* The pkgdown workflow builds the site with the current pkgdown and R on Linux, on pull requests and pushes to
-  master, and no longer deploys it. It replaces upstream's workflow (R 4.0.2 on macOS with a pinned pkgdown fork).
-
-## epidemia 1.0.0.9000
-
-This is a maintained fork of epidemia 1.0.0 (https://github.com/OJWatson/epidemia). Models that do not use the
-new options below are the same as in 1.0.0. Issue and pull request numbers refer to
-https://github.com/ImperialCollegeLondon/epidemia.
-
-### Installation
-
-* Installs with current rstan, StanHeaders and rstantools (checked with rstan 2.32.7, StanHeaders 2.39.1 and
-  rstantools 2.7.1): the Stan programs use the array syntax required since Stan 2.33, the sparse matrix helper
-  `csr_matrix_times_vector2()` compiles against the Stan Math types of Stan >= 2.26, and the build files follow
-  rstantools 2.7 (C++17). rstan and StanHeaders >= 2.26 are now required (#67).
-* Sources and help pages are ASCII, so installation no longer fails in non-UTF-8 locales (#65).
-* The unused `inst/include/tests.cpp`, which included a missing header, is removed (#61).
-* An R CMD check workflow runs on GitHub Actions.
-
-### New features
-
-* `epiinf()`: `gen` can hold a generation distribution for each group, as a named list or a matrix with named
-  columns. They are matched to groups by name, or through the new `gen_group` argument.
-* `epiinf()`: `importations = TRUE` adds a constant number of imported infections each day in each group to the
-  renewal equation, with prior `prior_importations` (half-normal with scale 0.2 by default). Off by default (#15).
-* `epiobs()`: `period` models observations that are totals over the `period` days ending on their date, such as
-  weekly counts with `period = 7`. Daily observations (`period = 1`) remain the default.
-* `discretize_cdf()` turns a continuous delay distribution, given by its CDF, into the probability mass function
-  on whole days used by `gen` and `i2o` (#3).
-* Cases and deaths can be fitted together, with deaths fully reported at a known case fatality ratio (CFR) and
-  cases at an unknown reporting rate in each group: `epiobs(deaths ~ 0 + offset(cfr), link = "identity")` fixes the
-  ascertainment of deaths at the CFR held in column `cfr`, and `epiobs(cases ~ 0 + group, link = "logit")` estimates
-  a reporting rate for each group. The `epiobs()` help page now describes this.
-* New article "Weekly Counts, Importations and Counterfactuals", including counterfactuals with `newdata` and a joint
-  fit of weekly cases and deaths with the deaths averted.
-
-### Bug fixes
-
-* `posterior_predict()` returned `NULL` for models with several observation types unless a single type was asked
-  for. It now returns a list named by type, so one counterfactual gives, for example, both cases and deaths.
-* `posterior_predict()` drew log-normal observations on the wrong scale (`meanlog = mu - sigma^2 / 2` instead of
-  `log(mu) - sigma^2 / 2`).
-* The error for random effects in an observation formula no longer ends in "FALSE".
-
-### Other changes
-
 * `plot_rt()` no longer plots the seeding period, where Rt does not enter the model; `seeding = TRUE` restores it
   (#54).
 * Posterior simulations (`posterior_rt()`, `posterior_predict()` and the plots) no longer print sampler timings.
 * `check_time_as_date()` rejects numeric date columns again on R >= 4.3.
 * The check that `gen` sums to one allows rounding error up to 1e-8, as Stan's simplex check does.
 * A broken link in the model description vignette is fixed (pull request #63).
+* `findbars()`, `nobars()` and `subbars()` now come from reformulas, where lme4 2.0 says they have moved.
+* R CMD check `--as-cran` notes are cleared: class tests use `inherits()`, S3 methods are registered and match
+  their generics, and a help link names its package.
+* The pkgdown workflow builds the site with the current pkgdown and R on Linux. It checks the site on pull requests
+  and deploys it on pushes to master, as before.
 
 ## epidemia 1.0.0
 * First version submitted to CRAN

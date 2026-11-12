@@ -1,4 +1,5 @@
-# Build the pkgdown site, so that broken reference pages, examples and articles show up. Nothing is deployed.
+# Build the pkgdown site, so that broken reference pages, examples and articles show up, and deploy it to the
+# gh-pages branch on pushes to master.
 # The articles fit their models, and compiling the two Stan models needs several GB of memory and about 15 minutes.
 # The model schematic article draws its figures with TikZ, so it needs LaTeX, and magick and pdftools to convert them
 # (Config/Needs/website in DESCRIPTION).
@@ -15,6 +16,8 @@ permissions: read-all
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
@@ -40,3 +43,11 @@ jobs:
       - name: Build site
         run: pkgdown::build_site(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
+
+      - name: Deploy to GitHub pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        with:
+          clean: false
+          branch: gh-pages
+          folder: docs
