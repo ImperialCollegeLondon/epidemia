@@ -1,6 +1,7 @@
 # R CMD check --as-cran with the current CRAN releases of rstan and StanHeaders, on Linux, macOS and Windows.
 # Compiling the two Stan models needs several GB of memory and about 15 minutes, so macOS, whose runners have the
-# least memory, compiles one file at a time.
+# least memory, compiles one file at a time. macOS uses the Intel runners, since jobs for the arm64 ones were often
+# cancelled for want of a runner.
 on:
   push:
   pull_request:
@@ -24,7 +25,7 @@ jobs:
           - {os: ubuntu-latest,  r: 'devel',   make: '-j2', http-user-agent: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1', make: '-j2'}
           - {os: windows-latest, r: 'release', make: '-j2'}
-          - {os: macos-latest,   r: 'release', make: '-j1'}
+          - {os: macos-15-intel, r: 'release', make: '-j1'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
