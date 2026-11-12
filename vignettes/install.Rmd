@@ -34,6 +34,12 @@ devtools::install_github("ImperialCollegeLondon/epidemia")
 ```
 will install the latest development version of **epidemia**.
 
+Compiling the package's two Stan models takes 10 to 20 minutes and 3 to 4 GB of memory
+for each compiler process, so the installation can look stuck while it runs. If the
+compiler runs out of memory, install without parallel make, for example by running
+`Sys.setenv(MAKEFLAGS = "-j1")` first. On Windows with R older than 4.2, also pass
+`INSTALL_opts = "--no-multiarch"` to build only the 64-bit version.
+
 If using windows, you can alternatively install the [binary](https://github.com/ImperialCollegeLondon/epidemia/releases/latest).
 
 Vignettes are not currently included in the package because they are

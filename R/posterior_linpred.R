@@ -110,7 +110,7 @@ posterior_linpred <- function(object,
 # @return the transformed predictor
 transform_rt <- function(object, eta) {
   link <- object$link
-  if (class(link) == "scaled_logit") {
+  if (inherits(link, "scaled_logit")) {
     eta <- link$K / (1 + exp(-eta))
   }
   else if (link == "log") {

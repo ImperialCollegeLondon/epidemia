@@ -48,7 +48,8 @@ test_that("prior_intercept ok dists", {
 
 test_that("prior_covariance ok dists", {
   expect_error(rt <- epirt(formula = form, prior_covariance = rstanarm::lkj()), NA)
-  expect_error(rt <- epirt(formula = form, prior_covariance = rstanarm::normal()), "must be one of")
+  expect_error(rt <- epirt(formula = form, prior_covariance = rstanarm::normal()), NA)
+  expect_error(rt <- epirt(formula = form, prior_covariance = rstanarm::student_t()), "must be one of")
 })
 
 

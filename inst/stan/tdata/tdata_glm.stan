@@ -2,7 +2,7 @@
   int<lower=0> len_var_group = sum(p) * (t > 0);
   int<lower=0> len_rho = sum(p) - t;
   int<lower=1> pos = 1;
-  real<lower=0> delta[len_concentration];
+  array[len_concentration] real<lower=0> delta;
   int<lower=0> hs;
   if (prior_dist <= 2) hs = 0;
   else if (prior_dist == 3) hs = 2;

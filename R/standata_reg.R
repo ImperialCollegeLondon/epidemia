@@ -138,6 +138,18 @@ standata_reg <- function(object, ...) {
     out$v <- parts$v - 1L
     out$u <- parts$u - 1L
 
+    # a normal prior_covariance: half-normal standard deviations of terms with one coefficient
+    out$re_sd_normal <- 1L * (decov$dist == "normal")
+    if (out$re_sd_normal) {
+      if (any(p > 1)) {
+        stop("a normal prior_covariance needs one coefficient per random effects term, ",
+          "e.g. (0 + x || group)", call. = FALSE)
+      }
+      if (any(decov$location != 0, na.rm = TRUE)) {
+        stop("a normal prior_covariance must have location 0", call. = FALSE)
+      }
+      decov$shape <- 1
+    }
     out$shape <- as.array(maybe_broadcast(decov$shape, t))
     out$scale <- as.array(maybe_broadcast(decov$scale, t))
     out$len_concentration <- sum(p[p > 1])
@@ -162,6 +174,7 @@ standata_reg <- function(object, ...) {
     out$u <- integer(0)
 
     out$special_case <- 0L
+    out$re_sd_normal <- 0L
     out$shape <- out$scale <- out$concentration <-
       out$regularization <- rep(0, 0)
     out$len_concentration <- 0L

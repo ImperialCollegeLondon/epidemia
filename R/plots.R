@@ -1,7 +1,7 @@
 #' Plot method for epimodel objects
 #'
 #' Provides an interface to the \link[bayesplot:MCMC-overview]{MCMC} module
-#' in the \pkg{\link{bayesplot}} package, and allows seamless plotting of
+#' in the \pkg{\link[bayesplot:bayesplot-package]{bayesplot}} package, and allows seamless plotting of
 #' MCMC draws along with various diagnostics. This method relies heavily
 #' on the code base for the \code{\link[rstanarm]{plot.stanreg}} method
 #' in \pkg{rstanarm}.
@@ -163,7 +163,7 @@ restrict_pars <- function(object, pars = NULL, par_models = NULL,
   # partition all parameter names by their type
   random <- grep(pars, pattern = "(\\|b\\[)|(\\|Sigma\\[)", value=T)
   autocor <- grep(pars, pattern = "\\|rw\\(", value = T)
-  seeds <- grep(pars, pattern = "^seeds\\[", value = T)
+  seeds <- grep(pars, pattern = "^(seeds|importations)\\[", value = T)
   latent <- grep(pars, pattern = "^inf_noise\\[", value=T)
   inf_aux <- grep(pars, pattern = "(^inf\\|)|(^seeds_aux$)", value = T)
   obs_aux <- setdiff(grep(pars, pattern = aux_regex, value=T), inf_aux)

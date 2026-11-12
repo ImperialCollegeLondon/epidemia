@@ -12,6 +12,34 @@ test_that("gen must be a numeric simplex vector", {
   expect_error(inf <- epiinf(gen = rep(1,5)), regexp = "sum")
 })
 
+test_that("gen can hold one generation distribution per group", {
+  g1 <- c(0.2, 0.8)
+  g2 <- rep(0.25, 4)
+  inf <- epiinf(gen = list(a = g1, b = g2))
+  expect_equal(inf$gen, list(a = g1, b = g2))
+  expect_null(inf$gen_group)
+
+  inf <- epiinf(gen = cbind(a = c(g1, 0, 0), b = g2))
+  expect_equal(inf$gen, list(a = c(g1, 0, 0), b = g2))
+
+  inf <- epiinf(gen = list(fast = g1, slow = g2), 
+    gen_group = c(x = "fast", y = "slow", z = "fast"))
+  expect_equal(inf$gen_group, c(x = "fast", y = "slow", z = "fast"))
+  inf <- epiinf(gen = list(fast = g1, slow = g2), gen_group = c(x = 2, y = 1))
+  expect_equal(inf$gen_group, c(x = "slow", y = "fast"))
+
+  expect_error(epiinf(gen = list(g1, g2)), regexp = "unique names")
+  expect_error(epiinf(gen = list(a = g1, a = g2)), regexp = "unique names")
+  expect_error(epiinf(gen = list()), regexp = "at least one")
+  expect_error(epiinf(gen = list(a = g1, b = "x")), regexp = "numeric")
+  expect_error(epiinf(gen = list(a = g1, b = c(-0.5, 1.5))), regexp = "non-negative")
+  expect_error(epiinf(gen = list(a = g1, b = c(0.5, 0.6))), regexp = "sum to one")
+  expect_error(epiinf(gen = list(a = g1, b = g2), gen_group = c("a", "b")), regexp = "named by group")
+  expect_error(epiinf(gen = list(a = g1, b = g2), gen_group = c(x = "c")), regexp = "subset")
+  expect_error(epiinf(gen = list(a = g1, b = g2), gen_group = c(x = 3)), regexp = "positions")
+  expect_error(epiinf(gen = g1, gen_group = c(x = "a")), regexp = "several")
+})
+
 test_that("seed_days is positive, scalar integer", {
   expect_error(inf <- epiinf(gen = rep(0.2,5), seed_days = 5), NA)
   expect_error(inf <- epiinf(gen = rep(0.2,5), seed_days = 5.1), regexp = "integer")

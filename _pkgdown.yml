@@ -38,6 +38,8 @@ navbar:
         href: articles/europe-covid.html
       - text: Multiple Observations
         href: articles/multiple-obs.html
+      - text: Weekly Counts and Counterfactuals
+        href: articles/weekly-counterfactuals.html
     news:
       text: News
       href: news/index.html

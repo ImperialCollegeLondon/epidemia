@@ -66,6 +66,21 @@ test_that("negative values caught", {
   expect_error(out <- epiobs_(obs, df), "negative") # catch the negative value
 })
 
+test_that("zeros caught for log-normal observations", {
+  df$y <- 1
+  df$y[3] <- 0
+  obs <- epiobs(formula = y ~ 1, i2o = 1, family = "log_normal")
+  expect_error(out <- epiobs_(obs, df), "zeros")
+  df$y[3] <- NA
+  expect_error(out <- epiobs_(obs, df), NA)
+  df$y[3] <- -1 # forecast
+  expect_error(out <- epiobs_(obs, df), NA)
+  # zeros are fine for the other families
+  df$y[3] <- 0
+  obs <- epiobs(formula = y ~ 1, i2o = 1, family = "normal")
+  expect_error(out <- epiobs_(obs, df), NA)
+})
+
 test_that("NAs handling", {
   df[3,"E"] <- NA
   obs <- epiobs(formula = C ~ F, i2o=1) # NA avoided, should be the same

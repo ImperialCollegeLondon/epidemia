@@ -59,7 +59,7 @@ grep_for_pars <- function(x, regex_pars) {
 
 justRE <- function(f, response = FALSE) {
   response <- if (response && length(f) == 3) f[[2]] else NULL
-  reformulate(paste0("(", vapply(lme4::findbars(f), 
+  reformulate(paste0("(", vapply(reformulas::findbars(f), 
                                  function(x) paste(deparse(x, 500L), 
                                                    collapse = " "), 
                                  ""), ")"), 
@@ -331,6 +331,10 @@ neff_ratio.epimodel <- function (object, pars = NULL, regex_pars = NULL, ...) {
                ", shape = ", .f1(p$shape),
                ", scale = ", .f1(p$scale), ")")
     )    
+  } else if (p$dist == "normal") {
+    .f1 <- formatters[[1]]
+    cat(paste0("\n", txt, "\n ~"),
+        paste0("half-normal standard deviations (scale = ", .f1(.format_pars(p$scale, .f1)), ")"))
   } else if (p$dist == "lkj") {
     .f1 <- formatters[[1]]
     .f2 <- formatters[[2]]
@@ -663,7 +667,7 @@ process_x <- function(x, center) {
 # @param prior A list
 # @param nvars An integer indicating the number of variables
 # @param default_scale Default value to use to scale if not specified by user
-# @param § String naming the link function.
+# @param link String naming the link function.
 # @param ok_dists A list of admissible distributions.
 handle_glm_prior <- function(prior, nvars, default_scale, link,
                              ok_dists = nlist("gamma", "normal", student_t = "t", 
@@ -721,6 +725,8 @@ handle_glm_prior <- function(prior, nvars, default_scale, link,
     prior_dist <- 3L # only used for scale parameters so 3 not a conflict with 3 for hs
   } else if(prior_dist_name %in% "hexp") {
     prior_dist = 9L
+  } else if (prior_dist_name %in% "lognormal") {
+    prior_dist <- 10L
   }
   
   prior_dist <- array(prior_dist)
