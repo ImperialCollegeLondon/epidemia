@@ -79,10 +79,11 @@ posterior_sims <- function(object,
     groups = levels(data$group)
   )
 
-  sims <- rstan::gqs(stanmodels$epidemia_pp_base,
+  # gqs prints sampler timings, which are of no use here
+  utils::capture.output(sims <- rstan::gqs(stanmodels$epidemia_pp_base,
     data = standata,
     draws = stanmat
-  )
+  ))
 
   # get list of indices for slicing result of gqs
   ind <- Map(
@@ -222,9 +223,10 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
   ninfaux <- length(grep("^inf_aux\\[", colnames(stanmat)))
   nS0 <- length(grep("^S0\\[", colnames(stanmat)))
   nveps <- length(grep("^veps\\[", colnames(stanmat)))
+  niota <- length(grep("^iota\\[", colnames(stanmat)))
   
   # need to pad out for rstan::gqs
-  mat <- matrix(0, nrow = nrow(stanmat), ncol = 16)
+  mat <- matrix(0, nrow = nrow(stanmat), ncol = 18)
   colnames(mat) <- c(
     paste0("seeds[", length(groups) + 1:2, "]"),
     paste0("oaux[", noaux + 1:2, "]"),
@@ -233,7 +235,8 @@ pp_stanmat <- function(stanmat, orig_nms, groups) {
     paste0("infections_raw[", ninfraw + 1:2, "]"),
     paste0("inf_aux[", ninfaux + 1:2, "]"),
     paste0("S0[", nS0 + 1:2, "]"),
-    paste0("veps[", nveps + 1:2, "]")
+    paste0("veps[", nveps + 1:2, "]"),
+    paste0("iota[", niota + 1:2, "]")
   )
   return(cbind(stanmat, mat))
 }

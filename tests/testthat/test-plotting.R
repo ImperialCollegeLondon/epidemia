@@ -10,6 +10,19 @@ test_that("wrong group throws error", {
   expect_error(plot_infections(example.fit, groups = c("Germany", "FakeCountry")), regexp = "group\\(s\\) FakeCountry not found.")
 })
 
+test_that("plot_rt leaves out the seeding period unless asked", {
+  rt <- posterior_rt(example.fit)
+  first <- tapply(as.numeric(rt$time), as.character(rt$group), min)
+  seed_days <- example.fit$inf$seed_days
+  d <- plot_rt(example.fit)$data
+  got <- tapply(as.numeric(d$date), as.character(d$group), min)
+  expect_equal(got, first[names(got)] + seed_days)
+  d <- plot_rt(example.fit, seeding = TRUE)$data
+  got <- tapply(as.numeric(d$date), as.character(d$group), min)
+  expect_equal(got, first[names(got)])
+  expect_error(plot_rt(example.fit, seeding = 1), regexp = "logical")
+})
+
 test_that("wrong observation type throws error", {
   expect_error(plot_obs(example.fit, type = "wrongtype", groups = c("Germany")), regexp = "obs does not contain any observations")
 })

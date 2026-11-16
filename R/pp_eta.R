@@ -25,7 +25,7 @@ pp_eta <- function(object, stanmat) {
 # @param object An epirt_ or epiobs_ object
 # @param A matrix of parameter draws
 pp_eta_fe <- function(object, stanmat) {
-  if (class(object) == "epirt_") {
+  if (inherits(object, "epirt_")) {
     nme <- "R"
   } else {
     nme <- .get_obs(formula(object))
@@ -48,7 +48,7 @@ pp_eta_fe <- function(object, stanmat) {
 # @param object An epirt_ or epiobs_ object
 # @param A matrix of parameter draws
 pp_eta_re <- function(object, stanmat) {
-    if (class(object) == "epirt_") {
+    if (inherits(object, "epirt_")) {
     nme <- "R"
   } else {
     nme <- .get_obs(formula(object))
@@ -70,7 +70,7 @@ pp_eta_re <- function(object, stanmat) {
 # @param object An epirt_ or epiobs_ object
 # @param A matrix of parameter draws
 pp_eta_ac <- function(object, stanmat) {
-  if (class(object) == "epirt_") {
+  if (inherits(object, "epirt_")) {
     nme <- "R"
   } else {
     nme <- .get_obs(formula(object))
@@ -95,7 +95,7 @@ pp_eta_ac <- function(object, stanmat) {
 # @param object epirt_ or epiobs_ object
 # @param stanmat Matrix of parameter draws
 new_rw_stanmat <- function(object, stanmat) {
-    if (class(object) == "epirt_") {
+    if (inherits(object, "epirt_")) {
     nme <- "R"
   } else {
     nme <- .get_obs(formula(object))

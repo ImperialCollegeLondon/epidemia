@@ -54,7 +54,7 @@ Either a ggplot object that can be further customized using the
 }
 \description{
 Provides an interface to the \link[bayesplot:MCMC-overview]{MCMC} module
-in the \pkg{\link{bayesplot}} package, and allows seamless plotting of
+in the \pkg{\link[bayesplot:bayesplot-package]{bayesplot}} package, and allows seamless plotting of
 MCMC draws along with various diagnostics. This method relies heavily
 on the code base for the \code{\link[rstanarm]{plot.stanreg}} method
 in \pkg{rstanarm}.

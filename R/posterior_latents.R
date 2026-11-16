@@ -43,7 +43,7 @@ posterior_infectious <-
   function(object, ...) UseMethod("posterior_infectious", object)
 
 #' @rdname posterior_infectious
-# @export
+#' @export
 posterior_infectious.epimodel <-
   function(object,
            newdata = NULL,
@@ -105,7 +105,7 @@ posterior_latent <-
   function(object, ...) UseMethod("posterior_latent", object)
 
 #' @rdname posterior_latent
-# @export
+#' @export
 posterior_latent.epimodel <-
   function(object,
            newdata = NULL,

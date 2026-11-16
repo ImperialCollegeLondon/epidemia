@@ -100,7 +100,7 @@ time-specific considerations. As such, **epidemia** treats
 $\alpha$ in a similar manner to reproductions number, and allows the
 user to specify a regression model for it. Section
 \@ref(sec:transmission) discusses this in detail in the context of
-reproduction numbers, and this discussion is not repeated here. The model schematic](model-schematic.html) details the
+reproduction numbers, and this discussion is not repeated here. The [model schematic](model-schematic.html) details the
 model for $\alpha$, as well as for observational models in general.
 
 The sampling distribution $p(y_t, \phi)$ (Equation

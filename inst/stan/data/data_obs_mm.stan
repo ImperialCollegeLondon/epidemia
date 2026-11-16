@@ -1,9 +1,9 @@
 
 // data relating to model matrices for each observation
-int<lower=0> oK[10];  // number of predictors for each observation type
+array[10] int<lower=0> oK;  // number of predictors for each observation type
 int<lower=0> K_all; // sum of the above
 int<lower=0> num_ointercepts; // total intercept params
-int<lower=0, upper=num_ointercepts> has_ointercept[R]; // 0 means no, otherwise gives index
+array[R] int<lower=0, upper=num_ointercepts> has_ointercept; // 0 means no, otherwise gives index
 
 // model matrices (maximum of 10 types)
 // not pretty, but hopefully more efficient with algorithmic diff

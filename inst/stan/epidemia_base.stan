@@ -5,7 +5,7 @@ functions {
 #include /functions/linkinv.stan
 
   vector test_csr_matrix_times_vector(int m, int n, vector w,
-                                      int[] v, int[] u, vector b) {
+                                      array[] int v, array[] int u, vector b) {
     return csr_matrix_times_vector(m, n, w, v, u, b);
   }
 }
@@ -13,8 +13,8 @@ functions {
 data {
 #include /data/data_indices.stan
 #include /data/data_obs.stan
-int obs[N_obs]; // vector of observations
-real obs_real[N_obs]; // vector of observations
+array[N_obs] int obs; // vector of observations
+array[N_obs] real obs_real; // vector of observations
 #include /data/data_obs_mm.stan
 #include /data/data_model.stan
 #include /data/NKX.stan
@@ -28,13 +28,16 @@ real obs_real[N_obs]; // vector of observations
 
 transformed data {
   real aux = not_a_number();
-  int<lower=1> V[special_case ? t : 0, N] = make_V(N, special_case ? t : 0, v);
-  int<lower=0> ac_V[ac_nterms, N] = make_V(N, ac_nterms, ac_v);
+  array[special_case ? t : 0, N] int<lower=1> V = make_V(N, special_case ? t : 0, v);
+  array[ac_nterms, N] int<lower=0> ac_V = make_V(N, ac_nterms, ac_v);
 #include /tdata/tdata_reverse.stan
 #include /tdata/tdata_glm.stan
 
 for(r in 1:R)
       pvecs_rev[r] = reverse2(pvecs[r]);
+
+for(k in 1:n_gen)
+      gen_rev[k] = reverse2(gen[k]);
 
 }
 
@@ -73,6 +76,9 @@ transformed parameters {
       if (prior_dist_for_oaux[i] <= 2) {
         oaux[i] += prior_mean_for_oaux[i];
       }
+    }
+    if (oaux_inv_sqrt[i]) {
+      oaux[i] = inv_square(oaux[i]);
     }
   }
 
@@ -117,13 +123,17 @@ transformed parameters {
   {
     int i = 1;
     for (proc in 1:ac_nproc) { // this treats ac terms as random walks for now (to be extended to AR(p))
-        ac_beta[i:(i+ac_ntime[proc]-1)] = cumulative_sum(ac_noise[i:(i+ac_ntime[proc]-1)]);
+        if (ac_noncentred[proc])
+            ac_steps[i:(i+ac_ntime[proc]-1)] *= ac_scale[proc];
+        ac_beta[i:(i+ac_ntime[proc]-1)] = cumulative_sum(ac_steps[i:(i+ac_ntime[proc]-1)]);
         i += ac_ntime[proc];
     }
 
     i = 1;
     for (proc in 1:obs_ac_nproc) {
-        obs_ac_beta[i:(i+obs_ac_ntime[proc]-1)] = cumulative_sum(obs_ac_noise[i:(i+obs_ac_ntime[proc]-1)]);
+        if (obs_ac_noncentred[proc])
+            obs_ac_steps[i:(i+obs_ac_ntime[proc]-1)] *= obs_ac_scale[proc];
+        obs_ac_beta[i:(i+obs_ac_ntime[proc]-1)] = cumulative_sum(obs_ac_steps[i:(i+obs_ac_ntime[proc]-1)]);
         i += obs_ac_ntime[proc];
     }
   }
@@ -140,8 +150,13 @@ model {
 #include /model/priors_obs.stan
 #include /model/priors_inf.stan
   if (t > 0) {
-    real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
-                          regularization, delta, shape, t, p);
+    if (re_sd_normal) { // every term has one coefficient, with sd tau * scale
+      target += normal_lpdf(z_b | 0, 1);
+      target += normal_lpdf(tau | 0, 1);
+    } else {
+      real dummy = decov_lp(z_b, z_T, rho, zeta, tau,
+                            regularization, delta, shape, t, p);
+    }
   }
 
   if (prior_PD == 0) {
@@ -152,18 +167,19 @@ model {
       }
       else if (ofamily[r] == 2) { // neg binom
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
-        segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, oaux[segment(obs_oaux, i, oN[r])]);
       } 
       else if (ofamily[r] == 3) { // quasi-poisson
         target += neg_binomial_2_lpmf(segment(obs, i, oN[r]) | 
-        segment(E_obs, i, oN[r]) + 1e-15, (segment(E_obs, i, oN[r]) + 1e-15) / oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, (segment(E_obs, i, oN[r]) + 1e-15) ./ oaux[segment(obs_oaux, i, oN[r])]);
       } 
       else if (ofamily[r] == 4) { // normal
         target += normal_lpdf(segment(obs_real, i, oN[r]) |
-        segment(E_obs, i, oN[r]) + 1e-15, oaux[has_oaux[r]]);
+        segment(E_obs, i, oN[r]) + 1e-15, oaux[segment(obs_oaux, i, oN[r])]);
         } else { // log normal
           target += lognormal_lpdf(segment(obs_real, i, oN[r]) |
-          log(segment(E_obs, i, oN[r])) - pow(oaux[has_oaux[r]], 2)/2 + 1e-15, oaux[has_oaux[r]]);
+          log(segment(E_obs, i, oN[r])) - square(oaux[segment(obs_oaux, i, oN[r])])/2 + 1e-15, 
+          oaux[segment(obs_oaux, i, oN[r])]);
         }
       i += oN[r];
     }
@@ -172,7 +188,7 @@ model {
 }
 
 generated quantities {
-  real alpha[has_intercept];
+  array[has_intercept] real alpha;
   
   if (has_intercept == 1) {
     alpha[1] = gamma[1] - dot_product(xbar, beta);

@@ -58,3 +58,25 @@ hexp <- function(prior_aux = rstanarm::exponential(0.03)) {
   out$autoscale <- FALSE
   return(out)
 }
+
+#' A log-normal prior for seeded infections
+#'
+#' A log-normal prior on the daily seeded infections of each group: their log 
+#' is normal with mean \code{meanlog} and standard deviation \code{sdlog}. Both 
+#' may have one value per group, in the alphabetical order of the groups, so 
+#' that seeds can be centred on each group's early counts. A call to this 
+#' function can be passed as the \code{prior_seeds} argument in 
+#' \code{\link[epidemia]{epiinf}}.
+#'
+#' @param meanlog,sdlog Mean and standard deviation of the log of the seeds.
+#' 
+#' @return A named list to be parsed internally by \code{\link[epidemia]{epim}}.
+#' @examples
+#' inf <- epiinf(gen = c(0.3, 0.4, 0.3), prior_seeds = lognormal(log(20), 1))
+#' @export
+lognormal <- function(meanlog = 0, sdlog = 1) {
+  check_numeric(meanlog)
+  check_numeric(sdlog)
+  check_positive(sdlog)
+  nlist(dist = "lognormal", df = NA, location = meanlog, scale = sdlog, autoscale = FALSE)
+}

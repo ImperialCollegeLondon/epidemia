@@ -16,6 +16,9 @@ transformed data {
 
 for(r in 1:R)
       pvecs_rev[r] = reverse2(pvecs[r]);
+
+for(k in 1:n_gen)
+      gen_rev[k] = reverse2(gen[k]);
 }
 
 parameters {
@@ -27,6 +30,7 @@ parameters {
   vector<lower=0>[latent ? 3 : 2] inf_aux;
   vector<lower=0,upper=1>[S0_fixed ? 2 : M+2] S0;
   vector<lower=0,upper=1>[veps_fixed ? 2 : M+2] veps;
+  vector<lower=0>[importations ? M+2 : 2] iota;
 }
 generated quantities {
   vector[N_obs] E_obs;
@@ -44,6 +48,8 @@ generated quantities {
     Rt = Rt_unadj;
   }
 
-  infectiousness = load / max(gen);
+  for (m in 1:M) {
+    infectiousness[1:N2, m] = load[1:N2, m] / max(gen[gen_idx[m]]);
+  }
 }
 

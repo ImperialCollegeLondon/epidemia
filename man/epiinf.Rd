@@ -16,16 +16,22 @@ epiinf(
   pops = NULL,
   rm = NULL,
   prior_susc = NULL,
-  prior_rm_noise = NULL
+  prior_rm_noise = NULL,
+  gen_group = NULL,
+  importations = FALSE,
+  prior_importations = rstanarm::normal(0, 0.2)
 )
 }
 \arguments{
 \item{gen}{A numeric vector representing the probability mass function for the generation time of the disease (must be a
-probability vector).}
+probability vector; \code{\link{discretize_cdf}} makes one from a continuous distribution). Its \eqn{k}th element is the probability that the generation time is \eqn{k} days, and
+it is used for every group. To give groups different generation distributions, use instead a named list of
+such vectors, or a matrix whose (named) columns are such vectors. These are matched to groups by name, or
+by \code{gen_group}. Distributions of different lengths are padded with zeros.}
 
 \item{seed_days}{An integer giving the number of days for which to seed infections. Defaults to \code{6L}.}
 
-\item{prior_seeds}{The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, or to \code{\link[epidemia]{hexp}}. The latter
+\item{prior_seeds}{The prior distribution on seeded infections. This may be a call to \code{\link[rstanarm]{normal}}, \code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{exponential}}, \code{\link[epidemia]{lognormal}}, or to \code{\link[epidemia]{hexp}}. The latter
 distribution allows hierarchical modeling of seeded infections.}
 
 \item{latent}{If \code{TRUE}, treat infections as latent parameters using the extensions described in Section 5.2 \href{https://imperialcollegelondon.github.io/epidemia/articles/model-description.html}{here}.}
@@ -54,6 +60,22 @@ If unspecified, then the entire population is assumed to be susceptible at time 
 \item{prior_rm_noise}{Removal from the susceptible population (to account for vaccinations) can be applied using the \code{rm} argument. However, in practice, it
 is difficult to specify the proportion of the susceptible class removed at any point in time. \code{prior_rm_noise}
 helps to model noise around this. If specified, should be a call to \code{\link[rstanarm]{normal}}.}
+
+\item{gen_group}{Only used if \code{gen} holds several generation distributions. A vector, named by group,
+giving for each modeled group the name (or position) of the element of \code{gen} that it uses. This allows groups
+to share a distribution, for example one per region. If \code{NULL} (the default), the names of \code{gen} must
+include every modeled group.}
+
+\item{importations}{If \code{TRUE}, each group has a constant number of imported infections every day after the seeding
+period, \eqn{\iota}, an unknown parameter, so that the renewal equation becomes
+\eqn{i_t = R_t \sum_{s < t} i_s g_{t-s} + \iota}. Imported infections keep an epidemic going when \eqn{R_t < 1},
+so they matter most when counts are low; they can also make \eqn{R_t} harder to identify there. Defaults to \code{FALSE}.}
+
+\item{prior_importations}{Prior distribution on the daily importations \eqn{\iota} of each group, which are on the scale of
+infections. Only used if \code{importations = TRUE}. Can be a call to \code{\link[rstanarm]{normal}},
+\code{\link[rstanarm]{student_t}}, \code{\link[rstanarm]{cauchy}} or \code{\link[rstanarm]{exponential}}; the
+first three are truncated at zero. The default, a half-normal with scale 0.2, suits small numbers of importations;
+choose a scale to suit the size of the epidemic.}
 }
 \value{
 An object of class \code{epiinf}.
@@ -79,5 +101,12 @@ inf <- epiinf(
  gen = EuropeCovid$si,
  seed_days = 6L,
  prior_seeds = hexp(rstanarm::exponential(0.02))
+)
+
+# a faster generation distribution in some groups
+fast <- EuropeCovid$si[1:20] / sum(EuropeCovid$si[1:20])
+inf <- epiinf(
+ gen = list(slow = EuropeCovid$si, fast = fast),
+ gen_group = c(Italy = "fast", Spain = "fast", Germany = "slow")
 )
 }

@@ -17,3 +17,4 @@
 ^index\.Rmd$
 ^index\.md$
 ^CRAN-RELEASE$
+^\.git$
